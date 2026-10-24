@@ -4,6 +4,8 @@ Status: research candidate, 24 October 2026. The recommended foundation is a ver
 
 This recommendation is provisional. The documents establish a concrete candidate to examine, not a proof of minimality, general compositional correctness, or a production-ready design. The user's requested scope ends with reviewed design documents.
 
+That scope statement records the original foundational investigation. The separately authorized Phase 1 bounded research model and its evidence are recorded below; they do not authorize a production runtime or convert this baseline into an approved production specification.
+
 ## Conclusions supported by established work
 
 | Conclusion | Basis | Limit on the conclusion |
@@ -131,3 +133,35 @@ The independent re-review returned **APPROVE for design-deliverable readiness**,
 Retain this candidate as the baseline for further formal investigation. Its strongest result is an explicit separation of deterministic computation, compositional policy, and runtime enforcement, with concrete cases that can falsify overstated guarantees.
 
 Do not begin runtime, SDK, persistence, or provider implementation from this phase. Resolve the observation model, finite-step enforcement, cancellation scope, authority serialization, and replay/version strategy before an implementation specification can promise behavior with confidence.
+
+## Phase 1 executable semantics findings
+
+The [Phase 1 specification](phase1/01-operational-spec.md) instantiates selected decisions in an isolated Go test-only model. The [qualification report](phase1/02-qualification.md) records the bounds, exact commands, review findings, and counterexamples; [machine-readable evidence](phase1/qualification.jsonl) retains complete alphabets and traces. This is evidence about a finite model, not a promotion into production code.
+
+Nine bounded positive searches checked 331 scenario states and 681 accepted transitions without a reported safety violation. All three deliberately removed protections were detected by the unchanged monitors. Two further traces disprove the interpretation of run cancellation as a permanent retry barrier. The positive counts are sums over fixed-alphabet graphs, with 58 unexpanded depth-boundary states; they are not an unbounded proof.
+
+| Candidate decision | What survived the bounded examination | What remains unresolved |
+| --- | --- | --- |
+| D1–D3 Finite deterministic steps and frontier | One closed instruction per turn, separate prepare/commit, independent ready-continuation witness, fixed-version replay projection | Adequacy for arbitrary programs, optimal primitive count, general fairness and compositional closure |
+| D4 Communication and D9 replay | Stable service binding after lost acknowledgment/retry; selected observations and complete immutable intents participate in replay | General capability security, retention expiry, full distributed snapshot/replay and migrations |
+| D5–D7 Identity and authority separation | Generation/epoch/sequence and ownership revision checks remain distinct; the epoch mutant is detected | Ownership transfer, remote consent validation, delegation/revocation and stale-dispatcher incarnation fencing |
+| D8 Commit/attempt/application/receipt boundary | External application can remain absent from journal knowledge; late evidence does not reopen closed computation; closure mutant is detected | Distributed atomicity, storage durability, endpoint fencing, full error/unknown reconciliation and transactional effects |
+| D10 Cancellation scope | Baseline permanent cancellation is explicitly named **subject retirement**; run-only cancellation with both automatic-retry policies has different observable outcomes | Whether the public API should offer retirement, run cancellation, a separate stop-retry latch, or a combination |
+| D11 Ordinary composition | A static three-subject Control program completes in 65 events using only ordinary instructions/effects | Dynamic creation, group cleanup, custodians, failure coupling and substitution proofs |
+| D12–D13 Uncertainty and failure | Interruption preserves a recoverable run; deterministic fault and authorized abandonment end it; fresh retry creates a distinct generation | Failure detectors, available distributed authority and unbounded progress |
+
+### Findings that changed the executable proposal
+
+The initial model allowed tag-only receipt matching. Independent review supplied a trace where an ordinary message impersonated a receipt before any external attempt. The corrected language carries bounded effect references and requires exact intent correlation and observation kind; an independent monitor detects a faulty reducer that bypasses the guard.
+
+Review also found two identity collisions: a receipt could overwrite an admitted ordinary message, and environmental ingress could shadow a generated Send's admission. The corrected model tags ingress/Send transport identity separately, then separates message/receipt inbox identity. Send receipts validate the full descriptor. The offending raw input IDs remain legal, with regression traces retained in the report. These findings strengthen the explicit interaction contract; they do not justify an extra privileged agent type.
+
+Scope review fixed the minimum replay projection before qualification and clarified that every terminal status closes ordinary attempt authorization in this model. Its simplified terminal policy suppresses never-authorized mutations; custodial transfer and compensation are excluded. Modeling a trusted dispatcher with owner/revision checks does not establish the wider stale-dispatcher guarantee of the foundational candidate.
+
+### Alternatives preserved after testing
+
+`CancelRun(active g1)` permits a fresh run when retry of cancelled outcomes is enabled. Even when that policy is disabled, `Fault(g1) → CancelRun(g1) → Retry(g1)` permits a fresh run because the existing failed outcome is preserved. These are retained policy counterexamples, not defects removed by changing assumptions. Subject retirement supplies a permanent barrier; a separate run-only stop-retry latch requires its own semantics and tests.
+
+Weak fairness versus stronger progress contracts, coordinated transfer validation versus acceptance of unavailable owners, and alternative observation/equivalence models remain open. No success count resolves them. The next authorized research question should name a specific missing contract; no runtime implementation follows automatically from this model.
+
+Independent adversarial review returned **APPROVE for Phase 1 research-deliverable readiness** after the correlation/identity corrections and fresh verification of all 15 evidence records. The earlier findings remain in the qualification report. This verdict approves the research package, not a production specification or unbounded theorem.
