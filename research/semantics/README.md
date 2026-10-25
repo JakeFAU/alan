@@ -125,3 +125,37 @@ See the [public composition contract](../../docs/foundational/phase1b/01-composi
 for permitted behaviors, provenance, challenge windows, and exclusions. This
 qualification does not claim general contextual equivalence, unbounded recursive
 closure, fairness, durability, or production readiness.
+
+## Phase 1C ordinary supervision qualification
+
+The additive `supervision_*_test.go` files expose committed terminal outcomes,
+physical suspicion, and lifecycle operation results to ordinary finite programs.
+Programs use bounded local fields, Receive, Branch, Emit, and terminal
+instructions. `AuthorizeLifecycle`, `DecideLifecycle`, and
+`AdmitLifecycleResult` separate source authorization, target authority decisions,
+and outcome admission. Policy budgets and choices remain ordinary program state;
+static observation permission does not grant lifecycle authority.
+
+```sh
+GOTOOLCHAIN=local GOCACHE=/tmp/alan-phase1c-go-cache GOPROXY=off GOSUMDB=off go test ./research/semantics -run '^TestSupervision' -count=1
+GOTOOLCHAIN=local GOCACHE=/tmp/alan-phase1c-go-cache GOPROXY=off GOSUMDB=off go test ./research/semantics -run '^TestSupervisionQualification$' -count=1 -v
+GOTOOLCHAIN=local GOCACHE=/tmp/alan-phase1c-go-cache GOPROXY=off GOSUMDB=off go test -count=1 ./...
+GOTOOLCHAIN=local GOCACHE=/tmp/alan-phase1c-go-cache GOPROXY=off GOSUMDB=off go test -race -count=1 ./...
+GOTOOLCHAIN=local GOCACHE=/tmp/alan-phase1c-go-cache GOPROXY=off GOSUMDB=off go vet ./...
+gofmt -l research/semantics/*_test.go
+```
+
+`SUPERVISION ` records retain complete immutable fixtures, actual setup events,
+finite alphabets, source/scenario identities, monitor state, counterexamples,
+and search statistics. Complete executions are reported separately from bounded
+safety exploration. Earlier saved evidence remains untouched; because the source
+manifest hashes all current test files, current-source Phase 1B regression output
+differs in source identity. The report gives both exact pinned-source reproduction
+and comparison of all earlier behavioral records on the new source.
+
+See the [supervision contract](../../docs/foundational/phase1c/01-supervision-contract.md)
+and [qualification report](../../docs/foundational/phase1c/02-qualification.md).
+The explicit business reference in the ambiguity fixture does not acquire
+cross-generation deduplication from a computation retry. No production runtime,
+new dependency, persistence/provider integration, ownership transfer, general
+capability delegation, or liveness guarantee is introduced.
