@@ -79,7 +79,7 @@ Each final mode retains 15 QUALIFICATION, 20 COMPOSITION, 32 SUPERVISION, 6 CONF
 
 Fixture construction errors are disclosed separately: initial missing receive correlation fields; reversed caller binding; handlers waiting for request cancellation without draining the body; and a step-budget fixture with no further eligible work. They were corrected rather than counted as behavioral evidence. Their saved failures are not passing qualification.
 
-Packaging corrections did not change runtime code: the collector initially assumed every ASYNC line was JSON, then learned to retain the human-readable line and direct JSON records; copied Go excerpts initially looked like a package until renamed `.go.txt`; an attempted exact comparison of all conformance payloads was narrowed to separate deterministic model payload equality from the two ephemeral external fixtures. Original test outputs remain authoritative.
+Packaging corrections did not change runtime code: the collector initially assumed every ASYNC line was JSON, then learned to retain the human-readable line and direct JSON records; copied Go excerpts initially looked like a package until renamed `.go.txt`; an attempted exact comparison of all conformance payloads was narrowed to separate deterministic model payload equality from the two ephemeral external fixtures. The retained unified patch was stored as gzip after the staged whitespace check interpreted its context prefix as Go indentation; decompressed bytes and original hash are unchanged. Original test outputs remain authoritative.
 
 ## Limits and review
 
