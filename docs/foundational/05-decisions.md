@@ -242,3 +242,15 @@ Retained counterexamples include synchronous scheduling, inherited-pipe observer
 This does not establish unbounded fairness, a hard real-time Close deadline, arbitrary simultaneous direct dispatch outside Run, or exactly-once business effects. The existing cross-store operation-key namespace limitation, single-host/static-subject profile, one PC per run, distributed fencing, migration/compaction and fresh-supervisor child reassociation remain separate work.
 
 Final review additionally exposed a reporting defect: a durable valid receipt was still labeled Unknown when its separate local settlement failed. The correction validates retained outcome evidence before reporting Unknown, preserves pending delivery/error state, and verifies non-idempotent reopen without redispatch. The pre-fix source/input and unchanged independent regression are retained. This changes reporting, not business idempotence or the separate transaction boundaries.
+
+
+## Phase 1E authoring and effect boundaries (increment in progress)
+
+The [Phase 1E contract](phase1e/01-authoring-effects-contract.md) keeps the existing interpreter and single bounded dispatch owner. Public authoring is intended to compile named finite operations into retained artifacts; model and tool work must remain separate intents selected by ordinary computation. Later Phase 1E claims remain pending until its qualification package records their evidence.
+
+The cross-store operation-key limitation is corrected in the reviewed namespace slice. A newly provisioned schema-version-2 store atomically retains a cryptographically random 256-bit namespace. External keys encode key version, namespace and local intent identity; message, journal and lifecycle identities stay local. The unchanged two-store input exposed one mutation under the old key and two independent mutations under the corrected key. The [original input/source and review](phase1e/evidence/task1/manifest.json) remain available.
+
+Reopen and rename preserve operation identity. A copy retains that identity; concurrent independent use of copies remains unsupported. This increment explicitly rejects version-1 runtime stores before activation or dispatch rather than migrating or re-keying committed work. Historical source archives remain the reproduction path for their original evidence. Namespace separation does not supply business deduplication across fresh application decisions.
+
+
+Independent compiler review supplied two accepted definitions whose Run and Replay agreed on the wrong result: a reachable trailing label changed the selected branch, and invalid UTF-8 variable names collided after JSON encoding. Their [retained probes](phase1e/evidence/task2/review-round1.md) reinforce the existing distinction: shared-reducer replay checks historical consistency, while an independently specified public behavior is needed to test compilation semantics. Reachability-based lowering and consistent UTF-8 identifier rejection correct both cases; scoped independent re-review accepted the fixes. The counterexamples remain part of the evidence.

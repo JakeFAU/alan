@@ -59,7 +59,7 @@ Then run the client in the first terminal:
 
 The client adds five and waits for its correlated receipt; a separate ordinary peer can progress independently. External transport has bounded concurrency. Additional work stays in the durable intent ledger, and a held external request does not own the scheduler. The [dispatch contract](docs/foundational/phase1d1/01-dispatch-contract.md) defines limits, cancellation, worker ownership and late evidence; its qualification uses explicit hold/progress/release handshakes.
 
-An idempotent reattempt uses the original immutable operation key and parameters. An uncertain non-idempotent attempt is retained as Unknown and is not automatically resent. Computation recovery does not establish exactly-once business effects. Use a **fresh executor/resource database pair** to switch example profiles: fresh demo stores reuse execution-derived keys, and a new database filename does not create a business namespace.
+An idempotent reattempt uses the original immutable operation key and parameters. An uncertain non-idempotent attempt is retained as Unknown and is not automatically resent. Computation recovery does not establish exactly-once business effects. Each newly initialized executor store now receives a durable random namespace, so independent stores use different operation keys even when their local execution IDs match. Reopening or renaming a store preserves its keys; copying it preserves the same namespace and is not an independent fork. Concurrent use of copies is unsupported. A new namespace separates runtime operations, not repeated business tasks.
 
 ## CLI and execution boundaries
 
@@ -100,7 +100,7 @@ Start with the [foundations](docs/foundational/01-foundations.md), [composition]
 
 ## Current limits
 
-This profile supports one host, one active executor per store, static provisioning/grants and one program counter per run. No schema/program migration, history compaction, distributed fencing, dynamic creation, ownership transfer, general delegation, fresh-supervisor child reassociation or provider deployment is supplied. Histories grow and startup/replay scan them. Local provenance and storage synchronization assumptions are explicit.
+This profile supports one host, one active executor per store, static provisioning/grants and one program counter per run. No schema/program migration, history compaction, distributed fencing, dynamic creation, ownership transfer, general delegation, fresh-supervisor child reassociation or provider deployment is supplied. This development increment rejects older version-1 stores before activation; their retained source archives reproduce the original behavior. Histories grow and startup/replay scan them. Local provenance and storage synchronization assumptions are explicit.
 
 Finite model searches and process-kill tests are evidence for their declared cases. They are not proofs of unbounded fairness, eventual recovery, arbitrary-depth equivalence, power-loss durability or safe repetition of arbitrary business work.
 

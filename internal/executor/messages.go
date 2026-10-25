@@ -425,8 +425,16 @@ func admit(ctx context.Context, tx *sql.Tx, d AdmissionDescriptor, limits Limits
 				if !permitted {
 					result.Reason = "route_denied"
 				} else {
-					result.Accepted = true
-					result.Reason = "accepted"
+					program, e := loadProgram(ctx, tx, target.ProgramID, limits)
+					if e != nil {
+						return result, e
+					}
+					if !authorAdmissionValid(program, d) {
+						result.Reason = "schema_invalid"
+					} else {
+						result.Accepted = true
+						result.Reason = "accepted"
+					}
 				}
 			}
 		}
@@ -663,13 +671,24 @@ func validateMessaging(ctx context.Context, q queryer, limits Limits) error {
 			if !permitted {
 				return corrupt("accepted admission lacks static route")
 			}
+			target, e := loadRun(ctx, q, *r.Bound)
+			if e != nil {
+				return e
+			}
+			program, e := loadProgram(ctx, q, target.ProgramID, limits)
+			if e != nil {
+				return e
+			}
+			if !authorAdmissionValid(program, d) {
+				return corrupt("accepted admission violates author schema")
+			}
 			explained[r.ObservationID] = true
 		} else {
 			if r.ObservationID != "" || observationID.Valid {
 				return corrupt("rejected admission has observation")
 			}
 			switch r.Reason {
-			case "target_missing", "target_retired", "target_generation_changed", "target_closed", "route_denied", "source_denied:source_closed", "source_denied:source_retired", "source_denied:source_revision_changed", "source_denied:source_generation_changed":
+			case "schema_invalid", "target_missing", "target_retired", "target_generation_changed", "target_closed", "route_denied", "source_denied:source_closed", "source_denied:source_retired", "source_denied:source_revision_changed", "source_denied:source_generation_changed":
 			default:
 				return corrupt("unknown admission rejection")
 			}

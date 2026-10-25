@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	recordschema "github.com/JakeFAU/alan/schema"
 	"io"
 	"math"
 )
@@ -17,12 +18,7 @@ var ErrLimit = errors.New("resource limit")
 var ErrIneligible = errors.New("ineligible observation")
 var ErrClosed = errors.New("closed run")
 
-type Value struct {
-	Kind   string
-	Number int64
-	Text   string
-	Flag   bool
-}
+type Value = recordschema.Value
 
 func Int(n int64) Value   { return Value{Kind: "int", Number: n} }
 func Text(s string) Value { return Value{Kind: "string", Text: s} }
@@ -43,6 +39,7 @@ type RunID struct {
 type Program struct {
 	Semantics string
 	Code      []Instruction
+	Author    *ProgramMetadata `json:",omitempty"`
 }
 type Instruction struct {
 	Op                string
@@ -128,8 +125,11 @@ func decode(b []byte, v any) error {
 	return nil
 }
 func validateProgram(p Program) error {
-	if p.Semantics != SemanticVersion {
+	if !supportedSemantics(p.Semantics) {
 		return ErrVersion
+	}
+	if err := validateMetadata(p); err != nil {
+		return err
 	}
 	if len(p.Code) == 0 {
 		return fmt.Errorf("empty program")
@@ -353,6 +353,23 @@ func Reduce(p Program, s Projection, o *Observation, id RunID, seq int64, l Limi
 		if o.Kind != m.Kind || o.Provenance != m.Provenance || o.Source != source || o.SourceGeneration != gen || o.Obligation != ob || o.Operation != op {
 			return Reduction{}, ErrIneligible
 		}
+		if p.Author != nil {
+			if record, ok := p.Author.Receives[s.PC]; ok {
+				var err error
+				if in.Match.Kind == "adapter" && in.Match.Obligation.Literal != nil {
+					effect, ok := p.Author.Effects[in.Match.Obligation.Literal.Text]
+					if !ok {
+						return Reduction{}, fmt.Errorf("unknown adapter declaration")
+					}
+					err = recordschema.ValidateResult(effect.Output.Record, o.Payload)
+				} else {
+					err = record.Record.Validate(o.Payload)
+				}
+				if err != nil {
+					return Reduction{}, fmt.Errorf("receive schema: %w", err)
+				}
+			}
+		}
 		for field, dst := range in.Bind {
 			v, ok := o.Payload[field]
 			if !ok || dst == "" || !validValue(v) {
@@ -398,6 +415,11 @@ func Reduce(p Program, s Projection, o *Observation, id RunID, seq int64, l Limi
 		}
 		result.Intents = append(result.Intents, intent)
 	case "end":
+		if in.Outcome == "succeeded" {
+			if err := validateAuthorOutput(p, s.Data); err != nil {
+				return Reduction{}, fmt.Errorf("output schema: %w", err)
+			}
+		}
 		next.PC = s.PC
 		next.Status = in.Outcome
 	}

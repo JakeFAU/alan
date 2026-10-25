@@ -151,6 +151,9 @@ func validateLedger(ctx context.Context, q queryer, limits Limits) (ReplayReport
 		if e = decode(initialRaw, &projection); e != nil {
 			return report, corrupt("invalid initial: %v", e)
 		}
+		if e = validateAuthorInitial(p, projection); e != nil {
+			return report, e
+		}
 		if e = validateProjection(projection, p, limits); e != nil {
 			return report, e
 		}

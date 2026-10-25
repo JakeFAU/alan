@@ -328,7 +328,7 @@ func Create(ctx context.Context, path string, p Provision, limits Limits) (store
 		}
 	}
 	for _, v := range p.Permissions {
-		if v.Kind != "lifecycle" && v.Kind != "observation" && v.Kind != "message" && v.Kind != "input" && v.Kind != "external" {
+		if v.Kind != "lifecycle" && v.Kind != "observation" && v.Kind != "message" && v.Kind != "input" && v.Kind != "external" && v.Kind != "adapter" {
 			return nil, fmt.Errorf("invalid permission kind")
 		}
 		if v.Kind == "input" {
@@ -352,6 +352,9 @@ func Create(ctx context.Context, path string, p Provision, limits Limits) (store
 		program, e := loadProgram(ctx, tx, v.ProgramID, limits)
 		if e != nil {
 			return nil, e
+		}
+		if err = validateAuthorInitial(program, v.Projection); err != nil {
+			return nil, err
 		}
 		if err = validateProjection(v.Projection, program, limits); err != nil {
 			return nil, err
@@ -392,7 +395,7 @@ func Create(ctx context.Context, path string, p Provision, limits Limits) (store
 }
 
 func insertArtifact(ctx context.Context, tx *sql.Tx, a Artifact, l Limits) error {
-	if a.Semantics != SemanticVersion {
+	if !supportedSemantics(a.Semantics) {
 		return ErrVersion
 	}
 	if a.ID != programHash(a.Bytes) {
@@ -404,6 +407,9 @@ func insertArtifact(ctx context.Context, tx *sql.Tx, a Artifact, l Limits) error
 	var p Program
 	if err := decode(a.Bytes, &p); err != nil {
 		return err
+	}
+	if p.Semantics != a.Semantics {
+		return ErrVersion
 	}
 	if err := validateProgram(p); err != nil {
 		return err
@@ -429,7 +435,7 @@ func loadProgram(ctx context.Context, q queryer, id string, l Limits) (Program, 
 	if err := q.QueryRowContext(ctx, "SELECT semantics,bytes FROM programs WHERE id=?", id).Scan(&a.Semantics, &a.Bytes); err != nil {
 		return Program{}, err
 	}
-	if a.Semantics != SemanticVersion {
+	if !supportedSemantics(a.Semantics) {
 		return Program{}, ErrVersion
 	}
 	if a.ID != programHash(a.Bytes) {
@@ -441,6 +447,9 @@ func loadProgram(ctx context.Context, q queryer, id string, l Limits) (Program, 
 	var p Program
 	if err := decode(a.Bytes, &p); err != nil {
 		return Program{}, err
+	}
+	if p.Semantics != a.Semantics {
+		return Program{}, ErrVersion
 	}
 	return p, validateProgram(p)
 }

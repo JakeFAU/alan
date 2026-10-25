@@ -49,11 +49,11 @@ PR #5 is confirmed merged. Fresh fetch gives base `d708493646aeae3c1e70a03cf2bb2
 **Files:** new `author/` (compiler and tests), small public `runtime/` facade delegating to `internal/executor`, narrow program metadata/validation changes, external-consumer smoke under `examples/` or a temporary external module test.
 **Consumes:** existing reducer, durable artifacts/provisioning and version-2 store. **Produces:** `author.Compile(Definition) (Artifact, error)` and static application/component definitions; public Create/Open/Run/Inspect/Replay access without external imports of internal packages.
 
-- [ ] Pin observable tests first: author uses named values, labels, sequential/conditional steps, named effects with correlated waits, ordinary request/reply, success/failure and bounded repetition without raw opcodes/PCs/SQL.
-- [ ] Compile readable author steps to existing generic instructions. Use the current bounded flat typed record representation unless a demonstrated application need requires more; the first response/citation schemas can be flat records. No assistant-specific opcode.
-- [ ] Persist compiler version, semantic version, input/output/effect schema identities, prompt/template bytes and execution-position/name map within the immutable artifact. Preserve legacy program encoding/semantics where supported; reject unknown versions explicitly.
-- [ ] Reject duplicate/missing labels, references not definitely available, wrong types/bindings, invalid branches, unsupported effects and unbounded author repetition. Identical definitions under shuffled maps encode identically.
-- [ ] Run external-consumer compile/run/reopen/replay without internal imports. Freeze exact public interfaces in the task report for the next slice; review before proceeding.
+- [x] Pin observable tests first: author uses named values, labels, sequential/conditional steps, named effects with correlated waits, ordinary request/reply, success/failure and bounded repetition without raw opcodes/PCs/SQL.
+- [x] Compile readable author steps to existing generic instructions. Use the current bounded flat typed record representation unless a demonstrated application need requires more; the first response/citation schemas can be flat records. No assistant-specific opcode.
+- [x] Persist compiler version, semantic version, input/output/effect schema identities, prompt/template bytes and execution-position/name map within the immutable artifact. Preserve legacy program encoding/semantics where supported; reject unknown versions explicitly.
+- [x] Reject duplicate/missing labels, references not definitely available, wrong types/bindings, invalid branches, unsupported effects and unbounded author repetition. Identical definitions under shuffled maps encode identically.
+- [x] Run external-consumer compile/run/reopen/replay without internal imports. Freeze exact public interfaces in the task report for the next slice; review before proceeding.
 
 ## Task 3: Narrow adapters and retained corpus
 
