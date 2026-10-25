@@ -1,0 +1,44 @@
+package executor
+import("testing";"errors";"path/filepath";"math/rand";"fmt")
+func TestReviewThreeRetryBudgetReopensEveryStep(t *testing.T){
+ p,err:=NestedProvision(NestedConfig{Outer:"o",Inner:"i",Worker:"w",RetryBudget:3,SuccessorInput:"fail"});if err!=nil{t.Fatal(err)}
+ path:=filepath.Join(t.TempDir(),"nested.sqlite");s,err:=Create(t.Context(),path,p,DefaultLimits());if err!=nil{t.Fatal(err)};defer func(){s.Close()}()
+ done:=false
+ for i:=0;i<150;i++ {r,e:=s.Run(t.Context(),RunOptions{MaxSteps:1,MaxDispatch:100});if e!=nil&&!errors.Is(e,ErrLimit){t.Fatal(i,e)};if _,e=Replay(t.Context(),path,DefaultLimits());e!=nil{t.Fatal(i,e)};if r.Quiescent{done=true;break};if e=s.Close();e!=nil{t.Fatal(e)};s,e=Open(t.Context(),path,DefaultLimits());if e!=nil{t.Fatal(i,e)}}
+ if !done{t.Fatal("fixture did not finish")}
+ inner:=current(t,s,"i");outer:=current(t,s,"o");worker,e:=s.Snapshot(t.Context(),RunID{"w",4});if e!=nil{t.Fatal(e)}
+ if inner.Projection.Data["spent"]!=Int(3)||inner.Projection.Data["expected"]!=Int(4)||outer.Projection.Status!="failed"||worker.Sequence!=3||worker.Projection.Status!="failed"||count(t,s,"lifecycle_results")!=3{t.Fatal("budget/recovery drift",inner,outer,worker)}
+ t.Logf("three retries, worker generation 4, same inner generation/obligation across epoch %d",inner.Epoch)
+}
+func TestReviewLifecycleInterleavingsRemainReconstructible(t *testing.T){
+ for seed:=int64(0);seed<5;seed++{t.Run(fmt.Sprint(seed),func(t *testing.T){
+ p:=Provision{}
+ names:=[]string{"a","b","c"};ops:=[]string{"Retry","CancelRun","AbandonRun","RetireSubject"}
+ for n,source:=range names {code:=[]Instruction{};for i,op:=range ops{target:=names[(n+i)%3];code=append(code,Instruction{Op:"emit",Effect:&Effect{Kind:"lifecycle",Target:Lit(Text(target)),Generation:Lit(Int(1)),Obligation:Lit(Text("ob")),Payload:map[string]Operand{"operation":Lit(Text(op)),"revision":Lit(Int(1))}}});p.Permissions=append(p.Permissions,Permission{Kind:"lifecycle",Source:source,Target:target,Operation:op,Revision:1})};code=append(code,Instruction{Op:"end",Outcome:"failed"});addProgram(t,&p,source,code,map[string]Value{})}
+ path:=filepath.Join(t.TempDir(),"events.sqlite");s,e:=Create(t.Context(),path,p,DefaultLimits());if e!=nil{t.Fatal(e)};defer func(){s.Close()}();random:=rand.New(rand.NewSource(seed))
+ for step:=0;step<100;step++{action:=random.Intn(6);ids,e:=readRunIDs(t.Context(),s.conn);if e!=nil{t.Fatal(e)};intents,e:=stringList(t.Context(),s.conn,"SELECT id FROM intents ORDER BY id");if e!=nil{t.Fatal(e)}
+ switch {case action<2: id:=ids[random.Intn(len(ids))];r,e:=s.Snapshot(t.Context(),id);if e!=nil{t.Fatal(e)};_,_=s.Commit(t.Context(),r.Authority(),"")
+ case action==5:if e=s.Close();e!=nil{t.Fatal(e)};s,e=Open(t.Context(),path,DefaultLimits());if e!=nil{t.Fatalf("seed %d step %d reopen: %v",seed,step,e)}
+ case len(intents)>0:id:=intents[random.Intn(len(intents))];switch action{case 2:_,_=s.AuthorizeIntent(t.Context(),id);case 3:req,e:=s.LoadLifecycleRequest(t.Context(),id);if e!=nil{t.Fatal(e)};_,_=s.DecideLifecycle(t.Context(),req);case 4:_,_=s.SettleLifecycle(t.Context(),id,fmt.Sprint("t",step))}}
+ if _,e=Replay(t.Context(),path,DefaultLimits());e!=nil{t.Fatalf("seed %d step %d action %d replay: %v",seed,step,action,e)}
+ }
+ })}
+}
+func TestReviewMessageBindingAndLifecycleDomainAcrossRealRetry(t *testing.T){
+ p:=lifecycleFixture(t,[]string{"Retry"},false)
+ addProgram(t,&p,"sender",[]Instruction{{Op:"emit",Effect:&Effect{Kind:"message",Target:Lit(Text("worker")),Generation:Lit(Int(0)),Obligation:Lit(Text("old-message")),Payload:map[string]Operand{"data":Lit(Text("original"))}}},{Op:"end",Outcome:"succeeded"}},map[string]Value{})
+ p.Permissions=append(p.Permissions,Permission{Kind:"message",Source:"sender",Target:"worker",Operation:"message",Revision:1},Permission{Kind:"input",Source:"local",Target:"worker",Operation:"input"})
+ s,path:=messageStore(t,p)
+ raw:=identity("lifecycle-delivery",`["requester",1,1,0]`)
+ ordinary,err:=s.AdmitInput(t.Context(),Input{TransportID:raw,LogicalID:"ordinary",Target:"worker",Payload:map[string]Value{}});if err!=nil||!ordinary.Accepted{t.Fatal(ordinary,err)}
+ emitted,err:=s.Commit(t.Context(),current(t,s,"sender").Authority(),"");if err!=nil{t.Fatal(err)}
+ first,err:=s.DeliverMessage(t.Context(),`["sender",1,1,0]`,"original");if err!=nil||!first.Accepted{t.Fatal(first,err)}
+ if _,err=s.Commit(t.Context(),emitted.Authority(),"");err!=nil{t.Fatal(err)}
+ if _,err=s.Commit(t.Context(),current(t,s,"worker").Authority(),"");err!=nil{t.Fatal(err)}
+ req:=committedRequest(t,s,"requester");result:=authorizedDecision(t,s,req);if !result.Accepted{t.Fatal(result)}
+ settled,err:=s.SettleLifecycle(t.Context(),req.Intent.ID,raw);if err!=nil||!settled.Accepted||settled.ObservationID==ordinary.ObservationID{t.Fatal(settled,err)}
+ if err=s.Close();err!=nil{t.Fatal(err)};s,err=Open(t.Context(),path,DefaultLimits());if err!=nil{t.Fatal(err)};defer s.Close()
+ again,err:=s.DeliverMessage(t.Context(),`["sender",1,1,0]`,"original");if err!=nil||again.Bound==nil||again.Bound.Generation!=1||again.ObservationID!=first.ObservationID{t.Fatal(again,err)}
+ if err=s.AcknowledgeMessage(t.Context(),`["sender",1,1,0]`,"original");err!=nil{t.Fatal(err)}
+ if _,err=Replay(t.Context(),path,DefaultLimits());err!=nil{t.Fatal(err)}
+}

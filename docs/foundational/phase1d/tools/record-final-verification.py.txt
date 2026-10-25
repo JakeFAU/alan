@@ -1,0 +1,44 @@
+from pathlib import Path
+import datetime,gzip,hashlib,json,os,re,subprocess,sys,time
+root=Path('/Users/jacob/dev/personal/alan');mode=sys.argv[1]
+assert mode in ('normal','race')
+out=root/'docs/foundational/phase1d/evidence';out.mkdir(exist_ok=True)
+manifest=json.loads((root/'docs/foundational/phase1d/source-manifest.json').read_text())
+def verify_source():
+ for item in manifest['files']:
+  raw=(root/item['path']).read_bytes()
+  assert len(raw)==item['bytes'] and hashlib.sha256(raw).hexdigest()==item['sha256'],item['path']
+verify_source()
+cmd=['go','test','-json','-count=1']+(['-race'] if mode=='race' else [])+['./...']
+env=dict(os.environ,GOTOOLCHAIN='local',GOCACHE='/tmp/alan-phase1d-go-build',GOPROXY='off',GOSUMDB='off',GOFLAGS='-mod=readonly')
+raw_path=Path('/tmp/alan-phase1d-final-'+mode+'.go-test.jsonl');err_path=Path('/tmp/alan-phase1d-final-'+mode+'.stderr.log')
+started=datetime.datetime.now(datetime.timezone.utc).isoformat();start=time.monotonic()
+with raw_path.open('w') as stdout,err_path.open('w') as stderr:p=subprocess.run(cmd,cwd=root,env=env,text=True,stdout=stdout,stderr=stderr)
+elapsed=round(time.monotonic()-start,3)
+verify_source()
+records=[];buffers={};packages=[];failed=[];test_passes=0
+pattern=re.compile(r'^\s*(?:[^\s:]+:\d+:\s*)?(QUALIFICATION|COMPOSITION|SUPERVISION|CONFORMANCE|DURABLE) (.*)$')
+def line(package,test,value):
+ m=pattern.match(value)
+ if m:
+  records.append({'QualificationSourceID':manifest['source_sha256'],'Mode':mode,'Package':package,'Test':test,'RecordIndex':len(records)+1,'Marker':m[1],'Evidence':json.loads(m[2]),'RawPayload':m[2]})
+for raw in raw_path.read_text().splitlines():
+ e=json.loads(raw);action=e.get('Action');package=e.get('Package','');test=e.get('Test','')
+ if action=='output':
+  key=(package,test);value=buffers.get(key,'')+e.get('Output','')
+  while '\n' in value:
+   one,_,value=value.partition('\n');line(package,test,one)
+  buffers[key]=value
+ elif action=='pass' and test:test_passes+=1
+ elif action=='fail':failed.append(e)
+ if action in ('pass','fail','skip') and not test:packages.append({'package':package,'result':action,'elapsed_seconds':e.get('Elapsed')})
+for (package,test),value in buffers.items():
+ if value.strip():line(package,test,value)
+record_path=Path('/tmp/alan-phase1d-final-'+mode+'.records.jsonl')
+record_path.write_text(''.join(json.dumps(r,separators=(',',':'))+'\n' for r in records))
+gz_path=out/('final-'+mode+'.go-test.jsonl.gz');gz_path.write_bytes(gzip.compress(raw_path.read_bytes(),mtime=0))
+meta={'Kind':'verification_command','QualificationSourceID':manifest['source_sha256'],'Mode':mode,'Command':cmd,'Directory':str(root),'Environment':{k:env[k] for k in ['GOTOOLCHAIN','GOCACHE','GOPROXY','GOSUMDB','GOFLAGS']},'StartedUTC':started,'ElapsedSeconds':elapsed,'ExitCode':p.returncode,'Packages':packages,'PassingTestAndSubtestEvents':test_passes,'FailedEvents':failed,'Markers':{m:sum(r['Marker']==m for r in records) for m in ['QUALIFICATION','COMPOSITION','SUPERVISION','CONFORMANCE','DURABLE']},'RawLog':str(gz_path.relative_to(root)),'RawUncompressedSHA256':hashlib.sha256(raw_path.read_bytes()).hexdigest(),'CompressedSHA256':hashlib.sha256(gz_path.read_bytes()).hexdigest(),'Stderr':err_path.read_text(),'SourceUnchangedBeforeAndAfter':True}
+(out/('final-'+mode+'.command.json')).write_text(json.dumps(meta,indent=2)+'\n')
+print(json.dumps(meta,indent=2),flush=True)
+assert p.returncode==0 and not failed
+assert meta['Markers']=={'QUALIFICATION':15,'COMPOSITION':20,'SUPERVISION':32,'CONFORMANCE':6,'DURABLE':87},meta['Markers']

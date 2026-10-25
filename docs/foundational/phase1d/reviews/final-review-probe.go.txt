@@ -1,0 +1,51 @@
+package executor_test
+
+import (
+ "encoding/json"
+ "errors"
+ "fmt"
+ "math/rand"
+ "path/filepath"
+ "reflect"
+ "testing"
+ ex "github.com/JakeFAU/alan/internal/executor"
+)
+
+// Deterministic reachable-state schedule probe, written independently for final review.
+// All mutations use public APIs; no SQL fault injection or production helpers.
+func TestFinalReviewReachableLifecycleSchedules(t *testing.T) {
+ for seed:=int64(0); seed<20; seed++ { t.Run(fmt.Sprint(seed),func(t *testing.T) {
+  rng:=rand.New(rand.NewSource(seed)); names:=[]string{"a","b","c"}; ops:=[]string{"Retry","CancelRun","AbandonRun","RetireSubject"}
+  p:=ex.Provision{}
+  for _, name:=range names {
+   code:=[]ex.Instruction{}
+   for j:=0;j<6;j++ { op:=ops[rng.Intn(len(ops))]; target:=names[rng.Intn(len(names))]
+    code=append(code,ex.Instruction{Op:"emit",Dst:"pending",Effect:&ex.Effect{Kind:"lifecycle",Target:ex.Lit(ex.Text(target)),Generation:ex.Lit(ex.Int(1)),Obligation:ex.Lit(ex.Text("original")),Payload:map[string]ex.Operand{"operation":ex.Lit(ex.Text(op)),"revision":ex.Lit(ex.Int(1))}}})
+   };code=append(code,ex.Instruction{Op:"end",Outcome:"failed"})
+   raw,id,err:=ex.EncodeProgram(ex.Program{Semantics:ex.SemanticVersion,Code:code});if err!=nil {t.Fatal(err)}
+   p.Programs=append(p.Programs,ex.Artifact{ID:id,Semantics:ex.SemanticVersion,Bytes:raw});p.Subjects=append(p.Subjects,ex.Subject{ID:name,Owner:name,Generation:1,Revision:1,RetryCancelled:true});p.Runs=append(p.Runs,ex.InitialRun{ID:ex.RunID{Subject:name,Generation:1},ProgramID:id,Projection:ex.Projection{Status:"open",Data:map[string]ex.Value{}}})
+   for _,target:=range names { for _,op:=range ops {p.Permissions=append(p.Permissions,ex.Permission{Kind:"lifecycle",Source:name,Target:target,Operation:op,Revision:1})}}
+  }
+  path:=filepath.Join(t.TempDir(),"state.sqlite");s,err:=ex.Create(t.Context(),path,p,ex.DefaultLimits());if err!=nil {t.Fatal(err)};defer func(){s.Close()}()
+  retained:=map[string]ex.LifecycleResult{}
+  for step:=0;step<80;step++ {
+   snap,err:=ex.Inspect(t.Context(),path,ex.DefaultLimits());if err!=nil {t.Fatal(err)}
+   switch rng.Intn(6) {
+   case 0,1:
+    row:=snap.Tables["runs"][rng.Intn(len(snap.Tables["runs"]))];id:=ex.RunID{Subject:row["subject"].(string),Generation:row["generation"].(int64)}
+    r,e:=s.Snapshot(t.Context(),id);if e!=nil {t.Fatal(e)};_,e=s.Commit(t.Context(),r.Authority(),"");if e!=nil&&!errors.Is(e,ex.ErrStale)&&!errors.Is(e,ex.ErrClosed) {t.Fatalf("step %d commit: %v",step,e)}
+   case 2,3,4:
+    if len(snap.Tables["intents"])==0 {continue}; row:=snap.Tables["intents"][rng.Intn(len(snap.Tables["intents"]))];id:=row["id"].(string)
+    auth,e:=s.AuthorizeIntent(t.Context(),id);if e!=nil {t.Fatal(e)}
+    if auth.Allowed {req,e:=s.LoadLifecycleRequest(t.Context(),id);if e!=nil {t.Fatal(e)};r,e:=s.DecideLifecycle(t.Context(),req);if e!=nil {t.Fatal(e)};if old,ok:=retained[id];ok&&!reflect.DeepEqual(old,r) {t.Fatalf("decision changed at step %d",step)};retained[id]=r}
+    if rng.Intn(2)==0 {if _,e=s.SettleLifecycle(t.Context(),id,fmt.Sprintf("transport-%d",step));e!=nil {t.Fatalf("step %d settle: %v",step,e)}}
+   case 5:
+    before,err:=ex.Replay(t.Context(),path,ex.DefaultLimits());if err!=nil {t.Fatalf("step %d before open: %v",step,err)}
+    if err=s.Close();err!=nil {t.Fatal(err)};s,err=ex.Open(t.Context(),path,ex.DefaultLimits());if err!=nil {t.Fatalf("step %d reopen: %v",step,err)}
+    after,err:=ex.Replay(t.Context(),path,ex.DefaultLimits());if err!=nil {t.Fatal(err)}
+    for i,r:=range before.Runs {want:=r;if want.Projection.Status=="open" {want.Epoch++};if !reflect.DeepEqual(want,after.Runs[i]) {t.Fatalf("reopen changed logical state: %+v %+v",want,after.Runs[i])}}
+   }
+   if _,err:=ex.Replay(t.Context(),path,ex.DefaultLimits());err!=nil {raw,_:=json.Marshal(p);t.Fatalf("seed %d step %d reachable ledger rejected: %v provision=%s",seed,step,err,raw)}
+  }
+ }) }
+}

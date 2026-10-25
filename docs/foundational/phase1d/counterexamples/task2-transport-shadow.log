@@ -1,0 +1,11 @@
+=== RUN   TestReviewInputCannotShadowAutomaticMessageTransport
+    review_probe_test.go:14: raw transport=["message-delivery","[\"sender\",1,1,0]"] admitted={TransportID:["message-delivery","[\"sender\",1,1,0]"] Accepted:true Reason:accepted Bound:0x15b5f6cb6d38 ObservationID:["observation","input","ordinary-input"]} report={Steps:1 Dispatches:0 Quiescent:false OpenRuns:[{Subject:receiver Generation:1} {Subject:sender Generation:1}] UnresolvedIntents:[{ID:["sender",1,1,0] Run:{Subject:sender Generation:1} Sequence:1 Ordinal:0 Kind:message Target:receiver Generation:1 Obligation:work Payload:map[number:{Kind:int Number:42 Text: Flag:false}]}] PendingDeliveries:[["message-delivery","[\"sender\",1,1,0]"]] RejectedAdmissions:0} error=identity conflict
+    review_probe_test.go:20: ordinary ingress shadowed generated message transport, persists after reopen: identity conflict
+--- FAIL: TestReviewInputCannotShadowAutomaticMessageTransport (0.01s)
+=== RUN   TestReviewRejectedInputCannotShadowAutomaticTerminalTransport
+    review_probe_test.go:32: raw transport=["terminal-delivery","child",1,1,"observer","public"] retained={TransportID:["terminal-delivery","child",1,1,"observer","public"] Accepted:false Reason:target_missing Bound:<nil> ObservationID:} report={Steps:1 Dispatches:0 Quiescent:false OpenRuns:[{Subject:observer Generation:1}] UnresolvedIntents:[] PendingDeliveries:[["terminal-delivery","child",1,1,"observer","public"]] RejectedAdmissions:1} error=identity conflict
+    review_probe_test.go:33: ordinary rejected ingress shadowed generated terminal transport: identity conflict
+--- FAIL: TestReviewRejectedInputCannotShadowAutomaticTerminalTransport (0.00s)
+FAIL
+FAIL	github.com/JakeFAU/alan/internal/executor	0.197s
+FAIL

@@ -1,0 +1,25 @@
+--- FAIL: TestExternalRunnerAuthenticatesAndConsumesDurableReceipt (0.04s)
+panic: httptest: failed to listen on a port: listen tcp6 [::1]:0: bind: operation not permitted [recovered, repanicked]
+
+goroutine 194 [running]:
+testing.tRunner.func1.2({0x1057caea8, 0x23ca59d11c0})
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/testing/testing.go:2125 +0x1a0
+testing.tRunner.func1()
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/testing/testing.go:2128 +0x2c8
+panic({0x1057caea8?, 0x23ca59d11c0?})
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/runtime/panic.go:859 +0x120
+net/http/httptest.newLocalListener()
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/net/http/httptest/server.go:226 +0xd4
+net/http/httptest.NewUnstartedServer(...)
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/net/http/httptest/server.go:284
+net/http/httptest.NewServer({0x105827178, 0x23ca58096e0})
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/net/http/httptest/server.go:267 +0x28
+github.com/JakeFAU/alan/internal/executor.TestExternalRunnerAuthenticatesAndConsumesDurableReceipt(0x23ca5a9e008)
+	/private/tmp/alan-phase1d-final-review/internal/executor/external_test.go:30 +0x154
+testing.tRunner(0x23ca5a9e008, 0x10582b8b0)
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/testing/testing.go:2195 +0xc4
+created by testing.(*T).Run in goroutine 1
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/testing/testing.go:2260 +0x3b8
+FAIL	github.com/JakeFAU/alan/internal/executor	0.381s
+ok  	github.com/JakeFAU/alan/internal/boundary	0.148s
+FAIL
