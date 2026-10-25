@@ -67,6 +67,7 @@ type barrier struct {
 	PID                                              int
 	Generation, Epoch, Sequence                      int64
 	Intent, Attempt                                  string
+	InFlight                                         []string
 }
 type child struct {
 	acknowledged bool

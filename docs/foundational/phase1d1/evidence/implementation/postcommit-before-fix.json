@@ -1,0 +1,13 @@
+{
+  "command": [
+    "go",
+    "test",
+    "./internal/executor",
+    "-run",
+    "^TestAsyncBudgetCountsCommitEvenIfPostCommitObserverFails$",
+    "-count=1",
+    "-v"
+  ],
+  "failure_log": "/tmp/phase1d1-postcommit-count-red.log",
+  "defect": "Run report failed to charge a durable ordinary commit when the post-commit observer returned an error"
+}

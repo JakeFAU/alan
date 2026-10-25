@@ -69,12 +69,17 @@ const busyTimeoutMS = 5000
 // Store owns one pinned SQLite connection and an OS lock. It is safe for concurrent
 // callers; serialized transactions preserve the single-owner execution model.
 type Store struct {
-	mu     sync.Mutex
-	db     *sql.DB
-	conn   *sql.Conn
-	lock   *os.File
-	limits Limits
-	closed bool
+	ownerMu   sync.Mutex
+	runDone   chan struct{}
+	runWake   chan struct{}
+	runCancel context.CancelFunc
+	closing   bool
+	mu        sync.Mutex
+	db        *sql.DB
+	conn      *sql.Conn
+	lock      *os.File
+	limits    Limits
+	closed    bool
 }
 
 // Every protocol ledger is retained. Later protocol slices supply their operations;
@@ -184,6 +189,33 @@ func connect(ctx context.Context, path string, readonly bool) (*Store, error) {
 		return nil, errors.Join(err, s.Close())
 	}
 	return s, nil
+}
+
+// The store owns rollback while holding mu. database/sql's asynchronous rollback
+// on context cancellation discards this driver's pinned connection. Detach only
+// the transaction lifetime; each statement and the commit gate retain ctx.
+func beginOwnedTx(ctx context.Context, conn *sql.Conn) (*sql.Tx, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	return conn.BeginTx(context.WithoutCancel(ctx), nil)
+}
+func (s *Store) commitOwnedTx(ctx context.Context, tx *sql.Tx) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+	s.ownerMu.Lock()
+	if s.runWake != nil {
+		select {
+		case s.runWake <- struct{}{}:
+		default:
+		}
+	}
+	s.ownerMu.Unlock()
+	return nil
 }
 
 type queryer interface {
@@ -457,6 +489,16 @@ func Open(ctx context.Context, path string, limits Limits) (store *Store, err er
 	return s, nil
 }
 func (s *Store) Close() error {
+	s.ownerMu.Lock()
+	s.closing = true
+	done := s.runDone
+	if s.runCancel != nil {
+		s.runCancel()
+	}
+	s.ownerMu.Unlock()
+	if done != nil {
+		<-done
+	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.closed {
@@ -506,7 +548,7 @@ func (s *Store) recordObservation(ctx context.Context, o Observation) error {
 	if s.closed {
 		return sql.ErrConnDone
 	}
-	tx, err := s.conn.BeginTx(ctx, nil)
+	tx, err := beginOwnedTx(ctx, s.conn)
 	if err != nil {
 		return err
 	}
@@ -514,7 +556,7 @@ func (s *Store) recordObservation(ctx context.Context, o Observation) error {
 	if err = insertObservation(ctx, tx, o, s.limits); err != nil {
 		return err
 	}
-	return tx.Commit()
+	return s.commitOwnedTx(ctx, tx)
 }
 
 func insertObservation(ctx context.Context, tx *sql.Tx, o Observation, limits Limits) error {
@@ -559,7 +601,7 @@ func (s *Store) Commit(ctx context.Context, a Authority, selected string) (RunSt
 	if s.closed {
 		return RunState{}, sql.ErrConnDone
 	}
-	tx, err := s.conn.BeginTx(ctx, nil)
+	tx, err := beginOwnedTx(ctx, s.conn)
 	if err != nil {
 		return RunState{}, err
 	}
@@ -673,7 +715,7 @@ func (s *Store) Commit(ctx context.Context, a Authority, selected string) (RunSt
 	if err = boundary.Reached(ctx, event); err != nil {
 		return RunState{}, err
 	}
-	if err = tx.Commit(); err != nil {
+	if err = s.commitOwnedTx(ctx, tx); err != nil {
 		return RunState{}, err
 	}
 	event.Boundary = "execution.committed"
@@ -681,7 +723,8 @@ func (s *Store) Commit(ctx context.Context, a Authority, selected string) (RunSt
 		event.Phase = "post-commit"
 	}
 	if err = boundary.Reached(ctx, event); err != nil {
-		return RunState{}, err
+		// A post-commit notification failure does not undo the durable transition.
+		return r, err
 	}
 	return r, nil
 }

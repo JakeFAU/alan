@@ -67,14 +67,14 @@ func (s *Store) prepareExternal(ctx context.Context, id string) (ExternalAttempt
 	if s.closed {
 		return ExternalAttempt{}, false, sql.ErrConnDone
 	}
-	tx, err := s.conn.BeginTx(ctx, nil)
+	tx, err := beginOwnedTx(ctx, s.conn)
 	if err != nil {
 		return ExternalAttempt{}, false, err
 	}
 	defer tx.Rollback()
 	old, err := loadExternalAttempt(ctx, tx, id)
 	if err == nil {
-		return old, false, tx.Commit()
+		return old, false, s.commitOwnedTx(ctx, tx)
 	}
 	if !errors.Is(err, sql.ErrNoRows) {
 		return old, false, err
@@ -107,80 +107,139 @@ func (s *Store) prepareExternal(ctx context.Context, id string) (ExternalAttempt
 	if _, err = tx.ExecContext(ctx, "INSERT INTO external_attempts VALUES(?,?)", id, raw); err != nil {
 		return a, false, err
 	}
-	return a, true, tx.Commit()
+	return a, true, s.commitOwnedTx(ctx, tx)
 }
 
-// DispatchExternal makes at most one bounded HTTP request. Non-idempotent recovery
-// never sends again after a retained attempt, even when the first send is uncertain.
-func (s *Store) DispatchExternal(ctx context.Context, id string) (bool, error) {
+// externalWork is copied into a transport worker. Workers never access Store.
+type externalWork struct {
+	attempt  ExternalAttempt
+	event    boundary.Event
+	maxBytes int
+	timeout  time.Duration
+}
+type externalCompletion struct {
+	work    externalWork
+	receipt *resource.Receipt
+	err     error
+}
+
+// prepareExternalWork retains authorization before exposing transport work.
+func (s *Store) prepareExternalWork(ctx context.Context, id string, timeout time.Duration) (*externalWork, error) {
 	a, fresh, err := s.prepareExternal(ctx, id)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 	source, err := s.Snapshot(ctx, a.Intent.Run)
 	if err != nil {
-		return false, err
-	}
-	event := boundary.Event{Boundary: "external.authorized", Phase: "pre-transport", Subject: a.Intent.Run.Subject, Generation: a.Intent.Run.Generation, Epoch: source.Epoch, Sequence: source.Sequence, Intent: id, Attempt: a.AuthorizationID}
-	if err = boundary.Reached(ctx, event); err != nil {
-		return false, err
+		return nil, err
 	}
 	outcome, err := s.externalOutcome(ctx, id)
 	if err == nil {
-		return true, s.settleExternal(ctx, outcome)
+		return nil, s.settleExternal(ctx, outcome)
 	}
 	if !errors.Is(err, sql.ErrNoRows) {
-		return false, err
+		return nil, err
 	}
 	if !a.Allowed {
-		return false, ErrCorrupt
+		return nil, ErrCorrupt
 	}
 	if !fresh && a.Request.Profile == "non-idempotent" {
-		return false, nil
+		return nil, nil
+	}
+	return &externalWork{attempt: a, event: boundary.Event{Boundary: "external.authorized", Phase: "pre-transport", Subject: a.Intent.Run.Subject, Generation: a.Intent.Run.Generation, Epoch: source.Epoch, Sequence: source.Sequence, Intent: id, Attempt: a.AuthorizationID}, maxBytes: s.limits.MaxObservationBytes, timeout: timeout}, nil
+}
+
+func transportExternal(ctx context.Context, work externalWork) externalCompletion {
+	result := exchangeExternal(ctx, work)
+	event := work.event
+	event.Boundary = "external.finished"
+	event.Phase = "transport-ended"
+	result.err = errors.Join(result.err, boundary.Reached(ctx, event))
+	return result
+}
+func exchangeExternal(ctx context.Context, work externalWork) externalCompletion {
+	result := externalCompletion{work: work}
+	a := work.attempt
+	if err := boundary.Reached(ctx, work.event); err != nil {
+		result.err = err
+		return result
 	}
 	raw, err := json.Marshal(a.Request)
 	if err != nil {
-		return false, err
+		result.err = err
+		return result
 	}
 	request, err := http.NewRequestWithContext(ctx, http.MethodPost, a.Intent.Target, bytes.NewReader(raw))
 	if err != nil {
-		return false, err
+		result.err = err
+		return result
 	}
 	request.Header.Set("Content-Type", "application/json")
-	client := &http.Client{Timeout: 2 * time.Second, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
+	client := &http.Client{Timeout: work.timeout, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
 	response, err := client.Do(request)
 	if err != nil {
-		if ctx.Err() != nil {
-			return false, ctx.Err()
-		}
-		return false, nil
+		result.err = ctx.Err()
+		return result
 	}
 	defer response.Body.Close()
 	if response.StatusCode != http.StatusOK {
-		return false, nil
+		return result
 	}
 	var receipt resource.Receipt
-	decoder := json.NewDecoder(io.LimitReader(response.Body, int64(s.limits.MaxObservationBytes)+1))
+	decoder := json.NewDecoder(io.LimitReader(response.Body, int64(work.maxBytes)+1))
 	decoder.DisallowUnknownFields()
 	if err = decoder.Decode(&receipt); err != nil {
-		return false, nil
+		return result
 	}
 	var extra any
 	if decoder.Decode(&extra) != io.EOF {
-		return false, nil
+		return result
 	}
 	if !validReceipt(a, receipt) {
-		return false, fmt.Errorf("external receipt does not match retained request")
+		result.err = fmt.Errorf("external receipt does not match retained request")
+		return result
 	}
+	// Preserve a received outcome even if cancellation interrupts the test boundary.
+	result.receipt = &receipt
+	event := work.event
 	event.Boundary = "external.response"
 	event.Phase = "pre-record"
-	if err = boundary.Reached(ctx, event); err != nil {
+	result.err = boundary.Reached(ctx, event)
+	return result
+}
+func (s *Store) accountExternal(ctx context.Context, result externalCompletion) error {
+	if result.receipt == nil {
+		return result.err
+	}
+	if err := s.recordExternalReceipt(ctx, result.work.attempt, *result.receipt); err != nil {
+		return errors.Join(result.err, err)
+	}
+	err := s.settleExternal(ctx, ExternalOutcome{Attempt: result.work.attempt, Disposition: "applied", Receipt: result.receipt})
+	if err == nil {
+		event := result.work.event
+		event.Boundary = "external.settled"
+		event.Phase = "post-record"
+		err = boundary.Reached(ctx, event)
+	}
+	return errors.Join(result.err, err)
+}
+
+// DispatchExternal is the explicit synchronous API; automatic Run uses bounded workers.
+func (s *Store) DispatchExternal(ctx context.Context, id string) (bool, error) {
+	work, err := s.prepareExternalWork(ctx, id, DefaultExternalTimeout)
+	if err != nil {
 		return false, err
 	}
-	if err = s.recordExternalReceipt(ctx, a, receipt); err != nil {
-		return false, err
+	if work == nil {
+		_, err = s.externalOutcome(ctx, id)
+		if errors.Is(err, sql.ErrNoRows) {
+			return false, nil
+		}
+		return err == nil, err
 	}
-	return true, s.settleExternal(ctx, ExternalOutcome{Attempt: a, Disposition: "applied", Receipt: &receipt})
+	result := transportExternal(ctx, *work)
+	err = s.accountExternal(ctx, result)
+	return result.receipt != nil && err == nil, err
 }
 func validReceipt(a ExternalAttempt, r resource.Receipt) bool {
 	return r.Key == a.Request.Key && r.Profile == a.Request.Profile && r.Delta == a.Request.Delta && r.Mutation > 0 && r.Process != "" && r.PID > 0
@@ -191,11 +250,34 @@ func (s *Store) recordExternalReceipt(ctx context.Context, a ExternalAttempt, r 
 	if s.closed {
 		return sql.ErrConnDone
 	}
-	tx, err := s.conn.BeginTx(ctx, nil)
+	tx, err := beginOwnedTx(ctx, s.conn)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
+	// Validate the retained attempt, intent and authorization, not the current epoch:
+	// authentic old evidence remains valid after closure/restart.
+	retained, err := loadExternalAttempt(ctx, tx, a.Intent.ID)
+	if err != nil {
+		return err
+	}
+	intent, err := loadIntent(ctx, tx, a.Intent.ID)
+	if err != nil {
+		return err
+	}
+	auth, err := loadAuthorization(ctx, tx, a.Intent.ID)
+	if err != nil {
+		return err
+	}
+	request, err := externalRequest(intent.Intent)
+	if err != nil {
+		return err
+	}
+	request.Epoch = auth.Source.Epoch
+	request.Authorization = auth.ID
+	if !reflect.DeepEqual(retained, a) || !reflect.DeepEqual(intent.Intent, a.Intent) || !reflect.DeepEqual(request, a.Request) || !auth.Allowed || !a.Allowed || a.AuthorizationID != auth.ID || !validReceipt(a, r) {
+		return corrupt("external completion binding")
+	}
 	raw, err := json.Marshal(r)
 	if err != nil {
 		return err
@@ -209,7 +291,7 @@ func (s *Store) recordExternalReceipt(ctx context.Context, a ExternalAttempt, r 
 		if !bytes.Equal(prior, raw) {
 			return ErrConflict
 		}
-		return tx.Commit()
+		return s.commitOwnedTx(ctx, tx)
 	}
 	if !errors.Is(err, sql.ErrNoRows) {
 		return err
@@ -217,7 +299,7 @@ func (s *Store) recordExternalReceipt(ctx context.Context, a ExternalAttempt, r 
 	if _, err = tx.ExecContext(ctx, "INSERT INTO external_receipts VALUES(?,?)", a.Intent.ID, raw); err != nil {
 		return err
 	}
-	return tx.Commit()
+	return s.commitOwnedTx(ctx, tx)
 }
 func externalOutcome(ctx context.Context, q queryer, id string) (ExternalOutcome, error) {
 	a, err := loadExternalAttempt(ctx, q, id)
@@ -270,7 +352,7 @@ func (s *Store) settleExternal(ctx context.Context, o ExternalOutcome) error {
 	if s.closed {
 		return sql.ErrConnDone
 	}
-	tx, err := s.conn.BeginTx(ctx, nil)
+	tx, err := beginOwnedTx(ctx, s.conn)
 	if err != nil {
 		return err
 	}
@@ -288,7 +370,7 @@ func (s *Store) settleExternal(ctx context.Context, o ExternalOutcome) error {
 		if !sameJSON(raw, old) {
 			return ErrConflict
 		}
-		return tx.Commit()
+		return s.commitOwnedTx(ctx, tx)
 	}
 	if !errors.Is(err, sql.ErrNoRows) {
 		return err
@@ -310,7 +392,7 @@ func (s *Store) settleExternal(ctx context.Context, o ExternalOutcome) error {
 	if _, err = tx.ExecContext(ctx, "INSERT INTO settlements VALUES(?,?,?,?)", identity("external-outcome", o.Attempt.Intent.ID), o.Attempt.Intent.ID, raw, observation.ID); err != nil {
 		return err
 	}
-	return tx.Commit()
+	return s.commitOwnedTx(ctx, tx)
 }
 func validateExternal(ctx context.Context, q queryer) error {
 	rows, err := q.QueryContext(ctx, "SELECT intent_id FROM external_attempts ORDER BY intent_id")
@@ -377,4 +459,28 @@ func validateExternal(ctx context.Context, q queryer) error {
 		}
 	}
 	return nil
+}
+
+// retryEligible skips retained non-idempotent uncertainty without spending a launch.
+func (s *Store) retryEligible(ctx context.Context, id string) (bool, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.closed {
+		return false, sql.ErrConnDone
+	}
+	a, err := loadExternalAttempt(ctx, s.conn, id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return true, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	if !a.Allowed || a.Request.Profile != "non-idempotent" {
+		return true, nil
+	}
+	_, err = externalOutcome(ctx, s.conn, id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return false, nil
+	}
+	return err == nil, err
 }

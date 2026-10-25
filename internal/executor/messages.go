@@ -60,7 +60,7 @@ func (s *Store) AdmitInput(ctx context.Context, input Input) (AdmissionResult, e
 	if s.closed {
 		return AdmissionResult{}, sql.ErrConnDone
 	}
-	tx, err := s.conn.BeginTx(ctx, nil)
+	tx, err := beginOwnedTx(ctx, s.conn)
 	if err != nil {
 		return AdmissionResult{}, err
 	}
@@ -69,7 +69,7 @@ func (s *Store) AdmitInput(ctx context.Context, input Input) (AdmissionResult, e
 	if err != nil {
 		return result, err
 	}
-	return result, tx.Commit()
+	return result, s.commitOwnedTx(ctx, tx)
 }
 
 func loadIntent(ctx context.Context, q queryer, id string) (retainedIntent, error) {
@@ -94,7 +94,7 @@ func (s *Store) AuthorizeIntent(ctx context.Context, id string) (Authorization, 
 	if s.closed {
 		return Authorization{}, sql.ErrConnDone
 	}
-	tx, err := s.conn.BeginTx(ctx, nil)
+	tx, err := beginOwnedTx(ctx, s.conn)
 	if err != nil {
 		return Authorization{}, err
 	}
@@ -119,7 +119,7 @@ func (s *Store) AuthorizeIntent(ctx context.Context, id string) (Authorization, 
 		if err = decode(raw, &result); err != nil {
 			return result, err
 		}
-		return result, authorizationBoundary(ctx, tx, result)
+		return result, s.authorizationBoundary(ctx, tx, result)
 	}
 	if !errors.Is(err, sql.ErrNoRows) {
 		return Authorization{}, err
@@ -163,7 +163,7 @@ func (s *Store) AuthorizeIntent(ctx context.Context, id string) (Authorization, 
 	if _, err = tx.ExecContext(ctx, "INSERT INTO attempts VALUES(?,?,?,?)", authID, id, descriptor, raw); err != nil {
 		return result, err
 	}
-	return result, authorizationBoundary(ctx, tx, result)
+	return result, s.authorizationBoundary(ctx, tx, result)
 }
 
 func (s *Store) DeliverMessage(ctx context.Context, intentID, transportID string) (AdmissionResult, error) {
@@ -177,7 +177,7 @@ func (s *Store) DeliverMessage(ctx context.Context, intentID, transportID string
 	if s.closed {
 		return AdmissionResult{}, sql.ErrConnDone
 	}
-	tx, err := s.conn.BeginTx(ctx, nil)
+	tx, err := beginOwnedTx(ctx, s.conn)
 	if err != nil {
 		return AdmissionResult{}, err
 	}
@@ -198,7 +198,7 @@ func (s *Store) DeliverMessage(ctx context.Context, intentID, transportID string
 	if err != nil {
 		return result, err
 	}
-	return result, tx.Commit()
+	return result, s.commitOwnedTx(ctx, tx)
 }
 func messageDescriptor(intent Intent, transport string) AdmissionDescriptor {
 	return AdmissionDescriptor{TransportID: transport, Kind: "message", LogicalID: intent.ID, Source: intent.Run, Target: intent.Target, Generation: intent.Generation, Obligation: intent.Obligation, Payload: intent.Payload, IntentID: intent.ID}
@@ -210,7 +210,7 @@ func (s *Store) AcknowledgeMessage(ctx context.Context, intentID, transportID st
 	if s.closed {
 		return sql.ErrConnDone
 	}
-	tx, err := s.conn.BeginTx(ctx, nil)
+	tx, err := beginOwnedTx(ctx, s.conn)
 	if err != nil {
 		return err
 	}
@@ -225,7 +225,7 @@ func (s *Store) AcknowledgeMessage(ctx context.Context, intentID, transportID st
 	var existing string
 	err = tx.QueryRowContext(ctx, "SELECT admission_id FROM message_acknowledgments WHERE intent_id=?", intentID).Scan(&existing)
 	if err == nil {
-		return tx.Commit()
+		return s.commitOwnedTx(ctx, tx)
 	}
 	if !errors.Is(err, sql.ErrNoRows) {
 		return err
@@ -233,7 +233,7 @@ func (s *Store) AcknowledgeMessage(ctx context.Context, intentID, transportID st
 	if _, err = tx.ExecContext(ctx, "INSERT INTO message_acknowledgments VALUES(?,?)", intentID, admissionKey("message", transportID)); err != nil {
 		return err
 	}
-	return tx.Commit()
+	return s.commitOwnedTx(ctx, tx)
 }
 
 func terminalDescriptor(ctx context.Context, q queryer, source RunID, destination TerminalDestination, transport string) (AdmissionDescriptor, error) {
@@ -267,7 +267,7 @@ func (s *Store) DeliverTerminal(ctx context.Context, source RunID, destination T
 	if s.closed {
 		return AdmissionResult{}, sql.ErrConnDone
 	}
-	tx, err := s.conn.BeginTx(ctx, nil)
+	tx, err := beginOwnedTx(ctx, s.conn)
 	if err != nil {
 		return AdmissionResult{}, err
 	}
@@ -280,7 +280,7 @@ func (s *Store) DeliverTerminal(ctx context.Context, source RunID, destination T
 	if err != nil {
 		return result, err
 	}
-	return result, tx.Commit()
+	return result, s.commitOwnedTx(ctx, tx)
 }
 func (s *Store) AcknowledgeTerminal(ctx context.Context, source RunID, destination TerminalDestination, transportID string) error {
 	s.mu.Lock()
@@ -288,7 +288,7 @@ func (s *Store) AcknowledgeTerminal(ctx context.Context, source RunID, destinati
 	if s.closed {
 		return sql.ErrConnDone
 	}
-	tx, err := s.conn.BeginTx(ctx, nil)
+	tx, err := beginOwnedTx(ctx, s.conn)
 	if err != nil {
 		return err
 	}
@@ -324,7 +324,7 @@ func (s *Store) AcknowledgeTerminal(ctx context.Context, source RunID, destinati
 	if _, err = tx.ExecContext(ctx, "UPDATE terminal_obligations SET delivery_status=? WHERE subject=? AND generation=?", raw, source.Subject, source.Generation); err != nil {
 		return err
 	}
-	return tx.Commit()
+	return s.commitOwnedTx(ctx, tx)
 }
 
 // admissionKey includes a domain chosen by the trusted API entry point. A raw
@@ -741,12 +741,12 @@ func validateMessaging(ctx context.Context, q queryer, limits Limits) error {
 	return terminalRows.Err()
 }
 
-func authorizationBoundary(ctx context.Context, tx *sql.Tx, auth Authorization) error {
+func (s *Store) authorizationBoundary(ctx context.Context, tx *sql.Tx, auth Authorization) error {
 	source, err := loadRun(ctx, tx, auth.Source.Run)
 	if err != nil {
 		return err
 	}
-	if err = tx.Commit(); err != nil {
+	if err = s.commitOwnedTx(ctx, tx); err != nil {
 		return err
 	}
 	return boundary.Reached(ctx, boundary.Event{Boundary: "intent.authorized", Phase: auth.Reason, Subject: source.ID.Subject, Generation: source.ID.Generation, Epoch: source.Epoch, Sequence: source.Sequence, Intent: auth.IntentID, Attempt: auth.ID})

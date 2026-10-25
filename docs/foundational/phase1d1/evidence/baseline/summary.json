@@ -1,0 +1,324 @@
+{
+  "kind": "phase1d1_immutable_baseline",
+  "base_commit": "6effdc02259af5335633bfc41e9786386430fa7c",
+  "base_tree": "7fea16fd6a4f4903e9ea3966cedd104f746723e7",
+  "source_sha256": "40a5b1f2ef55a901362e7bb5aca42b4e3acb5d73745b5cfda82d3c57361aef7f",
+  "source_files": 53,
+  "platform": {
+    "go": "go1.27.3",
+    "os": "darwin",
+    "arch": "arm64",
+    "cgo": "1",
+    "cc": "cc",
+    "kernel": "Darwin 27.2.0 arm64"
+  },
+  "dependency": {
+    "module": "github.com/mattn/go-sqlite3",
+    "version": "v1.14.52",
+    "go_mod_sha256": "1d8b5c8939d1422813ed2b004c6560e3ec3f262709d57e9b957f6994ffd9bdeb",
+    "go_sum_sha256": "9eb975c181ebee792e06f732fc13ef81acad0779d94731f75133ad2bba52c5ca"
+  },
+  "environment": {
+    "GOTOOLCHAIN": "local",
+    "GOCACHE": "/tmp/alan-phase1d1-go-build",
+    "GOPROXY": "off",
+    "GOSUMDB": "off",
+    "GOFLAGS": "-mod=readonly"
+  },
+  "modes": {
+    "normal": {
+      "command": [
+        "go",
+        "test",
+        "-json",
+        "-count=1",
+        "./..."
+      ],
+      "directory": "/tmp/alan-phase1d1-baseline-source",
+      "exit_code": 0,
+      "elapsed_seconds": 26.958,
+      "raw_sha256": "6a0839382939101e7a3bf2fa11f05a38e3c1f2421b7f31f41928f4de7fe6e572",
+      "raw_gzip_sha256": "fd18f394df49693fd3afde01aa4f21c4d8ca6cc7d605bc7f1ebdd4bb8325c01f",
+      "records_sha256": "c0c17aa59341892a32e3ea960ab4b5669f7bb4dd1a65ea70f430d4a36c4e45c1",
+      "records_gzip_sha256": "94a8b4349e3104227819458b1c88b169939a0664b3af270c945d41bd379d4d7d",
+      "packages": [
+        {
+          "package": "github.com/JakeFAU/alan/cmd/alan-resource",
+          "result": "skip",
+          "elapsed_seconds": 0
+        },
+        {
+          "package": "github.com/JakeFAU/alan/internal/boundary",
+          "result": "pass",
+          "elapsed_seconds": 0.303
+        },
+        {
+          "package": "github.com/JakeFAU/alan/internal/fixture",
+          "result": "pass",
+          "elapsed_seconds": 0.308
+        },
+        {
+          "package": "github.com/JakeFAU/alan/cmd/alan",
+          "result": "pass",
+          "elapsed_seconds": 1.3980000000000001
+        },
+        {
+          "package": "github.com/JakeFAU/alan/internal/executor",
+          "result": "pass",
+          "elapsed_seconds": 5.861
+        },
+        {
+          "package": "github.com/JakeFAU/alan/research/semantics",
+          "result": "pass",
+          "elapsed_seconds": 5.879
+        },
+        {
+          "package": "github.com/JakeFAU/alan/internal/durabletest",
+          "result": "pass",
+          "elapsed_seconds": 9.532
+        }
+      ],
+      "passing_test_subtest_events": 321,
+      "failed_events": 0,
+      "markers": {
+        "COMPOSITION": 20,
+        "QUALIFICATION": 15,
+        "CONFORMANCE": 6,
+        "SUPERVISION": 32,
+        "DURABLE": 87
+      },
+      "durable_process_records": 61,
+      "durable_sigkill_exits": 16,
+      "child_race_flags_match_mode": true,
+      "current_research_comparisons": {
+        "phase1": {
+          "records": 15,
+          "behavior_identical": true,
+          "byte_identical": true,
+          "saved_sha256": "ebed311b655456f88e7519aa4e50eb55de5dca76cb3ec45935ab7b4d479a3834",
+          "current_sha256": "ebed311b655456f88e7519aa4e50eb55de5dca76cb3ec45935ab7b4d479a3834",
+          "normalization": "omit source_manifest record and top-level SourceID"
+        },
+        "phase1b": {
+          "records": 20,
+          "behavior_identical": true,
+          "byte_identical": false,
+          "saved_sha256": "1ef0b6a664753183126a54ff91d09128c1d3a3898fa04209270ea51494fd0c77",
+          "current_sha256": "6aea8d1e8cc32ff096639518107a98c2dfaa8e6dc54a8fe0dc0675186a351e20",
+          "normalization": "omit source_manifest record and top-level SourceID"
+        },
+        "phase1c": {
+          "records": 32,
+          "behavior_identical": true,
+          "byte_identical": false,
+          "saved_sha256": "c0e7dba31fc8de2e979bd6a3dd829364b1e4b2a233a22e6ccf8634ac90f7c0da",
+          "current_sha256": "cc75b972ca9241ce8b04beb0249bff2b0fbfd1e72a313cf74377dca4907dea7f",
+          "normalization": "omit source_manifest record and top-level SourceID"
+        }
+      },
+      "stderr": ""
+    },
+    "race": {
+      "command": [
+        "go",
+        "test",
+        "-json",
+        "-count=1",
+        "-race",
+        "./..."
+      ],
+      "directory": "/tmp/alan-phase1d1-baseline-source",
+      "exit_code": 0,
+      "elapsed_seconds": 110.001,
+      "raw_sha256": "97a193b97e14c348e08d8d7c088380e2c0ecaad940a2385f2a06e615041bff32",
+      "raw_gzip_sha256": "e5726db703b3df3171db39091f7e4519c1e7ee728b83680f52d25ab77d82ec10",
+      "records_sha256": "5f1ce861ad9bd6bcd083f24a7513f7592407cbc186b05023517ed4fdc199fb66",
+      "records_gzip_sha256": "77df116ba4715d1626a6812d61a9f420a0daa36bdb40986f8b53417ca89d9303",
+      "packages": [
+        {
+          "package": "github.com/JakeFAU/alan/cmd/alan-resource",
+          "result": "skip",
+          "elapsed_seconds": 0
+        },
+        {
+          "package": "github.com/JakeFAU/alan/internal/boundary",
+          "result": "pass",
+          "elapsed_seconds": 1.16
+        },
+        {
+          "package": "github.com/JakeFAU/alan/internal/fixture",
+          "result": "pass",
+          "elapsed_seconds": 1.4060000000000001
+        },
+        {
+          "package": "github.com/JakeFAU/alan/cmd/alan",
+          "result": "pass",
+          "elapsed_seconds": 2.649
+        },
+        {
+          "package": "github.com/JakeFAU/alan/internal/executor",
+          "result": "pass",
+          "elapsed_seconds": 11.34
+        },
+        {
+          "package": "github.com/JakeFAU/alan/internal/durabletest",
+          "result": "pass",
+          "elapsed_seconds": 62.188
+        },
+        {
+          "package": "github.com/JakeFAU/alan/research/semantics",
+          "result": "pass",
+          "elapsed_seconds": 90.063
+        }
+      ],
+      "passing_test_subtest_events": 321,
+      "failed_events": 0,
+      "markers": {
+        "COMPOSITION": 20,
+        "DURABLE": 87,
+        "QUALIFICATION": 15,
+        "CONFORMANCE": 6,
+        "SUPERVISION": 32
+      },
+      "durable_process_records": 61,
+      "durable_sigkill_exits": 16,
+      "child_race_flags_match_mode": true,
+      "current_research_comparisons": {
+        "phase1": {
+          "records": 15,
+          "behavior_identical": true,
+          "byte_identical": true,
+          "saved_sha256": "ebed311b655456f88e7519aa4e50eb55de5dca76cb3ec45935ab7b4d479a3834",
+          "current_sha256": "ebed311b655456f88e7519aa4e50eb55de5dca76cb3ec45935ab7b4d479a3834",
+          "normalization": "omit source_manifest record and top-level SourceID"
+        },
+        "phase1b": {
+          "records": 20,
+          "behavior_identical": true,
+          "byte_identical": false,
+          "saved_sha256": "1ef0b6a664753183126a54ff91d09128c1d3a3898fa04209270ea51494fd0c77",
+          "current_sha256": "6aea8d1e8cc32ff096639518107a98c2dfaa8e6dc54a8fe0dc0675186a351e20",
+          "normalization": "omit source_manifest record and top-level SourceID"
+        },
+        "phase1c": {
+          "records": 32,
+          "behavior_identical": true,
+          "byte_identical": false,
+          "saved_sha256": "c0e7dba31fc8de2e979bd6a3dd829364b1e4b2a233a22e6ccf8634ac90f7c0da",
+          "current_sha256": "cc75b972ca9241ce8b04beb0249bff2b0fbfd1e72a313cf74377dca4907dea7f",
+          "normalization": "omit source_manifest record and top-level SourceID"
+        }
+      },
+      "stderr": ""
+    }
+  },
+  "historical": {
+    "phase1": {
+      "archive_sha256": "2b2a1074b9b328314f7e7de7b2a649aaac514eb096ef4a9939a1321ca31a87ca",
+      "archive_commit": "f81dd200d05f7c9de62d25fa9baf6c9f6dd08bf9",
+      "command": [
+        "go",
+        "test",
+        "./research/semantics",
+        "-run",
+        "^TestQualification$",
+        "-count=1",
+        "-v"
+      ],
+      "exit_code": 0,
+      "records": 15,
+      "byte_identical_to_saved": true,
+      "records_sha256": "ebed311b655456f88e7519aa4e50eb55de5dca76cb3ec45935ab7b4d479a3834",
+      "log_sha256": "880a9a325d127ee3ebc7655cd10279d2165af615473a2b1a8598abd703cda803",
+      "elapsed_seconds": 0.966
+    },
+    "phase1b": {
+      "archive_sha256": "b7237ff9332387b3a1b5be411efcab0761a951a652fa58571d41bba73c6cf447",
+      "archive_commit": "82dc5649cfe0eccb2fde3ecea1e12cc851377af5",
+      "command": [
+        "go",
+        "test",
+        "./research/semantics",
+        "-run",
+        "^TestCompositionQualification$",
+        "-count=1",
+        "-v"
+      ],
+      "exit_code": 0,
+      "records": 20,
+      "byte_identical_to_saved": true,
+      "records_sha256": "1ef0b6a664753183126a54ff91d09128c1d3a3898fa04209270ea51494fd0c77",
+      "log_sha256": "9de6434556f91534bdd4ac819d38c160eef3d6d808bfc3fefa0337f293cadf96",
+      "elapsed_seconds": 1.061
+    },
+    "phase1c": {
+      "archive_sha256": "33517e6b79b7d850c9bdae2ccba9f8f70237cf284b32f81fd2d31be417282013",
+      "archive_commit": "3e003c91d35af7055f5be99aa9c79c74f3ea44db",
+      "command": [
+        "go",
+        "test",
+        "./research/semantics",
+        "-run",
+        "^TestSupervisionQualification$",
+        "-count=1",
+        "-v"
+      ],
+      "exit_code": 0,
+      "records": 32,
+      "byte_identical_to_saved": true,
+      "records_sha256": "c0e7dba31fc8de2e979bd6a3dd829364b1e4b2a233a22e6ccf8634ac90f7c0da",
+      "log_sha256": "7136bb7deb555e85027874483ecf5bef9bc91bb90a5785d16bbffecc9d4f7e0f",
+      "elapsed_seconds": 4.734
+    }
+  },
+  "archive": {
+    "sha256": "49f68316357b07ac4bbd3f979cb47ebe25e732a28e3375081fb9ccacfcd8f3ea",
+    "bytes": 3215619,
+    "members_verified": 83,
+    "source_files_verified": 53,
+    "source_sha256": "40a5b1f2ef55a901362e7bb5aca42b4e3acb5d73745b5cfda82d3c57361aef7f",
+    "command": [
+      "go",
+      "test",
+      "-count=1",
+      "./..."
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOCACHE": "/tmp/alan-phase1d1-go-build",
+      "GOPROXY": "file:///tmp/alan-phase1d1-original-phase1d/dependencies",
+      "GOSUMDB": "off",
+      "GOMODCACHE": "/tmp/alan-phase1d1-original-phase1d-modcache",
+      "GOFLAGS": "-mod=readonly"
+    },
+    "exit_code": 0,
+    "elapsed_seconds": 23.305,
+    "test_log_sha256": "604477958bffb534e30d50423156480220920b93c6ca322ebbd6be2757dfcb42",
+    "go_mod_verify_exit_code": 0
+  },
+  "static_checks": [
+    {
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "exit_code": 0,
+      "diagnostics": ""
+    },
+    {
+      "command": [
+        "gofmt",
+        "-l",
+        "cmd",
+        "internal",
+        "research"
+      ],
+      "exit_code": 0,
+      "output": ""
+    }
+  ],
+  "snapshot_command": "git archive 6effdc02259af5335633bfc41e9786386430fa7c | tar -x -C /tmp/alan-phase1d1-baseline-source",
+  "source_manifest_algorithm": "Sorted module-relative UTF-8 paths; SHA-256 of concatenated uint64BE(path byte length), path bytes, uint64BE(content byte length), raw content bytes",
+  "source_manifest_verified_before_and_after_tests": true
+}

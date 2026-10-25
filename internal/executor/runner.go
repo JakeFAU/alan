@@ -5,10 +5,23 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/JakeFAU/alan/internal/boundary"
 	"sort"
+	"sync"
+	"time"
 )
 
-type RunOptions struct{ MaxSteps, MaxDispatch int }
+const DefaultMaxInFlight = 2
+const DefaultExternalTimeout = 2 * time.Second
+const runnerCleanupTimeout = 5 * time.Second
+
+var ErrRunActive = errors.New("runner already active")
+
+type RunOptions struct {
+	MaxSteps, MaxDispatch int
+	MaxInFlight           int
+	ExternalTimeout       time.Duration
+}
 type RunReport struct {
 	Steps, Dispatches  int
 	Quiescent          bool
@@ -31,82 +44,190 @@ type pendingDelivery struct {
 
 // Run automatically schedules finite ordinary commits and committed deliveries.
 // Quiescence means no supported eligible work now, not completion or liveness.
-func (s *Store) Run(ctx context.Context, options RunOptions) (RunReport, error) {
-	report := RunReport{}
-	if options.MaxSteps <= 0 || options.MaxDispatch <= 0 {
-		return report, fmt.Errorf("runner budgets must be positive: %w", ErrLimit)
+func (s *Store) Run(ctx context.Context, options RunOptions) (report RunReport, runErr error) {
+	if options.MaxInFlight == 0 {
+		options.MaxInFlight = DefaultMaxInFlight
 	}
+	if options.ExternalTimeout == 0 {
+		options.ExternalTimeout = DefaultExternalTimeout
+	}
+	if options.MaxSteps <= 0 || options.MaxDispatch <= 0 || options.MaxInFlight < 0 || options.ExternalTimeout < 0 {
+		return report, fmt.Errorf("runner limits must be positive: %w", ErrLimit)
+	}
+	s.ownerMu.Lock()
+	if s.closing {
+		s.ownerMu.Unlock()
+		return report, sql.ErrConnDone
+	}
+	if s.runDone != nil {
+		s.ownerMu.Unlock()
+		return report, ErrRunActive
+	}
+	ctx, cancel := context.WithCancel(ctx)
+	done := make(chan struct{})
+	wake := make(chan struct{}, 1)
+	s.runWake = wake
+	s.runDone = done
+	s.runCancel = cancel
+	s.ownerMu.Unlock()
+	completions := make(chan externalCompletion, options.MaxInFlight)
+	var workers sync.WaitGroup
+	active := 0
+	quiescent := false
+	defer func() {
+		cancel()
+		// Each claimed slot has exactly one buffered result; sends cannot block join.
+		workers.Wait()
+		cleanup, stop := context.WithTimeout(context.WithoutCancel(ctx), runnerCleanupTimeout)
+		defer stop()
+		for active > 0 {
+			result := <-completions
+			active--
+			runErr = errors.Join(runErr, s.accountExternal(cleanup, result))
+		}
+		report, runErr = s.finishRun(cleanup, report, quiescent && runErr == nil, runErr)
+		s.ownerMu.Lock()
+		s.runDone = nil
+		s.runWake = nil
+		s.runCancel = nil
+		close(done)
+		s.ownerMu.Unlock()
+	}()
 	var last *RunID
-	attemptedExternal := map[string]bool{}
+	attempted := map[string]bool{}
 	for {
 		if err := ctx.Err(); err != nil {
-			return s.finishRun(ctx, report, false, err)
+			return report, err
+		}
+		progressed := false
+		// One opportunity per category on every turn prevents delivery starvation.
+		select {
+		case result := <-completions:
+			active--
+			if err := s.accountExternal(ctx, result); err != nil {
+				return report, err
+			}
+			progressed = true
+		default:
 		}
 		pending, err := s.pendingDeliveries(ctx)
 		if err != nil {
 			return report, err
 		}
-		filtered := pending[:0]
-		for _, d := range pending {
-			if d.kind != "external" || !attemptedExternal[d.intent] {
-				filtered = append(filtered, d)
+		var internal, external *pendingDelivery
+		for i := range pending {
+			d := &pending[i]
+			if d.kind == "external" {
+				if external == nil && !attempted[d.intent] {
+					external = d
+				}
+			} else if internal == nil {
+				internal = d
 			}
 		}
-		pending = filtered
-		if len(pending) > 0 {
+		if internal != nil {
 			if report.Dispatches >= options.MaxDispatch {
-				return s.finishRun(ctx, report, false, fmt.Errorf("dispatch budget exhausted: %w", ErrLimit))
-			}
-			delivery := pending[0]
-			if delivery.kind == "external" {
-				attemptedExternal[delivery.intent] = true
-				_, err = s.DispatchExternal(ctx, delivery.intent)
-			} else if delivery.kind == "lifecycle" {
-				var auth Authorization
-				auth, err = s.AuthorizeIntent(ctx, delivery.intent)
-				if err == nil && auth.Allowed {
-					var request LifecycleRequest
-					request, err = s.LoadLifecycleRequest(ctx, delivery.intent)
-					if err == nil {
-						_, err = s.DecideLifecycle(ctx, request)
-					}
-				}
-				if err == nil {
-					_, err = s.SettleLifecycle(ctx, delivery.intent, delivery.key)
-				}
-			} else if delivery.intent != "" {
-				if _, err = s.DeliverMessage(ctx, delivery.intent, delivery.key); err == nil {
-					err = s.AcknowledgeMessage(ctx, delivery.intent, delivery.key)
-				}
-			} else {
-				if _, err = s.DeliverTerminal(ctx, delivery.source, delivery.destination, delivery.key); err == nil {
-					err = s.AcknowledgeTerminal(ctx, delivery.source, delivery.destination, delivery.key)
-				}
-			}
-			if err != nil {
-				return s.finishRun(ctx, report, false, err)
+				return report, fmt.Errorf("dispatch budget exhausted: %w", ErrLimit)
 			}
 			report.Dispatches++
-			continue
+			if err = s.deliverOrdinary(ctx, *internal); err != nil {
+				return report, err
+			}
+			progressed = true
+		}
+		if external != nil && active < options.MaxInFlight {
+			eligible, err := s.retryEligible(ctx, external.intent)
+			if err != nil {
+				return report, err
+			}
+			if !eligible {
+				attempted[external.intent] = true
+				external = nil
+				progressed = true
+			}
+		}
+		if external != nil && active < options.MaxInFlight {
+			if report.Dispatches >= options.MaxDispatch {
+				return report, fmt.Errorf("dispatch budget exhausted: %w", ErrLimit)
+			}
+			report.Dispatches++
+			attempted[external.intent] = true
+			work, err := s.prepareExternalWork(ctx, external.intent, options.ExternalTimeout)
+			if err != nil {
+				return report, err
+			}
+			if work != nil {
+				active++
+				workers.Add(1)
+				go func(work externalWork) { defer workers.Done(); completions <- transportExternal(ctx, work) }(*work)
+			}
+			progressed = true
 		}
 		ready, err := s.selectReady(ctx, last)
 		if err != nil {
-			return s.finishRun(ctx, report, false, err)
+			return report, err
 		}
-		if ready == nil {
-			return s.finishRun(ctx, report, true, nil)
+		if ready != nil {
+			if report.Steps >= options.MaxSteps {
+				return report, fmt.Errorf("execution budget exhausted: %w", ErrLimit)
+			}
+			next, err := s.Commit(ctx, ready.authority, ready.observation)
+			if next.ID.Subject != "" {
+				report.Steps++
+			}
+			if err != nil {
+				return report, err
+			}
+			id := next.ID
+			last = &id
+			progressed = true
 		}
-		if report.Steps >= options.MaxSteps {
-			return s.finishRun(ctx, report, false, fmt.Errorf("execution budget exhausted: %w", ErrLimit))
+		if progressed {
+			continue
 		}
-		next, err := s.Commit(ctx, ready.authority, ready.observation)
-		if err != nil {
-			return s.finishRun(ctx, report, false, err)
+		if active == 0 {
+			quiescent = true
+			return report, nil
 		}
-		report.Steps++
-		id := next.ID
-		last = &id
+		if err := boundary.Reached(ctx, boundary.Event{Boundary: "runner.waiting", Phase: "in-flight"}); err != nil {
+			return report, err
+		}
+		select {
+		case <-wake:
+		case <-ctx.Done():
+			return report, ctx.Err()
+		case result := <-completions:
+			active--
+			if err = s.accountExternal(ctx, result); err != nil {
+				return report, err
+			}
+		}
 	}
+}
+func (s *Store) deliverOrdinary(ctx context.Context, delivery pendingDelivery) (err error) {
+	if delivery.kind == "lifecycle" {
+		var auth Authorization
+		auth, err = s.AuthorizeIntent(ctx, delivery.intent)
+		if err == nil && auth.Allowed {
+			var request LifecycleRequest
+			request, err = s.LoadLifecycleRequest(ctx, delivery.intent)
+			if err == nil {
+				_, err = s.DecideLifecycle(ctx, request)
+			}
+		}
+		if err == nil {
+			_, err = s.SettleLifecycle(ctx, delivery.intent, delivery.key)
+		}
+	} else if delivery.intent != "" {
+		if _, err = s.DeliverMessage(ctx, delivery.intent, delivery.key); err == nil {
+			err = s.AcknowledgeMessage(ctx, delivery.intent, delivery.key)
+		}
+	} else {
+		if _, err = s.DeliverTerminal(ctx, delivery.source, delivery.destination, delivery.key); err == nil {
+			err = s.AcknowledgeTerminal(ctx, delivery.source, delivery.destination, delivery.key)
+		}
+	}
+	return err
 }
 func (s *Store) selectReady(ctx context.Context, last *RunID) (*readyRun, error) {
 	s.mu.Lock()
@@ -301,7 +422,14 @@ func (s *Store) finishRun(ctx context.Context, report RunReport, quiescent bool,
 		if count == 0 && intent.Kind == "external" {
 			a, e := loadExternalAttempt(ctx, s.conn, id)
 			if e == nil && a.Allowed {
-				report.UnknownExternal = append(report.UnknownExternal, id)
+				// A retained receipt makes the physical result known even if its
+				// separate local settlement has not committed yet.
+				_, outcomeErr := externalOutcome(ctx, s.conn, id)
+				if errors.Is(outcomeErr, sql.ErrNoRows) {
+					report.UnknownExternal = append(report.UnknownExternal, id)
+				} else if outcomeErr != nil {
+					return report, errors.Join(runErr, outcomeErr)
+				}
 			} else if e != nil && !errors.Is(e, sql.ErrNoRows) {
 				return report, errors.Join(runErr, e)
 			}

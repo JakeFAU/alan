@@ -57,8 +57,10 @@ func runCLI(ctx context.Context, args []string, out io.Writer) (err error) {
 	if command == "input" {
 		request = flags.String("request", "", "JSON ordinary input file")
 	}
-	options := executor.RunOptions{MaxSteps: 10000, MaxDispatch: 10000}
+	options := executor.RunOptions{MaxSteps: 10000, MaxDispatch: 10000, MaxInFlight: executor.DefaultMaxInFlight, ExternalTimeout: executor.DefaultExternalTimeout}
 	if command == "run" {
+		flags.IntVar(&options.MaxInFlight, "max-in-flight", options.MaxInFlight, "maximum active external transports")
+		flags.DurationVar(&options.ExternalTimeout, "external-timeout", options.ExternalTimeout, "positive external request timeout")
 		flags.IntVar(&options.MaxSteps, "max-steps", options.MaxSteps, "maximum execution commits")
 		flags.IntVar(&options.MaxDispatch, "max-dispatch", options.MaxDispatch, "maximum supported deliveries")
 	}
@@ -146,7 +148,7 @@ func runCLI(ctx context.Context, args []string, out io.Writer) (err error) {
 		if err != nil {
 			return err
 		}
-		if options.MaxSteps <= 0 || options.MaxDispatch <= 0 {
+		if options.MaxSteps <= 0 || options.MaxDispatch <= 0 || options.MaxInFlight <= 0 || options.ExternalTimeout <= 0 {
 			return usageError{"runner budgets must be positive"}
 		}
 		store, e := executor.Open(ctx, *db, limits)

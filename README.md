@@ -1,0 +1,107 @@
+# ALAN
+
+**Agentic Lambda Abstraction Network** is an experimental framework for durable, recursively composable agentic computation. A coordinator or supervisor is an ordinary program: it receives observations, makes decisions in its own state, and commits effect intents through the same interpreter as other programs.
+
+The repository contains a runnable **single-host Go executor** and an independent bounded semantic model. The executor persists versioned programs, residual computation, observations, intents and lifecycle outcomes in SQLite. This is an early implementation with a provisional internal API, not a public SDK or a production-readiness claim. It has no LLM/provider integration.
+
+## Quick start
+
+Requirements: Go **1.27.3**, CGO enabled, a C compiler, and a local Unix filesystem. Qualification records identify the tested macOS/arm64 platform. The only added Go dependency is pinned `github.com/mattn/go-sqlite3 v1.14.52`, which bundles SQLite.
+
+From the repository root:
+
+```sh
+export GOTOOLCHAIN=local
+alan_demo_dir=$(mktemp -d)
+go build -buildvcs=false -o "$alan_demo_dir/alan" ./cmd/alan
+go build -buildvcs=false -o "$alan_demo_dir/alan-resource" ./cmd/alan-resource
+
+"$alan_demo_dir/alan" init --db "$alan_demo_dir/nested.sqlite" --demo nested
+"$alan_demo_dir/alan" run --db "$alan_demo_dir/nested.sqlite"
+"$alan_demo_dir/alan" inspect --db "$alan_demo_dir/nested.sqlite"
+"$alan_demo_dir/alan" replay --db "$alan_demo_dir/nested.sqlite"
+```
+
+The ordinary topology is `outer coordinator -> inner supervisor -> worker`. The first worker run fails on explicit input. Inner spends one retry, requests a new worker generation, consumes the retained decision, and sends the successor success input. Outer receives inner's public terminal outcome. Both worker generations use the same program artifact.
+
+`init` refuses to overwrite a store. `run` reopens existing records and advances eligible computation and delivery automatically. Physical recovery renews activation epochs; it does not reset a supervisory budget or create a new logical generation. Only an accepted lifecycle Retry does that. `inspect` shows the retained records; `replay` verifies historical computation without dispatching effects.
+
+To exercise ordinary retry-budget exhaustion:
+
+```sh
+"$alan_demo_dir/alan" init --db "$alan_demo_dir/exhausted.sqlite" --demo nested \
+  --retry-budget 1 --successor-input fail
+"$alan_demo_dir/alan" run --db "$alan_demo_dir/exhausted.sqlite"
+"$alan_demo_dir/alan" inspect --db "$alan_demo_dir/exhausted.sqlite"
+```
+
+A successful command exit means that invocation completed. The program can still have failed, or the runner can be quiescent with runs waiting for input or unknown external outcomes. Inspect the report and logical outcomes.
+
+## External resource example
+
+The fake counter resource is a separate executable with its own durable SQLite store. Start it in a second terminal, using the same `alan_demo_dir` path:
+
+```sh
+"$alan_demo_dir/alan-resource" --db "$alan_demo_dir/resource.sqlite" \
+  --token local-resource --listen 127.0.0.1:8791
+```
+
+Then run the client in the first terminal:
+
+```sh
+"$alan_demo_dir/alan" init --db "$alan_demo_dir/external.sqlite" --demo external \
+  --endpoint http://127.0.0.1:8791/apply --profile idempotent
+"$alan_demo_dir/alan" run --db "$alan_demo_dir/external.sqlite" \
+  --max-in-flight 2 --external-timeout 2s
+"$alan_demo_dir/alan" inspect --db "$alan_demo_dir/external.sqlite"
+"$alan_demo_dir/alan" replay --db "$alan_demo_dir/external.sqlite"
+```
+
+The client adds five and waits for its correlated receipt; a separate ordinary peer can progress independently. External transport has bounded concurrency. Additional work stays in the durable intent ledger, and a held external request does not own the scheduler. The [dispatch contract](docs/foundational/phase1d1/01-dispatch-contract.md) defines limits, cancellation, worker ownership and late evidence; its qualification uses explicit hold/progress/release handshakes.
+
+An idempotent reattempt uses the original immutable operation key and parameters. An uncertain non-idempotent attempt is retained as Unknown and is not automatically resent. Computation recovery does not establish exactly-once business effects. Use a **fresh executor/resource database pair** to switch example profiles: fresh demo stores reuse execution-derived keys, and a new database filename does not create a business namespace.
+
+## CLI and execution boundaries
+
+| Command | Purpose |
+| --- | --- |
+| `init --db PATH --demo nested\|external` | Provision a static example |
+| `init --db PATH --provision FILE` | Provision programs, subjects, routes and grants from JSON |
+| `run --db PATH` | Recover the store and automatically advance work |
+| `input --db PATH --request FILE` | Admit a typed ordinary input while the store has no active executor |
+| `inspect --db PATH` | Read a consistent snapshot of retained records |
+| `replay --db PATH` | Verify projections and regenerated intent descriptors without live dispatch |
+
+Run budgets default to 10,000 local commits and 10,000 dispatch operations; adjust with `--max-steps` and `--max-dispatch`. `--max-in-flight` bounds external transport (default 2), independently of those budgets. `--external-timeout` bounds an individual request (default 2s). Explicit CLI limits must be positive. Byte limits for programs, projections, observations and generated intent arrays are separate operational settings.
+
+The store uses SQLite WAL and synchronous=FULL, verifies effective settings, and holds a local advisory lock to exclude a second active executor. Individual transactions cover execution commit, admission, authorization, lifecycle decision and outcome settlement. A workflow and its external mutation are never one transaction. Static observation permission does not confer lifecycle authority. Logical CancelRun remains distinct from permanent RetireSubject and from stopping the executor process.
+
+## Tests and research
+
+```sh
+GOTOOLCHAIN=local go test -count=1 ./...
+GOTOOLCHAIN=local go test -count=1 -race ./...
+GOTOOLCHAIN=local go vet ./...
+gofmt -l cmd internal research
+```
+
+Process tests require loopback sockets, child processes and SIGKILL permission. The race suite builds actual child executables with race instrumentation. Tests cover persistence, message correlation, ordinary supervision, replay, independent progress, retained unknown outcomes and acknowledged process-crash boundaries. Deliberately faulty variants and historical counterexamples remain part of qualification.
+
+| Location | Contents |
+| --- | --- |
+| `cmd/alan` | Executor CLI |
+| `internal/executor` | Finite interpreter, SQLite authority, scheduler, messaging, lifecycle, external protocol, inspection and replay |
+| `cmd/alan-resource`, `internal/fixture` | Separate durable counter endpoint |
+| `internal/durabletest`, `internal/boundary` | Process controller, independent record checks and observation-only test barriers |
+| `research/semantics` | Test-only bounded model, searches, negative controls and selected runtime comparisons |
+| `docs/foundational` | Architecture decisions, contracts, qualification records, review findings and source snapshots |
+
+Start with the [foundations](docs/foundational/01-foundations.md), [composition](docs/foundational/02-composition.md), [runtime boundary](docs/foundational/03-runtime-boundary.md), and [decisions](docs/foundational/05-decisions.md). The retained phase packages distinguish [finite semantics](docs/foundational/phase1/02-qualification.md), [nested composition](docs/foundational/phase1b/02-qualification.md), [ordinary supervision](docs/foundational/phase1c/02-qualification.md), and [first durable execution](docs/foundational/phase1d/02-qualification.md). Phase 1D.1's [qualification](docs/foundational/phase1d1/02-qualification.md), [contract](docs/foundational/phase1d1/01-dispatch-contract.md) and [runbook](docs/foundational/phase1d1/04-runbook.md) document the asynchronous dispatch repair and reproduction commands. Original evidence keeps its original source identity; current-source regression is reported separately.
+
+## Current limits
+
+This profile supports one host, one active executor per store, static provisioning/grants and one program counter per run. No schema/program migration, history compaction, distributed fencing, dynamic creation, ownership transfer, general delegation, fresh-supervisor child reassociation or provider deployment is supplied. Histories grow and startup/replay scan them. Local provenance and storage synchronization assumptions are explicit.
+
+Finite model searches and process-kill tests are evidence for their declared cases. They are not proofs of unbounded fairness, eventual recovery, arbitrary-depth equivalence, power-loss durability or safe repetition of arbitrary business work.
+
+Licensed under [Apache-2.0](LICENSE).
