@@ -85,10 +85,12 @@ Files: demo program definitions/CLI, `docs/foundational/phase1d/*`, append-only 
 - [x] Record platform, exact source/dependency identities, commands, results, source snapshot and machine-readable evidence. Preserve every valid discovered defect and original regression input.
 - [x] Run focused tests, full suite, race checks, vet, gofmt, historical reproduction and current-source comparison.
 - [x] Obtain independent adversarial review of complete source, contract, evidence, transaction boundaries, and controller. Correct defects and retain findings.
-- [ ] Commit the reviewed increment, push, open a draft PR against the freshly verified current research base. Do not merge or release.
+- [x] Commit the reviewed increment, push, open a draft PR against the freshly verified current research base. Do not merge or release.
 
 ## Operational bounds and stopping point
 
 Program instruction count, per-step work, serialized payload size, database growth and per-runner invocation work limits are explicit implementation limits, not architectural maxima of 0–8 values or three generations. Exact chosen defaults and qualification fixtures are recorded alongside evidence. Automatic execution may return quiescent with unresolved inputs/effects; this is not successful completion or eventual-recovery evidence.
 
 Stop with the runnable reviewed Phase 1D increment, real process-kill qualification, full source/dependency snapshot, and draft PR. Any implementation adjustment to this plan is recorded with its reason and cost.
+
+Publication: implementation commit `121b504591509e1879b9cdd7eea0eb1b6280d613`; [draft PR #4](https://github.com/JakeFAU/alan/pull/4) targets verified base `a0d337c7b4f7340a55dea11b619cf9b22c25e2b0` on `codex/phase1b-recursive-composition`. No merge or release was performed. A documentation-only follow-up records this publication; the qualified Go source digest is unchanged.
