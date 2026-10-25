@@ -1,0 +1,54 @@
+{
+  "Kind": "archive_reproduction",
+  "SourceID": "40a5b1f2ef55a901362e7bb5aca42b4e3acb5d73745b5cfda82d3c57361aef7f",
+  "ArchiveSHA256": "49f68316357b07ac4bbd3f979cb47ebe25e732a28e3375081fb9ccacfcd8f3ea",
+  "ExtractedDirectory": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1d-final-archive-ks2e4_r8",
+  "InitiallyEmptyModuleCache": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1d-final-empty-modcache-5cqztps2",
+  "Environment": {
+    "GOTOOLCHAIN": "local",
+    "GOCACHE": "/tmp/alan-phase1d-go-build",
+    "GOMODCACHE": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1d-final-empty-modcache-5cqztps2",
+    "GOPROXY": "file:///var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1d-final-archive-ks2e4_r8/dependencies",
+    "GOSUMDB": "off",
+    "GOFLAGS": "-mod=readonly"
+  },
+  "Commands": [
+    {
+      "Command": [
+        "go",
+        "test",
+        "-count=1",
+        "./..."
+      ],
+      "ExitCode": 0,
+      "ElapsedSeconds": 17.556,
+      "Stdout": "ok  \tgithub.com/JakeFAU/alan/cmd/alan\t0.727s\n?   \tgithub.com/JakeFAU/alan/cmd/alan-resource\t[no test files]\nok  \tgithub.com/JakeFAU/alan/internal/boundary\t0.156s\nok  \tgithub.com/JakeFAU/alan/internal/durabletest\t6.852s\nok  \tgithub.com/JakeFAU/alan/internal/executor\t4.999s\nok  \tgithub.com/JakeFAU/alan/internal/fixture\t0.305s\nok  \tgithub.com/JakeFAU/alan/research/semantics\t5.355s\n",
+      "Stderr": "go: downloading github.com/mattn/go-sqlite3 v1.14.52\n"
+    },
+    {
+      "Command": [
+        "go",
+        "mod",
+        "verify"
+      ],
+      "ExitCode": 0,
+      "ElapsedSeconds": 0.054,
+      "Stdout": "all modules verified\n",
+      "Stderr": ""
+    },
+    {
+      "Command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "ExitCode": 0,
+      "ElapsedSeconds": 0.206,
+      "Stdout": "",
+      "Stderr": ""
+    }
+  ],
+  "AllArchiveMembersUnchanged": true,
+  "NetworkDependencyDownloadRequired": false,
+  "TimestampUTC": "2026-10-25T17:41:48.268096+00:00"
+}

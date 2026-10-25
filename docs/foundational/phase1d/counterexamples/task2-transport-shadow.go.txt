@@ -1,0 +1,34 @@
+package executor
+import("testing";"errors")
+func TestReviewInputCannotShadowAutomaticMessageTransport(t *testing.T){
+ p:=Provision{}
+ addProgram(t,&p,"sender",[]Instruction{{Op:"emit",Effect:&Effect{Kind:"message",Target:Lit(Text("receiver")),Generation:Lit(Int(1)),Obligation:Lit(Text("work")),Payload:map[string]Operand{"number":Lit(Int(42))}}},{Op:"end",Outcome:"succeeded"}},map[string]Value{})
+ receiver:=inputProgram();receiver[0].Match.Kind="message";receiver[0].Match.Provenance="ordinary-message";receiver[0].Match.Source=Lit(Text("sender"))
+ addProgram(t,&p,"receiver",receiver,map[string]Value{})
+ p.Permissions=[]Permission{{Kind:"message",Source:"sender",Target:"receiver",Operation:"message",Revision:1},{Kind:"input",Source:"local",Target:"receiver",Operation:"input"}}
+ s,path:=messageStore(t,p)
+ rawTransport:=identity("message-delivery",`["sender",1,1,0]`)
+ input:=Input{TransportID:rawTransport,LogicalID:"ordinary-input",Target:"receiver",Payload:map[string]Value{"number":Int(7)}}
+ a,err:=s.AdmitInput(t.Context(),input);if err!=nil||!a.Accepted{t.Fatalf("valid ordinary input: %+v %v",a,err)}
+ report,err:=s.Run(t.Context(),RunOptions{MaxSteps:20,MaxDispatch:20})
+ t.Logf("raw transport=%s admitted=%+v report=%+v error=%v",rawTransport,a,report,err)
+ if !errors.Is(err,ErrConflict){t.Fatalf("probe expected current collision, got %v",err)}
+ if _,e:=Replay(t.Context(),path,DefaultLimits());e!=nil{t.Fatal(e)}
+ if e:=s.Close();e!=nil{t.Fatal(e)}
+ reopened,e:=Open(t.Context(),path,DefaultLimits());if e!=nil{t.Fatal(e)};defer reopened.Close()
+ _,err=reopened.Run(t.Context(),RunOptions{MaxSteps:20,MaxDispatch:20})
+ if err!=nil{t.Fatalf("ordinary ingress shadowed generated message transport, persists after reopen: %v",err)}
+}
+func TestReviewRejectedInputCannotShadowAutomaticTerminalTransport(t *testing.T){
+ p:=Provision{}
+ addProgram(t,&p,"child",[]Instruction{{Op:"end",Outcome:"failed"}},map[string]Value{})
+ addProgram(t,&p,"observer",[]Instruction{{Op:"receive",Match:&Match{Kind:"terminal",Provenance:"runtime-terminal",Source:Lit(Text("child")),Generation:Lit(Int(1)),Obligation:Lit(Text("public")),Operation:Lit(Text(""))},Bind:map[string]string{"outcome":"public-outcome"}},{Op:"end",Outcome:"succeeded"}},map[string]Value{})
+ p.Permissions=[]Permission{{Kind:"observation",Source:"child",Target:"observer",Operation:"terminal",Revision:1,Obligation:"public"}}
+ s,_:=messageStore(t,p)
+ rawTransport:=identity("terminal-delivery","child",int64(1),int64(1),"observer","public")
+ a,err:=s.AdmitInput(t.Context(),Input{TransportID:rawTransport,LogicalID:"rejected-input",Target:"missing",Payload:map[string]Value{}})
+ if err!=nil||a.Accepted||a.Reason!="target_missing"{t.Fatalf("retained ordinary rejection: %+v %v",a,err)}
+ report,err:=s.Run(t.Context(),RunOptions{MaxSteps:20,MaxDispatch:20})
+ t.Logf("raw transport=%s retained=%+v report=%+v error=%v",rawTransport,a,report,err)
+ if err!=nil {t.Fatalf("ordinary rejected ingress shadowed generated terminal transport: %v",err)}
+}

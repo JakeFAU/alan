@@ -1,0 +1,15 @@
+# Final scoped re-review: M1 documentation correction
+
+Reviewed 2026-10-25. Scope: the complete final fix wave for M1 only, including the exact two-document diff, current qualification row, appended review history, ten copied reviewer artifacts and verification output. This is not a new broad source audit. No checkout/index/branch changes, subagents or test reruns were performed.
+
+**M1: ADDRESSED. Specification verdict: PASS. Quality verdict: PASS. No remaining actionable findings from the whole-branch review or this scoped re-review. Ready for the authorized draft PR, with final checklist/publication bookkeeping updated truthfully. No merge or release recommendation.**
+
+The corrected `docs/foundational/phase1d/02-qualification.md:44` accurately states that the distinct operation creates worker generation 2, which remains open at sequence 0 waiting for ordinary input. Actual successor computation is attributed to the accepted nested crash case and separately labeled conformance rejection extension. I rechecked both preserved normal/race `after_new_request` records: worker/generation 2 is indeed sequence 0 and open. This removes the original evidence overstatement without changing the evidence or weakening the central accepted-Retry recovery requirement.
+
+The appended `03-review.md` section accurately preserves the original verdict and M1's chronology, distinguishes the finite Replay-based schedule probe from an independent semantic oracle, retains the original sandbox failures alongside the successful authorized run, and preserves the declared process-crash, model-relation, external-key and operational limits. It introduces no new unsupported runtime claim. Its pending scoped-review wording is appropriate historical status before this report; the parent may now record this passing re-review.
+
+Independently checked all ten new reviewer artifacts against their original `/tmp/alan-phase1d-final-review` files: exact byte equality, stated byte counts and SHA-256 hashes all match. The original finding, original inaccurate wording, both complete machine records, probe, audits and execution logs remain intact. The Go probe is retained as `.go.txt`, outside compiled source.
+
+All 53 current source entries still match the qualified manifest. Read `/tmp/alan-phase1d-final-doc-fix/verification.log`: it records unchanged source digest `40a5b1f2ef55a901362e7bb5aca42b4e3acb5d73745b5cfda82d3c57361aef7f`, archive `49f68316357b07ac4bbd3f979cb47ebe25e732a28e3375081fb9ccacfcd8f3ea` and all 83 members, plus exact reconstruction of 160 marker records per mode, 87 DURABLE records and 16 matched killed-process identities per mode. The fix inventory records only the two intended existing documents changed and ten verbatim artifacts added; existing machine evidence, manifests and archive remain unchanged. No runtime test rerun was necessary for this correction, and none is claimed.
+
+The original whole-branch review's finite-evidence limitations continue to apply. This scoped approval resolves the sole actionable finding; it does not extend the implementation profile or establish an unbounded proof.

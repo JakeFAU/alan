@@ -1,0 +1,26 @@
+package durabletest
+
+import (
+ "encoding/json"
+ "os"
+ "os/exec"
+ "testing"
+)
+
+func TestReviewBarrierAcceptsWrongLogicalIdentity(t *testing.T) {
+ want := barrier{Scenario:"original-oracle-probe", Token:"pinned-process-start", Store:"/tmp/declared-store.sqlite", Boundary:"lifecycle.decided", Phase:"accepted", Subject:"inner", Generation:1, Epoch:2, Sequence:7, Intent:"op-A", Attempt:"auth-A"}
+ got := want
+ got.PID = os.Getpid()
+ got.Generation = 2
+ got.Epoch = 99
+ got.Intent = "op-B"
+ got.Attempt = "auth-B"
+ read, write, err := os.Pipe()
+ if err != nil { t.Fatal(err) }
+ defer read.Close()
+ defer write.Close()
+ if err := json.NewEncoder(write).Encode(got); err != nil { t.Fatal(err) }
+ c := &child{cmd:&exec.Cmd{Process:&os.Process{Pid:os.Getpid()}}, ack:read, config:want}
+ accepted := c.wait(t)
+ t.Fatalf("controller accepted wrong logical identity: got=%+v expected=%+v", accepted, want)
+}

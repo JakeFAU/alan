@@ -1,0 +1,19 @@
+package executor
+import("encoding/json";"strings";"testing";"path/filepath")
+func TestReviewEmittedPayloadBound(t *testing.T){
+ payload:=map[string]Operand{}
+ for _, k:=range []string{"a","b","c","d","e","f","g","h"}{payload[k]=Ref("text")}
+ p:=Program{Semantics:SemanticVersion,Code:[]Instruction{{Op:"emit", Effect:&Effect{Kind:"mutation",Target:Lit(Text("endpoint")),Generation:Lit(Int(1)),Obligation:Lit(Text("ob")),Payload:payload}},{Op:"end",Outcome:"succeeded"}}}
+ state:=Projection{Status:"open",Data:map[string]Value{"text":Text(strings.Repeat("x",500000))}}
+ lim:=DefaultLimits()
+ b,pid,err:=EncodeProgram(p); if err!=nil{t.Fatal(err)}
+ local,_:=json.Marshal(state)
+ r,err:=Reduce(p,state,nil,RunID{"worker",1},1,lim);if err!=nil{t.Fatal(err)}
+ out,_:=json.Marshal(r.Intents)
+ t.Logf("program=%d projection=%d intent_output=%d limits=%+v",len(b),len(local),len(out),lim)
+ store,err:=Create(t.Context(),filepath.Join(t.TempDir(),"large.sqlite"),Provision{Programs:[]Artifact{{ID:pid,Semantics:SemanticVersion,Bytes:b}},Subjects:[]Subject{{ID:"worker",Generation:1,Owner:"owner",Revision:1}},Runs:[]InitialRun{{ID:RunID{"worker",1},ProgramID:pid,Projection:state}}},lim);if err!=nil{t.Fatal(err)};defer store.Close()
+ initial,err:=store.Snapshot(t.Context(),RunID{"worker",1});if err!=nil{t.Fatal(err)}
+ if _,err=store.Commit(t.Context(),initial.Authority(),"");err!=nil{t.Fatal(err)}
+ var stored int; if err=store.conn.QueryRowContext(t.Context(),"SELECT length(descriptor) FROM intents").Scan(&stored);err!=nil{t.Fatal(err)};t.Logf("persisted descriptor bytes=%d",stored)
+ if len(out)>lim.MaxDataBytes {t.Fatalf("accepted emitted payload exceeds every configured serialized-data bound: %d bytes",len(out))}
+}
