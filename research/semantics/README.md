@@ -76,3 +76,52 @@ capability delegation/revocation, group cancellation, cleanup custodians,
 distributed serialization, durability, migration, retention expiry and unbounded
 liveness are excluded. All terminal outcomes suppress never-authorized ordinary
 intents; already-authorized attempts may still apply and settle.
+
+## Phase 1B bounded composition qualification
+
+The additive `composition_*_test.go` files define ordinary bounded envelopes,
+independent public-contract checks, replayed seed traces, suffix searches, and
+leaf/nested completion witnesses. All programs use the same `step`, `reduce`,
+`inspect`, and `replay` paths. Phase 1 fixtures and their 15 evidence records stay
+unchanged. New immutable programs use version `v1b`.
+
+```sh
+GOTOOLCHAIN=local GOCACHE=/tmp/alan-phase1b-go-cache GOPROXY=off GOSUMDB=off go test ./research/semantics -run '^TestComposition' -count=1
+GOTOOLCHAIN=local GOCACHE=/tmp/alan-phase1b-go-cache GOPROXY=off GOSUMDB=off go test ./research/semantics -run '^TestCompositionQualification$' -count=1 -v
+GOTOOLCHAIN=local GOCACHE=/tmp/alan-phase1b-go-cache GOPROXY=off GOSUMDB=off go test ./... -count=1
+GOTOOLCHAIN=local GOCACHE=/tmp/alan-phase1b-go-cache GOPROXY=off GOSUMDB=off go test -race ./... -count=1
+GOTOOLCHAIN=local GOCACHE=/tmp/alan-phase1b-go-cache GOPROXY=off GOSUMDB=off go vet ./...
+```
+
+`COMPOSITION` records disclose each complete fixture configuration, SHA-256
+configuration/scenario identity, exact setup events, finite suffix alphabet,
+separate setup length/depth bound, search counts, rejection reasons, combined
+witness suffixes, and shortest mutant suffixes. Prepend the disclosed seed to a
+suffix to reproduce its full trace. Every seed starts at `newMachine(config)`
+and uses transitions plus the same monitors; monitor facts enter suffix state
+identity. Rejected events also update witness-only checker facts, so a witness
+can require a rejected old/duplicate result and later legitimate contribution in
+one trace. These facts cannot affect ordinary transitions. Every successor is
+checked before deduplication; a hard-cap hit fails the test.
+
+New bounds are four static subjects, two generations/epochs, twelve commits,
+two continuations/proposals, three intents, two attempts, eight inbox entries,
+and values 0–8. Ordinary state adds two upstream envelopes, two downstream
+request references, and four accepted logical keys; programs are capped at
+twelve instructions. Fresh exploration uses depth eight; focused suffixes use
+depth ten; every scenario has a hard cap of 5,000 unique states. Narrow alphabets
+and long explicit setup traces limit claims to their disclosed suffix windows.
+Completed leaf/nested traces are separately labeled reachability-only.
+
+The source-manifest record hashes `go.mod` and every
+`research/semantics/*_test.go` in sorted repository-path order, with unsigned
+64-bit big-endian byte lengths before each path and raw file content. It lists
+per-file SHA-256 values and the aggregate SHA-256. Generated evidence is excluded
+to avoid a circular identity. Configuration/scenario identities hash their Go
+`encoding/json` canonical serialization (sorted string map keys). The source
+identity is emitted only in Phase 1B records.
+
+See the [public composition contract](../../docs/foundational/phase1b/01-composition-contract.md)
+for permitted behaviors, provenance, challenge windows, and exclusions. This
+qualification does not claim general contextual equivalence, unbounded recursive
+closure, fairness, durability, or production readiness.

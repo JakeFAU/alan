@@ -8,6 +8,7 @@ import (
 
 // Monitor facts are never read by step or reduce. They are included in the BFS key.
 type monitor struct {
+	Composition    *compositionFacts `json:",omitempty"`
 	Bindings       map[string]string
 	Frozen         map[string]outcome
 	Retired        map[string]bool
@@ -214,7 +215,9 @@ func inspect(before, after machine, e event, previous monitor) (monitor, string)
 				if rid != ad.Bound {
 					return bad("stable-service-binding")
 				}
-				if o.ID != admissionObservationID(id) || o.Kind != "message" || o.Tag != ad.Message.Tag || o.Value != ad.Message.Value || o.Correlation != "" {
+				expected := admittedObservation(id, ad.Origin, ad.Message)
+				expected.Consumed = o.Consumed
+				if o != expected {
 					return bad("admission-payload-immutability")
 				}
 			}
@@ -282,6 +285,9 @@ func inspect(before, after machine, e event, previous monitor) (monitor, string)
 				return bad("policy:cancel-prevents-retry")
 			}
 		}
+	}
+	if why := inspectComposition(before, after, e, &mon); why != "" {
+		return bad(why)
 	}
 	return mon, ""
 }
