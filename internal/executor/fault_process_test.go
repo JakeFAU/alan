@@ -39,6 +39,7 @@ func TestTask4FaultProcess(t *testing.T) {
 			if err != nil {
 				panic(err)
 			}
+			request.Key = ExternalKey(s.Namespace(), intent.ID)
 			request.Epoch = epoch
 			request.Authorization = identity("authorization", intent.ID)
 			encoded, _ := json.Marshal(request)

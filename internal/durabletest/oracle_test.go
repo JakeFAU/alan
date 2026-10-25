@@ -56,14 +56,14 @@ func checkRecords(before, after executor.Inspection, endpoint resource.Snapshot)
 		for _, row := range after.Tables["intents"] {
 			var intent executor.Intent
 			json.Unmarshal([]byte(row["descriptor"].(string)), &intent)
-			if intent.ID == application.Key && intent.Kind == "external" && intent.Payload["delta"] == executor.Int(application.Delta) {
+			if executor.ExternalKey(after.Namespace, intent.ID) == application.Key && intent.Kind == "external" && intent.Payload["delta"] == executor.Int(application.Delta) {
 				committed = true
 			}
 		}
 		for _, row := range after.Tables["external_attempts"] {
 			var attempt executor.ExternalAttempt
 			json.Unmarshal([]byte(row["descriptor"].(string)), &attempt)
-			if attempt.Intent.ID == application.Key && attempt.Allowed && attempt.Request.Key == application.Key {
+			if executor.ExternalKey(after.Namespace, attempt.Intent.ID) == application.Key && attempt.Allowed && attempt.Request.Key == application.Key {
 				authorized = true
 			}
 		}

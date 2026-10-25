@@ -80,7 +80,7 @@ type asyncEvent struct {
 	Boundary barrier
 }
 
-func checkAsyncTrace(events []asyncEvent, endpoint, runner barrier, released bool) error {
+func checkAsyncTrace(events []asyncEvent, endpoint, runner barrier, namespace string, released bool) error {
 	names := []string{"endpoint-held", "peer-committed", "peer-delivered", "held-live"}
 	if released {
 		names = append(names, "response-released", "result-settled")
@@ -102,7 +102,11 @@ func checkAsyncTrace(events []asyncEvent, endpoint, runner barrier, released boo
 			return fmt.Errorf("identity mismatch %s", name)
 		}
 		if name == "endpoint-held" || name == "held-live" || name == "response-released" || name == "result-settled" {
-			if b.Intent != endpoint.Intent || b.Attempt != endpoint.Attempt || b.Subject != "client" || b.Sequence != 1 {
+			requestKey := b.Intent
+			if name == "result-settled" {
+				requestKey = executor.ExternalKey(namespace, b.Intent)
+			}
+			if requestKey != endpoint.Intent || b.Attempt != endpoint.Attempt || b.Subject != "client" || b.Sequence != 1 {
 				return fmt.Errorf("wrong request %s", name)
 			}
 		}
@@ -139,6 +143,7 @@ func TestAutomaticAsyncHeldProgressAndConcurrentCrash(t *testing.T) {
 				p.Permissions = append(p.Permissions, executor.Permission{Kind: "observation", Source: "ready-peer", Target: "caller", Operation: "terminal", Revision: 1, Obligation: "done"})
 				db := provisionCLI(t, p)
 				initial := inspect(t, db)
+				endpoint.config.Intent = executor.ExternalKey(initial.Namespace, `["client",1,1,0]`)
 				filters := []barrier{{Boundary: "execution.staged", Phase: "terminal", Subject: "ready-peer", Sequence: 1}, {Boundary: "execution.committed", Phase: "terminal", Subject: "ready-peer", Sequence: 1}, {Boundary: "execution.committed", Phase: "post-commit", Subject: "caller", Sequence: 1}}
 				if cut == "received-kill" {
 					filters = append(filters, barrier{Boundary: "external.response", Phase: "pre-record", Subject: "client", Sequence: 1, Intent: `["client",1,1,0]`, Attempt: `["authorization","[\"client\",1,1,0]"]`})
@@ -169,7 +174,7 @@ func TestAutomaticAsyncHeldProgressAndConcurrentCrash(t *testing.T) {
 				endpoint.config.Phase = "holding"
 				live := endpoint.wait(t)
 				events = append(events, asyncEvent{"held-live", live})
-				if err := checkAsyncTrace(events, held, peer, false); err != nil {
+				if err := checkAsyncTrace(events, held, peer, initial.Namespace, false); err != nil {
 					t.Fatal(err)
 				}
 				if cut == "held-kill" {
@@ -179,7 +184,7 @@ func TestAutomaticAsyncHeldProgressAndConcurrentCrash(t *testing.T) {
 					asyncRelease(t, endpoint, 'c')
 					if cut == "received-kill" {
 						asyncNext(c, "external.response", "pre-record", "client", 1)
-						c.config.Intent = held.Intent
+						c.config.Intent = `["client",1,1,0]`
 						c.config.Attempt = held.Attempt
 						received := c.wait(t)
 						if len(inspect(t, db).Tables["external_receipts"]) != 0 {
@@ -189,7 +194,7 @@ func TestAutomaticAsyncHeldProgressAndConcurrentCrash(t *testing.T) {
 						c.kill(t)
 					} else {
 						asyncNext(c, "external.settled", "post-record", "client", 1)
-						c.config.Intent = held.Intent
+						c.config.Intent = `["client",1,1,0]`
 						c.config.Attempt = held.Attempt
 						settled := c.wait(t)
 						events = append(events, asyncEvent{"response-released", live}, asyncEvent{"result-settled", settled})
@@ -234,7 +239,7 @@ func TestAutomaticAsyncHeldProgressAndConcurrentCrash(t *testing.T) {
 					}
 				}
 				if cut == "settle" {
-					if err := checkAsyncTrace(events, held, peer, true); err != nil {
+					if err := checkAsyncTrace(events, held, peer, initial.Namespace, true); err != nil {
 						t.Fatal(err)
 					}
 				}
@@ -264,7 +269,7 @@ func TestAsyncOracleRejectsFalseOrderAndIdentity(t *testing.T) {
 	live := endpoint
 	live.Phase = "holding"
 	original := []asyncEvent{{"endpoint-held", endpoint}, {"peer-committed", peer}, {"peer-delivered", caller}, {"held-live", live}}
-	if err := checkAsyncTrace(original, endpoint, runner, false); err != nil {
+	if err := checkAsyncTrace(original, endpoint, runner, "test-namespace", false); err != nil {
 		t.Fatal(err)
 	}
 	for _, mutate := range []func([]asyncEvent){
@@ -279,7 +284,7 @@ func TestAsyncOracleRejectsFalseOrderAndIdentity(t *testing.T) {
 	} {
 		events := append([]asyncEvent(nil), original...)
 		mutate(events)
-		if checkAsyncTrace(events, endpoint, runner, false) == nil {
+		if checkAsyncTrace(events, endpoint, runner, "test-namespace", false) == nil {
 			t.Fatal("accepted false causal evidence", events)
 		}
 	}

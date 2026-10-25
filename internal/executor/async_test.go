@@ -62,7 +62,7 @@ func TestAsyncHeldRequestPeerProgress(t *testing.T) {
 			case <-ctx.Done():
 				return fmt.Errorf("held acknowledgment missing: %w", ctx.Err())
 			}
-			if req.Key != `["client",1,1,0]` || req.Authorization == "" {
+			if req.Key != ExternalKey(s.Namespace(), `["client",1,1,0]`) || req.Authorization == "" {
 				return fmt.Errorf("wrong held request %+v", req)
 			}
 		}

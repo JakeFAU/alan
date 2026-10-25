@@ -15,8 +15,10 @@ type ConnectionSettings struct {
 // Inspection exposes exact retained BLOB bytes as UTF-8 JSON strings, including
 // program artifacts. It is a coherent read-only snapshot, with no policy reducer.
 type Inspection struct {
-	Settings ConnectionSettings
-	Tables   map[string][]map[string]any
+	Namespace  string
+	KeyVersion int
+	Settings   ConnectionSettings
+	Tables     map[string][]map[string]any
 }
 
 var inspectionTables = []string{"metadata", "programs", "subjects", "permissions", "runs", "history", "observations", "intents", "attempts", "admissions", "lifecycle_results", "settlements", "terminal_obligations", "message_acknowledgments", "run_origins", "external_attempts", "external_receipts"}
@@ -52,17 +54,11 @@ func Inspect(ctx context.Context, path string, limits Limits) (snapshot Inspecti
 			return snapshot, err
 		}
 	}
-	var schemaVersion, userVersion int
-	var semantics string
-	if err = tx.QueryRowContext(ctx, "SELECT schema_version,semantics FROM metadata WHERE singleton=1").Scan(&schemaVersion, &semantics); err != nil {
+	snapshot.Namespace, err = readNamespace(ctx, tx)
+	if err != nil {
 		return snapshot, err
 	}
-	if err = tx.QueryRowContext(ctx, "PRAGMA user_version").Scan(&userVersion); err != nil {
-		return snapshot, err
-	}
-	if schemaVersion != SchemaVersion || userVersion != SchemaVersion || semantics != SemanticVersion {
-		return snapshot, ErrVersion
-	}
+	snapshot.KeyVersion = ExternalKeyVersion
 	ids, err := stringList(ctx, tx, "SELECT id FROM programs ORDER BY id")
 	if err != nil {
 		return snapshot, err

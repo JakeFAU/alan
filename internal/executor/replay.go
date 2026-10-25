@@ -11,6 +11,7 @@ import (
 // ReplayReport is evidence of consistency, not an independent policy proof.
 // Replay has no dispatcher, endpoint or lifecycle mutation capability.
 type ReplayReport struct {
+	Namespace                 string
 	SQLiteVersion             string
 	SQLiteSourceID            string
 	HistoryCount, IntentCount int
@@ -76,17 +77,11 @@ type historyRow struct {
 // a projection mismatch is never treated as an acceptable lifecycle shortcut.
 func validateLedger(ctx context.Context, q queryer, limits Limits) (ReplayReport, error) {
 	report := ReplayReport{Runs: []RunState{}}
-	var schemaVersion, userVersion int
-	var semantics string
-	if err := q.QueryRowContext(ctx, "SELECT schema_version,semantics FROM metadata WHERE singleton=1").Scan(&schemaVersion, &semantics); err != nil {
+	namespace, err := readNamespace(ctx, q)
+	if err != nil {
 		return report, err
 	}
-	if err := q.QueryRowContext(ctx, "PRAGMA user_version").Scan(&userVersion); err != nil {
-		return report, err
-	}
-	if schemaVersion != SchemaVersion || userVersion != SchemaVersion || semantics != SemanticVersion {
-		return report, ErrVersion
-	}
+	report.Namespace = namespace
 	if err := q.QueryRowContext(ctx, "SELECT sqlite_version(),sqlite_source_id()").Scan(&report.SQLiteVersion, &report.SQLiteSourceID); err != nil {
 		return report, err
 	}

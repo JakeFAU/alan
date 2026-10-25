@@ -3,7 +3,9 @@ package executor
 import (
 	"bytes"
 	"context"
+	"crypto/rand"
 	"database/sql"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -63,7 +65,8 @@ type RunState struct {
 
 func (r RunState) Authority() Authority { return Authority{r.ID, r.Epoch, r.Sequence, r.Revision} }
 
-const SchemaVersion = 1
+const SchemaVersion = 2
+const ExternalKeyVersion = 2
 const busyTimeoutMS = 5000
 
 // Store owns one pinned SQLite connection and an OS lock. It is safe for concurrent
@@ -80,12 +83,13 @@ type Store struct {
 	lock      *os.File
 	limits    Limits
 	closed    bool
+	namespace string
 }
 
 // Every protocol ledger is retained. Later protocol slices supply their operations;
 // these tables do not grant authority merely by containing an opaque descriptor.
 const schema = `
-CREATE TABLE metadata (singleton INTEGER PRIMARY KEY CHECK(singleton=1), schema_version INTEGER NOT NULL, semantics TEXT NOT NULL);
+CREATE TABLE metadata (singleton INTEGER PRIMARY KEY CHECK(singleton=1), schema_version INTEGER NOT NULL, semantics TEXT NOT NULL, key_version INTEGER NOT NULL, namespace TEXT NOT NULL);
 CREATE TABLE programs (id TEXT PRIMARY KEY, semantics TEXT NOT NULL, bytes BLOB NOT NULL);
 CREATE TABLE subjects (id TEXT PRIMARY KEY, generation INTEGER NOT NULL CHECK(generation>0), owner TEXT NOT NULL, revision INTEGER NOT NULL CHECK(revision>0), retired INTEGER NOT NULL CHECK(retired IN (0,1)), retry_cancelled INTEGER NOT NULL CHECK(retry_cancelled IN (0,1)));
 CREATE TABLE permissions (kind TEXT NOT NULL, source TEXT NOT NULL, target TEXT NOT NULL, operation TEXT NOT NULL, revision INTEGER NOT NULL, obligation TEXT NOT NULL, PRIMARY KEY(kind,source,target,operation,revision,obligation));
@@ -291,6 +295,11 @@ func Create(ctx context.Context, path string, p Provision, limits Limits) (store
 		}
 	}()
 	s.limits = limits
+	var namespaceBytes [32]byte
+	if _, err = rand.Read(namespaceBytes[:]); err != nil {
+		return nil, err
+	}
+	s.namespace = hex.EncodeToString(namespaceBytes[:])
 	tx, err := s.conn.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -299,10 +308,10 @@ func Create(ctx context.Context, path string, p Provision, limits Limits) (store
 	if _, err = tx.ExecContext(ctx, schema); err != nil {
 		return nil, err
 	}
-	if _, err = tx.ExecContext(ctx, "INSERT INTO metadata VALUES(1,?,?)", SchemaVersion, SemanticVersion); err != nil {
+	if _, err = tx.ExecContext(ctx, "INSERT INTO metadata VALUES(1,?,?,?,?)", SchemaVersion, SemanticVersion, ExternalKeyVersion, s.namespace); err != nil {
 		return nil, err
 	}
-	if _, err = tx.ExecContext(ctx, "PRAGMA user_version=1"); err != nil {
+	if _, err = tx.ExecContext(ctx, "PRAGMA user_version=2"); err != nil {
 		return nil, err
 	}
 	for _, a := range p.Programs {
@@ -471,6 +480,7 @@ func Open(ctx context.Context, path string, limits Limits) (store *Store, err er
 	if err != nil {
 		return nil, err
 	}
+	s.namespace = report.Namespace
 	for _, r := range report.Runs {
 		if r.Projection.Status != "open" {
 			continue
@@ -743,4 +753,44 @@ func terminalDestinations(ctx context.Context, q queryer, subject string, revisi
 		destinations = append(destinations, destination)
 	}
 	return destinations, rows.Err()
+}
+
+// Namespace returns the immutable namespace assigned during provisioning.
+// Renames and database copies retain it; independent concurrent use of copies is unsupported.
+func (s *Store) Namespace() string { return s.namespace }
+
+// ExternalKey canonically binds an external operation to a provisioned namespace
+// and local intent identity. Physical epochs and workers do not change this key.
+func ExternalKey(namespace, intentID string) string {
+	raw, _ := json.Marshal([]any{ExternalKeyVersion, namespace, intentID})
+	return string(raw)
+}
+
+// Read version fields first so version-1 metadata is rejected without querying
+// columns that did not exist in that schema. No migration or historical rekey occurs.
+func readNamespace(ctx context.Context, q queryer) (string, error) {
+	var schemaVersion, userVersion int
+	var semantics string
+	if err := q.QueryRowContext(ctx, "SELECT schema_version,semantics FROM metadata WHERE singleton=1").Scan(&schemaVersion, &semantics); err != nil {
+		return "", err
+	}
+	if err := q.QueryRowContext(ctx, "PRAGMA user_version").Scan(&userVersion); err != nil {
+		return "", err
+	}
+	if schemaVersion != SchemaVersion || userVersion != SchemaVersion || semantics != SemanticVersion {
+		return "", ErrVersion
+	}
+	var namespace string
+	var keyVersion int
+	if err := q.QueryRowContext(ctx, "SELECT key_version,namespace FROM metadata WHERE singleton=1").Scan(&keyVersion, &namespace); err != nil {
+		return "", err
+	}
+	if keyVersion != ExternalKeyVersion {
+		return "", ErrVersion
+	}
+	decoded, err := hex.DecodeString(namespace)
+	if err != nil || len(decoded) != 32 || hex.EncodeToString(decoded) != namespace {
+		return "", corrupt("invalid store namespace")
+	}
+	return namespace, nil
 }

@@ -19,7 +19,7 @@ func startResource(t *testing.T, paused bool) (*child, string, string) {
 	dir := binaries(t)
 	path := filepath.Join(dir, fmt.Sprintf("resource-%d.sqlite", time.Now().UnixNano()))
 	token := fmt.Sprintf("endpoint-%d", time.Now().UnixNano())
-	config := barrier{Scenario: t.Name(), Token: token, Store: path, Boundary: "resource.applied", Phase: "post-commit", Subject: "client", Generation: 1, Epoch: 2, Sequence: 1, Intent: `["client",1,1,0]`, Attempt: `["authorization","[\"client\",1,1,0]"]`}
+	config := barrier{Scenario: t.Name(), Token: token, Store: path, Boundary: "resource.applied", Phase: "post-commit", Subject: "client", Generation: 1, Epoch: 2, Sequence: 1, Intent: "", Attempt: `["authorization","[\"client\",1,1,0]"]`}
 	read, write, _ := os.Pipe()
 	resumeRead, resumeWrite, _ := os.Pipe()
 	cmd := exec.Command(filepath.Join(dir, "alan-resource"), "--db", path, "--token", token, "--listen", "127.0.0.1:0")
@@ -159,6 +159,7 @@ func TestAutomaticApplicationMissingReceiptProfiles(t *testing.T) {
 			p := resourceProvision(t, url, profile)
 			db := provisionCLI(t, p)
 			initial := inspect(t, db)
+			endpointProcess.config.Intent = executor.ExternalKey(initial.Namespace, `["client",1,1,0]`)
 			c := startPaused(t, db, "external.response", "pre-record", "client", 1)
 			appliedAck := endpointProcess.wait(t)
 			applied, err := resource.Inspect(t.Context(), resourcePath)
@@ -173,7 +174,7 @@ func TestAutomaticApplicationMissingReceiptProfiles(t *testing.T) {
 				t.Fatal(err)
 			}
 			ack := c.wait(t)
-			if ack.Intent != appliedAck.Intent || ack.Attempt != appliedAck.Attempt {
+			if executor.ExternalKey(initial.Namespace, ack.Intent) != appliedAck.Intent || ack.Attempt != appliedAck.Attempt {
 				t.Fatal("uncorrelated endpoint/executor evidence")
 			}
 			c.kill(t)
