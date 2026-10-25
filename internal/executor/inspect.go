@@ -21,7 +21,7 @@ type Inspection struct {
 	Tables     map[string][]map[string]any
 }
 
-var inspectionTables = []string{"metadata", "programs", "subjects", "permissions", "runs", "history", "observations", "intents", "attempts", "admissions", "lifecycle_results", "settlements", "terminal_obligations", "message_acknowledgments", "run_origins", "external_attempts", "external_receipts"}
+var inspectionTables = []string{"metadata", "programs", "subjects", "permissions", "runs", "history", "observations", "intents", "attempts", "admissions", "lifecycle_results", "settlements", "terminal_obligations", "message_acknowledgments", "run_origins", "external_attempts", "external_receipts", "corpus_assets", "adapter_attempts", "adapter_results"}
 
 func Inspect(ctx context.Context, path string, limits Limits) (snapshot Inspection, err error) {
 	real, err := canonicalPath(path, false)
@@ -67,6 +67,9 @@ func Inspect(ctx context.Context, path string, limits Limits) (snapshot Inspecti
 		if _, err = loadProgram(ctx, tx, id, limits); err != nil {
 			return snapshot, err
 		}
+	}
+	if err = validateAdapters(ctx, tx, limits); err != nil {
+		return snapshot, err
 	}
 	snapshot.Tables = map[string][]map[string]any{}
 	for _, table := range inspectionTables {

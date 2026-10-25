@@ -259,6 +259,23 @@ func validateLifecycleSettlements(ctx context.Context, q queryer) error {
 		if e != nil {
 			return e
 		}
+		if intent.Kind == "adapter" {
+			expected, e := loadAdapterResult(ctx, q, r.intent)
+			if e != nil {
+				return e
+			}
+			if r.id != identity("adapter-outcome", r.intent) || !sameJSON(r.raw, expected) || r.observation != identity("observation", "adapter", r.intent) {
+				return corrupt("adapter settlement binding")
+			}
+			var n int
+			if e = q.QueryRowContext(ctx, "SELECT count(*) FROM admissions WHERE domain='adapter' AND observation_id=?", r.observation).Scan(&n); e != nil {
+				return e
+			}
+			if n != 1 {
+				return corrupt("adapter settlement admission")
+			}
+			continue
+		}
 		if intent.Kind == "external" {
 			expected, e := externalOutcome(ctx, q, r.intent)
 			if e != nil {

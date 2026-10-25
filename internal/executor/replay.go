@@ -82,6 +82,9 @@ func validateLedger(ctx context.Context, q queryer, limits Limits) (ReplayReport
 		return report, err
 	}
 	report.Namespace = namespace
+	if err := validateAdapters(ctx, q, limits); err != nil {
+		return report, err
+	}
 	if err := q.QueryRowContext(ctx, "SELECT sqlite_version(),sqlite_source_id()").Scan(&report.SQLiteVersion, &report.SQLiteSourceID); err != nil {
 		return report, err
 	}

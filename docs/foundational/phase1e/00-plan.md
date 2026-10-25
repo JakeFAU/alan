@@ -58,14 +58,16 @@ PR #5 is confirmed merged. Fresh fetch gives base `d708493646aeae3c1e70a03cf2bb2
 ## Task 3: Narrow adapters and retained corpus
 
 **Files:** `internal/executor` adapter request/attempt/result/settlement support and Run integration; public adapter contract as needed; `adapters/openai` and `adapters/lookup`; corpus snapshot support; focused tests using real HTTP serialization/parsing.
+**Compatibility:** adapter/corpus ledgers advance schema 2 to schema 3, keep key version 2, and reject previous layouts before activation; no migration or key rewriting. The namespace slice evidence remains under its original version.
+
 **Consumes:** retained author schemas/artifacts, Store namespace, existing bounded owner. **Produces:** one-request completion candidates, durable attempt/result records, runtime-configured adapter registry, retained immutable corpus assets.
 
-- [ ] Tests first for committed/authorized dispatch, correlation/immutable conflicts, mixed fixture/adapter capacity, late evidence, known-unsettled results, invalid tool names/parameters, and credential exclusion.
-- [ ] One bounded worker pool/owner across supported transports. Adapter receives immutable request/assets and cannot access Store, choose policy, execute another adapter or mutate journal. Retain request/result/schema identity and validation disposition before ordinary consumption.
-- [ ] Thin nonstreaming OpenAI Responses HTTP: strict `text.format` schema, full retained inputs/instructions, explicit model ID, `max_output_tokens`, `store:false`, no hidden retries/redirects/remote conversation. Classify HTTP rejection, unknown transport, refusal, incomplete, invalid schema and validated output separately; retain bounded request/response, response/request IDs, requested/returned model and actual optional usage. Credentials are runtime-only and excluded from retained bytes/errors.
-- [ ] Snapshot explicitly selected corpus files (or bundled nonsensitive texts) at provisioning. Lookup is read-only over retained bytes, bounded token matching, returning one document/version and exact snippet with byte offsets. No live filesystem reread for recovery/replay.
-- [ ] An authorized attempt lacking a durable model result remains Unknown on reopen with explicit disposition and no retry. The same conservative no-repeat rule may be used for the local lookup; known results always settle without reinvocation. Existing idempotent/non-idempotent fixture profiles remain separate.
-- [ ] Focused protocol/race tests and current runtime regressions; exact adapter/CLI integration interfaces and controlled fixture inventory to review.
+- [x] Tests first for committed/authorized dispatch, correlation/immutable conflicts, mixed fixture/adapter capacity, late evidence, known-unsettled results, invalid tool names/parameters, and credential exclusion.
+- [x] One bounded worker pool/owner across supported transports. Adapter receives immutable request/assets and cannot access Store, choose policy, execute another adapter or mutate journal. Retain request/result/schema identity and validation disposition before ordinary consumption.
+- [x] Thin nonstreaming OpenAI Responses HTTP: strict `text.format` schema, full retained inputs/instructions, explicit model ID, `max_output_tokens`, `store:false`, no hidden retries/redirects/remote conversation. Classify HTTP rejection, unknown transport, refusal, incomplete, invalid schema and validated output separately; retain bounded request/response, response/request IDs, requested/returned model and actual optional usage. Credentials are runtime-only and excluded from retained bytes/errors.
+- [x] Snapshot explicitly selected corpus files (or bundled nonsensitive texts) at provisioning. Lookup is read-only over retained bytes, bounded token matching, returning one document/version and exact snippet with byte offsets. No live filesystem reread for recovery/replay.
+- [x] An authorized attempt lacking a durable model result remains Unknown on reopen with explicit disposition and no retry. The same conservative no-repeat rule may be used for the local lookup; known results always settle without reinvocation. Existing idempotent/non-idempotent fixture profiles remain separate.
+- [x] Focused protocol/race tests and current runtime regressions; exact adapter/CLI integration interfaces and controlled fixture inventory to review.
 
 ## Task 4: Ordinary nested application and CLI
 

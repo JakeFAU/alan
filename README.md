@@ -2,7 +2,7 @@
 
 **Agentic Lambda Abstraction Network** is an experimental framework for durable, recursively composable agentic computation. A coordinator or supervisor is an ordinary program: it receives observations, makes decisions in its own state, and commits effect intents through the same interpreter as other programs.
 
-The repository contains a runnable **single-host Go executor** and an independent bounded semantic model. The executor persists versioned programs, residual computation, observations, intents and lifecycle outcomes in SQLite. This is an early implementation with a provisional internal API, not a public SDK or a production-readiness claim. It has no LLM/provider integration.
+The repository contains a runnable **single-host Go executor** and an independent bounded semantic model. The executor persists versioned programs, residual computation, observations, intents and lifecycle outcomes in SQLite. The provisional public `author` package compiles named finite steps into retained programs; the `runtime` facade uses the same executor. This is an early implementation, with no stable SDK or production-readiness claim. Provider integration is not yet part of the qualified application.
 
 ## Quick start
 
@@ -36,6 +36,17 @@ To exercise ordinary retry-budget exhaustion:
 ```
 
 A successful command exit means that invocation completed. The program can still have failed, or the runner can be quiescent with runs waiting for input or unknown external outcomes. Inspect the report and logical outcomes.
+
+## Authoring in Go
+
+The [external consumer](author/testdata/consumer.go) defines a caller and two instances of one ordinary helper using named values, ports, branches and outcomes. It imports only `author`, `runtime` and `schema`. It writes no raw instruction arrays, numeric program counters or SQL. Its test runs creation, recovery and replay in separate processes; recovery loads the retained artifact without recompiling definitions.
+
+```sh
+GOTOOLCHAIN=local go test -count=1 -tags integration \
+  -run TestExternalConsumerCompileRunReopenReplay -v ./author
+```
+
+Artifacts retain compiler/semantic versions, schemas, templates and author-facing position names. The initial data model is a closed record of strings, integers and booleans. Repetition is explicitly bounded; custom Go callbacks do not execute inside deterministic reduction. See the [authoring/effect contract](docs/foundational/phase1e/01-authoring-effects-contract.md) for scope and recovery boundaries.
 
 ## External resource example
 
@@ -100,7 +111,7 @@ Start with the [foundations](docs/foundational/01-foundations.md), [composition]
 
 ## Current limits
 
-This profile supports one host, one active executor per store, static provisioning/grants and one program counter per run. No schema/program migration, history compaction, distributed fencing, dynamic creation, ownership transfer, general delegation, fresh-supervisor child reassociation or provider deployment is supplied. This development increment rejects older version-1 stores before activation; their retained source archives reproduce the original behavior. Histories grow and startup/replay scan them. Local provenance and storage synchronization assumptions are explicit.
+This profile supports one host, one active executor per store, static provisioning/grants and one program counter per run. No schema/program migration, history compaction, distributed fencing, dynamic creation, ownership transfer, general delegation, fresh-supervisor child reassociation or provider deployment is supplied. This development increment uses schema 3/key version 2 and rejects schema-1 and intermediate schema-2 stores before activation; their retained source archives reproduce the original behavior. Histories grow and startup/replay scan them. Local provenance and storage synchronization assumptions are explicit.
 
 Finite model searches and process-kill tests are evidence for their declared cases. They are not proofs of unbounded fairness, eventual recovery, arbitrary-depth equivalence, power-loss durability or safe repetition of arbitrary business work.
 

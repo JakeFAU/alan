@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/JakeFAU/alan/effects"
 	"github.com/JakeFAU/alan/internal/boundary"
 	"math"
 	"net/url"
@@ -47,6 +48,7 @@ type Permission struct {
 	Obligation                      string
 }
 type Provision struct {
+	Assets      []effects.Asset
 	Programs    []Artifact
 	Subjects    []Subject
 	Runs        []InitialRun
@@ -65,7 +67,7 @@ type RunState struct {
 
 func (r RunState) Authority() Authority { return Authority{r.ID, r.Epoch, r.Sequence, r.Revision} }
 
-const SchemaVersion = 2
+const SchemaVersion = 3
 const ExternalKeyVersion = 2
 const busyTimeoutMS = 5000
 
@@ -98,7 +100,7 @@ CREATE TABLE history (subject TEXT NOT NULL, generation INTEGER NOT NULL, sequen
 CREATE TABLE observations (id TEXT PRIMARY KEY, subject TEXT NOT NULL, generation INTEGER NOT NULL, descriptor BLOB NOT NULL, consumed_sequence INTEGER, FOREIGN KEY(subject,generation) REFERENCES runs(subject,generation), FOREIGN KEY(subject,generation,consumed_sequence) REFERENCES history(subject,generation,sequence) DEFERRABLE INITIALLY DEFERRED);
 CREATE TABLE intents (id TEXT PRIMARY KEY, subject TEXT NOT NULL, generation INTEGER NOT NULL, sequence INTEGER NOT NULL, ordinal INTEGER NOT NULL CHECK(ordinal>=0), source_revision INTEGER NOT NULL CHECK(source_revision>0), descriptor BLOB NOT NULL, UNIQUE(subject,generation,sequence,ordinal), FOREIGN KEY(subject,generation,sequence) REFERENCES history(subject,generation,sequence));
 CREATE TABLE terminal_obligations (subject TEXT NOT NULL, generation INTEGER NOT NULL, sequence INTEGER NOT NULL, outcome BLOB NOT NULL, destinations BLOB NOT NULL, delivery_status BLOB NOT NULL, operation_id TEXT REFERENCES lifecycle_results(id) DEFERRABLE INITIALLY DEFERRED, source_revision INTEGER NOT NULL CHECK(source_revision>0), PRIMARY KEY(subject,generation), FOREIGN KEY(subject,generation) REFERENCES runs(subject,generation));
-CREATE TABLE admissions (id TEXT PRIMARY KEY, domain TEXT NOT NULL CHECK(domain IN ('input','message','terminal','lifecycle','receipt')), transport_id TEXT NOT NULL, descriptor BLOB NOT NULL, result BLOB NOT NULL, observation_id TEXT REFERENCES observations(id), UNIQUE(domain,transport_id));
+CREATE TABLE admissions (id TEXT PRIMARY KEY, domain TEXT NOT NULL CHECK(domain IN ('input','message','terminal','lifecycle','receipt','adapter')), transport_id TEXT NOT NULL, descriptor BLOB NOT NULL, result BLOB NOT NULL, observation_id TEXT REFERENCES observations(id), UNIQUE(domain,transport_id));
 CREATE TABLE message_acknowledgments (intent_id TEXT PRIMARY KEY REFERENCES intents(id), admission_id TEXT NOT NULL REFERENCES admissions(id));
 CREATE TABLE attempts (id TEXT PRIMARY KEY, intent_id TEXT NOT NULL REFERENCES intents(id), descriptor BLOB NOT NULL, result BLOB NOT NULL);
 CREATE TABLE lifecycle_results (id TEXT PRIMARY KEY, decision_sequence INTEGER NOT NULL UNIQUE CHECK(decision_sequence>0), descriptor BLOB NOT NULL, result BLOB NOT NULL);
@@ -106,6 +108,9 @@ CREATE TABLE run_origins (subject TEXT NOT NULL, generation INTEGER NOT NULL, ki
 CREATE UNIQUE INDEX one_static_root ON run_origins(subject) WHERE kind='root';
 CREATE TABLE external_attempts (intent_id TEXT PRIMARY KEY REFERENCES intents(id), descriptor BLOB NOT NULL);
 CREATE TABLE external_receipts (intent_id TEXT PRIMARY KEY REFERENCES external_attempts(intent_id), descriptor BLOB NOT NULL);
+CREATE TABLE corpus_assets (id TEXT PRIMARY KEY, descriptor BLOB NOT NULL);
+CREATE TABLE adapter_attempts (intent_id TEXT PRIMARY KEY REFERENCES intents(id), descriptor BLOB NOT NULL);
+CREATE TABLE adapter_results (intent_id TEXT PRIMARY KEY REFERENCES adapter_attempts(intent_id), descriptor BLOB NOT NULL);
 CREATE TABLE settlements (id TEXT PRIMARY KEY, intent_id TEXT NOT NULL REFERENCES intents(id), descriptor BLOB NOT NULL, observation_id TEXT REFERENCES observations(id));
 `
 
@@ -311,8 +316,20 @@ func Create(ctx context.Context, path string, p Provision, limits Limits) (store
 	if _, err = tx.ExecContext(ctx, "INSERT INTO metadata VALUES(1,?,?,?,?)", SchemaVersion, SemanticVersion, ExternalKeyVersion, s.namespace); err != nil {
 		return nil, err
 	}
-	if _, err = tx.ExecContext(ctx, "PRAGMA user_version=2"); err != nil {
+	if _, err = tx.ExecContext(ctx, "PRAGMA user_version=3"); err != nil {
 		return nil, err
+	}
+	if err = effects.CheckAssets(p.Assets); err != nil {
+		return nil, err
+	}
+	for _, asset := range p.Assets {
+		raw, e := json.Marshal(asset)
+		if e != nil {
+			return nil, e
+		}
+		if _, err = tx.ExecContext(ctx, "INSERT INTO corpus_assets VALUES(?,?)", asset.ID, raw); err != nil {
+			return nil, err
+		}
 	}
 	for _, a := range p.Programs {
 		if err = insertArtifact(ctx, tx, a, limits); err != nil {

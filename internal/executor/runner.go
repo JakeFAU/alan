@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/JakeFAU/alan/effects"
 	"github.com/JakeFAU/alan/internal/boundary"
 	"sort"
 	"sync"
@@ -18,6 +19,7 @@ const runnerCleanupTimeout = 5 * time.Second
 var ErrRunActive = errors.New("runner already active")
 
 type RunOptions struct {
+	Adapters              map[string]effects.Adapter
 	MaxSteps, MaxDispatch int
 	MaxInFlight           int
 	ExternalTimeout       time.Duration
@@ -29,6 +31,7 @@ type RunReport struct {
 	UnresolvedIntents  []Intent
 	PendingDeliveries  []string
 	UnknownExternal    []string
+	UnknownAdapters    []string
 	RejectedAdmissions int
 }
 type readyRun struct {
@@ -117,7 +120,7 @@ func (s *Store) Run(ctx context.Context, options RunOptions) (report RunReport, 
 		var internal, external *pendingDelivery
 		for i := range pending {
 			d := &pending[i]
-			if d.kind == "external" {
+			if d.kind == "external" || d.kind == "adapter" {
 				if external == nil && !attempted[d.intent] {
 					external = d
 				}
@@ -136,7 +139,7 @@ func (s *Store) Run(ctx context.Context, options RunOptions) (report RunReport, 
 			progressed = true
 		}
 		if external != nil && active < options.MaxInFlight {
-			eligible, err := s.retryEligible(ctx, external.intent)
+			eligible, err := s.retryEligibleWork(ctx, *external)
 			if err != nil {
 				return report, err
 			}
@@ -152,14 +155,30 @@ func (s *Store) Run(ctx context.Context, options RunOptions) (report RunReport, 
 			}
 			report.Dispatches++
 			attempted[external.intent] = true
-			work, err := s.prepareExternalWork(ctx, external.intent, options.ExternalTimeout)
-			if err != nil {
-				return report, err
-			}
-			if work != nil {
-				active++
-				workers.Add(1)
-				go func(work externalWork) { defer workers.Done(); completions <- transportExternal(ctx, work) }(*work)
+			if external.kind == "adapter" {
+				work, err := s.prepareAdapterWork(ctx, external.intent, options.Adapters, options.ExternalTimeout)
+				if err != nil {
+					return report, err
+				}
+				if work != nil {
+					active++
+					workers.Add(1)
+					go func(work adapterWork) {
+						defer workers.Done()
+						result := transportAdapter(ctx, work)
+						completions <- externalCompletion{adapter: &result}
+					}(*work)
+				}
+			} else {
+				work, err := s.prepareExternalWork(ctx, external.intent, options.ExternalTimeout)
+				if err != nil {
+					return report, err
+				}
+				if work != nil {
+					active++
+					workers.Add(1)
+					go func(work externalWork) { defer workers.Done(); completions <- transportExternal(ctx, work) }(*work)
+				}
 			}
 			progressed = true
 		}
@@ -313,6 +332,16 @@ func pendingDeliveries(ctx context.Context, q queryer) ([]pendingDelivery, error
 		return nil, err
 	}
 	for id, intent := range intents {
+		if intent.Kind == "adapter" {
+			var count int
+			if err = q.QueryRowContext(ctx, "SELECT count(*) FROM settlements WHERE id=?", identity("adapter-outcome", id)).Scan(&count); err != nil {
+				return nil, err
+			}
+			if count == 0 {
+				pending = append(pending, pendingDelivery{key: identity("adapter-delivery", id), intent: id, kind: "adapter"})
+			}
+			continue
+		}
 		if intent.Kind == "external" {
 			var count int
 			if err = q.QueryRowContext(ctx, "SELECT count(*) FROM settlements WHERE id=?", identity("external-outcome", id)).Scan(&count); err != nil {
@@ -384,6 +413,7 @@ func (s *Store) finishRun(ctx context.Context, report RunReport, quiescent bool,
 	report.UnresolvedIntents = []Intent{}
 	report.PendingDeliveries = []string{}
 	report.UnknownExternal = []string{}
+	report.UnknownAdapters = []string{}
 	if s.closed {
 		return report, errors.Join(runErr, sql.ErrConnDone)
 	}
@@ -434,12 +464,31 @@ func (s *Store) finishRun(ctx context.Context, report RunReport, quiescent bool,
 				return report, errors.Join(runErr, e)
 			}
 		}
+		if count == 0 && intent.Kind == "adapter" {
+			if err = s.conn.QueryRowContext(ctx, "SELECT count(*) FROM settlements WHERE id=?", identity("adapter-outcome", id)).Scan(&count); err != nil {
+				return report, errors.Join(runErr, err)
+			}
+			if count == 0 {
+				a, e := loadAdapterAttempt(ctx, s.conn, id)
+				if e == nil && a.Allowed {
+					_, e = loadAdapterResult(ctx, s.conn, id)
+					if errors.Is(e, sql.ErrNoRows) {
+						report.UnknownAdapters = append(report.UnknownAdapters, id)
+					} else if e != nil {
+						return report, errors.Join(runErr, e)
+					}
+				} else if e != nil && !errors.Is(e, sql.ErrNoRows) {
+					return report, errors.Join(runErr, e)
+				}
+			}
+		}
 		if count == 0 {
 			report.UnresolvedIntents = append(report.UnresolvedIntents, intent.Intent)
 		}
 	}
 	sort.Slice(report.UnresolvedIntents, func(i, j int) bool { return report.UnresolvedIntents[i].ID < report.UnresolvedIntents[j].ID })
 	sort.Strings(report.UnknownExternal)
+	sort.Strings(report.UnknownAdapters)
 	pending, err := pendingDeliveries(ctx, s.conn)
 	if err != nil {
 		return report, errors.Join(runErr, err)
@@ -466,4 +515,27 @@ func (s *Store) finishRun(ctx context.Context, report RunReport, quiescent bool,
 		}
 	}
 	return report, errors.Join(runErr, rows.Err())
+}
+
+func (s *Store) retryEligibleWork(ctx context.Context, d pendingDelivery) (bool, error) {
+	if d.kind != "adapter" {
+		return s.retryEligible(ctx, d.intent)
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.closed {
+		return false, sql.ErrConnDone
+	}
+	a, e := loadAdapterAttempt(ctx, s.conn, d.intent)
+	if errors.Is(e, sql.ErrNoRows) {
+		return true, nil
+	}
+	if e != nil {
+		return false, e
+	}
+	_, e = loadAdapterResult(ctx, s.conn, d.intent)
+	if errors.Is(e, sql.ErrNoRows) {
+		return !a.Allowed, nil
+	}
+	return e == nil, e
 }

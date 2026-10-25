@@ -121,6 +121,7 @@ type externalWork struct {
 	timeout  time.Duration
 }
 type externalCompletion struct {
+	adapter *adapterCompletion
 	work    externalWork
 	receipt *resource.Receipt
 	err     error
@@ -211,6 +212,9 @@ func exchangeExternal(ctx context.Context, work externalWork) externalCompletion
 	return result
 }
 func (s *Store) accountExternal(ctx context.Context, result externalCompletion) error {
+	if result.adapter != nil {
+		return s.accountAdapter(ctx, *result.adapter)
+	}
 	if result.receipt == nil {
 		return result.err
 	}

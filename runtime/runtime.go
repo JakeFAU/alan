@@ -4,10 +4,14 @@ package runtime
 
 import (
 	"context"
+	"github.com/JakeFAU/alan/effects"
 	"github.com/JakeFAU/alan/internal/executor"
 	"github.com/JakeFAU/alan/schema"
 )
 
+type Asset = effects.Asset
+type AdapterAttempt = executor.AdapterAttempt
+type AdapterResult = executor.AdapterResult
 type Store = executor.Store
 type Limits = executor.Limits
 type Artifact = executor.Artifact
