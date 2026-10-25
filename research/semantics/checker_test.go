@@ -8,6 +8,7 @@ import (
 
 // Monitor facts are never read by step or reduce. They are included in the BFS key.
 type monitor struct {
+	Supervision    *supervisionFacts `json:",omitempty"`
 	Composition    *compositionFacts `json:",omitempty"`
 	Bindings       map[string]string
 	Frozen         map[string]outcome
@@ -103,7 +104,7 @@ func inspect(before, after machine, e event, previous monitor) (monitor, string)
 						if o.Kind != "receipt" || old.Projection.Refs[in.Ref] == "" || o.Correlation != old.Projection.Refs[in.Ref] {
 							return bad("receive-correlation")
 						}
-					} else if o.Kind != "message" {
+					} else if o.Kind != "message" && in.Mode != "terminal" && in.Mode != "observation" && in.Mode != "lifecycle" {
 						return bad("receive-correlation")
 					}
 				}
@@ -287,6 +288,9 @@ func inspect(before, after machine, e event, previous monitor) (monitor, string)
 		}
 	}
 	if why := inspectComposition(before, after, e, &mon); why != "" {
+		return bad(why)
+	}
+	if why := inspectSupervision(before, after, e, &mon); why != "" {
 		return bad(why)
 	}
 	return mon, ""
