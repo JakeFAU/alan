@@ -1,0 +1,14 @@
+{
+  "description": "Reconstructed full compilable reproducer: coupled corrected runtime/tests plus exact saved pre-fix boundary source; original first failure separately retained. Later fixture binding correction included, never reached before the defect.",
+  "command": [
+    "go",
+    "test",
+    "./internal/durabletest",
+    "-run",
+    "^TestAutomaticAsyncHeldProgressAndConcurrentCrash$/^idempotent$/^settle$",
+    "-count=1",
+    "-timeout=45s",
+    "-v"
+  ],
+  "expected": "missing acknowledged boundary; child log file type does not support deadline"
+}

@@ -211,7 +211,7 @@ func (s *Store) DecideLifecycle(ctx context.Context, request LifecycleRequest) (
 	if s.closed {
 		return LifecycleResult{}, sql.ErrConnDone
 	}
-	tx, err := s.conn.BeginTx(ctx, nil)
+	tx, err := beginOwnedTx(ctx, s.conn)
 	if err != nil {
 		return LifecycleResult{}, err
 	}
@@ -221,7 +221,7 @@ func (s *Store) DecideLifecycle(ctx context.Context, request LifecycleRequest) (
 		if !reflect.DeepEqual(existing.Request, request) {
 			return existing, ErrConflict
 		}
-		return existing, lifecycleBoundary(ctx, tx, existing)
+		return existing, s.lifecycleBoundary(ctx, tx, existing)
 	}
 	if !errors.Is(err, sql.ErrNoRows) {
 		return existing, err
@@ -325,7 +325,7 @@ func (s *Store) DecideLifecycle(ctx context.Context, request LifecycleRequest) (
 	if _, err = tx.ExecContext(ctx, "INSERT INTO lifecycle_results VALUES(?,?,?,?)", request.Intent.ID, order, descriptor, raw); err != nil {
 		return result, err
 	}
-	return result, lifecycleBoundary(ctx, tx, result)
+	return result, s.lifecycleBoundary(ctx, tx, result)
 }
 func lifecycleOutcome(ctx context.Context, q queryer, id string) (LifecycleOutcome, error) {
 	request, err := loadLifecycleRequest(ctx, q, id)
@@ -358,7 +358,7 @@ func (s *Store) SettleLifecycle(ctx context.Context, id, transport string) (Admi
 	if s.closed {
 		return AdmissionResult{}, sql.ErrConnDone
 	}
-	tx, err := s.conn.BeginTx(ctx, nil)
+	tx, err := beginOwnedTx(ctx, s.conn)
 	if err != nil {
 		return AdmissionResult{}, err
 	}
@@ -383,7 +383,7 @@ func (s *Store) SettleLifecycle(ctx context.Context, id, transport string) (Admi
 		if !sameJSON(raw, existing) {
 			return result, ErrConflict
 		}
-		return result, tx.Commit()
+		return result, s.commitOwnedTx(ctx, tx)
 	}
 	if !errors.Is(err, sql.ErrNoRows) {
 		return AdmissionResult{}, err
@@ -419,15 +419,15 @@ func (s *Store) SettleLifecycle(ctx context.Context, id, transport string) (Admi
 	} else {
 		return result, err
 	}
-	return result, tx.Commit()
+	return result, s.commitOwnedTx(ctx, tx)
 }
 
-func lifecycleBoundary(ctx context.Context, tx *sql.Tx, result LifecycleResult) error {
+func (s *Store) lifecycleBoundary(ctx context.Context, tx *sql.Tx, result LifecycleResult) error {
 	source, err := loadRun(ctx, tx, result.Request.Intent.Run)
 	if err != nil {
 		return err
 	}
-	if err = tx.Commit(); err != nil {
+	if err = s.commitOwnedTx(ctx, tx); err != nil {
 		return err
 	}
 	phase := "rejected"

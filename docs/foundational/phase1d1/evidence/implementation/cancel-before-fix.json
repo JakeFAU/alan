@@ -1,0 +1,13 @@
+{
+  "command": [
+    "go",
+    "test",
+    "-race",
+    "./internal/executor",
+    "-run",
+    "^TestAsyncCancelAccountsReceivedCandidateAndPreservesUnknown$",
+    "-count=20"
+  ],
+  "original_failure_log": "/tmp/phase1d1-full-race.jsonl",
+  "defect": "database/sql auto rollback on canceled BeginTx context discards pinned sqlite connection, preventing received candidate cleanup"
+}

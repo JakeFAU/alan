@@ -78,7 +78,7 @@ func run() error {
 			return
 		}
 		event := boundary.Event{Boundary: "resource.applied", Phase: "post-commit", Subject: request.Subject, Generation: request.Generation, Epoch: request.Epoch, Sequence: request.Sequence, Intent: request.Key, Attempt: request.Authorization}
-		if err = boundary.Reached(ctx, event); err != nil {
+		if err = boundary.Reached(boundary.Inherit(r.Context(), ctx), event); err != nil {
 			http.Error(w, err.Error(), http.StatusServiceUnavailable)
 			return
 		}

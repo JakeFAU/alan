@@ -60,7 +60,7 @@ func TestTask4FaultProcess(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err = s.Run(ctx, RunOptions{100, 100}); err != nil {
+	if _, err = s.Run(ctx, RunOptions{MaxSteps: 100, MaxDispatch: 100}); err != nil {
 		t.Fatal(err)
 	}
 }

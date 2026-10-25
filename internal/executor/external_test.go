@@ -42,7 +42,7 @@ func TestExternalRunnerAuthenticatesAndConsumesDurableReceipt(t *testing.T) {
 	}))
 	defer server.Close()
 	s, path := messageStore(t, externalProvision(t, server.URL, "idempotent"))
-	report, err := s.Run(t.Context(), RunOptions{100, 100})
+	report, err := s.Run(t.Context(), RunOptions{MaxSteps: 100, MaxDispatch: 100})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -84,7 +84,7 @@ func TestNonIdempotentUnknownNeverAutomaticallyRepeats(t *testing.T) {
 	p := externalProvision(t, server.URL, "non-idempotent")
 	addProgram(t, &p, "ready-peer", []Instruction{{Op: "end", Outcome: "succeeded"}}, map[string]Value{})
 	s, path := messageStore(t, p)
-	report, err := s.Run(t.Context(), RunOptions{100, 100})
+	report, err := s.Run(t.Context(), RunOptions{MaxSteps: 100, MaxDispatch: 100})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -97,7 +97,7 @@ func TestNonIdempotentUnknownNeverAutomaticallyRepeats(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer s.Close()
-	if _, err = s.Run(t.Context(), RunOptions{100, 100}); err != nil {
+	if _, err = s.Run(t.Context(), RunOptions{MaxSteps: 100, MaxDispatch: 100}); err != nil {
 		t.Fatal(err)
 	}
 	snapshot, err := resourcefixture.Inspect(t.Context(), resourcePath)
@@ -176,7 +176,7 @@ func TestUnknownExternalIsExplicitInRunReport(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusServiceUnavailable) }))
 	defer server.Close()
 	s, _ := messageStore(t, externalProvision(t, server.URL, "non-idempotent"))
-	report, err := s.Run(t.Context(), RunOptions{100, 100})
+	report, err := s.Run(t.Context(), RunOptions{MaxSteps: 100, MaxDispatch: 100})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -209,7 +209,7 @@ func TestExternalTimeoutIsUnknownAndReadyPeerStillCommits(t *testing.T) {
 	p := externalProvision(t, server.URL, "non-idempotent")
 	addProgram(t, &p, "peer", []Instruction{{Op: "end", Outcome: "succeeded"}}, map[string]Value{})
 	s, _ := messageStore(t, p)
-	report, err := s.Run(t.Context(), RunOptions{100, 100})
+	report, err := s.Run(t.Context(), RunOptions{MaxSteps: 100, MaxDispatch: 100})
 	if err != nil {
 		t.Fatal(err)
 	}

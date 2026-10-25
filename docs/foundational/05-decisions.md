@@ -228,3 +228,17 @@ Review retained three implementation/qualification defects and their original in
 The runtime's ordinary receive and subsequent clearing of a local pending field can be separate commits, whereas the research program clears its pending field in its receive turn. Selected model/runtime checkpoint comparisons must disclose that intermediate state and its recovery behavior. Equal final values and replaying one reducer twice are not general conformance evidence.
 
 The pinned SQLite driver, effective engine identity, exact contributing source identities, complete source/dependency snapshot, commands, actual process exits and inspected records are part of qualification. Final whole-phase review and publication status are recorded in the Phase 1D report; task-scoped approvals alone do not establish completion.
+
+## Phase 1D.1 independent progress correction
+
+The [dispatch contract](phase1d1/01-dispatch-contract.md) and [qualification](phase1d1/02-qualification.md) narrow the earlier progress claim: the original automatic loop waited for HTTP before selecting a peer. Its retained unchanged held-request regression fails. A timeout followed by peer success did not establish progress while the request was held.
+
+One automatic Run now owns a bounded transport set (default 2), while one authoritative loop offers local computation, internal/lifecycle delivery, completions and launches regular opportunities. Workers carry immutable correlation and do no storage writes. Saturation leaves durable backlog and permits peer progress even at capacity one. The actual CLI peer and its caller commit before the exact held response is released; reordered responses remain correctly correlated.
+
+MaxSteps, MaxDispatch and transport capacity remain separate operational bounds. Run cancellation cancels/join workers and accounts candidates with a separate cleanup context; it does not cancel logical executions. Active Store write transactions own rollback to preserve the pinned connection through cancellation. Authentic old-epoch evidence is validated against retained authorization and may settle after source closure. No new language primitive, role-based policy, lifecycle authority, schema or dependency is introduced.
+
+Retained counterexamples include synchronous scheduling, inherited-pipe observer setup, cancellation discarding a pinned connection and post-commit step undercounting. The latter two were exposed by the new shutdown qualification. Independent review and probes are retained with the full source/dependency archive. Earlier phase records and regressions remain unchanged.
+
+This does not establish unbounded fairness, a hard real-time Close deadline, arbitrary simultaneous direct dispatch outside Run, or exactly-once business effects. The existing cross-store operation-key namespace limitation, single-host/static-subject profile, one PC per run, distributed fencing, migration/compaction and fresh-supervisor child reassociation remain separate work.
+
+Final review additionally exposed a reporting defect: a durable valid receipt was still labeled Unknown when its separate local settlement failed. The correction validates retained outcome evidence before reporting Unknown, preserves pending delivery/error state, and verifies non-idempotent reopen without redispatch. The pre-fix source/input and unchanged independent regression are retained. This changes reporting, not business idempotence or the separate transaction boundaries.
