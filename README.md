@@ -2,7 +2,7 @@
 
 **Agentic Lambda Abstraction Network** is an experimental framework for durable, recursively composable agentic computation. A coordinator or supervisor is an ordinary program: it receives observations, makes decisions in its own state, and commits effect intents through the same interpreter as other programs.
 
-The repository contains a runnable **single-host Go executor** and an independent bounded semantic model. The executor persists versioned programs, residual computation, observations, intents and lifecycle outcomes in SQLite. The provisional public `author` package compiles named finite steps into retained programs; the `runtime` facade uses the same executor. This is an early implementation, with no stable SDK or production-readiness claim. Provider integration is not yet part of the qualified application.
+The repository contains a runnable **single-host Go executor** and an independent bounded semantic model. The executor persists versioned programs, residual computation, observations, intents and lifecycle outcomes in SQLite. The provisional public `author` package compiles named finite steps into retained programs; the `runtime` facade uses the same executor. This is an early implementation, with no stable SDK or production-readiness claim. The evidence assistant exercises a real OpenAI Responses HTTP adapter with controlled responses; its opt-in live model gate is NOT RUN.
 
 ## Quick start
 
@@ -48,6 +48,29 @@ GOTOOLCHAIN=local go test -count=1 -tags integration \
 
 Artifacts retain compiler/semantic versions, schemas, templates and author-facing position names. The initial data model is a closed record of strings, integers and booleans. Repetition is explicitly bounded; custom Go callbacks do not execute inside deterministic reduction. See the [authoring/effect contract](docs/foundational/phase1e/01-authoring-effects-contract.md) for scope and recovery boundaries.
 
+## Evidence assistant
+
+The reusable [`examples/evidence`](examples/evidence) helper composes an ordinary planner/synthesizer with a retrieval worker. A caller uses its declared request/result port. Planning selects lookup, clarification or insufficient evidence; lookup commits separately; synthesis receives the question and retained evidence. Ordinary branches reject invalid responses, wrong tools and citations that differ from the retained document/version/snippet/start/end. This checks citation provenance, not the truth of every answer sentence.
+
+```sh
+go build -buildvcs=false -o "$alan_demo_dir/alan-evidence" ./cmd/alan-evidence
+# Set MODEL to an explicitly selected available OpenAI model ID.
+"$alan_demo_dir/alan-evidence" init --db "$alan_demo_dir/evidence.sqlite" \
+  --question 'How does WAL work?' --model "$MODEL"
+# Set OPENAI_API_KEY in the runtime environment before this opt-in paid call.
+"$alan_demo_dir/alan-evidence" run --db "$alan_demo_dir/evidence.sqlite"
+"$alan_demo_dir/alan-evidence" inspect --db "$alan_demo_dir/evidence.sqlite"
+"$alan_demo_dir/alan-evidence" replay --db "$alan_demo_dir/evidence.sqlite"
+```
+
+`init` snapshots the bundled nonsensitive corpus, or one explicitly selected `--corpus` file. `run`/`recover` load retained artifacts, corpus bytes and selected configuration. Default per-question ceilings are three model requests and two lookups; the normal path uses two and one. An unknown provider outcome remains unknown across recovery and is not automatically repeated. Replay needs no credential, live registry or source corpus file. See the [application runbook](docs/foundational/phase1e/04-application-runbook.md) for all limits, controlled results and reusable composition.
+
+Controlled HTTP and subprocess tests do not spend money:
+
+```sh
+GOTOOLCHAIN=local go test -count=1 -tags integration ./examples/evidence ./cmd/alan-evidence
+```
+
 ## External resource example
 
 The fake counter resource is a separate executable with its own durable SQLite store. Start it in a second terminal, using the same `alan_demo_dir` path:
@@ -91,15 +114,21 @@ The store uses SQLite WAL and synchronous=FULL, verifies effective settings, and
 
 ```sh
 GOTOOLCHAIN=local go test -count=1 ./...
-GOTOOLCHAIN=local go test -count=1 -race ./...
+GOTOOLCHAIN=local go test -count=1 -tags integration ./...
+GOTOOLCHAIN=local go test -count=1 -race -tags integration ./...
 GOTOOLCHAIN=local go vet ./...
-gofmt -l cmd internal research
+GOTOOLCHAIN=local go vet -tags integration ./...
+go mod verify
+gofmt -l author schema runtime effects adapters cmd internal research examples
 ```
 
-Process tests require loopback sockets, child processes and SIGKILL permission. The race suite builds actual child executables with race instrumentation. Tests cover persistence, message correlation, ordinary supervision, replay, independent progress, retained unknown outcomes and acknowledged process-crash boundaries. Deliberately faulty variants and historical counterexamples remain part of qualification.
+The integration tag includes the external-consumer, application, provider and process qualification gates. Process tests require loopback sockets, child processes and SIGKILL permission. The race suite builds actual child executables with race instrumentation. Tests cover persistence, message correlation, ordinary supervision, replay, independent progress, retained unknown outcomes and acknowledged process-crash boundaries. Deliberately faulty variants and historical counterexamples remain part of qualification.
 
 | Location | Contents |
 | --- | --- |
+| `author`, `schema`, `runtime` | Provisional compiler, scalar schemas and public executor facade |
+| `effects`, `adapters/openai`, `adapters/lookup` | Retained effect protocol, Responses provider and corpus lookup |
+| `examples/evidence`, `cmd/alan-evidence` | Ordinary reusable evidence composition and CLI |
 | `cmd/alan` | Executor CLI |
 | `internal/executor` | Finite interpreter, SQLite authority, scheduler, messaging, lifecycle, external protocol, inspection and replay |
 | `cmd/alan-resource`, `internal/fixture` | Separate durable counter endpoint |
@@ -111,7 +140,7 @@ Start with the [foundations](docs/foundational/01-foundations.md), [composition]
 
 ## Current limits
 
-This profile supports one host, one active executor per store, static provisioning/grants and one program counter per run. No schema/program migration, history compaction, distributed fencing, dynamic creation, ownership transfer, general delegation, fresh-supervisor child reassociation or provider deployment is supplied. This development increment uses schema 3/key version 2 and rejects schema-1 and intermediate schema-2 stores before activation; their retained source archives reproduce the original behavior. Histories grow and startup/replay scan them. Local provenance and storage synchronization assumptions are explicit.
+This profile supports one host, one active executor per store, static provisioning/grants and one program counter per run. No schema/program migration, history compaction, distributed fencing, dynamic creation, ownership transfer, general delegation, fresh-supervisor child reassociation or managed provider deployment is supplied. This development increment uses schema 3/key version 2 and rejects schema-1 and intermediate schema-2 stores before activation; their retained source archives reproduce the original behavior. Histories grow and startup/replay scan them. Local provenance and storage synchronization assumptions are explicit.
 
 Finite model searches and process-kill tests are evidence for their declared cases. They are not proofs of unbounded fairness, eventual recovery, arbitrary-depth equivalence, power-loss durability or safe repetition of arbitrary business work.
 
