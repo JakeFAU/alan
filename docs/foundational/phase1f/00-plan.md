@@ -43,7 +43,7 @@
 - [x] Freeze final implementation/prompts before unsealing held-out inputs. Run the simple baseline and investigation with the same corpus/model/configuration and bounded live spending. Preserve all valid and unsuccessful outcomes.
 - [x] Independently grade support, citation provenance, appropriate abstention and revision changes; report latency and actual available model usage/cost estimates separately from durability and the application's own review verdict.
 - [x] Run focused/full/race/vet/format/dependency and earlier-phase regressions; retain exact source identities, complete reproducible source and machine-readable evidence.
-- [ ] Obtain final independent review, update README/decisions/runbook, commit the increment and open a draft PR against verified main. No merge, release or further runtime development.
+- [x] Obtain final independent review, update README/decisions/runbook, commit the increment and open a draft PR against verified main. No merge, release or further runtime development.
 
 ## Review focus
 
