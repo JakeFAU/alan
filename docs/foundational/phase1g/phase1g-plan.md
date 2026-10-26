@@ -97,11 +97,11 @@
 
 **Interfaces:** A reusable ordinary collection component receives a typed ordered list of explicit item IDs plus item input, invokes one template per item through Task 2, retains handles, and consumes outcomes in input order into a typed result list. Derived builder uses public steps only. Evidence template reuses existing definitions/policy and preserves legacy factories/artifacts. CLI supports init (no work list), submit/admit (post-init data), run/recover, inspect and replay; no planner or provider live configuration is needed.
 
-- [ ] Write failing external-module contract tests using one retained artifact for 0/1/3/7/8 and rejected 9; no recompilation/topology changes after submission.
-- [ ] Implement deterministic work-tree component with independently calculated expected mapping, direct and nested same port contract, empty output, duplicate payload/different IDs, reverse completion and lower exhausted budgets. Report code/artifact/template/provision/run counts and result ordering separately.
-- [ ] Reuse evidence helper as effectful template with controlled existing adapter; no prompt changes, evidence-specific opcode or helper-per-item factory expansion. Define required descendant terminal/result policy through ordinary programs.
-- [ ] Demonstrate capacity 1 and 2, nested saturation, constant initial provisioning vs proportional admitted work, unknown operation with independent progress and no premature success. Use causal acknowledgments for physical events.
-- [ ] Run focused public consumer/CLI tests/default suite/gofmt; commit and report reproduction commands/public API with example input.
+- [x] Write failing external-module contract tests using one retained artifact for 0/1/3/7/8 and rejected 9; no recompilation/topology changes after submission.
+- [x] Implement deterministic work-tree component with independently calculated expected mapping, direct and nested same port contract, empty output, duplicate payload/different IDs, reverse completion and lower exhausted budgets. Report code/artifact/template/provision/run counts and result ordering separately.
+- [x] Reuse evidence helper as effectful template with controlled existing adapter; no prompt changes, evidence-specific opcode or helper-per-item factory expansion. Define required descendant terminal/result policy through ordinary programs.
+- [x] Demonstrate capacity 1 and 2, nested saturation, constant initial provisioning vs proportional admitted work, unknown operation with independent progress and no premature success. Use causal acknowledgments for physical events.
+- [x] Run focused public consumer/CLI tests/default suite/gofmt; commit and report reproduction commands/public API with example input.
 
 ### Task 4: Process boundaries, independent monitors and qualification
 

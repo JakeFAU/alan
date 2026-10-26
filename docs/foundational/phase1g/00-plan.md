@@ -20,7 +20,9 @@ Implementation/review sequence:
 
 1. Typed collections and finite iteration, preserving old scalar identities — implemented and independently reviewed.
 2. Retained templates, invocation/binding/outcome ledgers, shared limits, closure and replay — implemented and independently reviewed.
-3. Derived collection component, separate-module deterministic/evidence consumers and CLI — next.
+3. Derived collection component, separate-module deterministic/evidence consumers and CLI — implemented and independently reviewed.
 4. Causal capacity/crash/late-result qualification, negative controls, full checks, source archive, independent final review and draft PR.
 
 The [task plan](phase1g-plan.md) carries interfaces and checklists. [Qualification](02-qualification.md) distinguishes completed evidence from pending claims. No distributed ownership, general migration, unrestricted recursion, SDK stability, quality retuning or UI is included.
+
+Task3 is implemented and independently reviewed, including the retained JSON case-alias defect and fix. Task4 now covers actual process kills, final-source checks, reproducible archive and final review. See [Task3 report](evidence/task3/report.md) and [application runbook](../../../examples/worktree/README.md).

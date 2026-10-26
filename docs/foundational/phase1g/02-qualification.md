@@ -1,6 +1,6 @@
 # Phase 1G qualification — in progress
 
-The starting baseline and contract review are complete. Implementation qualification is not complete; this document deliberately makes no invocation, crash-recovery or acceptance claim yet.
+The starting baseline, contract and application/runtime implementation reviews are complete. Final qualification is not complete; this document makes no Phase1G process-crash or overall acceptance claim yet.
 
 ## Completed starting evidence
 
@@ -22,18 +22,20 @@ The invocation admission slice is committed at `a648ea739d21f04e011be3214f781913
 
 The full protocol integration is committed at `eaa1b31380fc9f9959ec3ef33ab3d17888269aaa`, with its dispatcher contract in `168f4d7`. The [task report](evidence/task2c/report.md) records automatic bound execution, shared limits, root outcomes and complete-profile reconstruction/replay. Final default and integration suites plus focused concurrency race checks passed on source `32a2aa026b7be64c082d9672331daf338384ee118294338afdc12a03ec709a8b`. Public complete schema4 is enabled in this current source. [Independent review](evidence/task2c/review.md) found that order-only corruption could move message consumption before its represented source authorization while Replay still accepted it. The original probe is retained. Fix `9e73d0fbdbfb9b58d6627f467b2ddd3c5f9ef421` adds the exact authorization predecessor check; the unchanged probe, causal controls and executor package passed on source `fc2b0465eea920d6b04cd3c3896c6be909ba5a6b292ed9ebf9c58ff6a1ebf282`. [Scoped rereview](evidence/task2c/rereview-round1.md) approved it. Earlier broad-suite results retain their original source identity; the later fix received focused verification. Retained counterexamples include a failed child hiding an unfinished grandchild, missing reverse links and synchronous transport bypassing capacity. The ordinary collection application and actual process-crash acceptance remain future work. Earlier private-gate reports describe their earlier commits, not current public behavior.
 
+The public application slice is committed at `6a5d9ea182e760c61149feaff47fe8dc0ff72f93`. Its [report](evidence/task3/report.md) records an ordinary two-loop collector, direct/nested separate-module consumer, controlled evidence helper, post-initialization CLI input, and independent mapping checks. The same source passed the default suite, focused evidence integration, consumer tests/vet and a consumer race run in95.007s; its original90s watchdog failure remains retained. [Independent review](evidence/task3/review.md) found that JSON case aliases could silently replace item identities or payloads. Fix `75eb9c2978d539d9a7c04035e8140d7dd7e1caa0` requires exact field names; all three unchanged reviewer probes and the CLI package passed. [Scoped rereview](evidence/task3/rereview-round1.md) approved it. The collector template/public schemas are identical direct and nested; exact count and resource measurements are in the report. The authentic faulty ordinary collector reaches runtime success and valid replay, while the unchanged independent mapping oracle detects its wrong values. Task4 still owns actual process boundaries and final-source/archive qualification.
+
 ## Evidence-to-claim status
 
 | Claim | Evidence type | Status |
 | --- | --- | --- |
 | Starting main reproduces retained behavior | Historical source execution and source-byte comparison | Passed as scoped above |
 | New invocation contract is operationally specified | Independent specification review | Passed; not implementation proof |
-| One artifact handles variable typed work | Public API and independent result checks | Pending reviewed implementation |
+| One artifact handles variable typed work | Public API and independent result checks | Task3 scoped tests/review passed; final-source gate pending |
 | Logical work exceeds physical capacity without parent deadlock | Causal controlled-provider and nested schedules | Pending |
 | Accepted work, partial results and pending operation survive process death | Acknowledged boundaries, SIGKILL, new-process inspections | Pending |
 | Closure/late/unknown results preserve identities and budgets | Selected schedules and independent monitors | Pending |
 | Historical replay cannot create or dispatch work | Credential-free/no-network replay and immutable ledger/contact checks | Pending |
-| Evidence helper is an ordinary effectful template consumer | Separate-module application and controlled provider | Pending |
+| Evidence helper is an ordinary effectful template consumer | Public application and controlled provider | Task3 scoped tests/review passed; final-source gate pending |
 | General dynamic spawning, arbitrary recursion, liveness, remote cancellation or business exactly-once | None | Excluded |
 | New live provider smoke or answer-quality improvement | None | Not run/not claimed; previous study's authorization and ledger not reused |
 
