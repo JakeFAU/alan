@@ -276,7 +276,7 @@ func validateCompositionStore(ctx context.Context, q queryer, l Limits) (ReplayR
 	}
 	if c0.Version == compositionProtocolVersion {
 		var n int
-		if err = q.QueryRowContext(ctx, "SELECT (SELECT count(*) FROM composition_admission_decisions) + (SELECT count(*) FROM composition_facts WHERE kind NOT IN ('execution','lifecycle')) + (SELECT count(*) FROM intents WHERE json_extract(descriptor,'$.Kind')='invocation')").Scan(&n); err != nil {
+		if err = q.QueryRowContext(ctx, "SELECT (SELECT count(*) FROM composition_closures) + (SELECT count(*) FROM composition_admission_decisions) + (SELECT count(*) FROM composition_facts WHERE kind NOT IN ('execution','lifecycle')) + (SELECT count(*) FROM intents WHERE json_extract(descriptor,'$.Kind')='invocation')").Scan(&n); err != nil {
 			return ReplayReport{}, err
 		}
 		if n != 0 {

@@ -198,14 +198,14 @@ func (s *Store) recordCompositionLifecycle(ctx context.Context, tx *sql.Tx, resu
 	if f.ID == "" {
 		return nil
 	}
-	_, err = appendCompositionFact(ctx, tx, f)
+	order, err := appendCompositionFact(ctx, tx, f)
 	if err == nil && s.invocationEnabled() && result.Accepted {
 		root, e := compositionMembershipRoot(ctx, tx, f.Run)
 		if e != nil {
 			return e
 		}
 		if root != "" {
-			return freezeCompositionScope(ctx, tx, f.Run, f.ID, s.limits)
+			return recordCompositionLifecycleClosure(ctx, tx, result, f, order, s.limits)
 		}
 	}
 	return err

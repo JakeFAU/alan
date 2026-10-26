@@ -1,0 +1,315 @@
+diff --git a/internal/executor/composition_facts.go b/internal/executor/composition_facts.go
+index a5f9d43..cff94ed 100644
+--- a/internal/executor/composition_facts.go
++++ b/internal/executor/composition_facts.go
+@@ -198,14 +198,14 @@ func (s *Store) recordCompositionLifecycle(ctx context.Context, tx *sql.Tx, resu
+ 	if f.ID == "" {
+ 		return nil
+ 	}
+-	_, err = appendCompositionFact(ctx, tx, f)
++	order, err := appendCompositionFact(ctx, tx, f)
+ 	if err == nil && s.invocationEnabled() && result.Accepted {
+ 		root, e := compositionMembershipRoot(ctx, tx, f.Run)
+ 		if e != nil {
+ 			return e
+ 		}
+ 		if root != "" {
+-			return freezeCompositionScope(ctx, tx, f.Run, f.ID, s.limits)
++			return recordCompositionLifecycleClosure(ctx, tx, result, f, order, s.limits)
+ 		}
+ 	}
+ 	return err
+diff --git a/internal/executor/composition_store.go b/internal/executor/composition_store.go
+index dde1293..97d4ec5 100644
+--- a/internal/executor/composition_store.go
++++ b/internal/executor/composition_store.go
+@@ -276,7 +276,7 @@ func validateCompositionStore(ctx context.Context, q queryer, l Limits) (ReplayR
+ 	}
+ 	if c0.Version == compositionProtocolVersion {
+ 		var n int
+-		if err = q.QueryRowContext(ctx, "SELECT (SELECT count(*) FROM composition_admission_decisions) + (SELECT count(*) FROM composition_facts WHERE kind NOT IN ('execution','lifecycle')) + (SELECT count(*) FROM intents WHERE json_extract(descriptor,'$.Kind')='invocation')").Scan(&n); err != nil {
++		if err = q.QueryRowContext(ctx, "SELECT (SELECT count(*) FROM composition_closures) + (SELECT count(*) FROM composition_admission_decisions) + (SELECT count(*) FROM composition_facts WHERE kind NOT IN ('execution','lifecycle')) + (SELECT count(*) FROM intents WHERE json_extract(descriptor,'$.Kind')='invocation')").Scan(&n); err != nil {
+ 			return ReplayReport{}, err
+ 		}
+ 		if n != 0 {
+diff --git a/internal/executor/invocation.go b/internal/executor/invocation.go
+index 0bdaa90..602370a 100644
+--- a/internal/executor/invocation.go
++++ b/internal/executor/invocation.go
+@@ -12,6 +12,7 @@ import (
+ // Only the invocation profile creates these tables. Foundation stores and their
+ // retained evidence keep the original layout and validator behavior.
+ const invocationSchema = `
++CREATE TABLE composition_closures(scope_id TEXT PRIMARY KEY, root_id TEXT NOT NULL REFERENCES composition_roots(id), decision_order INTEGER NOT NULL UNIQUE REFERENCES composition_facts(decision_order), descriptor BLOB NOT NULL);
+ CREATE TABLE composition_publications(operation_id TEXT PRIMARY KEY REFERENCES composition_admission_decisions(operation_id), descriptor BLOB NOT NULL);
+ CREATE TABLE composition_outcome_deliveries(operation_id TEXT PRIMARY KEY REFERENCES composition_publications(operation_id), observation_id TEXT NOT NULL UNIQUE REFERENCES observations(id));
+ CREATE TABLE composition_admission_decisions(operation_id TEXT PRIMARY KEY REFERENCES intents(id), root_id TEXT NOT NULL REFERENCES composition_roots(id), descriptor BLOB NOT NULL);
+@@ -170,8 +171,8 @@ func compositionScopeClosed(ctx context.Context, q queryer, run RunID) (bool, er
+ 	}
+ 	var n int
+ 	if err = q.QueryRowContext(ctx,
+-		"SELECT count(*) FROM composition_freezes WHERE scope_id=? AND json_extract(descriptor,'$.Status')!='succeeded'",
+-		"root:"+root.ID).Scan(&n); err != nil {
++		"SELECT (SELECT count(*) FROM composition_freezes WHERE scope_id=? AND json_extract(descriptor,'$.Status')!='succeeded') + (SELECT count(*) FROM composition_closures WHERE scope_id=?) + (SELECT count(*) FROM composition_results WHERE invocation_id=?)",
++		"root:"+root.ID, "root:"+root.ID, "root:"+root.ID).Scan(&n); err != nil {
+ 		return false, err
+ 	}
+ 	if n != 0 {
+@@ -191,8 +192,8 @@ func compositionScopeClosed(ctx context.Context, q queryer, run RunID) (bool, er
+ 		}
+ 		seen[b.InvocationID] = true
+ 		if err = q.QueryRowContext(ctx,
+-			"SELECT count(*) FROM composition_freezes WHERE scope_id=? AND json_extract(descriptor,'$.Status')!='succeeded'",
+-			b.InvocationID).Scan(&n); err != nil {
++			"SELECT (SELECT count(*) FROM composition_freezes WHERE scope_id=? AND json_extract(descriptor,'$.Status')!='succeeded') + (SELECT count(*) FROM composition_closures WHERE scope_id=?) + (SELECT count(*) FROM composition_results WHERE invocation_id=?)",
++			b.InvocationID, b.InvocationID, b.InvocationID).Scan(&n); err != nil {
+ 			return false, err
+ 		}
+ 		if n != 0 {
+diff --git a/internal/executor/invocation_outcome.go b/internal/executor/invocation_outcome.go
+index f4ded2e..bc44d4c 100644
+--- a/internal/executor/invocation_outcome.go
++++ b/internal/executor/invocation_outcome.go
+@@ -197,25 +197,17 @@ func recordCompositionReply(ctx context.Context,
+ // freezeCompositionScope runs within the execution/lifecycle owner transaction.
+ // Its exact prefix sets cannot depend on subsequent callback delivery order.
+ func freezeCompositionScope(ctx context.Context, tx *sql.Tx, run RunID, trigger string, l Limits) error {
+-	root, err := compositionRootFor(ctx, tx, run)
++	scope, err := compositionScopeFor(ctx, tx, run)
+ 	if err != nil {
+ 		return err
+ 	}
+-	scope := "root:" + root.ID
+-	members := root.Members
+-	b, _, err := loadCompositionBinding(ctx, tx, run)
+-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
++	if _, err = loadCompositionClosure(ctx, tx, scope.ID); err == nil {
++		return nil
++	} else if !errors.Is(err, sql.ErrNoRows) {
+ 		return err
+ 	}
+-	if err == nil {
+-		scope = b.InvocationID
+-		members = nil
+-		for _, name := range sortedKeys(b.Members) {
+-			members = append(members, b.Members[name])
+-		}
+-	}
+ 	var exists int
+-	if err = tx.QueryRowContext(ctx, "SELECT count(*) FROM composition_freezes WHERE scope_id=?", scope).Scan(&exists); err != nil {
++	if err = tx.QueryRowContext(ctx, "SELECT count(*) FROM composition_freezes WHERE scope_id=?", scope.ID).Scan(&exists); err != nil {
+ 		return err
+ 	}
+ 	if exists != 0 {
+@@ -230,7 +222,7 @@ func freezeCompositionScope(ctx context.Context, tx *sql.Tx, run RunID, trigger
+ 		return nil
+ 	}
+ 	if status == "succeeded" {
+-		for _, m := range members {
++		for _, m := range scope.Members {
+ 			state, e := loadRun(ctx, tx, m)
+ 			if e != nil {
+ 				return e
+@@ -240,7 +232,7 @@ func freezeCompositionScope(ctx context.Context, tx *sql.Tx, run RunID, trigger
+ 			}
+ 		}
+ 	}
+-	freeze := compositionFreeze{InvocationID: scope,
++	freeze := compositionFreeze{InvocationID: scope.ID,
+ 		Trigger:           trigger,
+ 		Run:               run,
+ 		Sequence:          current.Sequence,
+@@ -248,55 +240,9 @@ func freezeCompositionScope(ctx context.Context, tx *sql.Tx, run RunID, trigger
+ 		ReplyIntents:      []string{},
+ 		InvocationIntents: []string{},
+ 		ExternalIntents:   []string{}}
+-	// All member intent rows at this transaction are the committed prefix. No
+-	// future member commit can become part of these retained lists.
+-	for _, m := range members {
+-		rows, e := tx.QueryContext(ctx,
+-			"SELECT descriptor FROM intents WHERE subject=? AND generation=? ORDER BY sequence,ordinal",
+-			m.Subject,
+-			m.Generation)
+-		if e != nil {
+-			return e
+-		}
+-		intents := []Intent{}
+-		for rows.Next() {
+-			var raw []byte
+-			var intent Intent
+-			if e = rows.Scan(&raw); e != nil {
+-				rows.Close()
+-				return e
+-			}
+-			if e = decode(raw, &intent); e != nil {
+-				rows.Close()
+-				return e
+-			}
+-			intents = append(intents, intent)
+-		}
+-		e = rows.Err()
+-		rows.Close()
+-		if e != nil {
+-			return e
+-		}
+-		for _, intent := range intents {
+-			switch intent.Kind {
+-			case "invocation":
+-				freeze.InvocationIntents = append(freeze.InvocationIntents, intent.ID)
+-			case "adapter", "external":
+-				freeze.ExternalIntents = append(freeze.ExternalIntents, intent.ID)
+-			case "message":
+-				_, reply, e := compositionReplyBinding(ctx, tx, intent)
+-				if e != nil {
+-					return e
+-				}
+-				if reply {
+-					freeze.ReplyIntents = append(freeze.ReplyIntents, intent.ID)
+-				}
+-			}
+-		}
++	if err = captureCompositionIntents(ctx, tx, &freeze, scope.Members); err != nil {
++		return err
+ 	}
+-	slices.Sort(freeze.ReplyIntents)
+-	slices.Sort(freeze.InvocationIntents)
+-	slices.Sort(freeze.ExternalIntents)
+ 	if err = tx.QueryRowContext(ctx,
+ 		"SELECT coalesce(max(decision_order),0)+1 FROM composition_facts").Scan(&freeze.DecisionOrder); err != nil {
+ 		return err
+@@ -308,10 +254,10 @@ func freezeCompositionScope(ctx context.Context, tx *sql.Tx, run RunID, trigger
+ 	if err = checkSize(freeze, l.MaxDataBytes); err != nil {
+ 		return err
+ 	}
+-	if _, err = tx.ExecContext(ctx, "INSERT INTO composition_freezes VALUES(?,?,?)", scope, root.ID, raw); err != nil {
++	if _, err = tx.ExecContext(ctx, "INSERT INTO composition_freezes VALUES(?,?,?)", scope.ID, scope.RootID, raw); err != nil {
+ 		return err
+ 	}
+-	fact, err := compositionProtocolEvidence(ctx, tx, compositionFreezeFact, scope)
++	fact, err := compositionProtocolEvidence(ctx, tx, compositionFreezeFact, scope.ID)
+ 	if err != nil {
+ 		return err
+ 	}
+@@ -336,18 +282,31 @@ func prepareInvocation(ctx context.Context, q queryer, operation string) (Invoca
+ 	}
+ 	var raw []byte
+ 	err = q.QueryRowContext(ctx, "SELECT descriptor FROM composition_freezes WHERE scope_id=?", a.Invocation.ID).Scan(&raw)
+-	if errors.Is(err, sql.ErrNoRows) {
+-		p.Pending = "members"
+-		return p, nil
+-	}
+-	if err != nil {
++	hasFreeze := err == nil
++	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+ 		return p, err
+ 	}
+-	if err = decode(raw, &p.Freeze); err != nil {
+-		return p, err
++	if hasFreeze {
++		if err = decode(raw, &p.Freeze); err != nil {
++			return p, err
++		}
++		if !sameJSON(raw, p.Freeze) {
++			return p, ErrCorrupt
++		}
++	}
++	closure, closureErr := loadCompositionClosure(ctx, q, a.Invocation.ID)
++	if closureErr != nil && !errors.Is(closureErr, sql.ErrNoRows) {
++		return p, closureErr
++	}
++	closureReason := ""
++	if closureErr == nil && (!hasFreeze || p.Freeze.Status == "succeeded" || closure.Freeze.DecisionOrder < p.Freeze.DecisionOrder) {
++		p.Freeze = closure.Freeze
++		closureReason = closure.Reason
++		hasFreeze = true
+ 	}
+-	if !sameJSON(raw, p.Freeze) {
+-		return p, ErrCorrupt
++	if !hasFreeze {
++		p.Pending = "members"
++		return p, nil
+ 	}
+ 	responses := []map[string]Value{}
+ 	for _, id := range p.Freeze.ReplyIntents {
+@@ -371,6 +330,9 @@ func prepareInvocation(ctx context.Context, q queryer, operation string) (Invoca
+ 	}
+ 	p.Outcome.Status = p.Freeze.Status
+ 	p.Outcome.Reason = "member_" + p.Freeze.Status
++	if closureReason != "" {
++		p.Outcome.Reason = closureReason
++	}
+ 	if p.Freeze.Status == "succeeded" {
+ 		for _, id := range p.Freeze.InvocationIntents {
+ 			child, e := loadCompositionAdmission(ctx, q, id)
+@@ -396,8 +358,12 @@ func prepareInvocation(ctx context.Context, q queryer, operation string) (Invoca
+ 		}
+ 	}
+ 	if len(p.Freeze.ReplyIntents) > 1 {
+-		p.Outcome.Status = "failed"
+-		p.Outcome.Reason = "conflicting_replies"
++		// Conflicts remain retained evidence. They cannot replace the first
++		// retirement closure or select one candidate as its public response.
++		if closureReason == "" {
++			p.Outcome.Status = "failed"
++			p.Outcome.Reason = "conflicting_replies"
++		}
+ 	} else if len(responses) == 1 {
+ 		p.Outcome.ResponsePresent = true
+ 		p.Outcome.Response = responses[0]
+@@ -527,3 +493,56 @@ func (s *Store) SettleInvocation(ctx context.Context, operation string) (Admissi
+ 		ObservationID: observation.ID}
+ 	return result, s.commitOwnedTx(ctx, tx)
+ }
++
++func captureCompositionIntents(ctx context.Context, tx *sql.Tx, freeze *compositionFreeze, members []RunID) error {
++	// All member intent rows at this transaction are the committed prefix. No
++	// future member commit can become part of these retained lists.
++	for _, m := range members {
++		rows, e := tx.QueryContext(ctx,
++			"SELECT descriptor FROM intents WHERE subject=? AND generation=? ORDER BY sequence,ordinal",
++			m.Subject,
++			m.Generation)
++		if e != nil {
++			return e
++		}
++		intents := []Intent{}
++		for rows.Next() {
++			var raw []byte
++			var intent Intent
++			if e = rows.Scan(&raw); e != nil {
++				rows.Close()
++				return e
++			}
++			if e = decode(raw, &intent); e != nil {
++				rows.Close()
++				return e
++			}
++			intents = append(intents, intent)
++		}
++		e = rows.Err()
++		rows.Close()
++		if e != nil {
++			return e
++		}
++		for _, intent := range intents {
++			switch intent.Kind {
++			case "invocation":
++				freeze.InvocationIntents = append(freeze.InvocationIntents, intent.ID)
++			case "adapter", "external":
++				freeze.ExternalIntents = append(freeze.ExternalIntents, intent.ID)
++			case "message":
++				_, reply, e := compositionReplyBinding(ctx, tx, intent)
++				if e != nil {
++					return e
++				}
++				if reply {
++					freeze.ReplyIntents = append(freeze.ReplyIntents, intent.ID)
++				}
++			}
++		}
++	}
++	slices.Sort(freeze.ReplyIntents)
++	slices.Sort(freeze.InvocationIntents)
++	slices.Sort(freeze.ExternalIntents)
++	return nil
++}

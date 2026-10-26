@@ -12,6 +12,7 @@ import (
 // Only the invocation profile creates these tables. Foundation stores and their
 // retained evidence keep the original layout and validator behavior.
 const invocationSchema = `
+CREATE TABLE composition_closures(scope_id TEXT PRIMARY KEY, root_id TEXT NOT NULL REFERENCES composition_roots(id), decision_order INTEGER NOT NULL UNIQUE REFERENCES composition_facts(decision_order), descriptor BLOB NOT NULL);
 CREATE TABLE composition_publications(operation_id TEXT PRIMARY KEY REFERENCES composition_admission_decisions(operation_id), descriptor BLOB NOT NULL);
 CREATE TABLE composition_outcome_deliveries(operation_id TEXT PRIMARY KEY REFERENCES composition_publications(operation_id), observation_id TEXT NOT NULL UNIQUE REFERENCES observations(id));
 CREATE TABLE composition_admission_decisions(operation_id TEXT PRIMARY KEY REFERENCES intents(id), root_id TEXT NOT NULL REFERENCES composition_roots(id), descriptor BLOB NOT NULL);
@@ -170,8 +171,8 @@ func compositionScopeClosed(ctx context.Context, q queryer, run RunID) (bool, er
 	}
 	var n int
 	if err = q.QueryRowContext(ctx,
-		"SELECT count(*) FROM composition_freezes WHERE scope_id=? AND json_extract(descriptor,'$.Status')!='succeeded'",
-		"root:"+root.ID).Scan(&n); err != nil {
+		"SELECT (SELECT count(*) FROM composition_freezes WHERE scope_id=? AND json_extract(descriptor,'$.Status')!='succeeded') + (SELECT count(*) FROM composition_closures WHERE scope_id=?) + (SELECT count(*) FROM composition_results WHERE invocation_id=?)",
+		"root:"+root.ID, "root:"+root.ID, "root:"+root.ID).Scan(&n); err != nil {
 		return false, err
 	}
 	if n != 0 {
@@ -191,8 +192,8 @@ func compositionScopeClosed(ctx context.Context, q queryer, run RunID) (bool, er
 		}
 		seen[b.InvocationID] = true
 		if err = q.QueryRowContext(ctx,
-			"SELECT count(*) FROM composition_freezes WHERE scope_id=? AND json_extract(descriptor,'$.Status')!='succeeded'",
-			b.InvocationID).Scan(&n); err != nil {
+			"SELECT (SELECT count(*) FROM composition_freezes WHERE scope_id=? AND json_extract(descriptor,'$.Status')!='succeeded') + (SELECT count(*) FROM composition_closures WHERE scope_id=?) + (SELECT count(*) FROM composition_results WHERE invocation_id=?)",
+			b.InvocationID, b.InvocationID, b.InvocationID).Scan(&n); err != nil {
 			return false, err
 		}
 		if n != 0 {

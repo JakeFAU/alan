@@ -1,0 +1,44 @@
+
+// Review probe: RetireSubject succeeds after a static member's local success,
+// while its root-scope peer still owns a committed, authorized Invoke.
+func TestReviewRetiredSucceededMemberClosesScope(t *testing.T) {
+ p, c := invocationFixture(t, "succeeded", 1)
+ addProgram(t, &p, "static-helper", []Instruction{{Op: "end", Outcome: "succeeded"}}, map[string]Value{})
+ c.Roots[0].Members = append(c.Roots[0].Members, RunID{"static-helper", 1})
+ addInvocationController(t, &p, "RetireSubject")
+ for i := range p.Runs {
+  if p.Runs[i].ID.Subject != "controller" { continue }
+  for j := range p.Programs {
+   if p.Programs[j].ID != p.Runs[i].ProgramID { continue }
+   var program Program
+   if err := json.Unmarshal(p.Programs[j].Bytes, &program); err != nil { t.Fatal(err) }
+   program.Code[0].Effect.Target = Lit(Text("static-helper"))
+   raw, id, err := EncodeProgram(program)
+   if err != nil { t.Fatal(err) }
+   p.Programs[j] = Artifact{ID: id, Semantics: program.Semantics, Bytes: raw}
+   p.Runs[i].ProgramID = id
+   break
+  }
+ }
+ for i := range p.Permissions {
+  if p.Permissions[i].Source == "controller" { p.Permissions[i].Target = "static-helper" }
+ }
+ s, err := createInvocationStore(t.Context(), t.TempDir()+"/retire.sqlite", p, c, DefaultLimits())
+ if err != nil { t.Fatal(err) }
+ defer s.Close()
+ if _, err := s.Commit(t.Context(), current(t, s, "static-helper").Authority(), ""); err != nil { t.Fatal(err) }
+ root, err := s.Commit(t.Context(), current(t, s, "root").Authority(), "")
+ if err != nil { t.Fatal(err) }
+ operation := root.Projection.Data["pending"].Text
+ auth, err := s.AuthorizeIntent(t.Context(), operation)
+ if err != nil || !auth.Allowed { t.Fatal(auth, err) }
+ retirement := authorizedDecision(t, s, committedRequest(t, s, "controller"))
+ if !retirement.Accepted || !retirement.After.Retired { t.Fatal(retirement) }
+ t.Logf("retirement accepted=%v reason=%s retired=%v member_status=%s peer_status=%s", retirement.Accepted, retirement.Reason, retirement.After.Retired, retirement.After.Projection.Status, current(t,s,"root").Projection.Status)
+ closed, err := compositionScopeClosed(t.Context(), s.conn, RunID{"root", 1})
+ if err != nil { t.Fatal(err) }
+ admission, err := s.AdmitInvocation(t.Context(), operation)
+ if err != nil { t.Fatal(err) }
+ t.Logf("scope_closed=%v admission_accepted=%v admission_reason=%s admitted_members=%d", closed, admission.Accepted, admission.Reason, len(admission.Members))
+ if admission.Accepted { t.Fatal("retired member left its scope open to new child admission") }
+}
