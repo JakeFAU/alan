@@ -54,6 +54,9 @@ func Inspect(ctx context.Context, path string, limits Limits) (snapshot Inspecti
 			return snapshot, err
 		}
 	}
+	if err = requireSchema(ctx, tx, SchemaVersion); err != nil {
+		return snapshot, err
+	}
 	snapshot.Namespace, err = readNamespace(ctx, tx)
 	if err != nil {
 		return snapshot, err

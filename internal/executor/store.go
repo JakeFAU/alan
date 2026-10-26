@@ -74,18 +74,19 @@ const busyTimeoutMS = 5000
 // Store owns one pinned SQLite connection and an OS lock. It is safe for concurrent
 // callers; serialized transactions preserve the single-owner execution model.
 type Store struct {
-	ownerMu   sync.Mutex
-	runDone   chan struct{}
-	runWake   chan struct{}
-	runCancel context.CancelFunc
-	closing   bool
-	mu        sync.Mutex
-	db        *sql.DB
-	conn      *sql.Conn
-	lock      *os.File
-	limits    Limits
-	closed    bool
-	namespace string
+	ownerMu     sync.Mutex
+	runDone     chan struct{}
+	runWake     chan struct{}
+	runCancel   context.CancelFunc
+	closing     bool
+	mu          sync.Mutex
+	db          *sql.DB
+	conn        *sql.Conn
+	lock        *os.File
+	limits      Limits
+	closed      bool
+	namespace   string
+	composition *compositionProfile
 }
 
 // Every protocol ledger is retained. Later protocol slices supply their operations;
@@ -269,7 +270,11 @@ func verifyConnection(ctx context.Context, q queryer, readonly bool) (string, st
 
 // Create provisions a new store in one transaction; it never re-provisions an
 // existing file. Open is the only recovery path.
-func Create(ctx context.Context, path string, p Provision, limits Limits) (store *Store, err error) {
+func Create(ctx context.Context, path string, p Provision, limits Limits) (*Store, error) {
+	return createStore(ctx, path, p, limits, nil)
+}
+
+func createStore(ctx context.Context, path string, p Provision, limits Limits, composition *compositionProvision) (store *Store, err error) {
 	real, err := canonicalPath(path, true)
 	if err != nil {
 		return nil, err
@@ -313,10 +318,17 @@ func Create(ctx context.Context, path string, p Provision, limits Limits) (store
 	if _, err = tx.ExecContext(ctx, schema); err != nil {
 		return nil, err
 	}
-	if _, err = tx.ExecContext(ctx, "INSERT INTO metadata VALUES(1,?,?,?,?)", SchemaVersion, SemanticVersion, ExternalKeyVersion, s.namespace); err != nil {
+	version := SchemaVersion
+	if composition != nil {
+		version = compositionSchemaVersion
+		if _, err = tx.ExecContext(ctx, compositionSchema); err != nil {
+			return nil, err
+		}
+	}
+	if _, err = tx.ExecContext(ctx, "INSERT INTO metadata VALUES(1,?,?,?,?)", version, SemanticVersion, ExternalKeyVersion, s.namespace); err != nil {
 		return nil, err
 	}
-	if _, err = tx.ExecContext(ctx, "PRAGMA user_version=3"); err != nil {
+	if _, err = tx.ExecContext(ctx, fmt.Sprintf("PRAGMA user_version=%d", version)); err != nil {
 		return nil, err
 	}
 	if err = effects.CheckAssets(p.Assets); err != nil {
@@ -401,7 +413,16 @@ func Create(ctx context.Context, path string, p Provision, limits Limits) (store
 			return nil, err
 		}
 	}
-	if _, err = validateLedger(ctx, tx, limits); err != nil {
+	if composition != nil {
+		s.composition, err = provisionComposition(ctx, tx, s.namespace, *composition, limits)
+		if err != nil {
+			return nil, err
+		}
+		_, err = validateCompositionStore(ctx, tx, limits)
+	} else {
+		_, err = validateLedger(ctx, tx, limits)
+	}
+	if err != nil {
 		return nil, err
 	}
 	if err = tx.Commit(); err != nil {
@@ -473,7 +494,11 @@ func loadProgram(ctx context.Context, q queryer, id string, l Limits) (Program, 
 
 // Open validates the full retained ledger before advancing epochs. Epoch changes
 // preserve every logical projection, pending identity and observation consumption.
-func Open(ctx context.Context, path string, limits Limits) (store *Store, err error) {
+func Open(ctx context.Context, path string, limits Limits) (*Store, error) {
+	return openStore(ctx, path, limits, false)
+}
+
+func openStore(ctx context.Context, path string, limits Limits, composition bool) (store *Store, err error) {
 	real, err := canonicalPath(path, false)
 	if err != nil {
 		return nil, err
@@ -502,7 +527,15 @@ func Open(ctx context.Context, path string, limits Limits) (store *Store, err er
 		return nil, err
 	}
 	defer tx.Rollback()
-	report, err := validateLedger(ctx, tx, limits)
+	var report ReplayReport
+	if composition {
+		report, err = validateCompositionStore(ctx, tx, limits)
+		if err == nil {
+			s.composition, err = readCompositionProfile(ctx, tx, limits)
+		}
+	} else {
+		report, err = validateLedger(ctx, tx, limits)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -741,6 +774,9 @@ func (s *Store) Commit(ctx context.Context, a Authority, selected string) (RunSt
 			return RunState{}, err
 		}
 	}
+	if err = s.recordCompositionExecution(ctx, tx, r.ID, r.Sequence); err != nil {
+		return RunState{}, err
+	}
 	event := boundary.Event{Boundary: "execution.staged", Phase: "pre-commit", Subject: r.ID.Subject, Generation: r.ID.Generation, Epoch: r.Epoch, Sequence: r.Sequence}
 	if len(reduction.Intents) > 0 {
 		event.Intent = reduction.Intents[0].ID
@@ -803,7 +839,7 @@ func readNamespace(ctx context.Context, q queryer) (string, error) {
 	if err := q.QueryRowContext(ctx, "PRAGMA user_version").Scan(&userVersion); err != nil {
 		return "", err
 	}
-	if schemaVersion != SchemaVersion || userVersion != SchemaVersion || semantics != SemanticVersion {
+	if (schemaVersion != SchemaVersion && schemaVersion != compositionSchemaVersion) || userVersion != schemaVersion || semantics != SemanticVersion {
 		return "", ErrVersion
 	}
 	var namespace string

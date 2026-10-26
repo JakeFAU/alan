@@ -325,6 +325,9 @@ func (s *Store) DecideLifecycle(ctx context.Context, request LifecycleRequest) (
 	if _, err = tx.ExecContext(ctx, "INSERT INTO lifecycle_results VALUES(?,?,?,?)", request.Intent.ID, order, descriptor, raw); err != nil {
 		return result, err
 	}
+	if err = s.recordCompositionLifecycle(ctx, tx, result); err != nil {
+		return result, err
+	}
 	return result, s.lifecycleBoundary(ctx, tx, result)
 }
 func lifecycleOutcome(ctx context.Context, q queryer, id string) (LifecycleOutcome, error) {

@@ -76,6 +76,13 @@ type historyRow struct {
 // must separately reconcile authority-caused closure and successor creation here;
 // a projection mismatch is never treated as an acceptable lifecycle shortcut.
 func validateLedger(ctx context.Context, q queryer, limits Limits) (ReplayReport, error) {
+	if err := requireSchema(ctx, q, SchemaVersion); err != nil {
+		return ReplayReport{}, err
+	}
+	return validateOrdinaryLedger(ctx, q, limits)
+}
+
+func validateOrdinaryLedger(ctx context.Context, q queryer, limits Limits) (ReplayReport, error) {
 	report := ReplayReport{Runs: []RunState{}}
 	namespace, err := readNamespace(ctx, q)
 	if err != nil {

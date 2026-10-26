@@ -1,0 +1,45 @@
+{
+  "fixture": "internal/executor/composition_store_test.go:compositionFixture",
+  "A": [
+    {
+      "send": {
+        "literal_target": "caller",
+        "obligation": "reply",
+        "value": 1
+      }
+    },
+    {
+      "send": {
+        "literal_target": "caller",
+        "obligation": "reply",
+        "value": 2
+      }
+    },
+    "Success"
+  ],
+  "B": [
+    "Failure"
+  ],
+  "executed_schedules": [
+    [
+      "A.Send1",
+      "B.Failure",
+      "A.Send2"
+    ],
+    [
+      "A.Send1",
+      "A.Send2",
+      "B.Failure"
+    ]
+  ],
+  "expected_frozen_operations": [
+    [
+      "[\"A\",1,1,0]"
+    ],
+    [
+      "[\"A\",1,1,0]",
+      "[\"A\",1,2,0]"
+    ]
+  ],
+  "claim": "Ordering witness only; Frozen is the test monitor expected prefix, not a runtime invocation outcome."
+}
