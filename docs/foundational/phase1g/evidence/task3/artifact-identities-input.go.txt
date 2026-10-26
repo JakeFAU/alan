@@ -1,0 +1,18 @@
+package main
+import (
+ "encoding/json"
+ "os"
+ "github.com/JakeFAU/alan/examples/evidence"
+ "github.com/JakeFAU/alan/examples/worktree"
+)
+func main(){
+ profiles:=[]map[string]any{}
+ for _,name:=range []string{"deterministic","evidence"}{for _,nested:=range []bool{false,true}{
+  leaf,err:=worktree.Deterministic();if name=="evidence"{leaf,err=worktree.Evidence(evidence.Budgets{MaxModelRequests:2,MaxLookupRequests:1})};if err!=nil{panic(err)}
+  d,err:=worktree.New(leaf,nested,worktree.DefaultLimits(2));if err!=nil{panic(err)}
+  in,out,err:=d.Collection.Schemas();if err!=nil{panic(err)};entryIn,entryOut,err:=d.Entry.Schemas();if err!=nil{panic(err)};if in.ID!=entryIn.ID||out.ID!=entryOut.ID{panic("wrapper public schema mismatch")}
+  programs:=[]map[string]any{};for _,p:=range d.Provision.Programs{programs=append(programs,map[string]any{"id":p.ID,"bytes":len(p.Bytes),"semantics":p.Semantics})}
+  profiles=append(profiles,map[string]any{"leaf":name,"nested":nested,"leaf_template":d.Leaf.ID(),"collection_template":d.Collection.ID(),"entry_template":d.Entry.ID(),"input_schema":in.ID,"output_schema":out.ID,"entry_input_schema":entryIn.ID,"entry_output_schema":entryOut.ID,"collection_bundle_bytes":len(d.Collection.Bytes()),"templates":d.Provision.Composition.Templates,"static_runs":d.Provision.Runs,"programs":programs})
+ }}
+ e:=json.NewEncoder(os.Stdout);e.SetIndent("","  ");if err:=e.Encode(profiles);err!=nil{panic(err)}
+}

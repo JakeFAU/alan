@@ -1,0 +1,637 @@
+[
+  {
+    "argv": [
+      "go",
+      "test",
+      "./examples/worktree/..."
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 1,
+    "output": "01-public-consumer-missing-api-red.log",
+    "source_identity": "237a4976377382c5726e28d4dacdbfc44fafae8cde6b8438d0903fe26b5980e0"
+  },
+  {
+    "argv": [
+      "go",
+      "-C",
+      "examples/worktree/consumer",
+      "test",
+      "-mod=mod",
+      ".",
+      "-count=1"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 1,
+    "output": "02-separate-module-missing-api-red.log",
+    "source_identity": "237a4976377382c5726e28d4dacdbfc44fafae8cde6b8438d0903fe26b5980e0"
+  },
+  {
+    "argv": [
+      "go",
+      "-C",
+      "examples/worktree/consumer",
+      "test",
+      "-mod=mod",
+      ".",
+      "-count=1",
+      "-v"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 1,
+    "output": "03-public-consumer-first-green.log",
+    "source_identity": "bb6dcd8840e732ab83a432e36bad5c6d18f8de34b1d6c51c779e77411c54b751"
+  },
+  {
+    "argv": [
+      "go",
+      "-C",
+      "examples/worktree/consumer",
+      "test",
+      "-mod=mod",
+      ".",
+      "-count=1",
+      "-v"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 1,
+    "output": "04-public-consumer-green.log",
+    "source_identity": "271b6480c0f48ef18e275b46d0feaecb4a453224f8a62292541ae6b608b08576"
+  },
+  {
+    "argv": [
+      "go",
+      "test",
+      "./cmd/alan-compose",
+      "-count=1"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 1,
+    "output": "05-cli-missing-api-red.log",
+    "source_identity": "c7ac4c602e44e7238cc3f52181b9a270b32d45d8962668a96dcd69aa4729a220"
+  },
+  {
+    "argv": [
+      "go",
+      "test",
+      "./author",
+      "-run",
+      "Test(InvocationHandleRoundTrip|InvocationAwaitRejects|AdapterAwaitStill)",
+      "-count=1",
+      "-v"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 1,
+    "output": "06-handle-roundtrip-red.log",
+    "source_identity": "6c8382fab6dcf729a7540a429b4febfb6cde62a4e1df1f8915a3cdb28b72e954"
+  },
+  {
+    "argv": [
+      "go",
+      "test",
+      "./author",
+      "-run",
+      "Test(InvocationHandleRoundTrip|InvocationAwaitRejects|AdapterAwaitStill)",
+      "-count=1",
+      "-v"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 0,
+    "output": "07-handles-green.log",
+    "source_identity": "40acf035c009c331f5fc2cf4a0af69266e23dbc13184fe60fd59002b3a99a606"
+  },
+  {
+    "argv": [
+      "go",
+      "-C",
+      "examples/worktree/consumer",
+      "test",
+      "-mod=mod",
+      ".",
+      "-count=1",
+      "-v"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 1,
+    "output": "08-public-consumer-green.log",
+    "source_identity": "40acf035c009c331f5fc2cf4a0af69266e23dbc13184fe60fd59002b3a99a606"
+  },
+  {
+    "argv": [
+      "go",
+      "-C",
+      "examples/worktree/consumer",
+      "test",
+      "-mod=mod",
+      ".",
+      "-count=1",
+      "-v"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 1,
+    "output": "09-public-consumer-green.log",
+    "source_identity": "a489d2be72ef99bdcd2a77edb89eee177ceed186bad1a31343a993dca68b5217"
+  },
+  {
+    "argv": [
+      "go",
+      "-C",
+      "examples/worktree/consumer",
+      "test",
+      "-mod=mod",
+      ".",
+      "-count=1",
+      "-v"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 0,
+    "output": "10-public-consumer-green.log",
+    "source_identity": "9b723905751f4611a3ccae303584858256d17581ae193192f7bccc459f14c39d"
+  },
+  {
+    "argv": [
+      "go",
+      "test",
+      "./cmd/alan-compose",
+      "-count=1",
+      "-v"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 0,
+    "output": "11-cli-green.log",
+    "source_identity": "3eb4d127011cc0377f20ac6b3d15b7672eaa46b705f363c3937fdc6347bab86c"
+  },
+  {
+    "argv": [
+      "go",
+      "test",
+      "./author",
+      "-run",
+      "^TestSerializedInvocationHandleCannotRebindOutcome$",
+      "-count=1",
+      "-v"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 0,
+    "output": "12-serialized-handle-authentication.log",
+    "source_identity": "781f39ea6f6ef2bc5b0663a1a727f4df3a32418829df0b3436e76c7aba59fa9f"
+  },
+  {
+    "argv": [
+      "go",
+      "test",
+      "-tags=integration",
+      "./examples/worktree",
+      "-count=1",
+      "-v",
+      "-timeout=100s"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 1,
+    "output": "13-evidence-integration.log",
+    "source_identity": "781f39ea6f6ef2bc5b0663a1a727f4df3a32418829df0b3436e76c7aba59fa9f"
+  },
+  {
+    "argv": [
+      "go",
+      "test",
+      "-tags=integration",
+      "./examples/worktree",
+      "-count=1",
+      "-v",
+      "-timeout=100s"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 0,
+    "output": "14-evidence-integration.log",
+    "source_identity": "b5eef7d2e0f81f13b96dd04937c1a93c7433397a51dfed4fdf84eedce3154b93"
+  },
+  {
+    "argv": [
+      "go",
+      "test",
+      "./compose",
+      "./author",
+      "-run",
+      "Test(Collection|SerializedInvocationHandle)",
+      "-count=1",
+      "-v"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 1,
+    "output": "15-optional-response-and-handles.log",
+    "source_identity": "50dae266177fa933ec85a79309c6e0a5f4cc04e5fd8b8a2316eb71cb040d5dbb"
+  },
+  {
+    "argv": [
+      "go",
+      "test",
+      "-tags=integration",
+      "./examples/worktree",
+      "-run",
+      "^TestEvidenceCapacityAndReverseCompletion$",
+      "-count=1",
+      "-v",
+      "-timeout=70s"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 0,
+    "output": "16-causal-saturation.log",
+    "source_identity": "50dae266177fa933ec85a79309c6e0a5f4cc04e5fd8b8a2316eb71cb040d5dbb"
+  },
+  {
+    "argv": [
+      "go",
+      "test",
+      "./compose",
+      "-count=1",
+      "-v"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 0,
+    "output": "17-optional-response-green.log",
+    "source_identity": "8a16587f295c7c2285d4e840ce3ed8493d7e7fe56325b17829a6bd4de99d7432"
+  },
+  {
+    "argv": [
+      "go",
+      "test",
+      "./cmd/alan-compose",
+      "-run",
+      "^TestCLINullIsNotAnEmptyTypedWorkList$",
+      "-count=1",
+      "-v"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 1,
+    "output": "18-null-work-red.log",
+    "source_identity": "17de1fd59f84ab802cf2233cc6f0dffd0eafad534fd2b91b93407aaeb0b6f2f3"
+  },
+  {
+    "argv": [
+      "go",
+      "test",
+      "./cmd/alan-compose",
+      "-run",
+      "^TestCLINullIsNotAnEmptyTypedWorkList$",
+      "-count=1",
+      "-v"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 0,
+    "output": "19-null-work-green.log",
+    "source_identity": "efaa3f0f029aef9c55487d2aa8f328473295443cc0d744c86677facd98bdad47"
+  },
+  {
+    "argv": [
+      "go",
+      "test",
+      "./compose",
+      "./author",
+      "-run",
+      "Test(CollectionEmpty|CollectionRejects|DeterministicOverflow|SerializedInvocationHandle)",
+      "-count=1",
+      "-v"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 0,
+    "output": "20-public-edge-contract.log",
+    "source_identity": "efaa3f0f029aef9c55487d2aa8f328473295443cc0d744c86677facd98bdad47"
+  },
+  {
+    "argv": [
+      "go",
+      "test",
+      "-tags=integration",
+      "./examples/worktree",
+      "-count=1",
+      "-v",
+      "-timeout=100s"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 0,
+    "output": "21-evidence-acceptance-and-stages.log",
+    "source_identity": "efaa3f0f029aef9c55487d2aa8f328473295443cc0d744c86677facd98bdad47"
+  },
+  {
+    "argv": [
+      "go",
+      "test",
+      "./cmd/alan-compose",
+      "-run",
+      "^TestCLIRejectsDuplicateItemFields$",
+      "-count=1",
+      "-v"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 1,
+    "output": "22-duplicate-json-field-red.log",
+    "source_identity": "d96b7e4d8c561ef2d0cda1a9c9dd6aa9734a2cf100576fb08d04019714d32115"
+  },
+  {
+    "argv": [
+      "go",
+      "test",
+      "./cmd/alan-compose",
+      "-count=1",
+      "-v"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 0,
+    "output": "23-cli-identity-green.log",
+    "source_identity": "8f5283ff66810fb884145227df1e5933ba4bfb44fb9f98985df284e151cce476"
+  },
+  {
+    "argv": [
+      "go",
+      "-C",
+      "examples/worktree/consumer",
+      "test",
+      ".",
+      "-run",
+      "^TestFaultyOrdinaryCollectorReachesIndependentMappingMonitor$",
+      "-count=1",
+      "-v"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 0,
+    "output": "24-independent-faulty-mapping.log",
+    "source_identity": "8f5283ff66810fb884145227df1e5933ba4bfb44fb9f98985df284e151cce476"
+  },
+  {
+    "argv": [
+      "go",
+      "test",
+      "./author",
+      "./compose",
+      "./cmd/alan-compose",
+      "-count=1"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 0,
+    "output": "25-author-focused-final.log",
+    "source_identity": "735c85c420c5cac56729afa8df1ae45252ab8ffea422e4673ed8042870085750"
+  },
+  {
+    "argv": [
+      "go",
+      "-C",
+      "examples/worktree/consumer",
+      "test",
+      ".",
+      "-count=1",
+      "-v"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 0,
+    "output": "26-consumer-final.log",
+    "source_identity": "735c85c420c5cac56729afa8df1ae45252ab8ffea422e4673ed8042870085750"
+  },
+  {
+    "argv": [
+      "go",
+      "test",
+      "./...",
+      "-count=1"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 0,
+    "output": "27-default-final.log",
+    "source_identity": "735c85c420c5cac56729afa8df1ae45252ab8ffea422e4673ed8042870085750"
+  },
+  {
+    "argv": [
+      "go",
+      "test",
+      "-tags=integration",
+      "./examples/worktree",
+      "-count=1",
+      "-v",
+      "-timeout=100s"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 0,
+    "output": "28-evidence-final.log",
+    "source_identity": "735c85c420c5cac56729afa8df1ae45252ab8ffea422e4673ed8042870085750"
+  },
+  {
+    "argv": [
+      "go",
+      "-C",
+      "examples/worktree/consumer",
+      "vet",
+      "./..."
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 0,
+    "output": "29-consumer-vet.log",
+    "source_identity": "735c85c420c5cac56729afa8df1ae45252ab8ffea422e4673ed8042870085750"
+  },
+  {
+    "argv": [
+      "go",
+      "-C",
+      "examples/worktree/consumer",
+      "test",
+      "-race",
+      "./...",
+      "-count=1",
+      "-timeout=90s"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 1,
+    "output": "30-consumer-race.log",
+    "source_identity": "735c85c420c5cac56729afa8df1ae45252ab8ffea422e4673ed8042870085750"
+  },
+  {
+    "argv": [
+      "go",
+      "-C",
+      "examples/worktree/consumer",
+      "test",
+      "-race",
+      "./...",
+      "-count=1",
+      "-timeout=240s"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 0,
+    "output": "31-consumer-race-expanded-watchdog.log",
+    "source_identity": "735c85c420c5cac56729afa8df1ae45252ab8ffea422e4673ed8042870085750"
+  },
+  {
+    "argv": [
+      "go",
+      "run",
+      "/tmp/alan-task3-identities.go"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 0,
+    "output": "32-public-artifact-identities.log",
+    "source_identity": "735c85c420c5cac56729afa8df1ae45252ab8ffea422e4673ed8042870085750",
+    "supplemental_input": {
+      "path": "artifact-identities-input.go.txt",
+      "sha256": "4b02823b523e75f0535f206e21020957fc43b5e307d3b4c98d543f4f37e23e96",
+      "note": "Copy this retained public-only source to the temporary go run path when reproducing."
+    }
+  }
+]

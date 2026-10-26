@@ -1,0 +1,94 @@
+panic: test timed out after 1m30s
+	running tests:
+		TestLowerBudgetPreservesAcceptedWorkAndOrderedRejections (4s)
+		TestLowerBudgetPreservesAcceptedWorkAndOrderedRejections/runs (0s)
+
+goroutine 105185 [running]:
+testing.(*M).startAlarm.func1()
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/testing/testing.go:2961 +0x490
+created by time.goFunc
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/time/sleep.go:182 +0x44
+
+goroutine 1 [chan receive]:
+testing.(*T).Run(0xc0000f2248, {0x1034f0c3a, 0x38}, 0x10398a6f8)
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/testing/testing.go:2268 +0x7dc
+testing.runTests.func1(0xc0000f2248)
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/testing/testing.go:2744 +0x78
+testing.tRunner(0xc0000f2248, 0xc0000c5a28)
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/testing/testing.go:2195 +0x168
+testing.runTests({0x1034e677e, 0x24}, {0x1034e677e, 0x24}, 0xc0000121b0, {0x1039e2650, 0x5, 0x5}, {0x0?, 0xc0000d0628?, ...})
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/testing/testing.go:2742 +0x7a4
+testing.(*M).Run(0xc0000b2320)
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/testing/testing.go:2602 +0xb3c
+main.main()
+	_testmain.go:54 +0x104
+
+goroutine 102675 [chan receive]:
+testing.(*T).Run(0xc0002b6248, {0x1034d30dc, 0x4}, 0xc00025ef48)
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/testing/testing.go:2268 +0x7dc
+example.com/alan-collection-consumer_test.TestLowerBudgetPreservesAcceptedWorkAndOrderedRejections(0xc0002b6248)
+	/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan/examples/worktree/consumer/contract_test.go:174 +0x98
+testing.tRunner(0xc0002b6248, 0x10398a6f8)
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/testing/testing.go:2195 +0x168
+created by testing.(*T).Run in goroutine 1
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/testing/testing.go:2260 +0x7c0
+
+goroutine 106577 [select]:
+database/sql.(*DB).connectionOpener(0xc0002e1ba0, {0x103989458, 0xc00037e230})
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/database/sql/sql.go:1266 +0xbc
+created by database/sql.OpenDB in goroutine 107323
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/database/sql/sql.go:846 +0x250
+
+goroutine 107323 [runnable]:
+encoding/json/jsontext.(*decoderState).consumeValue(0xc00057ef00, 0xc000691808, 0x6f0, 0x6)
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/encoding/json/jsontext/decode.go:857 +0xa8c
+encoding/json/jsontext.(*decoderState).consumeObject(0xc00057ef00, 0xc000691808, 0x6d8, 0x5)
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/encoding/json/jsontext/decode.go:1048 +0xcc0
+encoding/json/jsontext.(*decoderState).consumeValue(0xc00057ef00, 0xc000691808, 0x6d8, 0x5)
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/encoding/json/jsontext/decode.go:885 +0x6e0
+encoding/json/jsontext.(*decoderState).consumeObject(0xc00057ef00, 0xc000691808, 0x6c4, 0x4)
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/encoding/json/jsontext/decode.go:1048 +0xcc0
+encoding/json/jsontext.(*decoderState).consumeValue(0xc00057ef00, 0xc000691808, 0x6c4, 0x4)
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/encoding/json/jsontext/decode.go:885 +0x6e0
+encoding/json/jsontext.(*decoderState).consumeObject(0xc00057ef00, 0xc000691808, 0x69e, 0x3)
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/encoding/json/jsontext/decode.go:1048 +0xcc0
+encoding/json/jsontext.(*decoderState).consumeValue(0xc00057ef00, 0xc000691808, 0x69e, 0x3)
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/encoding/json/jsontext/decode.go:885 +0x6e0
+encoding/json/jsontext.(*decoderState).consumeArray(0xc00057ef00, 0xc000691808, 0x21, 0x2)
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/encoding/json/jsontext/decode.go:1106 +0x428
+encoding/json/jsontext.(*decoderState).consumeValue(0xc00057ef00, 0xc000691808, 0x21, 0x2)
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/encoding/json/jsontext/decode.go:887 +0x5a4
+encoding/json/jsontext.(*decoderState).consumeObject(0xc00057ef00, 0xc000691808, 0x0, 0x1)
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/encoding/json/jsontext/decode.go:1048 +0xcc0
+encoding/json/jsontext.(*decoderState).consumeValue(0xc00057ef00, 0xc000691808, 0x0, 0x1)
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/encoding/json/jsontext/decode.go:885 +0x6e0
+encoding/json/jsontext.(*decoderState).ReadValue(0xc00057ef00, 0xc000691808)
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/encoding/json/jsontext/decode.go:731 +0x33c
+encoding/json/jsontext.(*Decoder).ReadValue(...)
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/encoding/json/jsontext/decode.go:679
+encoding/json.(*Decoder).Decode(0xc0002e6660, {0x1038c6b80, 0xc0002e6600})
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/encoding/json/v2_stream.go:78 +0x6c
+github.com/JakeFAU/alan/internal/executor.decode({0xc00015b800, 0x365e, 0x3800}, {0x1038c6b80, 0xc0002e6600})
+	/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan/internal/executor/program.go:121 +0xd0
+github.com/JakeFAU/alan/internal/executor.loadProgram({0x103989458, 0xc000595590}, {0x103988168, 0xc0000fa1b0}, {0xc000420c80, 0x40}, {0xc000420b40?, 0x40?, 0xc000420b80?, 0x40?})
+	/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan/internal/executor/store.go:525 +0x510
+github.com/JakeFAU/alan/internal/executor.(*Store).AdmitInvocation(0xc0000fac60, {0x103989458, 0xc000595590}, {0xc000038500, 0x4a})
+	/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan/internal/executor/invocation.go:279 +0x8d8
+github.com/JakeFAU/alan/internal/executor.(*Store).deliverOrdinary(0xc0000fac60, {0x103989458, 0xc000595590}, {{0xc0003545b0, 0x66}, {0xc000038500, 0x4a}, {0x1034d523d, 0xa}, {{0x0, ...}, ...}, ...})
+	/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan/internal/executor/runner.go:270 +0xbc
+github.com/JakeFAU/alan/internal/executor.(*Store).Run(0xc0000fac60, {0x103989458, 0xc000310640}, {0x0, 0x7d0, 0x1f4, 0x1, 0x77359400})
+	/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan/internal/executor/runner.go:157 +0xcd8
+example.com/alan-collection-consumer_test.TestLowerBudgetPreservesAcceptedWorkAndOrderedRejections.func1(0xc0002b6008)
+	/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan/examples/worktree/consumer/contract_test.go:202 +0x61c
+testing.tRunner(0xc0002b6008, 0xc00025ef48)
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/testing/testing.go:2195 +0x168
+created by testing.(*T).Run in goroutine 102675
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/testing/testing.go:2260 +0x7c0
+
+goroutine 108017 [chan receive]:
+database/sql.(*Tx).awaitDone(0xc0000fa1b0)
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/database/sql/sql.go:2217 +0x4c
+created by database/sql.(*DB).beginDC in goroutine 107323
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/database/sql/sql.go:1930 +0x33c
+FAIL	example.com/alan-collection-consumer	90.174s
+FAIL

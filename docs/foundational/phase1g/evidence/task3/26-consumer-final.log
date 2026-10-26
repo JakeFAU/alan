@@ -1,0 +1,56 @@
+=== RUN   TestRetainedCollectionContract
+    contract_test.go:59: identity collection=e14ef83c379f0dd1f1c0684cce4f56b3166eb427ab236f08cbaa50121f902b3e input=839a0ed11c1763207ea608ca48238e296bab0cf18ef636ecbe63a31a6ad66bcf output=e9bb2d71fe60cfc122fc2ed7948341208cc84b0e47a51d84bbc1938b40f47f52 catalogue_templates=2 artifact_count=3 initial_runs=1 nested=false collection_bundle_bytes=24097
+=== RUN   TestRetainedCollectionContract/nested=false/n=0
+    contract_test.go:128: n=0 enclosing_calls=1 item_calls=0 created_runs=1 effects=0 results=1 intents=2 history=23 latency=94.936583ms
+=== RUN   TestRetainedCollectionContract/nested=false/n=1
+    contract_test.go:128: n=1 enclosing_calls=1 item_calls=1 created_runs=2 effects=0 results=2 intents=4 history=41 latency=168.011417ms
+=== RUN   TestRetainedCollectionContract/nested=false/n=3
+    contract_test.go:128: n=3 enclosing_calls=1 item_calls=3 created_runs=4 effects=0 results=4 intents=8 history=77 latency=348.586375ms
+=== RUN   TestRetainedCollectionContract/nested=false/n=7
+    contract_test.go:128: n=7 enclosing_calls=1 item_calls=7 created_runs=8 effects=0 results=8 intents=16 history=149 latency=983.263375ms
+=== RUN   TestRetainedCollectionContract/nested=false/n=8
+    contract_test.go:128: n=8 enclosing_calls=1 item_calls=8 created_runs=9 effects=0 results=9 intents=18 history=167 latency=1.177623292s
+=== RUN   TestRetainedCollectionContract/nested=false/n=9
+=== NAME  TestRetainedCollectionContract
+    contract_test.go:59: identity collection=e14ef83c379f0dd1f1c0684cce4f56b3166eb427ab236f08cbaa50121f902b3e input=839a0ed11c1763207ea608ca48238e296bab0cf18ef636ecbe63a31a6ad66bcf output=e9bb2d71fe60cfc122fc2ed7948341208cc84b0e47a51d84bbc1938b40f47f52 catalogue_templates=3 artifact_count=4 initial_runs=1 nested=true collection_bundle_bytes=24097
+=== RUN   TestRetainedCollectionContract/nested=true/n=0
+    contract_test.go:128: n=0 enclosing_calls=2 item_calls=0 created_runs=2 effects=0 results=2 intents=4 history=31 latency=128.236125ms
+=== RUN   TestRetainedCollectionContract/nested=true/n=1
+    contract_test.go:128: n=1 enclosing_calls=2 item_calls=1 created_runs=3 effects=0 results=3 intents=6 history=49 latency=231.236916ms
+=== RUN   TestRetainedCollectionContract/nested=true/n=3
+    contract_test.go:128: n=3 enclosing_calls=2 item_calls=3 created_runs=5 effects=0 results=5 intents=10 history=85 latency=455.156333ms
+=== RUN   TestRetainedCollectionContract/nested=true/n=7
+    contract_test.go:128: n=7 enclosing_calls=2 item_calls=7 created_runs=9 effects=0 results=9 intents=18 history=157 latency=1.258545292s
+=== RUN   TestRetainedCollectionContract/nested=true/n=8
+    contract_test.go:128: n=8 enclosing_calls=2 item_calls=8 created_runs=10 effects=0 results=10 intents=20 history=175 latency=1.215906041s
+=== RUN   TestRetainedCollectionContract/nested=true/n=9
+--- PASS: TestRetainedCollectionContract (7.18s)
+    --- PASS: TestRetainedCollectionContract/nested=false/n=0 (0.14s)
+    --- PASS: TestRetainedCollectionContract/nested=false/n=1 (0.21s)
+    --- PASS: TestRetainedCollectionContract/nested=false/n=3 (0.42s)
+    --- PASS: TestRetainedCollectionContract/nested=false/n=7 (1.13s)
+    --- PASS: TestRetainedCollectionContract/nested=false/n=8 (1.35s)
+    --- PASS: TestRetainedCollectionContract/nested=false/n=9 (0.02s)
+    --- PASS: TestRetainedCollectionContract/nested=true/n=0 (0.17s)
+    --- PASS: TestRetainedCollectionContract/nested=true/n=1 (0.29s)
+    --- PASS: TestRetainedCollectionContract/nested=true/n=3 (0.54s)
+    --- PASS: TestRetainedCollectionContract/nested=true/n=7 (1.45s)
+    --- PASS: TestRetainedCollectionContract/nested=true/n=8 (1.43s)
+    --- PASS: TestRetainedCollectionContract/nested=true/n=9 (0.02s)
+=== RUN   TestRejectDuplicateIDsBeforeAnyChild
+--- PASS: TestRejectDuplicateIDsBeforeAnyChild (0.03s)
+=== RUN   TestLowerBudgetPreservesAcceptedWorkAndOrderedRejections
+=== RUN   TestLowerBudgetPreservesAcceptedWorkAndOrderedRejections/invocations
+=== RUN   TestLowerBudgetPreservesAcceptedWorkAndOrderedRejections/runs
+=== RUN   TestLowerBudgetPreservesAcceptedWorkAndOrderedRejections/depth
+--- PASS: TestLowerBudgetPreservesAcceptedWorkAndOrderedRejections (0.91s)
+    --- PASS: TestLowerBudgetPreservesAcceptedWorkAndOrderedRejections/invocations (0.32s)
+    --- PASS: TestLowerBudgetPreservesAcceptedWorkAndOrderedRejections/runs (0.31s)
+    --- PASS: TestLowerBudgetPreservesAcceptedWorkAndOrderedRejections/depth (0.28s)
+=== RUN   TestPublicSchemaCopiesAndReservedField
+--- PASS: TestPublicSchemaCopiesAndReservedField (0.00s)
+=== RUN   TestFaultyOrdinaryCollectorReachesIndependentMappingMonitor
+    contract_test.go:346: unchanged mapping monitor detected: incorrect item mapping at 0: got item-a=0 want item-a=4
+--- PASS: TestFaultyOrdinaryCollectorReachesIndependentMappingMonitor (0.14s)
+PASS
+ok  	example.com/alan-collection-consumer	8.412s

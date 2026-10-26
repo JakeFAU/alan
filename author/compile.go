@@ -427,7 +427,14 @@ func (c *compiler) validate() error {
 				}
 				return c.kind(f), nil
 			}
-			return read(o)
+			kind, err := read(o)
+			// Operation identities are runtime strings at typed payload/list
+			// boundaries. Serializing one loses its static declaration proof;
+			// AwaitInvocation authenticates the retained operation at runtime.
+			if f.Kind == "string" && strings.HasPrefix(kind, "request:") {
+				kind = "string"
+			}
+			return kind, err
 		}
 		write := func(name, kind string) error {
 			if name == "" {
@@ -591,7 +598,7 @@ func (c *compiler) validate() error {
 				if err != nil {
 					return err
 				}
-				if kind != "request:"+effect {
+				if kind != "request:"+effect && !(kind == "string" && strings.HasPrefix(effect, "invocation:")) {
 					return c.err(pc, "await requires request for effect %q", effect)
 				}
 			}

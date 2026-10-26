@@ -146,3 +146,19 @@ func retainInvocations(d Definition, m *executor.ProgramMetadata) (string, error
 	raw, err := json.Marshal(c)
 	return string(raw), err
 }
+
+// Schemas returns independent copies of the retained public request and response
+// schemas. A zero Template returns an error rather than an empty contract.
+func (t Template) Schemas() (input, output schema.Retained, err error) {
+	b, err := t.bundle()
+	if err != nil {
+		return input, output, err
+	}
+	if err = b.Input.Check(); err != nil {
+		return input, output, err
+	}
+	if err = b.Output.Check(); err != nil {
+		return input, output, err
+	}
+	return b.Input, b.Output, nil
+}

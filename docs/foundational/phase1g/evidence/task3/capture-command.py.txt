@@ -1,0 +1,12 @@
+import json,sys,subprocess,os,hashlib
+from pathlib import Path
+out=Path('docs/foundational/phase1g/evidence/task3')
+name=sys.argv[1];argv=sys.argv[2:];env={'GOTOOLCHAIN':'local','GOPROXY':'off','GOSUMDB':'off','GOCACHE':'/tmp/alan-phase1f-go-build'}
+files=sorted(set(subprocess.check_output(['git','ls-files','-co','--exclude-standard','--','*.go','go.mod','go.sum'],text=True).splitlines()))
+manifest=[{'path':f,'sha256':hashlib.sha256(Path(f).read_bytes()).hexdigest()} for f in files]
+identity=hashlib.sha256(''.join(x['path']+'\0'+x['sha256']+'\n' for x in manifest).encode()).hexdigest()
+(out/(name+'.source.json')).write_text(json.dumps({'identity':identity,'files':manifest},indent=2)+'\n')
+r=subprocess.run(argv,env={**os.environ,**env},stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+(out/(name+'.log')).write_bytes(r.stdout)
+commands=json.loads((out/'commands.json').read_text()) if (out/'commands.json').exists() else [];commands.append({'argv':argv,'environment':env,'exit_code':r.returncode,'output':name+'.log','source_identity':identity});(out/'commands.json').write_text(json.dumps(commands,indent=2)+'\n')
+print(r.stdout.decode());print('Go exit:',r.returncode,'source:',identity)
