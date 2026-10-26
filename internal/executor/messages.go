@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/JakeFAU/alan/internal/boundary"
+	"reflect"
 )
 
 // Input is the local operator ingress. Its origin/type are fixed by this API;
@@ -355,7 +356,7 @@ func loadAdmissionKey(ctx context.Context, q queryer, id string) (AdmissionDescr
 	return d, r, nil
 }
 func observationFor(d AdmissionDescriptor, bound RunID) Observation {
-	provenance := map[string]string{"input": "local-input", "message": "ordinary-message", "terminal": "runtime-terminal", "lifecycle": "runtime-lifecycle", "receipt": "resource-receipt"}[d.Kind]
+	provenance := map[string]string{"input": "local-input", "message": "ordinary-message", "terminal": "runtime-terminal", "lifecycle": "runtime-lifecycle", "receipt": "resource-receipt", "adapter": "runtime-adapter"}[d.Kind]
 	return Observation{ID: identity("observation", d.Kind, d.LogicalID), Run: bound, Kind: d.Kind, Provenance: provenance, Source: d.Source.Subject, SourceGeneration: d.Source.Generation, Obligation: d.Obligation, Operation: d.Operation, Payload: d.Payload}
 }
 func admit(ctx context.Context, tx *sql.Tx, d AdmissionDescriptor, limits Limits, sourceDenial string) (AdmissionResult, error) {
@@ -425,8 +426,16 @@ func admit(ctx context.Context, tx *sql.Tx, d AdmissionDescriptor, limits Limits
 				if !permitted {
 					result.Reason = "route_denied"
 				} else {
-					result.Accepted = true
-					result.Reason = "accepted"
+					program, e := loadProgram(ctx, tx, target.ProgramID, limits)
+					if e != nil {
+						return result, e
+					}
+					if !authorAdmissionValid(program, d) {
+						result.Reason = "schema_invalid"
+					} else {
+						result.Accepted = true
+						result.Reason = "accepted"
+					}
 				}
 			}
 		}
@@ -456,7 +465,7 @@ func admit(ctx context.Context, tx *sql.Tx, d AdmissionDescriptor, limits Limits
 	return result, nil
 }
 func admissionPermitted(ctx context.Context, q queryer, d AdmissionDescriptor) (bool, error) {
-	if d.Kind == "terminal" || d.Kind == "lifecycle" || d.Kind == "receipt" {
+	if d.Kind == "terminal" || d.Kind == "lifecycle" || d.Kind == "receipt" || d.Kind == "adapter" {
 		return true, nil
 	} // terminalDescriptor validated the frozen route.
 	revision := int64(0)
@@ -589,6 +598,25 @@ func validateMessaging(ctx context.Context, q queryer, limits Limits) error {
 			if !sameJSON(raw, expected) {
 				return corrupt("terminal origin")
 			}
+		case "adapter":
+			a, e := loadAdapterAttempt(ctx, q, d.IntentID)
+			if e != nil {
+				return e
+			}
+			result, e := loadAdapterResult(ctx, q, d.IntentID)
+			if e != nil {
+				return e
+			}
+			if !reflect.DeepEqual(d, adapterDescriptor(a, result)) || r.Bound == nil || *r.Bound != a.Intent.Run {
+				return corrupt("adapter admission binding")
+			}
+			var count int
+			if e = q.QueryRowContext(ctx, "SELECT count(*) FROM settlements WHERE id=? AND observation_id=?", identity("adapter-outcome", d.IntentID), r.ObservationID).Scan(&count); e != nil {
+				return e
+			}
+			if count != 1 {
+				return corrupt("adapter admission lacks settlement")
+			}
 		case "receipt":
 			outcome, e := externalOutcome(ctx, q, d.IntentID)
 			if e != nil {
@@ -638,7 +666,7 @@ func validateMessaging(ctx context.Context, q queryer, limits Limits) error {
 			return corrupt("admission binding")
 		}
 		if r.Accepted {
-			if (r.Reason != "accepted" && !((d.Kind == "lifecycle" || d.Kind == "receipt") && r.Reason == "settled")) || r.Bound == nil || r.ObservationID == "" || !observationID.Valid || observationID.String != r.ObservationID {
+			if (r.Reason != "accepted" && !((d.Kind == "lifecycle" || d.Kind == "receipt" || d.Kind == "adapter") && r.Reason == "settled")) || r.Bound == nil || r.ObservationID == "" || !observationID.Valid || observationID.String != r.ObservationID {
 				return corrupt("accepted admission result")
 			}
 			if d.Generation != 0 && d.Generation != r.Bound.Generation {
@@ -663,13 +691,24 @@ func validateMessaging(ctx context.Context, q queryer, limits Limits) error {
 			if !permitted {
 				return corrupt("accepted admission lacks static route")
 			}
+			target, e := loadRun(ctx, q, *r.Bound)
+			if e != nil {
+				return e
+			}
+			program, e := loadProgram(ctx, q, target.ProgramID, limits)
+			if e != nil {
+				return e
+			}
+			if !authorAdmissionValid(program, d) {
+				return corrupt("accepted admission violates author schema")
+			}
 			explained[r.ObservationID] = true
 		} else {
 			if r.ObservationID != "" || observationID.Valid {
 				return corrupt("rejected admission has observation")
 			}
 			switch r.Reason {
-			case "target_missing", "target_retired", "target_generation_changed", "target_closed", "route_denied", "source_denied:source_closed", "source_denied:source_retired", "source_denied:source_revision_changed", "source_denied:source_generation_changed":
+			case "schema_invalid", "target_missing", "target_retired", "target_generation_changed", "target_closed", "route_denied", "source_denied:source_closed", "source_denied:source_retired", "source_denied:source_revision_changed", "source_denied:source_generation_changed":
 			default:
 				return corrupt("unknown admission rejection")
 			}
@@ -678,7 +717,7 @@ func validateMessaging(ctx context.Context, q queryer, limits Limits) error {
 	}
 	for id, o := range observations {
 		switch o.Provenance {
-		case "local-input", "ordinary-message", "runtime-terminal", "runtime-lifecycle", "resource-receipt":
+		case "local-input", "ordinary-message", "runtime-terminal", "runtime-lifecycle", "resource-receipt", "runtime-adapter":
 			if !explained[id] {
 				return corrupt("unexplained authenticated observation %s", id)
 			}

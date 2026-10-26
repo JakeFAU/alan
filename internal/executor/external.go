@@ -31,6 +31,8 @@ type ExternalOutcome struct {
 	Receipt     *resource.Receipt
 }
 
+// externalRequest validates fixture parameters; the store binds the returned
+// request to its durable namespace before retaining or comparing it.
 func externalRequest(intent Intent) (resource.Request, error) {
 	profile, pok := intent.Payload["profile"]
 	delta, dok := intent.Payload["delta"]
@@ -41,7 +43,7 @@ func externalRequest(intent Intent) (resource.Request, error) {
 	if intent.Kind != "external" || intent.Generation != 1 || intent.Obligation == "" || !pok || profile.Kind != "string" || (profile.Text != "idempotent" && profile.Text != "non-idempotent") || !dok || delta.Kind != "int" {
 		return resource.Request{}, fmt.Errorf("invalid external intent")
 	}
-	return resource.Request{Key: intent.ID, Profile: profile.Text, Delta: delta.Number, Subject: intent.Run.Subject, Generation: intent.Run.Generation, Sequence: intent.Sequence}, nil
+	return resource.Request{Profile: profile.Text, Delta: delta.Number, Subject: intent.Run.Subject, Generation: intent.Run.Generation, Sequence: intent.Sequence}, nil
 }
 func loadExternalAttempt(ctx context.Context, q queryer, id string) (ExternalAttempt, error) {
 	var a ExternalAttempt
@@ -87,6 +89,7 @@ func (s *Store) prepareExternal(ctx context.Context, id string) (ExternalAttempt
 	if err != nil {
 		return old, false, err
 	}
+	request.Key = ExternalKey(s.namespace, id)
 	request.Epoch = auth.Source.Epoch
 	request.Authorization = auth.ID
 	a := ExternalAttempt{Intent: retained.Intent, AuthorizationID: auth.ID, Request: request, Allowed: auth.Allowed, Reason: auth.Reason}
@@ -118,6 +121,7 @@ type externalWork struct {
 	timeout  time.Duration
 }
 type externalCompletion struct {
+	adapter *adapterCompletion
 	work    externalWork
 	receipt *resource.Receipt
 	err     error
@@ -208,6 +212,9 @@ func exchangeExternal(ctx context.Context, work externalWork) externalCompletion
 	return result
 }
 func (s *Store) accountExternal(ctx context.Context, result externalCompletion) error {
+	if result.adapter != nil {
+		return s.accountAdapter(ctx, *result.adapter)
+	}
 	if result.receipt == nil {
 		return result.err
 	}
@@ -273,6 +280,7 @@ func (s *Store) recordExternalReceipt(ctx context.Context, a ExternalAttempt, r 
 	if err != nil {
 		return err
 	}
+	request.Key = ExternalKey(s.namespace, a.Intent.ID)
 	request.Epoch = auth.Source.Epoch
 	request.Authorization = auth.ID
 	if !reflect.DeepEqual(retained, a) || !reflect.DeepEqual(intent.Intent, a.Intent) || !reflect.DeepEqual(request, a.Request) || !auth.Allowed || !a.Allowed || a.AuthorizationID != auth.ID || !validReceipt(a, r) {
@@ -395,6 +403,10 @@ func (s *Store) settleExternal(ctx context.Context, o ExternalOutcome) error {
 	return s.commitOwnedTx(ctx, tx)
 }
 func validateExternal(ctx context.Context, q queryer) error {
+	namespace, err := readNamespace(ctx, q)
+	if err != nil {
+		return err
+	}
 	rows, err := q.QueryContext(ctx, "SELECT intent_id FROM external_attempts ORDER BY intent_id")
 	if err != nil {
 		return err
@@ -429,6 +441,7 @@ func validateExternal(ctx context.Context, q queryer) error {
 		if err != nil {
 			return err
 		}
+		request.Key = ExternalKey(namespace, id)
 		request.Epoch = auth.Source.Epoch
 		request.Authorization = auth.ID
 		allowed, reason := auth.Allowed, auth.Reason

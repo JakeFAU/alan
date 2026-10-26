@@ -1,0 +1,57 @@
+[
+  {
+    "Command": [
+      "go",
+      "version"
+    ],
+    "ExitCode": 0,
+    "Stdout": "go version go1.27.3 darwin/arm64\n",
+    "Stderr": ""
+  },
+  {
+    "Command": [
+      "go",
+      "env",
+      "-json",
+      "GOOS",
+      "GOARCH",
+      "CGO_ENABLED",
+      "CC",
+      "GOVERSION"
+    ],
+    "ExitCode": 0,
+    "Stdout": "{\n\t\"CC\": \"cc\",\n\t\"CGO_ENABLED\": \"1\",\n\t\"GOARCH\": \"arm64\",\n\t\"GOOS\": \"darwin\",\n\t\"GOVERSION\": \"go1.27.3\"\n}\n",
+    "Stderr": ""
+  },
+  {
+    "Command": [
+      "cc",
+      "--version"
+    ],
+    "ExitCode": 0,
+    "Stdout": "Apple clang version 21.0.0 (clang-2100.3.34.2)\nTarget: arm64-apple-darwin27.2.0\nThread model: posix\nInstalledDir: /Library/Developer/CommandLineTools/usr/bin\n",
+    "Stderr": ""
+  },
+  {
+    "Command": [
+      "go",
+      "list",
+      "-m",
+      "-json",
+      "all"
+    ],
+    "ExitCode": 0,
+    "Stdout": "{\n\t\"Path\": \"github.com/JakeFAU/alan\",\n\t\"Main\": true,\n\t\"Dir\": \"/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan\",\n\t\"GoMod\": \"/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan/go.mod\",\n\t\"GoVersion\": \"1.27.3\"\n}\n{\n\t\"Path\": \"github.com/mattn/go-sqlite3\",\n\t\"Version\": \"v1.14.52\",\n\t\"Time\": \"2026-09-05T04:18:43Z\",\n\t\"Dir\": \"/Users/jacob/go/pkg/mod/github.com/mattn/go-sqlite3@v1.14.52\",\n\t\"GoMod\": \"/Users/jacob/go/pkg/mod/cache/download/github.com/mattn/go-sqlite3/@v/v1.14.52.mod\",\n\t\"GoVersion\": \"1.21\",\n\t\"Sum\": \"h1:wVbm2Qnf4OXkqhBTSPuCRZDRnxfbVrrmiCEroVdog8U=\",\n\t\"GoModSum\": \"h1:6JTjA44L93a0QCyJef5YvlPoKXntQPjzWv5gtm9sB6w=\"\n}\n",
+    "Stderr": ""
+  },
+  {
+    "Command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "ExitCode": 0,
+    "Stdout": "",
+    "Stderr": ""
+  }
+]

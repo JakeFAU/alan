@@ -729,14 +729,14 @@ func (b *bridge) externalCheck(label, resourcePath string) {
 				a := bridgeDecode[ex.ExternalAttempt](b.t, row["descriptor"])
 				bridgeEqual(b.t, "immutable attempt intent", intent, a.Intent)
 				authorized = a.Allowed
-				bridgeEqual(b.t, "external request key", rid, a.Request.Key)
+				bridgeEqual(b.t, "external request key", ex.ExternalKey(snapshot.Namespace, rid), a.Request.Key)
 			}
 		}
 		for _, row := range snapshot.Tables["external_receipts"] {
 			if row["intent_id"] == rid {
 				receipt = true
 				r := bridgeDecode[resourcefixture.Receipt](b.t, row["descriptor"])
-				bridgeEqual(b.t, "receipt key", rid, r.Key)
+				bridgeEqual(b.t, "receipt key", ex.ExternalKey(snapshot.Namespace, rid), r.Key)
 			}
 		}
 		for _, row := range snapshot.Tables["settlements"] {

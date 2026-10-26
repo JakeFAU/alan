@@ -1,0 +1,73 @@
+{
+  "SourceID": "fc1e319d8a81ff5269afabc0b98e1876b9a9a561a2b7595ce986296b78e225e1",
+  "ArchiveSHA256": "d92385585834ad2f3fdc58a416ba8f163f205e9c65814becd503592af04cf7db",
+  "VerifiedMembers": 212,
+  "InitialModuleCacheEmpty": true,
+  "Environment": {
+    "GOTOOLCHAIN": "local",
+    "GOMODCACHE": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1e-offline-9lak25ll/module-cache",
+    "GOCACHE": "/tmp/alan-phase1e-offline-build",
+    "GOPROXY": "file:///var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1e-offline-9lak25ll/dependencies",
+    "GOSUMDB": "off",
+    "GOFLAGS": "-mod=readonly"
+  },
+  "Commands": [
+    {
+      "Command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "docs/foundational/phase1e/tools",
+        "-p",
+        "test_comparison.py",
+        "-v"
+      ],
+      "ExitCode": 0,
+      "ElapsedSeconds": 0.723,
+      "Stdout": "",
+      "Stderr": "test_reject_behavior_mutations (test_comparison.ComparisonControls.test_reject_behavior_mutations) ... ok\ntest_reject_missing_go_pass_event (test_comparison.ComparisonControls.test_reject_missing_go_pass_event) ... ok\ntest_reject_model_stream_and_missing_projection_field (test_comparison.ComparisonControls.test_reject_model_stream_and_missing_projection_field) ... ok\ntest_reject_public_projection_even_if_actual_and_expected_both_changed (test_comparison.ComparisonControls.test_reject_public_projection_even_if_actual_and_expected_both_changed) ... ok\ntest_reject_reordering_and_missing_record (test_comparison.ComparisonControls.test_reject_reordering_and_missing_record) ... ok\ntest_reject_source_identity_and_manifest_inconsistency (test_comparison.ComparisonControls.test_reject_source_identity_and_manifest_inconsistency) ... ok\ntest_retained_normal_and_race_accept_documented_provenance (test_comparison.ComparisonControls.test_retained_normal_and_race_accept_documented_provenance) ... ok\n\n----------------------------------------------------------------------\nRan 7 tests in 0.642s\n\nOK\n"
+    },
+    {
+      "Command": [
+        "go",
+        "test",
+        "-count=1",
+        "-tags",
+        "integration",
+        "./..."
+      ],
+      "ExitCode": 0,
+      "ElapsedSeconds": 26.175,
+      "Stdout": "ok  \tgithub.com/JakeFAU/alan/adapters/lookup\t0.194s\nok  \tgithub.com/JakeFAU/alan/adapters/openai\t0.185s\nok  \tgithub.com/JakeFAU/alan/author\t4.133s\nok  \tgithub.com/JakeFAU/alan/cmd/alan\t0.270s\nok  \tgithub.com/JakeFAU/alan/cmd/alan-evidence\t3.965s\n?   \tgithub.com/JakeFAU/alan/cmd/alan-resource\t[no test files]\nok  \tgithub.com/JakeFAU/alan/effects\t0.234s\nok  \tgithub.com/JakeFAU/alan/examples/evidence\t4.445s\nok  \tgithub.com/JakeFAU/alan/internal/boundary\t0.188s\nok  \tgithub.com/JakeFAU/alan/internal/durabletest\t9.074s\nok  \tgithub.com/JakeFAU/alan/internal/evidencetest\t7.235s\nok  \tgithub.com/JakeFAU/alan/internal/executor\t3.859s\nok  \tgithub.com/JakeFAU/alan/internal/fixture\t0.163s\nok  \tgithub.com/JakeFAU/alan/research/semantics\t5.874s\nok  \tgithub.com/JakeFAU/alan/runtime\t0.370s\nok  \tgithub.com/JakeFAU/alan/schema\t0.137s\n",
+      "Stderr": "go: downloading github.com/mattn/go-sqlite3 v1.14.52\n"
+    },
+    {
+      "Command": [
+        "go",
+        "mod",
+        "verify"
+      ],
+      "ExitCode": 0,
+      "ElapsedSeconds": 0.062,
+      "Stdout": "all modules verified\n",
+      "Stderr": ""
+    },
+    {
+      "Command": [
+        "go",
+        "vet",
+        "-tags",
+        "integration",
+        "./..."
+      ],
+      "ExitCode": 0,
+      "ElapsedSeconds": 1.098,
+      "Stdout": "",
+      "Stderr": ""
+    }
+  ],
+  "ElapsedSeconds": 28.247,
+  "Result": "PASS"
+}

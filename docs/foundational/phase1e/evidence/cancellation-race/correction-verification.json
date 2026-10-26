@@ -1,0 +1,47 @@
+{
+  "environment": "GOTOOLCHAIN=local GOCACHE=/tmp/alan-phase1e-go-build GOPROXY=off GOSUMDB=off PYTHONDONTWRITEBYTECODE=1",
+  "original_source_sha256": "026321f39dce9332d24b4891a2e9164f0d14aaacdbecec69058989341e8196a8",
+  "final_changed_files": {
+    "internal/executor/runner.go": "ccbe9fd407baf2ed03beb97a5d3e3eb5c5c658359ce1d6f2a0004fb125c129a2",
+    "internal/executor/cancellation_regression_test.go": "f429027693ef5690a15e0ebb3cc09e928fb987c85112dcb8896071b22d4f5450",
+    "internal/evidencetest/process_test.go": "785ee811c5c9978a6b9ac56920a1b4d3aba2111fea56bff95166f477e26da2d1"
+  },
+  "commands": [
+    {
+      "command": "GOTOOLCHAIN=local GOCACHE=/tmp/alan-phase1e-go-build GOPROXY=off GOSUMDB=off PYTHONDONTWRITEBYTECODE=1 go test -tags integration ./internal/executor ./internal/evidencetest -run 'TestCancellationAfterDequeue|TestCancellationDuringAdapterSettlement' -count=1 -v",
+      "exit_code": 1,
+      "log": "deterministic-red.log",
+      "log_sha256": "b79cbe6be02a4ccc0b8e0867a612c27b0e4f469a7e0c3c28c76e2ec79357b754"
+    },
+    {
+      "command": "GOTOOLCHAIN=local GOCACHE=/tmp/alan-phase1e-go-build GOPROXY=off GOSUMDB=off PYTHONDONTWRITEBYTECODE=1 go test -tags integration ./internal/executor ./internal/evidencetest -run 'TestCancellationAfterDequeue|TestCancellationDuringAdapterSettlement' -count=1 -v",
+      "exit_code": 1,
+      "log": "deterministic-red-snapshots.log",
+      "log_sha256": "b15801ec481e106f1e72089c39382cdcd1576889c37e1fea301811f03c77dd7d"
+    },
+    {
+      "command": "GOTOOLCHAIN=local GOCACHE=/tmp/alan-phase1e-go-build GOPROXY=off GOSUMDB=off PYTHONDONTWRITEBYTECODE=1 go test -tags integration ./internal/executor ./internal/evidencetest -run 'TestCancellationAfterDequeue|TestCancellationDuringAdapterSettlement|TestCancellationAccountingError|TestAdapterCancellationAccountsReceivedCandidate|TestCancellationRetainsRealReceivedModelCandidate|TestAsyncKnownReceiptSurvivesSettlementFailure|TestAsyncReceiptPersistenceFailureIsExplicitAndRecoverable' -count=1 -v",
+      "exit_code": 0,
+      "log": "focused-green.log",
+      "log_sha256": "a2477ac43f4a331309a8a2cf631da9df1711c5552c2058d03a3e305529d28567"
+    },
+    {
+      "command": "GOTOOLCHAIN=local GOCACHE=/tmp/alan-phase1e-go-build GOPROXY=off GOSUMDB=off PYTHONDONTWRITEBYTECODE=1 go test -tags integration ./internal/executor ./internal/evidencetest -count=1",
+      "exit_code": 0,
+      "log": "packages-green.log",
+      "log_sha256": "14932377a30b68c71a7aa76bb642950454facca1f4f51f7b981430e41ef7322f"
+    },
+    {
+      "command": "GOTOOLCHAIN=local GOCACHE=/tmp/alan-phase1e-go-build GOPROXY=off GOSUMDB=off PYTHONDONTWRITEBYTECODE=1 go test -race -tags integration ./internal/executor -run 'TestCancellationAfterDequeueAccountsCompletion|TestCancellationDuringAdapterSettlement|TestCancellationAccountingError|TestAdapterCancellationAccountsReceivedCandidate' -count=100",
+      "exit_code": 0,
+      "log": "stress-race-green.log",
+      "log_sha256": "b8f8b864fefd75c23d2efe791b07abeb2c3f0e45abdebd68716b92f87f906e71"
+    },
+    {
+      "command": "GOTOOLCHAIN=local GOCACHE=/tmp/alan-phase1e-go-build GOPROXY=off GOSUMDB=off PYTHONDONTWRITEBYTECODE=1 go test -race -tags integration ./internal/executor ./internal/evidencetest -count=1 -v",
+      "exit_code": 0,
+      "log": "packages-race-green.log",
+      "log_sha256": "d6e7235b4932862a9665df9dec53b8ff2560dc08789d3ac64519281a52d1c897"
+    }
+  ]
+}

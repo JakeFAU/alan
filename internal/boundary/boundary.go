@@ -73,10 +73,10 @@ func FromEnvironment(ctx context.Context, store string) (context.Context, error)
 	active := map[string]string{}
 	return WithObserver(ctx, func(ctx context.Context, event Event) error {
 		mu.Lock()
-		if event.Boundary == "external.authorized" {
+		if event.Boundary == "external.authorized" || event.Boundary == "adapter.authorized" {
 			active[event.Intent] = event.Attempt
 		}
-		if event.Boundary == "external.finished" {
+		if event.Boundary == "external.finished" || event.Boundary == "adapter.finished" {
 			delete(active, event.Intent)
 		}
 		for _, attempt := range active {
