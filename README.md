@@ -1,8 +1,32 @@
-# ALAN
+<p align="center">
+  <img src="docs/img/alan_logo_light.png" alt="ALAN — Agentic Lambda Abstraction Network" width="280">
+</p>
 
-**Agentic Lambda Abstraction Network** is an experimental framework for durable, recursively composable agentic computation. A coordinator or supervisor is an ordinary program: it receives observations, makes decisions in its own state, and commits effect intents through the same interpreter as other programs.
+<h1 align="center">ALAN</h1>
 
-The repository contains a runnable **single-host Go executor** and an independent bounded semantic model. The executor persists versioned programs, residual computation, observations, intents and lifecycle outcomes in SQLite. The provisional public `author` package compiles named finite steps into retained programs; the `runtime` facade uses the same executor. This is an early implementation, with no stable SDK or production-readiness claim. The evidence assistant exercises a real OpenAI Responses HTTP adapter with controlled responses; its opt-in live model gate is NOT RUN.
+<p align="center"><strong>Plan. Execute. Record. Replay.</strong></p>
+<p align="center">Durable, composable agentic computation.</p>
+
+<p align="center">
+  <a href="#quick-start">Quick start</a> ·
+  <a href="#authoring-in-go">Authoring in Go</a> ·
+  <a href="#evidence-assistant">Evidence assistant</a> ·
+  <a href="#tests-and-research">Tests &amp; research</a> ·
+  <a href="#current-limits">Current limits</a>
+</p>
+
+**Agentic Lambda Abstraction Network** is an experimental framework for building agents whose work can be retained, recovered and replayed. Programs compose recursively: a coordinator or supervisor is an ordinary program that receives observations, makes decisions in its own state, and commits effect intents through the same interpreter as other programs.
+
+The repository contains a runnable **single-host Go executor** and an independent bounded semantic model. The executor persists versioned programs, residual computation, observations, intents and lifecycle outcomes in SQLite. The provisional public `author` package compiles named finite steps into retained programs; the `runtime` facade uses the same executor.
+
+ALAN makes each stage of the work explicit:
+
+- **Plan:** compose named, finite steps into retained programs.
+- **Execute:** advance eligible work and commit effect intents through the executor.
+- **Record:** retain observations, intents and lifecycle outcomes in SQLite.
+- **Replay:** verify historical computation without dispatching effects.
+
+This is an early implementation with a provisional API. It is not production-ready. The evidence assistant exercises a real OpenAI Responses HTTP adapter with controlled responses; its opt-in live model gate has not been run.
 
 ## Quick start
 
@@ -38,6 +62,10 @@ To exercise ordinary retry-budget exhaustion:
 A successful command exit means that invocation completed. The program can still have failed, or the runner can be quiescent with runs waiting for input or unknown external outcomes. Inspect the report and logical outcomes.
 
 ## Authoring in Go
+
+<p align="center">
+  <img src="docs/img/alan_mascot_working.png" alt="ALAN's blue lambda mascot working beside books labeled Plan, Execute, Record and Replay" width="200">
+</p>
 
 The [external consumer](author/testdata/consumer.go) defines a caller and two instances of one ordinary helper using named values, ports, branches and outcomes. It imports only `author`, `runtime` and `schema`. It writes no raw instruction arrays, numeric program counters or SQL. Its test runs creation, recovery and replay in separate processes; recovery loads the retained artifact without recompiling definitions.
 
