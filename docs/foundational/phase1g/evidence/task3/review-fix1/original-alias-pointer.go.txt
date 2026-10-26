@@ -1,0 +1,21 @@
+package main
+
+import (
+ "os"
+ "path/filepath"
+ "testing"
+)
+
+func TestReviewCaseFoldedItemFields(t *testing.T) {
+ cases := []string{
+  `[{"item_id":"original","ITEM_ID":"replacement","number":2}]`,
+  `[{"item_id":"item-a","number":2,"NUMBER":100}]`,
+ }
+ for _, input := range cases {
+  path := filepath.Join(t.TempDir(), "input.json")
+  if err := os.WriteFile(path, []byte(input), 0600); err != nil { t.Fatal(err) }
+  got, err := readItems(path)
+  t.Logf("input=%s parsed=%+v error=%v", input, got, err)
+  if err == nil { t.Error("case-aliased duplicate semantic field accepted") }
+ }
+}

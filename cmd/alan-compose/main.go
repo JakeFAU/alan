@@ -253,8 +253,8 @@ func readItems(path string) (schema.Value, error) {
 	return schema.List(records...), nil
 }
 
-// checkItemKeys rejects duplicate JSON record fields before encoding/json can
-// replace an earlier application identity or payload with a later value.
+// checkItemKeys requires canonical field names and rejects duplicates before
+// encoding/json can case-fold aliases or replace an earlier identity/payload.
 func checkItemKeys(raw []byte) error {
 	decoder := json.NewDecoder(bytes.NewReader(raw))
 	token, err := decoder.Token()
@@ -281,6 +281,9 @@ func checkItemKeys(raw []byte) error {
 			name, ok := token.(string)
 			if !ok || seen[name] {
 				return fmt.Errorf("duplicate or invalid item field")
+			}
+			if name != "item_id" && name != "number" && name != "question" {
+				return fmt.Errorf("unknown item field %q", name)
 			}
 			seen[name] = true
 			var value json.RawMessage

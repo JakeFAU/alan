@@ -1,0 +1,56 @@
+{
+  "original_inputs": [
+    {
+      "name": "review unedited",
+      "expected": "1f18f8dc7ea4700cd9935999448594b0fa4d722f2556d3fedb129e38df9eb2dd",
+      "actual": "1f18f8dc7ea4700cd9935999448594b0fa4d722f2556d3fedb129e38df9eb2dd"
+    },
+    {
+      "name": "original-alias-pointer",
+      "expected": "0bb3b4a877b59f72d458d0e3c36770174c13c01e14e73ba3a64c795cfd41a9cd",
+      "actual": "0bb3b4a877b59f72d458d0e3c36770174c13c01e14e73ba3a64c795cfd41a9cd",
+      "overlay_input_equal": true
+    },
+    {
+      "name": "original-alias-rows",
+      "expected": "2b13e4d4e5eb1c8ba1cb65ef4259120b1bfa113bf463693efcf684060526a7b6",
+      "actual": "2b13e4d4e5eb1c8ba1cb65ef4259120b1bfa113bf463693efcf684060526a7b6",
+      "overlay_input_equal": true
+    },
+    {
+      "name": "original-case-only",
+      "expected": "4f1dcdba0e97e84a05ee4eab0f6c95ecf006eaca36a2919782adfb04c7ab763c",
+      "actual": "4f1dcdba0e97e84a05ee4eab0f6c95ecf006eaca36a2919782adfb04c7ab763c",
+      "overlay_input_equal": true
+    },
+    {
+      "name": "permanent RED input",
+      "expected": "4f00619dd7f05c25a518c8e267302921f121b7e8555f57b4e26d62383f850446",
+      "actual": "4f00619dd7f05c25a518c8e267302921f121b7e8555f57b4e26d62383f850446"
+    }
+  ],
+  "format_checks": [
+    {
+      "argv": [
+        "gofmt",
+        "-l",
+        "cmd/alan-compose/main.go",
+        "cmd/alan-compose/main_test.go"
+      ],
+      "exit_code": 0,
+      "output": ""
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--check",
+        "--",
+        "cmd/alan-compose"
+      ],
+      "exit_code": 0,
+      "output": ""
+    }
+  ],
+  "source_identity": "b1139d2b786a5a4068088e0bf3618be39d50666be2e0d1d8403da360d095015c"
+}

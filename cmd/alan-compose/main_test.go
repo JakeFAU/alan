@@ -97,3 +97,48 @@ func TestCLIRejectsDuplicateItemFields(t *testing.T) {
 		t.Fatal("duplicate JSON identity silently replaced")
 	}
 }
+
+func TestCLIWorkFieldsRequireCanonicalNames(t *testing.T) {
+	cases := []struct {
+		name, input string
+		want        map[string]schema.Value
+	}{
+		{name: "canonical-number", input: `[{"item_id":"item-a","number":2}]`, want: map[string]schema.Value{"item_id": schema.Text("item-a"), "number": schema.Int(2)}},
+		{name: "canonical-question", input: `[{"question":"WAL?","item_id":"question-a"}]`, want: map[string]schema.Value{"item_id": schema.Text("question-a"), "question": schema.Text("WAL?")}},
+		{name: "case-only-identity", input: `[{"ITEM_ID":"case-only","number":2}]`},
+		{name: "case-only-number", input: `[{"item_id":"item-a","NUMBER":2}]`},
+		{name: "case-only-question", input: `[{"item_id":"question-a","QUESTION":"WAL?"}]`},
+		{name: "case-only-all", input: `[{"ITEM_ID":"case-only","NUMBER":2}]`},
+		{name: "identity-alias", input: `[{"item_id":"original","ITEM_ID":"replacement","number":2}]`},
+		{name: "identity-alias-first", input: `[{"ITEM_ID":"replacement","item_id":"original","number":2}]`},
+		{name: "number-alias", input: `[{"item_id":"item-a","number":2,"NUMBER":100}]`},
+		{name: "question-alias", input: `[{"item_id":"question-a","question":"WAL?","QUESTION":"replacement"}]`},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			path := filepath.Join(t.TempDir(), "work.json")
+			if err := os.WriteFile(path, []byte(tc.input), 0600); err != nil {
+				t.Fatal(err)
+			}
+			got, err := readItems(path)
+			if tc.want == nil {
+				if err == nil {
+					t.Fatal("noncanonical identity or payload accepted", tc.input)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatal("canonical work rejected", err)
+			}
+			rows, err := got.Records()
+			if err != nil || len(rows) != 1 || len(rows[0]) != len(tc.want) {
+				t.Fatal("canonical work changed", rows, err)
+			}
+			for field, want := range tc.want {
+				if !rows[0][field].Equal(want) {
+					t.Fatal("canonical field changed", field, rows[0][field], want)
+				}
+			}
+		})
+	}
+}
