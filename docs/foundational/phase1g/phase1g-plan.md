@@ -38,11 +38,11 @@
 
 **Interfaces:** Native bounded list-of-record values and field schemas; public construction/access with deep-copy semantics. Add `Definition.Collections map[string]schema.Field` for declared bounded list locals, `author.Append(name string, values map[string]Expr) Step`, and `author.ForEach(collection Expr, bindings map[string]string, body ...Step) Step`. A list field carries element record, MaxItems, MaxBytes, optional unique key, and explicit nesting validation. The compiler picks `alan/1g/v1` / `alan/author/v2` only for new semantics; legacy compilation remains byte-identical. Use omission for new zero fields. Public scalar APIs remain source-compatible where feasible. Exact collection constructor names are a mechanical implementer choice, documented in the report.
 
-- [ ] Write failing tests for post-initialization counts 0/1/3/7/8, rejected 9, distinct IDs with duplicate payload, duplicate key rejection, nested collection/total-byte bounds, UTF-8, aliases, malformed values and schemas.
-- [ ] Write reducer/compiler tests for a single loop body independent of MaxItems, input snapshot mutation, zero-iteration variable initialization, nested cursor recovery and mid-loop reopen/replay. Preserve old helper artifact IDs and reject new collections under legacy semantics explicitly.
-- [ ] Implement typed collection validation/canonicalization/equality/copying, finite cursor iteration and append, with one finite durable reduction per instruction. Structured loops alone permit backward control; public Goto remains forward only. Do not hide aggregation/invocation policy in an opcode.
-- [ ] Run focused schema/author/executor tests and default suite, gofmt; retain original RED and GREEN outputs under phase1g evidence/task1.
-- [ ] Commit this testable slice and report exact APIs, changed files, compatibility and test outcomes. No child invocation, application or runner implementation yet.
+- [x] Write failing tests for post-initialization counts 0/1/3/7/8, rejected 9, distinct IDs with duplicate payload, duplicate key rejection, nested collection/total-byte bounds, UTF-8, aliases, malformed values and schemas.
+- [x] Write reducer/compiler tests for a single loop body independent of MaxItems, input snapshot mutation, zero-iteration variable initialization, nested cursor recovery and mid-loop reopen/replay. Preserve old helper artifact IDs and reject new collections under legacy semantics explicitly.
+- [x] Implement typed collection validation/canonicalization/equality/copying, finite cursor iteration and append, with one finite durable reduction per instruction. Structured loops alone permit backward control; public Goto remains forward only. Do not hide aggregation/invocation policy in an opcode.
+- [x] Run focused schema/author/executor tests and default suite, gofmt; retain original RED and GREEN outputs under phase1g evidence/task1.
+- [x] Commit this testable slice and report exact APIs, changed files, compatibility and test outcomes. No child invocation, application or runner implementation yet.
 
 ### Task 2: Retained template invocation, shared resource scope and recovery
 
