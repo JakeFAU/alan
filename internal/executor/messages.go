@@ -171,6 +171,9 @@ func (s *Store) AuthorizeIntent(ctx context.Context, id string) (Authorization, 
 	if _, err = tx.ExecContext(ctx, "INSERT INTO attempts VALUES(?,?,?,?)", authID, id, descriptor, raw); err != nil {
 		return result, err
 	}
+	if err = s.recordCompositionSource(ctx, tx, compositionAuthorizationFact, id); err != nil {
+		return result, err
+	}
 	return result, s.authorizationBoundary(ctx, tx, result)
 }
 
@@ -548,8 +551,19 @@ func validateMessaging(ctx context.Context, q queryer, limits Limits) error {
 		if e != nil {
 			return e
 		}
+		reply := false
+		enabled, e := compositionProtocol(ctx, q)
+		if e != nil {
+			return e
+		}
+		if enabled {
+			_, reply, e = compositionReplyBinding(ctx, q, intent.Intent)
+			if e != nil {
+				return e
+			}
+		}
 		if auth.Allowed {
-			if auth.Reason != "authorized" || auth.Source.Revision != intent.revision || projection.Status != "open" {
+			if auth.Reason != "authorized" || auth.Source.Revision != intent.revision || (projection.Status != "open" && !reply) {
 				return corrupt("unsupported authorization %s", id)
 			}
 		} else {
@@ -689,6 +703,38 @@ func validateMessaging(ctx context.Context, q queryer, limits Limits) error {
 		if r.Bound != nil && (r.Bound.Subject != d.Target || r.Bound.Generation <= 0) {
 			return corrupt("admission binding")
 		}
+		if d.Kind == "message" {
+			enabled, e := compositionProtocol(ctx, q)
+			if e != nil {
+				return e
+			}
+			if enabled {
+				i, e := loadIntent(ctx, q, d.IntentID)
+				if e != nil {
+					return e
+				}
+				b, reply, e := compositionReplyBinding(ctx, q, i.Intent)
+				if e != nil {
+					return e
+				}
+				if reply {
+					var raw []byte
+					var candidate compositionReply
+					if e = q.QueryRowContext(ctx, "SELECT descriptor FROM composition_replies WHERE operation_id=?", i.ID).Scan(&raw); e != nil {
+						return e
+					}
+					if e = decode(raw, &candidate); e != nil {
+						return e
+					}
+					want := AdmissionResult{TransportID: d.TransportID, Accepted: candidate.Accepted, Reason: candidate.Reason, Bound: &b.Caller}
+					if !reflect.DeepEqual(r, want) || observationID.Valid {
+						return corrupt("reply transport admission")
+					}
+					descriptors[id] = d
+					continue
+				}
+			}
+		}
 		if r.Accepted {
 			if (r.Reason != "accepted" && !((d.Kind == "lifecycle" || d.Kind == "receipt" || d.Kind == "adapter") && r.Reason == "settled")) || r.Bound == nil || r.ObservationID == "" || !observationID.Valid || observationID.String != r.ObservationID {
 				return corrupt("accepted admission result")
@@ -720,6 +766,10 @@ func validateMessaging(ctx context.Context, q queryer, limits Limits) error {
 				return e
 			}
 			program, e := loadProgram(ctx, q, target.ProgramID, limits)
+			if e != nil {
+				return e
+			}
+			program, e = boundCompositionProgram(ctx, q, program, target.ID, limits)
 			if e != nil {
 				return e
 			}

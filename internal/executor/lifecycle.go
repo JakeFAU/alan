@@ -124,7 +124,26 @@ func targetState(ctx context.Context, q queryer, subject Subject) (TargetState, 
 func loadRoot(ctx context.Context, q queryer, subject string) (rootOrigin, []byte, error) {
 	var raw []byte
 	var root rootOrigin
-	if err := q.QueryRowContext(ctx, "SELECT descriptor FROM run_origins WHERE subject=? AND kind='root'", subject).Scan(&raw); err != nil {
+	err := q.QueryRowContext(ctx, "SELECT descriptor FROM run_origins WHERE subject=? AND kind='root'", subject).Scan(&raw)
+	if errors.Is(err, sql.ErrNoRows) {
+		enabled, e := compositionProtocol(ctx, q)
+		if e != nil {
+			return root, nil, e
+		}
+		if enabled {
+			var m compositionMemberOrigin
+			if e = q.QueryRowContext(ctx, "SELECT descriptor FROM composition_members WHERE subject=?", subject).Scan(&raw); e != nil {
+				return root, nil, e
+			}
+			if e = decode(raw, &m); e != nil {
+				return root, nil, e
+			}
+			root = rootOrigin{Subject: Subject{ID: m.Run.Subject, Generation: 1, Owner: m.Owner, Revision: 1}, ProgramID: m.ProgramID, Initial: m.Initial}
+			raw, e = json.Marshal(root)
+			return root, raw, e
+		}
+	}
+	if err != nil {
 		return root, nil, err
 	}
 	if err := decode(raw, &root); err != nil {

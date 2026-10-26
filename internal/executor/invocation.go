@@ -6,12 +6,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/JakeFAU/alan/internal/boundary"
 	"slices"
 )
 
 // Only the invocation profile creates these tables. Foundation stores and their
 // retained evidence keep the original layout and validator behavior.
 const invocationSchema = `
+CREATE TABLE composition_deployment(singleton INTEGER PRIMARY KEY CHECK(singleton=1), descriptor BLOB NOT NULL);
+CREATE TABLE composition_permissions(singleton INTEGER PRIMARY KEY CHECK(singleton=1), descriptor BLOB NOT NULL);
+CREATE TABLE composition_reservations(operation_id TEXT PRIMARY KEY REFERENCES intents(id), root_id TEXT NOT NULL REFERENCES composition_roots(id), descriptor BLOB NOT NULL);
+CREATE TABLE composition_root_publications(scope_id TEXT PRIMARY KEY, root_id TEXT NOT NULL REFERENCES composition_roots(id), decision_order INTEGER NOT NULL UNIQUE REFERENCES composition_facts(decision_order) DEFERRABLE INITIALLY DEFERRED, descriptor BLOB NOT NULL);
 CREATE TABLE composition_closures(scope_id TEXT PRIMARY KEY, root_id TEXT NOT NULL REFERENCES composition_roots(id), decision_order INTEGER NOT NULL UNIQUE REFERENCES composition_facts(decision_order), descriptor BLOB NOT NULL);
 CREATE TABLE composition_publications(operation_id TEXT PRIMARY KEY REFERENCES composition_admission_decisions(operation_id), descriptor BLOB NOT NULL);
 CREATE TABLE composition_outcome_deliveries(operation_id TEXT PRIMARY KEY REFERENCES composition_publications(operation_id), observation_id TEXT NOT NULL UNIQUE REFERENCES observations(id));
@@ -155,8 +160,8 @@ func compositionRootFor(ctx context.Context, q queryer, run RunID) (compositionR
 	return r, err
 }
 
-// compositionScopeClosed is the final admission/reservation boundary shared with
-// Task2c. It does not rewrite historical source authorization.
+// compositionScopeClosed is the shared final admission/reservation boundary.
+// It does not rewrite historical source authorization.
 func compositionScopeClosed(ctx context.Context, q queryer, run RunID) (bool, error) {
 	root, err := compositionRootFor(ctx, q, run)
 	if err != nil {
@@ -522,7 +527,10 @@ func (s *Store) AdmitInvocation(ctx context.Context, operation string) (composit
 			return a, err
 		}
 	}
-	return a, s.commitOwnedTx(ctx, tx)
+	if err = s.commitOwnedTx(ctx, tx); err != nil {
+		return a, err
+	}
+	return a, boundary.Reached(ctx, boundary.Event{Boundary: "invocation.admitted", Phase: "post-commit", Subject: intent.Run.Subject, Generation: intent.Run.Generation, Sequence: intent.Sequence, Intent: operation, Attempt: invocation.ID, Root: root.ID})
 }
 func sortedKeys[V any](m map[string]V) []string {
 	keys := make([]string, 0, len(m))

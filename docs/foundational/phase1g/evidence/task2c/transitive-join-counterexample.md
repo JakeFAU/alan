@@ -1,0 +1,7 @@
+# Original transitive join counterexample
+
+Original execution: `16-transitive-join-red.log`, subprocess exit 1, source identity `5d08c76f467f30c2ea75eb2a9aa4973f744c9f2590e8b28f369da31c65f1c877` in its adjacent manifest. The unchanged test function is retained in `transitive-join-counterexample-input.go.txt`; its `nestedInvocationFixture` and ordinary fixture dependencies originate at base `a66760fb23c93e333d2244508eab4eeb3f1f7c82` and remain in the final test source.
+
+Schedule: admit outer invocation; its entry receives the original request and commits nested Invoke; admit the leaf; fail the outer helper; publish the outer failure while the entry may drain; locally succeed the root and record the second unadmitted Invoke as rejected; prepare root success. Before the fix, preparation returned Ready/succeeded although the accepted leaf had no result. No fake descendant, callback result, sleep, or external provider is involved.
+
+After the fix, `17-transitive-join-green.log` passes the same assertion. Root success walks accepted descendants and their committed invocation/external obligations, including beneath known failed scopes. A known rejected admission creates no descendants; it is still a retained known negative result. This does not wait for every open draining peer to terminate and does not cancel a group. Early non-success publication remains available and immutable; unresolved obligations remain observable beside it.

@@ -108,7 +108,7 @@ func recordCompositionRetirement(ctx context.Context, tx *sql.Tx, result Lifecyc
 		return err
 	}
 	var published int
-	if err = tx.QueryRowContext(ctx, "SELECT count(*) FROM composition_results WHERE invocation_id=?", scope.ID).Scan(&published); err != nil {
+	if err = tx.QueryRowContext(ctx, "SELECT (SELECT count(*) FROM composition_results WHERE invocation_id=?) + (SELECT count(*) FROM composition_root_publications WHERE scope_id=?)", scope.ID, scope.ID).Scan(&published); err != nil {
 		return err
 	}
 	if published != 0 {

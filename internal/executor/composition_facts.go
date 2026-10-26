@@ -14,13 +14,15 @@ import (
 type compositionFactKind string
 
 const (
-	compositionExecutionFact   compositionFactKind = "execution"
-	compositionLifecycleFact   compositionFactKind = "lifecycle"
-	compositionAdmissionFact   compositionFactKind = "admission"
-	compositionReservationFact compositionFactKind = "reservation"
-	compositionReplyFact       compositionFactKind = "reply"
-	compositionFreezeFact      compositionFactKind = "freeze"
-	compositionOutcomeFact     compositionFactKind = "outcome"
+	compositionAuthorizationFact  compositionFactKind = "authorization"
+	compositionExternalResultFact compositionFactKind = "external_result"
+	compositionExecutionFact      compositionFactKind = "execution"
+	compositionLifecycleFact      compositionFactKind = "lifecycle"
+	compositionAdmissionFact      compositionFactKind = "admission"
+	compositionReservationFact    compositionFactKind = "reservation"
+	compositionReplyFact          compositionFactKind = "reply"
+	compositionFreezeFact         compositionFactKind = "freeze"
+	compositionOutcomeFact        compositionFactKind = "outcome"
 )
 
 // A fact orders a durable row, not a callback. Digest covers its complete source
@@ -99,7 +101,7 @@ func compositionLifecycleEvidence(ctx context.Context, q queryer, result Lifecyc
 // appendCompositionFact is transaction-local. It neither starts nor commits a
 // transaction, so callers cannot separate the ordered fact from its source row.
 // Protocol facts require the invocation profile and exact retained source rows.
-// External reservation facts remain reserved for Task2c.
+// Authorization, reservation and result facts share this same atomic path.
 func appendCompositionFact(ctx context.Context, tx *sql.Tx, f compositionFact) (int64, error) {
 	if f.ID == "" {
 		return 0, fmt.Errorf("empty composition fact")
@@ -121,7 +123,7 @@ func appendCompositionFact(ctx context.Context, tx *sql.Tx, f compositionFact) (
 		if err == nil {
 			expected, err = compositionLifecycleEvidence(ctx, tx, r)
 		}
-	case compositionAdmissionFact, compositionReplyFact, compositionFreezeFact, compositionOutcomeFact:
+	case compositionAdmissionFact, compositionReplyFact, compositionFreezeFact, compositionOutcomeFact, compositionReservationFact, compositionAuthorizationFact, compositionExternalResultFact:
 		expected, err = compositionProtocolEvidence(ctx, tx, f.Kind, f.OperationID)
 	default:
 		return 0, ErrVersion

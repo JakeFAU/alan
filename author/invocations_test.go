@@ -3,6 +3,7 @@ package author
 import (
 	"encoding/json"
 	"github.com/JakeFAU/alan/internal/executor"
+	"github.com/JakeFAU/alan/runtime"
 	"github.com/JakeFAU/alan/schema"
 	"testing"
 )
@@ -73,5 +74,38 @@ func TestTemplateRejectsOpenInternalWiring(t *testing.T) {
 	}
 	if _, err = NewTemplate(Application{"entry": {Artifact: a, Inputs: map[string]schema.Value{}}}, "entry", "public"); err == nil {
 		t.Fatal("open template accepted")
+	}
+}
+
+func TestInvocationPublicRuntimeEndToEnd(t *testing.T) {
+	template := invocationTemplate(t)
+	a, err := Compile(Definition{Invocations: map[string]Template{"child": template}, Steps: []Step{Invoke("pending", "child", nil, nil), AwaitInvocation("child", "pending", InvocationOutcomeBindings{Status: "status", Reason: "reason", ResponsePresent: "present", Response: map[string]string{"result": "result"}}), Success()}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	p, err := (Application{"root": {Artifact: a, Inputs: map[string]schema.Value{}}}).Provision()
+	if err != nil {
+		t.Fatal(err)
+	}
+	p.Composition.Roots = []runtime.ResourceRoot{{Run: runtime.RunID{Subject: "root", Generation: 1}, Members: []runtime.RunID{{Subject: "root", Generation: 1}}, Templates: []string{template.ID()}, Limits: runtime.ResourceLimits{MaxInvocations: 2, MaxCreatedRuns: 2, MaxDepth: 1, MaxEffects: 0, MaxInFlight: 1}}}
+	path := t.TempDir() + "/public.sqlite"
+	s, err := runtime.Create(t.Context(), path, p, runtime.DefaultLimits())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+	report, err := s.Run(t.Context(), runtime.RunOptions{MaxSteps: 100, MaxDispatch: 100, MaxInFlight: 1})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(report.Roots) != 1 || report.Roots[0].Outcome == nil || report.Roots[0].Outcome.Status != "succeeded" {
+		t.Fatal(report.Roots)
+	}
+	state, err := s.Snapshot(t.Context(), runtime.RunID{Subject: "root", Generation: 1})
+	if err != nil || state.Projection.Data["result"].Text != "ok" || !state.Projection.Data["present"].Flag {
+		t.Fatal(state, err)
+	}
+	if _, err = runtime.Replay(t.Context(), path, runtime.DefaultLimits()); err != nil {
+		t.Fatal(err)
 	}
 }

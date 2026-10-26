@@ -38,6 +38,7 @@ var ErrConflict = executor.ErrConflict
 var ErrStale = executor.ErrStale
 var ErrLocked = executor.ErrLocked
 var ErrRunActive = executor.ErrRunActive
+var ErrDispatchMode = executor.ErrDispatchMode
 
 func DefaultLimits() Limits { return executor.DefaultLimits() }
 func Create(ctx context.Context, path string, p Provision, l Limits) (*Store, error) {
@@ -62,3 +63,5 @@ type InvocationDescriptor = executor.InvocationDescriptor
 type InvocationOutcome = executor.InvocationOutcome
 type InvocationFreeze = executor.InvocationFreeze
 type InvocationPreparation = executor.InvocationPreparation
+
+type RootCompletion = executor.RootCompletion

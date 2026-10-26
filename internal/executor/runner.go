@@ -32,6 +32,7 @@ type RunReport struct {
 	PendingDeliveries  []string
 	UnknownExternal    []string
 	UnknownAdapters    []string
+	Roots              []RootCompletion
 	RejectedAdmissions int
 }
 type readyRun struct {
@@ -76,6 +77,18 @@ func (s *Store) Run(ctx context.Context, options RunOptions) (report RunReport, 
 	completions := make(chan externalCompletion, options.MaxInFlight)
 	var workers sync.WaitGroup
 	active := 0
+	activeRoots := map[string]int{}
+	activeOperations := map[string]string{}
+	releaseSlot := func(result externalCompletion) {
+		id := result.work.attempt.Intent.ID
+		if result.adapter != nil {
+			id = result.adapter.attempt.Intent.ID
+		}
+		if root := activeOperations[id]; root != "" {
+			activeRoots[root]--
+			delete(activeOperations, id)
+		}
+	}
 	quiescent := false
 	defer func() {
 		cancel()
@@ -86,6 +99,7 @@ func (s *Store) Run(ctx context.Context, options RunOptions) (report RunReport, 
 		for active > 0 {
 			result := <-completions
 			active--
+			releaseSlot(result)
 			runErr = errors.Join(runErr, s.accountExternal(cleanup, result))
 		}
 		report, runErr = s.finishRun(cleanup, report, quiescent && runErr == nil, runErr)
@@ -107,6 +121,7 @@ func (s *Store) Run(ctx context.Context, options RunOptions) (report RunReport, 
 		select {
 		case result := <-completions:
 			active--
+			releaseSlot(result)
 			if err := s.accountReceived(ctx, result); err != nil {
 				return report, err
 			}
@@ -122,7 +137,13 @@ func (s *Store) Run(ctx context.Context, options RunOptions) (report RunReport, 
 			d := &pending[i]
 			if d.kind == "external" || d.kind == "adapter" {
 				if external == nil && !attempted[d.intent] {
-					external = d
+					root, limit, e := s.deliveryRoot(ctx, d.intent)
+					if e != nil {
+						return report, e
+					}
+					if root == "" || int64(activeRoots[root]) < limit {
+						external = d
+					}
 				}
 			} else if internal == nil {
 				internal = d
@@ -161,6 +182,14 @@ func (s *Store) Run(ctx context.Context, options RunOptions) (report RunReport, 
 					return report, err
 				}
 				if work != nil {
+					root, _, e := s.deliveryRoot(ctx, external.intent)
+					if e != nil {
+						return report, e
+					}
+					activeOperations[external.intent] = root
+					if root != "" {
+						activeRoots[root]++
+					}
 					active++
 					workers.Add(1)
 					go func(work adapterWork) {
@@ -175,6 +204,14 @@ func (s *Store) Run(ctx context.Context, options RunOptions) (report RunReport, 
 					return report, err
 				}
 				if work != nil {
+					root, _, e := s.deliveryRoot(ctx, external.intent)
+					if e != nil {
+						return report, e
+					}
+					activeOperations[external.intent] = root
+					if root != "" {
+						activeRoots[root]++
+					}
 					active++
 					workers.Add(1)
 					go func(work externalWork) { defer workers.Done(); completions <- transportExternal(ctx, work) }(*work)
@@ -201,7 +238,11 @@ func (s *Store) Run(ctx context.Context, options RunOptions) (report RunReport, 
 			last = &id
 			progressed = true
 		}
-		if progressed {
+		rootProgress, err := s.settleRoots(ctx)
+		if err != nil {
+			return report, err
+		}
+		if progressed || rootProgress {
 			continue
 		}
 		if active == 0 {
@@ -217,6 +258,7 @@ func (s *Store) Run(ctx context.Context, options RunOptions) (report RunReport, 
 			return report, ctx.Err()
 		case result := <-completions:
 			active--
+			releaseSlot(result)
 			if err = s.accountReceived(ctx, result); err != nil {
 				return report, err
 			}
@@ -224,7 +266,11 @@ func (s *Store) Run(ctx context.Context, options RunOptions) (report RunReport, 
 	}
 }
 func (s *Store) deliverOrdinary(ctx context.Context, delivery pendingDelivery) (err error) {
-	if delivery.kind == "lifecycle" {
+	if delivery.kind == "invocation" {
+		if _, err = s.AdmitInvocation(ctx, delivery.intent); err == nil {
+			_, err = s.SettleInvocation(ctx, delivery.intent)
+		}
+	} else if delivery.kind == "lifecycle" {
 		var auth Authorization
 		auth, err = s.AuthorizeIntent(ctx, delivery.intent)
 		if err == nil && auth.Allowed {
@@ -294,6 +340,10 @@ func (s *Store) selectReady(ctx context.Context, last *RunID) (*readyRun, error)
 		if err != nil {
 			return nil, err
 		}
+		p, err = boundCompositionProgram(ctx, s.conn, p, id, s.limits)
+		if err != nil {
+			return nil, err
+		}
 		if p.Code[run.Projection.PC].Op != "receive" {
 			if _, err = Reduce(p, run.Projection, nil, id, run.Sequence+1, s.limits); err != nil {
 				return nil, err
@@ -332,6 +382,22 @@ func pendingDeliveries(ctx context.Context, q queryer) ([]pendingDelivery, error
 		return nil, err
 	}
 	for id, intent := range intents {
+		if intent.Kind == "invocation" {
+			var n int
+			if err = q.QueryRowContext(ctx, "SELECT count(*) FROM composition_outcome_deliveries WHERE operation_id=?", id).Scan(&n); err != nil {
+				return nil, err
+			}
+			if n == 0 {
+				prepared, e := prepareInvocation(ctx, q, id)
+				if e != nil && !errors.Is(e, sql.ErrNoRows) {
+					return nil, e
+				}
+				if errors.Is(e, sql.ErrNoRows) || prepared.Ready {
+					pending = append(pending, pendingDelivery{key: identity("invocation-delivery", id), intent: id, kind: "invocation"})
+				}
+			}
+			continue
+		}
 		if intent.Kind == "adapter" {
 			var count int
 			if err = q.QueryRowContext(ctx, "SELECT count(*) FROM settlements WHERE id=?", identity("adapter-outcome", id)).Scan(&count); err != nil {
@@ -417,6 +483,11 @@ func (s *Store) finishRun(ctx context.Context, report RunReport, quiescent bool,
 	if s.closed {
 		return report, errors.Join(runErr, sql.ErrConnDone)
 	}
+	roots, err := readRootCompletions(ctx, s.conn)
+	if err != nil {
+		return report, errors.Join(runErr, err)
+	}
+	report.Roots = roots
 	ids, err := readRunIDs(ctx, s.conn)
 	if err != nil {
 		return report, errors.Join(runErr, err)
@@ -438,6 +509,11 @@ func (s *Store) finishRun(ctx context.Context, report RunReport, quiescent bool,
 		var count int
 		if err = s.conn.QueryRowContext(ctx, "SELECT count(*) FROM message_acknowledgments WHERE intent_id=?", id).Scan(&count); err != nil {
 			return report, errors.Join(runErr, err)
+		}
+		if count == 0 && intent.Kind == "invocation" {
+			if err = s.conn.QueryRowContext(ctx, "SELECT count(*) FROM composition_outcome_deliveries WHERE operation_id=?", id).Scan(&count); err != nil {
+				return report, errors.Join(runErr, err)
+			}
 		}
 		if count == 0 && intent.Kind == "lifecycle" {
 			if err = s.conn.QueryRowContext(ctx, "SELECT count(*) FROM settlements WHERE id=?", identity("lifecycle-outcome", id)).Scan(&count); err != nil {
@@ -554,4 +630,22 @@ func (s *Store) accountReceived(ctx context.Context, result externalCompletion) 
 	cleanup, stop := context.WithTimeout(context.WithoutCancel(ctx), runnerCleanupTimeout)
 	defer stop()
 	return errors.Join(observed, s.accountExternal(cleanup, result), ctx.Err())
+}
+
+func (s *Store) deliveryRoot(ctx context.Context, operation string) (string, int64, error) {
+	if !s.invocationEnabled() {
+		return "", 0, nil
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	i, err := loadIntent(ctx, s.conn, operation)
+	if err != nil {
+		return "", 0, err
+	}
+	id, err := compositionMembershipRoot(ctx, s.conn, i.Run)
+	if err != nil || id == "" {
+		return id, 0, err
+	}
+	root, err := compositionRootFor(ctx, s.conn, i.Run)
+	return id, root.Limits.MaxInFlight, err
 }

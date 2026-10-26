@@ -70,6 +70,43 @@ func validateInvocationCatalogue(ctx context.Context, q queryer, c compositionPr
 		}
 		return nil
 	}
+	staticMembers := map[RunID]bool{}
+	for _, root := range c.Roots {
+		for _, member := range root.Members {
+			staticMembers[member] = true
+		}
+	}
+	rows, err := q.QueryContext(ctx, "SELECT subject,generation FROM run_origins WHERE kind='root'")
+	if err != nil {
+		return err
+	}
+	staticRuns := []RunID{}
+	for rows.Next() {
+		var run RunID
+		if err = rows.Scan(&run.Subject, &run.Generation); err != nil {
+			rows.Close()
+			return err
+		}
+		staticRuns = append(staticRuns, run)
+	}
+	err = rows.Err()
+	rows.Close()
+	if err != nil {
+		return err
+	}
+	for _, id := range staticRuns {
+		run, err := loadRun(ctx, q, id)
+		if err != nil {
+			return err
+		}
+		p, err := loadProgram(ctx, q, run.ProgramID, l)
+		if err != nil {
+			return err
+		}
+		if programHasInvocations(p) && !staticMembers[id] {
+			return fmt.Errorf("invocation source requires a declared resource root")
+		}
+	}
 	for _, root := range c.Roots {
 		for _, member := range root.Members {
 			run, err := loadRun(ctx, q, member)

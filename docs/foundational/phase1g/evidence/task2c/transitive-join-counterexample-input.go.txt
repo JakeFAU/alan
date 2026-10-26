@@ -1,0 +1,46 @@
+func TestCompositionFailedChildCannotHideUnresolvedGrandchild(t *testing.T) {
+	p, c := nestedInvocationFixture(t, true)
+	s, err := createInvocationStore(t.Context(), t.TempDir()+"/grandchild.sqlite", p, c, DefaultLimits())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+	outer := invokeOnce(t, s)
+	entry := compositionMemberID(outer.Invocation.ID, "entry")
+	helper := compositionMemberID(outer.Invocation.ID, "helper")
+	if _, err = s.Commit(t.Context(), mustSnapshot(t, s, entry).Authority(), compositionIdentity("alan/invocation-request/v1", outer.Invocation.ID)); err != nil {
+		t.Fatal(err)
+	}
+	state, err := s.Commit(t.Context(), mustSnapshot(t, s, entry).Authority(), "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	leaf, err := s.AdmitInvocation(t.Context(), state.Projection.Data["pending"].Text)
+	if err != nil || !leaf.Accepted {
+		t.Fatal(leaf, err)
+	}
+	if _, err = s.Commit(t.Context(), mustSnapshot(t, s, helper).Authority(), ""); err != nil {
+		t.Fatal(err)
+	}
+	if result, err := s.SettleInvocation(t.Context(), outer.Invocation.OperationID); err != nil || !result.Accepted {
+		t.Fatal(result, err)
+	}
+	if _, err = s.Commit(t.Context(), current(t, s, "root").Authority(), ""); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = s.Commit(t.Context(), current(t, s, "root").Authority(), ""); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = s.AdmitInvocation(t.Context(), identity("root", 1, 2, 0)); err != nil {
+		t.Fatal(err)
+	}
+	root, err := compositionRootFor(t.Context(), s.conn, RunID{"root", 1})
+	if err != nil {
+		t.Fatal(err)
+	}
+	prepared, err := s.PrepareRoot(t.Context(), root.ID)
+	if err != nil || prepared.Ready || prepared.Pending != "descendant_outcome" {
+		t.Fatal("known failure hid unfinished grandchild", prepared, err)
+	}
+}
+

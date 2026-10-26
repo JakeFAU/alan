@@ -273,7 +273,12 @@ func verifyConnection(ctx context.Context, q queryer, readonly bool) (string, st
 // existing file. Open is the only recovery path.
 func Create(ctx context.Context, path string, p Provision, limits Limits) (*Store, error) {
 	if p.Composition != nil {
-		return nil, ErrVersion
+		c := *p.Composition
+		if c.Version != "" && c.Version != compositionProtocolVersion {
+			return nil, ErrVersion
+		}
+		c.Version = compositionProtocolVersion
+		return createStore(ctx, path, p, limits, &c)
 	}
 	return createStore(ctx, path, p, limits, nil)
 }
@@ -431,6 +436,22 @@ func createStore(ctx context.Context, path string, p Provision, limits Limits, c
 			return nil, err
 		}
 	}
+	if composition != nil && composition.Version == compositionProtocolVersion {
+		deployment, e := json.Marshal(compositionDeployment{Subjects: p.Subjects, Runs: p.Runs})
+		if e != nil {
+			return nil, e
+		}
+		if _, e = tx.ExecContext(ctx, "INSERT INTO composition_deployment VALUES(1,?)", deployment); e != nil {
+			return nil, e
+		}
+		raw, e := json.Marshal(p.Permissions)
+		if e != nil {
+			return nil, e
+		}
+		if _, e = tx.ExecContext(ctx, "INSERT INTO composition_permissions VALUES(1,?)", raw); e != nil {
+			return nil, e
+		}
+	}
 	if composition != nil {
 		s.composition, err = provisionComposition(ctx, tx, s.namespace, *composition, limits)
 		if err != nil {
@@ -553,6 +574,15 @@ func openStore(ctx context.Context, path string, limits Limits, composition bool
 		}
 	} else {
 		report, err = validateLedger(ctx, tx, limits)
+		if err == nil {
+			n, e := schemaNumber(ctx, tx)
+			if e != nil {
+				return nil, e
+			}
+			if n == compositionSchemaVersion {
+				s.composition, err = readCompositionProfile(ctx, tx, limits)
+			}
+		}
 	}
 	if err != nil {
 		return nil, err

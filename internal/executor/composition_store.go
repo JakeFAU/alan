@@ -8,14 +8,15 @@ import (
 	"slices"
 )
 
-// Schema3 is not altered. These tables exist only in internally created schema4
-// stores. Protocol tables remain empty while public activation is gated.
+// Schema3 is not altered. Schema4 adds immutable composition evidence. The
+// foundation profile requires empty protocol tables; the complete profile checks
+// every source and reverse link before activation.
 const compositionSchema = `
 CREATE TABLE composition_profile (singleton INTEGER PRIMARY KEY CHECK(singleton=1), version TEXT NOT NULL, descriptor BLOB NOT NULL);
 CREATE TABLE composition_roots (id TEXT PRIMARY KEY, descriptor BLOB NOT NULL);
 CREATE TABLE composition_static_members (subject TEXT NOT NULL, generation INTEGER NOT NULL CHECK(generation=1), root_id TEXT NOT NULL REFERENCES composition_roots(id), descriptor BLOB NOT NULL, PRIMARY KEY(subject,generation), FOREIGN KEY(subject,generation) REFERENCES runs(subject,generation));
 CREATE TABLE composition_templates (id TEXT PRIMARY KEY, descriptor BLOB NOT NULL);
-CREATE TABLE composition_facts (decision_order INTEGER PRIMARY KEY CHECK(decision_order>0), id TEXT NOT NULL UNIQUE, kind TEXT NOT NULL CHECK(kind IN ('execution','lifecycle','admission','reservation','reply','freeze','outcome')), descriptor BLOB NOT NULL);
+CREATE TABLE composition_facts (decision_order INTEGER PRIMARY KEY CHECK(decision_order>0), id TEXT NOT NULL UNIQUE, kind TEXT NOT NULL CHECK(kind IN ('execution','lifecycle','admission','reservation','reply','freeze','outcome','authorization','external_result')), descriptor BLOB NOT NULL);
 CREATE TABLE composition_invocations (id TEXT PRIMARY KEY, operation_id TEXT NOT NULL UNIQUE REFERENCES intents(id), template_id TEXT NOT NULL REFERENCES composition_templates(id), root_id TEXT NOT NULL REFERENCES composition_roots(id), descriptor BLOB NOT NULL, admission BLOB NOT NULL);
 CREATE TABLE composition_bindings (id TEXT PRIMARY KEY, invocation_id TEXT NOT NULL UNIQUE REFERENCES composition_invocations(id), descriptor BLOB NOT NULL);
 CREATE TABLE composition_members (subject TEXT NOT NULL, generation INTEGER NOT NULL CHECK(generation=1), invocation_id TEXT NOT NULL REFERENCES composition_invocations(id), root_id TEXT NOT NULL REFERENCES composition_roots(id), member TEXT NOT NULL, descriptor BLOB NOT NULL, PRIMARY KEY(subject,generation), UNIQUE(invocation_id,member), FOREIGN KEY(subject,generation) REFERENCES runs(subject,generation));
@@ -274,15 +275,6 @@ func validateCompositionStore(ctx context.Context, q queryer, l Limits) (ReplayR
 	if err != nil {
 		return ReplayReport{}, err
 	}
-	if c0.Version == compositionProtocolVersion {
-		var n int
-		if err = q.QueryRowContext(ctx, "SELECT (SELECT count(*) FROM composition_closures) + (SELECT count(*) FROM composition_admission_decisions) + (SELECT count(*) FROM composition_facts WHERE kind NOT IN ('execution','lifecycle')) + (SELECT count(*) FROM intents WHERE json_extract(descriptor,'$.Kind')='invocation')").Scan(&n); err != nil {
-			return ReplayReport{}, err
-		}
-		if n != 0 {
-			return ReplayReport{}, fmt.Errorf("composition protocol replay pending Task2c: %w", ErrVersion)
-		}
-	}
 	report, err := validateOrdinaryLedger(ctx, q, l)
 	if err != nil {
 		return report, err
@@ -363,6 +355,13 @@ func validateCompositionStore(ctx context.Context, q queryer, l Limits) (ReplayR
 	}
 	if len(seen) != len(expectedMembers) {
 		return report, corrupt("missing static membership")
+	}
+	if c0.Version == compositionProtocolVersion {
+		if err = validateCompositionProtocol(ctx, q, l, c0); err != nil {
+			return report, err
+		}
+		report.Roots, err = readRootCompletions(ctx, q)
+		return report, err
 	}
 	for _, table := range []string{"composition_invocations", "composition_bindings", "composition_members", "composition_results", "composition_charges"} {
 		var n int

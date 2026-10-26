@@ -138,6 +138,23 @@ func validateLifecycle(ctx context.Context, q queryer) error {
 		if e != nil {
 			return e
 		}
+		enabled, e := compositionProtocol(ctx, q)
+		if e != nil {
+			return e
+		}
+		if enabled && result.Before != nil && request.Operation == "Retry" {
+			root, e := compositionMembershipRoot(ctx, q, result.Before.Run)
+			if e != nil {
+				return e
+			}
+			if root != "" {
+				after := *result.Before
+				expected.Accepted = false
+				expected.Successor = 0
+				expected.Reason = "invocation_retry_unsupported"
+				expected.After = &after
+			}
+		}
 		if !reflect.DeepEqual(expected, result) {
 			return corrupt("lifecycle decision mismatch")
 		}
@@ -178,7 +195,25 @@ func validateLifecycle(ctx context.Context, q queryer) error {
 		var operation sql.NullString
 		var predecessor sql.NullInt64
 		var raw, initial []byte
-		if err = q.QueryRowContext(ctx, "SELECT kind,operation_id,predecessor_generation,descriptor FROM run_origins WHERE subject=? AND generation=?", id.Subject, id.Generation).Scan(&kind, &operation, &predecessor, &raw); err != nil {
+		err = q.QueryRowContext(ctx, "SELECT kind,operation_id,predecessor_generation,descriptor FROM run_origins WHERE subject=? AND generation=?", id.Subject, id.Generation).Scan(&kind, &operation, &predecessor, &raw)
+		if errors.Is(err, sql.ErrNoRows) {
+			enabled, e := compositionProtocol(ctx, q)
+			if e != nil {
+				return e
+			}
+			if enabled {
+				var n int
+				if e = q.QueryRowContext(ctx, "SELECT count(*) FROM composition_members WHERE subject=? AND generation=?", id.Subject, id.Generation).Scan(&n); e != nil {
+					return e
+				}
+				if n == 1 {
+					kind = "invocation"
+					raw = rootBytes[id.Subject]
+					err = nil
+				}
+			}
+		}
+		if err != nil {
 			return err
 		}
 		if err = q.QueryRowContext(ctx, "SELECT initial FROM runs WHERE subject=? AND generation=?", id.Subject, id.Generation).Scan(&initial); err != nil {
@@ -188,6 +223,10 @@ func validateLifecycle(ctx context.Context, q queryer) error {
 			return corrupt("run changed immutable original artifact/initial state")
 		}
 		switch kind {
+		case "invocation":
+			if id.Generation != 1 {
+				return ErrCorrupt
+			}
 		case "root":
 			if operation.Valid || predecessor.Valid || id.Generation != root.Subject.Generation {
 				return corrupt("invalid static root link")

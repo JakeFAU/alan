@@ -103,11 +103,18 @@ func (s *Store) prepareExternal(ctx context.Context, id string) (ExternalAttempt
 			a.Reason = "grant_denied"
 		}
 	}
+	a.Allowed, a.Reason, err = compositionReservationDecision(ctx, tx, retained.Intent, a.Allowed, a.Reason)
+	if err != nil {
+		return a, false, err
+	}
 	raw, err := json.Marshal(a)
 	if err != nil {
 		return a, false, err
 	}
 	if _, err = tx.ExecContext(ctx, "INSERT INTO external_attempts VALUES(?,?)", id, raw); err != nil {
+		return a, false, err
+	}
+	if err = recordCompositionReservation(ctx, tx, retained.Intent, a.Allowed, a.Reason, a); err != nil {
 		return a, false, err
 	}
 	return a, true, s.commitOwnedTx(ctx, tx)
@@ -231,8 +238,23 @@ func (s *Store) accountExternal(ctx context.Context, result externalCompletion) 
 	return errors.Join(result.err, err)
 }
 
-// DispatchExternal is the explicit synchronous API; automatic Run uses bounded workers.
+// ErrDispatchMode rejects physical transport outside the composition Run owner.
+// No authorization, reservation, outcome, or contact is made by this refusal.
+var ErrDispatchMode = errors.New("composition transport requires Store.Run")
+
+// DispatchExternal is the legacy synchronous API. Complete composition stores
+// require Run for all physical dispatch, including their unscoped executions.
 func (s *Store) DispatchExternal(ctx context.Context, id string) (bool, error) {
+	s.mu.Lock()
+	if s.closed {
+		s.mu.Unlock()
+		return false, sql.ErrConnDone
+	}
+	composition := s.invocationEnabled()
+	s.mu.Unlock()
+	if composition {
+		return false, ErrDispatchMode
+	}
 	work, err := s.prepareExternalWork(ctx, id, DefaultExternalTimeout)
 	if err != nil {
 		return false, err
@@ -305,6 +327,9 @@ func (s *Store) recordExternalReceipt(ctx context.Context, a ExternalAttempt, r 
 		return err
 	}
 	if _, err = tx.ExecContext(ctx, "INSERT INTO external_receipts VALUES(?,?)", a.Intent.ID, raw); err != nil {
+		return err
+	}
+	if err = s.recordCompositionSource(ctx, tx, compositionExternalResultFact, a.Intent.ID); err != nil {
 		return err
 	}
 	return s.commitOwnedTx(ctx, tx)
@@ -454,6 +479,10 @@ func validateExternal(ctx context.Context, q queryer) error {
 				allowed = false
 				reason = "grant_denied"
 			}
+		}
+		allowed, reason, err = retainedCompositionReservation(ctx, q, intent.Intent, allowed, reason)
+		if err != nil {
+			return err
 		}
 		if !reflect.DeepEqual(a, ExternalAttempt{Intent: intent.Intent, AuthorizationID: auth.ID, Request: request, Allowed: allowed, Reason: reason}) {
 			return corrupt("external attempt binding")

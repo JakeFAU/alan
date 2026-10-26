@@ -2,7 +2,6 @@ package executor
 
 import (
 	"encoding/json"
-	"errors"
 	"reflect"
 	"testing"
 )
@@ -342,9 +341,12 @@ func TestRetirementStaticAncestorClosesAdmittedDescendants(t *testing.T) {
 		t.Fatal("ancestor retirement cancelled admitted peer")
 	}
 	retirementDescriptor(t, s, "composition_closures", "root:"+outer.Invocation.RootID)
+	if _, err = validateCompositionStore(t.Context(), s.conn, DefaultLimits()); err != nil {
+		t.Fatal(err)
+	}
 }
 
-func TestRetirementOnlyPrivateReopenStaysGated(t *testing.T) {
+func TestRetirementOnlyReopenValidatesClosure(t *testing.T) {
 	p, c := invocationFixture(t, "succeeded", 1)
 	addProgram(t, &p, "static-helper", []Instruction{{Op: "end", Outcome: "succeeded"}}, map[string]Value{})
 	c.Roots[0].Members = append(c.Roots[0].Members, RunID{Subject: "static-helper", Generation: 1})
@@ -369,8 +371,8 @@ func TestRetirementOnlyPrivateReopenStaysGated(t *testing.T) {
 	if opened != nil {
 		opened.Close()
 	}
-	if !errors.Is(err, ErrVersion) {
-		t.Fatal("retirement closure reopened without protocol validation", err)
+	if err != nil {
+		t.Fatal("valid retirement closure did not reopen", err)
 	}
 }
 

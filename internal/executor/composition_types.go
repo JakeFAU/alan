@@ -7,9 +7,9 @@ import (
 	"unicode/utf8"
 )
 
-// This profile is deliberately private and not an enabled runtime feature. The
-// public schema-4 gate stays closed until admission, completion and conservation
-// validation are implemented. Descriptor versions are independent of program IDs.
+// The complete invocation profile is public. The earlier foundation profile
+// remains private and is never promoted. Descriptor versions are independent of
+// program IDs; legacy stores retain schema3 without conversion.
 const compositionSchemaVersion = 4
 const compositionProtocolVersion = "alan/composition/v1"
 const compositionProfileVersion = "alan/composition-foundation/v1"
@@ -71,9 +71,8 @@ type compositionBinding struct {
 	Programs                                                              map[string]string
 }
 
-// These envelopes reserve protocol data shapes, not permission to create work.
-// Task2a refuses nonempty protocol tables; later slices must supply complete
-// admission/completion and conservation validators before enabling these records.
+// Retained protocol envelopes are checked against their ordered source evidence.
+// They carry no caller-supplied authority to create work.
 type compositionInvocation struct {
 	ID, OperationID, TemplateID, RootID, ParentInvocationID string
 	Caller                                                  RunID
@@ -186,8 +185,7 @@ func validateCompositionEncoding(c compositionProvision) error {
 	return nil
 }
 
-// Public immutable provisioning descriptors. Activation remains gated until the
-// complete composition validator and resource enforcement are installed.
+// Public immutable provisioning descriptors for the complete composition profile.
 type CompositionProvision = compositionProvision
 type ResourceRoot = compositionRoot
 type ResourceLimits = compositionLimits

@@ -428,6 +428,9 @@ func TestInvocationRetryIsDurableUnsupported(t *testing.T) {
 	if err != nil || !reflect.DeepEqual(result, again) {
 		t.Fatal(again, err)
 	}
+	if _, err = validateCompositionStore(t.Context(), s.conn, DefaultLimits()); err != nil {
+		t.Fatal(err)
+	}
 }
 func TestInvocationPublishesAuthenticatedAbsentResponse(t *testing.T) {
 	p, c := invocationFixture(t, "succeeded", 1)
@@ -676,7 +679,7 @@ func TestInvocationSuccessWaitsForCommittedUnadmittedChild(t *testing.T) {
 		t.Fatal(prepared, err)
 	}
 }
-func TestInvocationPrivateReopenFailsClosedWithValidDynamicRows(t *testing.T) {
+func TestInvocationReopenValidatesDynamicRows(t *testing.T) {
 	p, c := invocationFixture(t, "succeeded", 1)
 	path := t.TempDir() + "/reopen.sqlite"
 	s, err := createInvocationStore(t.Context(), path, p, c, DefaultLimits())
@@ -687,20 +690,25 @@ func TestInvocationPrivateReopenFailsClosedWithValidDynamicRows(t *testing.T) {
 	if !a.Accepted {
 		t.Fatal(a)
 	}
-	// Real admitted rows satisfy FK constraints; the protocol gate is reached
-	// before unsupported ordinary dynamic-origin replay. No fabricated FK failure.
-	if _, err = validateCompositionStore(t.Context(), s.conn, DefaultLimits()); !errors.Is(err, ErrVersion) {
+	// Original Task2b input now reaches complete origin/binding reconstruction.
+	if _, err = validateCompositionStore(t.Context(), s.conn, DefaultLimits()); err != nil {
 		t.Fatal(err)
 	}
 	if err = s.Close(); err != nil {
 		t.Fatal(err)
 	}
-	if _, err = Open(t.Context(), path, DefaultLimits()); !errors.Is(err, ErrVersion) {
+	opened, err := Open(t.Context(), path, DefaultLimits())
+	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err = openCompositionStore(t.Context(), path, DefaultLimits()); !errors.Is(err, ErrVersion) {
+	if err = opened.Close(); err != nil {
 		t.Fatal(err)
 	}
+	opened, err = openCompositionStore(t.Context(), path, DefaultLimits())
+	if err != nil {
+		t.Fatal(err)
+	}
+	opened.Close()
 }
 
 func replaceInvocationTemplate(t *testing.T, p *Provision, c *compositionProvision, template compositionTemplate) {
@@ -924,7 +932,7 @@ func TestInvocationInstructionsRequireVersionedDeclarations(t *testing.T) {
 		}
 	}
 }
-func TestInvocationPendingIntentPrivateReopenGate(t *testing.T) {
+func TestInvocationPendingIntentReopenValidated(t *testing.T) {
 	p, c := invocationFixture(t, "succeeded", 1)
 	path := t.TempDir() + "/pending.sqlite"
 	s, err := createInvocationStore(t.Context(), path, p, c, DefaultLimits())
@@ -935,12 +943,11 @@ func TestInvocationPendingIntentPrivateReopenGate(t *testing.T) {
 		t.Fatal(err)
 	}
 	s.Close()
-	if opened, err := openCompositionStore(t.Context(), path, DefaultLimits()); !errors.Is(err, ErrVersion) {
-		if opened != nil {
-			opened.Close()
-		}
-		t.Fatal("unfinished protocol reopened", err)
+	opened, err := openCompositionStore(t.Context(), path, DefaultLimits())
+	if err != nil {
+		t.Fatal(err)
 	}
+	opened.Close()
 }
 
 func TestInvocationAdmissionChargesDoNotResetAtNestedBoundary(t *testing.T) {

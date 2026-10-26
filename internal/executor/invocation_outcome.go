@@ -6,7 +6,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/JakeFAU/alan/internal/boundary"
 	"slices"
+	"strings"
 )
 
 func compositionProtocolEvidence(ctx context.Context, q queryer, kind compositionFactKind, operation string) (compositionFact, error) {
@@ -17,12 +19,17 @@ func compositionProtocolEvidence(ctx context.Context, q queryer, kind compositio
 	if version != compositionProtocolVersion {
 		return compositionFact{}, ErrVersion
 	}
+	if kind == compositionAuthorizationFact || kind == compositionExternalResultFact {
+		return compositionSourceEvidence(ctx, q, kind, operation)
+	}
 	var raw []byte
 	var root string
 	var run RunID
 	var sequence int64
 	var table, column string
 	switch kind {
+	case compositionReservationFact:
+		table, column = "composition_reservations", "operation_id"
 	case compositionAdmissionFact:
 		table, column = "composition_admission_decisions", "operation_id"
 	case compositionReplyFact:
@@ -31,6 +38,9 @@ func compositionProtocolEvidence(ctx context.Context, q queryer, kind compositio
 		table, column = "composition_freezes", "scope_id"
 	case compositionOutcomeFact:
 		table, column = "composition_publications", "operation_id"
+		if strings.HasPrefix(operation, "root:") {
+			table, column = "composition_root_publications", "scope_id"
+		}
 	default:
 		return compositionFact{}, ErrVersion
 	}
@@ -38,6 +48,15 @@ func compositionProtocolEvidence(ctx context.Context, q queryer, kind compositio
 		return compositionFact{}, err
 	}
 	switch kind {
+	case compositionReservationFact:
+		var r compositionReservation
+		if err := decode(raw, &r); err != nil {
+			return compositionFact{}, err
+		}
+		if !sameJSON(raw, r) || r.OperationID != operation {
+			return compositionFact{}, ErrCorrupt
+		}
+		root, run, sequence = r.RootID, r.Run, r.Sequence
 	case compositionAdmissionFact:
 		var a compositionAdmission
 		if err := decode(raw, &a); err != nil {
@@ -76,11 +95,15 @@ func compositionProtocolEvidence(ctx context.Context, q queryer, kind compositio
 		if !sameJSON(raw, o) || o.OperationID != operation {
 			return compositionFact{}, ErrCorrupt
 		}
-		a, err := loadCompositionAdmission(ctx, q, operation)
-		if err != nil {
-			return compositionFact{}, err
+		if strings.HasPrefix(operation, "root:") {
+			root, run = strings.TrimPrefix(operation, "root:"), o.Caller
+		} else {
+			a, err := loadCompositionAdmission(ctx, q, operation)
+			if err != nil {
+				return compositionFact{}, err
+			}
+			root, run, sequence = a.Invocation.RootID, o.Caller, a.Invocation.SourceSequence
 		}
-		root, run, sequence = a.Invocation.RootID, o.Caller, a.Invocation.SourceSequence
 	}
 	return compositionFact{Version: compositionFactVersion,
 			ID: compositionIdentity("alan/fact/"+string(kind)+"/v1",
@@ -274,14 +297,34 @@ func prepareInvocation(ctx context.Context, q queryer, operation string) (Invoca
 		OperationID: operation,
 		TemplateID:  a.Invocation.TemplateID,
 		Caller:      a.Invocation.Caller}}
+	var published []byte
+	publicationErr := q.QueryRowContext(ctx, "SELECT descriptor FROM composition_publications WHERE operation_id=?", operation).Scan(&published)
+	if publicationErr == nil {
+		if err = decode(published, &p.Outcome); err != nil {
+			return p, err
+		}
+		if !sameJSON(published, p.Outcome) {
+			return p, ErrCorrupt
+		}
+		p.Ready = true
+		return p, nil
+	}
+	if !errors.Is(publicationErr, sql.ErrNoRows) {
+		return p, publicationErr
+	}
 	if !a.Accepted {
 		p.Ready = true
 		p.Outcome.Status = "rejected"
 		p.Outcome.Reason = a.Reason
 		return p, nil
 	}
+	return prepareCompositionScope(ctx, q, p, a.Invocation.ID, true)
+}
+
+func prepareCompositionScope(ctx context.Context, q queryer, p InvocationPreparation, scope string, requireReply bool) (InvocationPreparation, error) {
+	var err error
 	var raw []byte
-	err = q.QueryRowContext(ctx, "SELECT descriptor FROM composition_freezes WHERE scope_id=?", a.Invocation.ID).Scan(&raw)
+	err = q.QueryRowContext(ctx, "SELECT descriptor FROM composition_freezes WHERE scope_id=?", scope).Scan(&raw)
 	hasFreeze := err == nil
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return p, err
@@ -294,7 +337,7 @@ func prepareInvocation(ctx context.Context, q queryer, operation string) (Invoca
 			return p, ErrCorrupt
 		}
 	}
-	closure, closureErr := loadCompositionClosure(ctx, q, a.Invocation.ID)
+	closure, closureErr := loadCompositionClosure(ctx, q, scope)
 	if closureErr != nil && !errors.Is(closureErr, sql.ErrNoRows) {
 		return p, closureErr
 	}
@@ -344,15 +387,43 @@ func prepareInvocation(ctx context.Context, q queryer, operation string) (Invoca
 				return p, e
 			}
 			if child.Accepted {
-				p.Pending = "descendant_join_requires_task2c"
-				return p, nil
+				pending, e := compositionDescendantsPending(ctx, q, child, map[string]bool{})
+				if e != nil {
+					return p, e
+				}
+				if pending != "" {
+					p.Pending = pending
+					return p, nil
+				}
+				var n int
+				if e = q.QueryRowContext(ctx, "SELECT count(*) FROM composition_publications WHERE operation_id=?", id).Scan(&n); e != nil {
+					return p, e
+				}
+				if n == 0 {
+					p.Pending = "descendant_outcome"
+					return p, nil
+				}
 			}
 		}
-		if len(p.Freeze.ExternalIntents) > 0 {
-			p.Pending = "external_join_requires_task2c"
-			return p, nil
+		for _, id := range p.Freeze.ExternalIntents {
+			intent, e := loadIntent(ctx, q, id)
+			if e != nil {
+				return p, e
+			}
+			if intent.Kind == "adapter" {
+				_, e = loadAdapterResult(ctx, q, id)
+			} else {
+				_, e = externalOutcome(ctx, q, id)
+			}
+			if errors.Is(e, sql.ErrNoRows) {
+				p.Pending = "external_outcome"
+				return p, nil
+			}
+			if e != nil {
+				return p, e
+			}
 		}
-		if len(responses) == 0 {
+		if requireReply && len(responses) == 0 {
 			p.Outcome.Status = "failed"
 			p.Outcome.Reason = "missing_reply"
 		}
@@ -491,7 +562,10 @@ func (s *Store) SettleInvocation(ctx context.Context, operation string) (Admissi
 		Reason:        "recorded_outcome",
 		Bound:         &outcome.Caller,
 		ObservationID: observation.ID}
-	return result, s.commitOwnedTx(ctx, tx)
+	if err = s.commitOwnedTx(ctx, tx); err != nil {
+		return result, err
+	}
+	return result, boundary.Reached(ctx, boundary.Event{Boundary: "invocation.result-recorded", Phase: "pre-consumption", Subject: outcome.Caller.Subject, Generation: outcome.Caller.Generation, Sequence: a.Invocation.SourceSequence, Intent: operation, Attempt: outcome.ID, Root: a.Invocation.RootID})
 }
 
 func captureCompositionIntents(ctx context.Context, tx *sql.Tx, freeze *compositionFreeze, members []RunID) error {
@@ -545,4 +619,56 @@ func captureCompositionIntents(ctx context.Context, tx *sql.Tx, freeze *composit
 	slices.Sort(freeze.InvocationIntents)
 	slices.Sort(freeze.ExternalIntents)
 	return nil
+}
+
+// A known failed child may still own unresolved descendants or external work.
+// Its early non-success publication does not erase those obligations for an
+// ancestor that is attempting to publish success.
+func compositionDescendantsPending(ctx context.Context, q queryer, a compositionAdmission, seen map[string]bool) (string, error) {
+	if seen[a.Invocation.ID] {
+		return "", ErrCorrupt
+	}
+	seen[a.Invocation.ID] = true
+	var n int
+	if err := q.QueryRowContext(ctx, "SELECT count(*) FROM composition_publications WHERE operation_id=?", a.Invocation.OperationID).Scan(&n); err != nil {
+		return "", err
+	}
+	if n == 0 {
+		return "descendant_outcome", nil
+	}
+	intents, err := readIntents(ctx, q)
+	if err != nil {
+		return "", err
+	}
+	for _, id := range sortedKeys(intents) {
+		i := intents[id]
+		if !slices.Contains(a.Members, i.Run) {
+			continue
+		}
+		switch i.Kind {
+		case "invocation":
+			child, e := loadCompositionAdmission(ctx, q, id)
+			if errors.Is(e, sql.ErrNoRows) {
+				return "invocation_admission", nil
+			}
+			if e != nil {
+				return "", e
+			}
+			if child.Accepted {
+				pending, e := compositionDescendantsPending(ctx, q, child, seen)
+				if e != nil || pending != "" {
+					return pending, e
+				}
+			}
+		case "adapter", "external":
+			known, e := compositionExternalKnown(ctx, q, id)
+			if e != nil {
+				return "", e
+			}
+			if !known {
+				return "external_outcome", nil
+			}
+		}
+	}
+	return "", nil
 }
