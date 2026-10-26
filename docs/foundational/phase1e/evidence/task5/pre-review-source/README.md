@@ -1,0 +1,1 @@
+Pre-review working-tree source 893577a119e33e75078a0c0f2fd5c866f273a9e56a88871413ecfc1730312ffa. Full default/integration suites passed before the independent sequence-correlation oracle finding; these results do not qualify its later correction. Complete executable source plus per-file manifest retained. Dependency unchanged at pinned SQLite v1.14.52.

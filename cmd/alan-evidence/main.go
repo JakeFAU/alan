@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/JakeFAU/alan/effects"
 	"github.com/JakeFAU/alan/examples/evidence"
+	"github.com/JakeFAU/alan/internal/boundary"
 	"github.com/JakeFAU/alan/runtime"
 	"io"
 	"os"
@@ -106,6 +107,11 @@ func runCLI(ctx context.Context, args []string, out io.Writer, getenv func(strin
 		}
 		return encode(map[string]any{"namespace": namespace, "config": c, "status": "initialized; no model contact"})
 	case "run", "recover":
+		var err error
+		ctx, err = boundary.FromEnvironment(ctx, *db)
+		if err != nil {
+			return err
+		}
 		report, err := evidence.Run(ctx, *db, getenv("OPENAI_API_KEY"))
 		if err != nil {
 			return err
