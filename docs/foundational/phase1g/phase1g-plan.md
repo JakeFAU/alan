@@ -50,11 +50,11 @@
 
 **Interfaces:** `author.Template` retains an ordinary Application plus one public Port and immutable binding metadata; public constructor validates internal closure. Definition gains named invocation declarations referencing retained templates. `author.Invoke(pending, template string, values, updates map[string]Expr) Step` commits one operation and stores its handle; `author.AwaitInvocation` consumes its authenticated correlated outcome and exposes explicit status, reason and response-presence variable bindings alongside public payload bindings. Use a small outcome-bindings struct or equivalent explicit parameters; freeze the exact signature in the Task 2 report. `Invoke` and `AwaitInvocation` are generic request/result operations, not a Map policy. Provision gains immutable template catalogue and explicit per-root work/depth/effect/concurrency envelope. Inspection/replay include invocation origins, bindings, results and charged resource scope. Exact envelope field names are documented before Task 3 consumes them.
 
-- [ ] Write failing tests for immutable accepted/rejected operation deduplication, no creation from uncommitted intent, valid scoped two-member template, fresh invocation vs reopen, authority/budget rejection and stale/cross-invocation replies.
-- [ ] Implement reviewed admission/completion/version rules from the contract, preserving source intent/authorization/admission/result/consumption boundaries. Bind only metadata-declared peers, never payload strings. All initial child state and roots are durable. Existing Run schedules it; no child-owned goroutine/scheduler.
-- [ ] Add cancellation/receipt/root closure serialization and root-budget conservation tests, including nested and unknown work. Explicitly handle lifecycle Retry under scoped invocation policy; no accidental budget reset or reassociation.
-- [ ] Add ledger reconstruction/orphan/corruption tests, historical store/version matrix and keyless read-only replay no-dispatch checks. Preserve base model regressions.
-- [ ] Run focused tests/default suite/gofmt and commit; retain evidence and report APIs for public consumers.
+- [x] Write failing tests for immutable accepted/rejected operation deduplication, no creation from uncommitted intent, valid scoped two-member template, fresh invocation vs reopen, authority/budget rejection and stale/cross-invocation replies.
+- [x] Implement reviewed admission/completion/version rules from the contract, preserving source intent/authorization/admission/result/consumption boundaries. Bind only metadata-declared peers, never payload strings. All initial child state and roots are durable. Existing Run schedules it; no child-owned goroutine/scheduler.
+- [x] Add cancellation/receipt/root closure serialization and root-budget conservation tests, including nested and unknown work. Explicitly handle lifecycle Retry under scoped invocation policy; no accidental budget reset or reassociation.
+- [x] Add ledger reconstruction/orphan/corruption tests, historical store/version matrix and keyless read-only replay no-dispatch checks. Preserve base model regressions.
+- [x] Run focused tests/default suite/gofmt and commit; retain evidence and report APIs for public consumers.
 
 ### Task 2a: Ordered durable facts and immutable binding foundation
 
@@ -85,11 +85,11 @@
 
 **Files/interfaces:** Complete 2a/2b via the existing runner, external/adapter reservation paths, lifecycle, inspect and replay. No new standalone scheduler. Remove schema4 activation gate only after complete validation/enforcement tests pass.
 
-- [ ] Implement root-and-global physical capacity, persistent attempt reservation/debit/denial, ancestor closure serialization, scoped Retry rejection and late authorized evidence retention. Skip saturated roots while another root has eligible work.
-- [ ] Complete immutable scope outcome publication using ordered frozen facts, committed-but-unadmitted Invoke/reply obligations, required-member/descendant/external joins and failure propagation. Keep application aggregation/policy in ordinary code.
-- [ ] Implement exhaustive cross-ledger reconstruction for declared schema4 invariants: origins/bindings/grants, all ordered fact links and prefix decisions, root membership/debit conservation, outcome/candidate admission and consumption. Replay is read-only and rejects corruption rather than repairing it.
-- [ ] Test capacity1 nested progress, unknown plus independent work, root/member closure orders, accepted and rejected reopen, late evidence, source authorization versus attempt cutoff, all-member failures and missing/delayed reply schedules. Actual process SIGKILL tests remain Task4.
-- [ ] Enable the complete schema4 public profile; preserve schema3 support and explicit unknown-version rejection. Run focused/default/integration tests and present Task2 public APIs to Task3 after independent scoped review.
+- [x] Implement root-and-global physical capacity, persistent attempt reservation/debit/denial, ancestor closure serialization, scoped Retry rejection and late authorized evidence retention. Skip saturated roots while another root has eligible work.
+- [x] Complete immutable scope outcome publication using ordered frozen facts, committed-but-unadmitted Invoke/reply obligations, required-member/descendant/external joins and failure propagation. Keep application aggregation/policy in ordinary code.
+- [x] Implement exhaustive cross-ledger reconstruction for declared schema4 invariants: origins/bindings/grants, all ordered fact links and prefix decisions, root membership/debit conservation, outcome/candidate admission and consumption. Replay is read-only and rejects corruption rather than repairing it.
+- [x] Test capacity1 nested progress, unknown plus independent work, root/member closure orders, accepted and rejected reopen, late evidence, source authorization versus attempt cutoff, all-member failures and missing/delayed reply schedules. Actual process SIGKILL tests remain Task4.
+- [x] Enable the complete schema4 public profile; preserve schema3 support and explicit unknown-version rejection. Run focused/default/integration tests and present Task2 public APIs to Task3 after independent scoped review.
 
 ### Task 3: Ordinary collection component and separate-module consumer
 
