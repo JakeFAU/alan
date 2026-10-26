@@ -37,19 +37,19 @@ func TestInvocationAuthoringRetainsTemplateAndAbsentOutcome(t *testing.T) {
 		t.Fatal(p.Semantics)
 	}
 	state := executor.Projection{Status: "open", Data: map[string]schema.Value{}}
-	r, err := executor.Reduce(p, state, nil, executor.RunID{"root", 1}, 1, executor.DefaultLimits())
+	r, err := executor.Reduce(p, state, nil, executor.RunID{Subject: "root", Generation: 1}, 1, executor.DefaultLimits())
 	if err != nil {
 		t.Fatal(err)
 	}
-	r, err = executor.Reduce(p, r.Projection, nil, executor.RunID{"root", 1}, 2, executor.DefaultLimits())
+	r, err = executor.Reduce(p, r.Projection, nil, executor.RunID{Subject: "root", Generation: 1}, 2, executor.DefaultLimits())
 	if err != nil {
 		t.Fatal(err)
 	}
 	if len(r.Intents) != 1 || r.Intents[0].Kind != "invocation" || r.Projection.Data["n"].Number != 1 {
 		t.Fatal(r)
 	}
-	o := executor.Observation{Run: executor.RunID{"root", 1}, Kind: "invocation", Provenance: "runtime-invocation", Source: template.ID(), SourceGeneration: 1, Obligation: "child", Operation: r.Intents[0].ID, Payload: map[string]schema.Value{"status": schema.Text("rejected"), "reason": schema.Text("depth_limit"), "response_present": schema.Bool(false)}}
-	r, err = executor.Reduce(p, r.Projection, &o, executor.RunID{"root", 1}, 3, executor.DefaultLimits())
+	o := executor.Observation{Run: executor.RunID{Subject: "root", Generation: 1}, Kind: "invocation", Provenance: "runtime-invocation", Source: template.ID(), SourceGeneration: 1, Obligation: "child", Operation: r.Intents[0].ID, Payload: map[string]schema.Value{"status": schema.Text("rejected"), "reason": schema.Text("depth_limit"), "response_present": schema.Bool(false)}}
+	r, err = executor.Reduce(p, r.Projection, &o, executor.RunID{Subject: "root", Generation: 1}, 3, executor.DefaultLimits())
 	if err != nil {
 		t.Fatal(err)
 	}

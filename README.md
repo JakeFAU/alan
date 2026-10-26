@@ -61,6 +61,12 @@ GOTOOLCHAIN=local go test -count=1 -tags integration \
 
 Artifacts retain compiler/semantic versions, schemas, templates and author-facing position names. The initial data model is a closed record of strings, integers and booleans. Repetition is explicitly bounded; custom Go callbacks do not execute inside deterministic reduction. See the [authoring/effect contract](docs/foundational/phase1e/01-authoring-effects-contract.md) for scope and recovery boundaries.
 
+## Bounded work collections
+
+[`compose.New`](compose/collection.go) builds an ordinary reusable collection from an item template. Work arrives after initialization as an ordered typed list; each accepted item gets its own invocation and original result operation. The same collector runs directly or inside an ordinary wrapper. The [worktree example](examples/worktree/README.md) and [Phase1G runbook](docs/foundational/phase1g/04-runbook.md) show the deterministic CLI and controlled evidence leaf.
+
+The default profile bounds input to8 items, depth3,32 invocations,64 created runs,96 effect reservations and physical capacity1 or2. Recovery retains these shared charges. Unknown work stays pending and is not automatically repeated. Schema4 adds the invocation profile; schema3 and legacy artifacts remain supported without migration. Qualification uses independent item/budget checks, acknowledged process kills and fresh-process recovery; see the [report](docs/foundational/phase1g/evidence/task4/report.md) for source identities, exact schedules and review status.
+
 ## Evidence assistant
 
 The reusable [`examples/evidence`](examples/evidence) helper composes an ordinary planner/synthesizer with a retrieval worker. A caller uses its declared request/result port. Planning selects lookup, clarification or insufficient evidence; lookup commits separately; synthesis receives the question and retained evidence. Ordinary branches reject invalid responses, wrong tools and citations that differ from the retained document/version/snippet/start/end. This checks citation provenance, not the truth of every answer sentence.

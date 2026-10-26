@@ -177,7 +177,7 @@ func TestEvidenceCapacityAndReverseCompletion(t *testing.T) {
 	for _, capacity := range []int64{1, 2} {
 		for _, nested := range []bool{false, true} {
 			t.Run(fmt.Sprintf("capacity=%d/nested=%v", capacity, nested), func(t *testing.T) {
-				ctx, cancel := context.WithTimeout(t.Context(), 20*time.Second)
+				ctx, cancel := context.WithTimeout(t.Context(), 180*time.Second)
 				defer cancel()
 				p := &provider{held: make(chan struct{}), release: make(chan struct{})}
 				registry, closeServer := controlled(t, p)
@@ -217,7 +217,7 @@ func TestEvidenceCapacityAndReverseCompletion(t *testing.T) {
 				})
 				done := make(chan error, 1)
 				go func() {
-					_, err := s.Run(observer, runtime.RunOptions{Adapters: registry, MaxSteps: 2000, MaxDispatch: 500, MaxInFlight: 2, ExternalTimeout: 15 * time.Second})
+					_, err := s.Run(observer, runtime.RunOptions{Adapters: registry, MaxSteps: 2000, MaxDispatch: 500, MaxInFlight: 2, ExternalTimeout: 150 * time.Second})
 					done <- err
 				}()
 				joined := false

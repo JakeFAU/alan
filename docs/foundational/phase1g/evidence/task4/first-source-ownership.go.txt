@@ -1,0 +1,96 @@
+//go:build integration
+
+package compositiontest
+
+import (
+	"context"
+	"fmt"
+	"github.com/JakeFAU/alan/adapters/openai"
+	"github.com/JakeFAU/alan/effects"
+	"github.com/JakeFAU/alan/examples/evidence"
+	"github.com/JakeFAU/alan/examples/worktree"
+	"github.com/JakeFAU/alan/internal/boundary"
+	"github.com/JakeFAU/alan/runtime"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"path/filepath"
+	"testing"
+	"time"
+)
+
+// physicalOwners is independent of the runtime's occupancy calculation. Every
+// represented slot must belong to a durable allowed external attempt, never an
+// ordinary waiting Invoke. The overlay adds observation only in its positive run.
+func physicalOwners(s runtime.Inspection, e boundary.Event) error {
+	if int64(len(e.InFlight)) != e.Sequence {
+		return fmt.Errorf("physical occupancy differs from owner count")
+	}
+	for _, id := range e.InFlight {
+		found := false
+		for _, r := range s.Tables["adapter_attempts"] {
+			a := decode[runtime.AdapterAttempt](r, "descriptor")
+			if a.Intent.ID == id && a.Allowed {
+				found = true
+			}
+		}
+		if !found {
+			return fmt.Errorf("physical slot owned by waiting invocation: %s", id)
+		}
+	}
+	return nil
+}
+func TestWaitingParentsOwnNoPhysicalSlots(t *testing.T) {
+	p := &provider{ledger: []contact{}, entered: make(chan struct{}), release: make(chan struct{}), ended: make(chan struct{})}
+	close(p.release)
+	server := httptest.NewServer(http.HandlerFunc(p.serve))
+	defer server.Close()
+	model, err := openai.New(openai.Config{APIKey: "phase1g-local-only-key", Model: "controlled", Endpoint: server.URL, MaxOutputTokens: 1024, MaxResponseBytes: 65536})
+	if err != nil {
+		t.Fatal(err)
+	}
+	leaf, err := worktree.Evidence(evidence.Budgets{MaxModelRequests: 2, MaxLookupRequests: 1})
+	if err != nil {
+		t.Fatal(err)
+	}
+	d, err := worktree.New(leaf, true, worktree.DefaultLimits(1))
+	if err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(t.TempDir(), "owners.sqlite")
+	s, err := runtime.Create(t.Context(), path, d.Provision, runtime.DefaultLimits())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+	a, err := worktree.Submit(t.Context(), s, "three", effectInput())
+	if err != nil || !a.Accepted {
+		t.Fatal(a, err)
+	}
+	observed := 0
+	ctx := boundary.WithObserver(t.Context(), func(ctx context.Context, e boundary.Event) error {
+		if e.Boundary != "qualification.slot-state" {
+			return nil
+		}
+		observed++
+		snapshot, err := runtime.Inspect(ctx, path, runtime.DefaultLimits())
+		if err != nil {
+			return err
+		}
+		err = physicalOwners(snapshot, e)
+		emit(t, map[string]any{"kind": "actual_slot_state", "event": e, "snapshot": snapshot, "monitor_error": fmt.Sprint(err)})
+		return err
+	})
+	_, err = s.Run(ctx, runtime.RunOptions{Adapters: map[string]effects.Adapter{evidence.ModelCapability: model}, MaxSteps: 2000, MaxDispatch: 500, MaxInFlight: 1, ExternalTimeout: 150 * time.Second})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if os.Getenv("ALAN_SLOT_PROBE") == "1" && observed == 0 {
+		t.Fatal("slot observation was not reached")
+	}
+	ledger, _, peak := p.snapshot()
+	if peak != 1 {
+		t.Fatal("physical capacity", peak)
+	}
+	emit(t, map[string]any{"kind": "physical_ownership_positive", "observations": observed, "provider_ledger": ledger, "peak": peak})
+}
