@@ -91,6 +91,32 @@ func (a Application) Provision() (runtime.Provision, error) {
 	for _, key := range keys(permissions) {
 		p.Permissions = append(p.Permissions, permissions[key])
 	}
+	catalogue := templateCatalogue{}
+	templates := map[string]executor.TemplateDescriptor{}
+	for _, instance := range a {
+		if instance.Artifact.catalogue == "" {
+			continue
+		}
+		var c templateCatalogue
+		if err := json.Unmarshal([]byte(instance.Artifact.catalogue), &c); err != nil {
+			return p, err
+		}
+		for _, t := range c.Templates {
+			templates[t.ID] = t
+		}
+		for _, artifact := range c.Programs {
+			if !programs[artifact.ID] {
+				p.Programs = append(p.Programs, artifact)
+				programs[artifact.ID] = true
+			}
+		}
+	}
+	for _, id := range keys(templates) {
+		catalogue.Templates = append(catalogue.Templates, templates[id])
+	}
+	if len(templates) > 0 {
+		p.Composition = &runtime.CompositionProvision{Templates: catalogue.Templates}
+	}
 	return p, nil
 }
 

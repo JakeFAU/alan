@@ -268,6 +268,20 @@ func (s *Store) DecideLifecycle(ctx context.Context, request LifecycleRequest) (
 		return LifecycleResult{}, err
 	}
 	result, err := decideTarget(request, order, before, root, granted)
+	if err == nil && s.invocationEnabled() && before != nil && request.Operation == "Retry" {
+		rootID, e := compositionMembershipRoot(ctx, tx, before.Run)
+		if e != nil {
+			return result, e
+		}
+		if rootID != "" {
+			after := *before
+			result.Accepted = false
+			result.Successor = 0
+			result.Reason = "invocation_retry_unsupported"
+			result.After = &after
+		}
+	}
+
 	if err != nil {
 		return result, err
 	}

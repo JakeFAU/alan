@@ -10,6 +10,7 @@ import (
 	recordschema "github.com/JakeFAU/alan/schema"
 	"io"
 	"math"
+	"strings"
 )
 
 const SemanticVersion = "alan/1d/v1"
@@ -137,6 +138,13 @@ func validateProgram(p Program) error {
 		return fmt.Errorf("empty program")
 	}
 	for i, in := range p.Code {
+		invocationEffect := in.Effect != nil && in.Effect.Kind == "invocation"
+		invocationReceive := in.Match != nil && in.Match.Kind == "invocation"
+		if invocationEffect || invocationReceive {
+			if p.Semantics != CollectionSemanticVersion || p.Author == nil || len(p.Author.Invocations) == 0 {
+				return ErrVersion
+			}
+		}
 		switch in.Op {
 		case "foreach", "next", "loop", "append":
 			if p.Semantics != CollectionSemanticVersion {
@@ -381,7 +389,13 @@ func Reduce(p Program, s Projection, o *Observation, id RunID, seq int64, l Limi
 		if p.Author != nil {
 			if record, ok := p.Author.Receives[s.PC]; ok {
 				var err error
-				if in.Match.Kind == "adapter" && in.Match.Obligation.Literal != nil {
+				if in.Match.Kind == "invocation" && in.Match.Obligation.Literal != nil {
+					declaration, ok := p.Author.Invocations[in.Match.Obligation.Literal.Text]
+					if !ok {
+						return Reduction{}, ErrCorrupt
+					}
+					err = validateInvocationPayload(declaration.Output.Record, o.Payload)
+				} else if in.Match.Kind == "adapter" && in.Match.Obligation.Literal != nil {
 					effect, ok := p.Author.Effects[in.Match.Obligation.Literal.Text]
 					if !ok {
 						return Reduction{}, fmt.Errorf("unknown adapter declaration")
@@ -396,6 +410,10 @@ func Reduce(p Program, s Projection, o *Observation, id RunID, seq int64, l Limi
 			}
 		}
 		for field, dst := range in.Bind {
+			if in.Match.Kind == "invocation" && strings.HasPrefix(field, "response.") && !o.Payload["response_present"].Flag {
+				delete(next.Data, dst)
+				continue
+			}
 			v, ok := o.Payload[field]
 			if !ok || dst == "" || !validValue(v) {
 				return Reduction{}, fmt.Errorf("invalid receive binding %q", field)

@@ -48,6 +48,9 @@ func retainCompositionProfile(ctx context.Context, q queryer, namespace string, 
 	if err := validateCompositionEncoding(c); err != nil {
 		return nil, err
 	}
+	if c.Version != "" && c.Version != compositionProtocolVersion {
+		return nil, ErrVersion
+	}
 	// JSON is both the retained boundary and the defensive copy; no caller-owned
 	// map, list or pointer is kept on Store.
 	raw, err := json.Marshal(c)
@@ -166,6 +169,11 @@ func retainCompositionProfile(ctx context.Context, q queryer, namespace string, 
 		}
 		out.Roots[i] = r
 	}
+	if out.Version == compositionProtocolVersion {
+		if err = validateInvocationCatalogue(ctx, q, out, l); err != nil {
+			return nil, err
+		}
+	}
 	slices.SortFunc(out.Roots, func(a, b compositionRoot) int {
 		if a.ID < b.ID {
 			return -1
@@ -198,7 +206,7 @@ func provisionComposition(ctx context.Context, tx *sql.Tx, namespace string, c c
 	if err != nil {
 		return nil, err
 	}
-	if _, err = tx.ExecContext(ctx, "INSERT INTO composition_profile VALUES(1,?,?)", compositionProfileVersion, []byte(p.raw)); err != nil {
+	if _, err = tx.ExecContext(ctx, "INSERT INTO composition_profile VALUES(1,?,?)", compositionVersion(c), []byte(p.raw)); err != nil {
 		return nil, err
 	}
 	d, err := p.descriptor()
@@ -238,12 +246,15 @@ func readCompositionProfile(ctx context.Context, q queryer, l Limits) (*composit
 	if err = q.QueryRowContext(ctx, "SELECT version,descriptor FROM composition_profile WHERE singleton=1").Scan(&version, &raw); err != nil {
 		return nil, err
 	}
-	if version != compositionProfileVersion {
+	if version != compositionProfileVersion && version != compositionProtocolVersion {
 		return nil, ErrVersion
 	}
 	var c compositionProvision
 	if err = decode(raw, &c); err != nil {
 		return nil, err
+	}
+	if version != compositionVersion(c) {
+		return nil, ErrVersion
 	}
 	retained, err := retainCompositionProfile(ctx, q, namespace, c, l)
 	if err != nil {
@@ -258,6 +269,19 @@ func validateCompositionStore(ctx context.Context, q queryer, l Limits) (ReplayR
 	p, err := readCompositionProfile(ctx, q, l)
 	if err != nil {
 		return ReplayReport{}, err
+	}
+	c0, err := p.descriptor()
+	if err != nil {
+		return ReplayReport{}, err
+	}
+	if c0.Version == compositionProtocolVersion {
+		var n int
+		if err = q.QueryRowContext(ctx, "SELECT (SELECT count(*) FROM composition_admission_decisions) + (SELECT count(*) FROM composition_facts WHERE kind NOT IN ('execution','lifecycle')) + (SELECT count(*) FROM intents WHERE json_extract(descriptor,'$.Kind')='invocation')").Scan(&n); err != nil {
+			return ReplayReport{}, err
+		}
+		if n != 0 {
+			return ReplayReport{}, fmt.Errorf("composition protocol replay pending Task2c: %w", ErrVersion)
+		}
 	}
 	report, err := validateOrdinaryLedger(ctx, q, l)
 	if err != nil {
@@ -350,4 +374,22 @@ func validateCompositionStore(ctx context.Context, q queryer, l Limits) (ReplayR
 		}
 	}
 	return report, validateCompositionFacts(ctx, q)
+}
+
+func compositionVersion(c compositionProvision) string {
+	if c.Version != "" {
+		return c.Version
+	}
+	return compositionProfileVersion
+}
+func createInvocationStore(ctx context.Context, path string, p Provision, c compositionProvision, l Limits) (*Store, error) {
+	c.Version = compositionProtocolVersion
+	return createStore(ctx, path, p, l, &c)
+}
+func (s *Store) invocationEnabled() bool {
+	if s.composition == nil {
+		return false
+	}
+	c, err := s.composition.descriptor()
+	return err == nil && c.Version == compositionProtocolVersion
 }

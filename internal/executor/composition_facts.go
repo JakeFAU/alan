@@ -43,7 +43,7 @@ type compositionHistoryEvidence struct {
 
 func compositionMembershipRoot(ctx context.Context, q queryer, run RunID) (string, error) {
 	var root string
-	err := q.QueryRowContext(ctx, "SELECT root_id FROM composition_static_members WHERE subject=? AND generation=?", run.Subject, run.Generation).Scan(&root)
+	err := q.QueryRowContext(ctx, "SELECT root_id FROM composition_static_members WHERE subject=? AND generation=? UNION ALL SELECT root_id FROM composition_members WHERE subject=? AND generation=?", run.Subject, run.Generation, run.Subject, run.Generation).Scan(&root)
 	if errors.Is(err, sql.ErrNoRows) {
 		return "", nil
 	}
@@ -98,8 +98,8 @@ func compositionLifecycleEvidence(ctx context.Context, q queryer, result Lifecyc
 
 // appendCompositionFact is transaction-local. It neither starts nor commits a
 // transaction, so callers cannot separate the ordered fact from its source row.
-// The finite protocol kinds are reserved but rejected until their row validators
-// are supplied by Task2b/2c; opaque or synthetic protocol facts cannot be appended.
+// Protocol facts require the invocation profile and exact retained source rows.
+// External reservation facts remain reserved for Task2c.
 func appendCompositionFact(ctx context.Context, tx *sql.Tx, f compositionFact) (int64, error) {
 	if f.ID == "" {
 		return 0, fmt.Errorf("empty composition fact")
@@ -121,6 +121,8 @@ func appendCompositionFact(ctx context.Context, tx *sql.Tx, f compositionFact) (
 		if err == nil {
 			expected, err = compositionLifecycleEvidence(ctx, tx, r)
 		}
+	case compositionAdmissionFact, compositionReplyFact, compositionFreezeFact, compositionOutcomeFact:
+		expected, err = compositionProtocolEvidence(ctx, tx, f.Kind, f.OperationID)
 	default:
 		return 0, ErrVersion
 	}
@@ -169,14 +171,17 @@ func (s *Store) recordCompositionExecution(ctx context.Context, tx *sql.Tx, run 
 		return nil
 	}
 	_, err = appendCompositionFact(ctx, tx, f)
+	if err == nil && s.invocationEnabled() {
+		return freezeCompositionScope(ctx, tx, run, f.ID, s.limits)
+	}
 	return err
 }
 func (s *Store) recordCompositionLifecycle(ctx context.Context, tx *sql.Tx, result LifecycleResult) error {
 	if s.composition == nil {
 		return nil
 	}
-	// Scoped Retry's correlated denial policy belongs to Task2b. Until then,
-	// never commit a generation that escapes the foundation's fixed membership.
+	// The foundation profile still gates scoped Retry. The invocation profile
+	// records its durable denial in DecideLifecycle before staging a successor.
 	if result.Successor != 0 {
 		root, err := compositionMembershipRoot(ctx, tx, result.Before.Run)
 		if err != nil {
@@ -194,6 +199,15 @@ func (s *Store) recordCompositionLifecycle(ctx context.Context, tx *sql.Tx, resu
 		return nil
 	}
 	_, err = appendCompositionFact(ctx, tx, f)
+	if err == nil && s.invocationEnabled() && result.Accepted {
+		root, e := compositionMembershipRoot(ctx, tx, f.Run)
+		if e != nil {
+			return e
+		}
+		if root != "" {
+			return freezeCompositionScope(ctx, tx, f.Run, f.ID, s.limits)
+		}
+	}
 	return err
 }
 func readCompositionFacts(ctx context.Context, q queryer) ([]compositionFact, error) {

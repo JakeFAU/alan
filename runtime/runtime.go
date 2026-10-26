@@ -52,3 +52,13 @@ func Inspect(ctx context.Context, path string, l Limits) (Inspection, error) {
 func Replay(ctx context.Context, path string, l Limits) (ReplayReport, error) {
 	return executor.Replay(ctx, path, l)
 }
+
+type CompositionProvision = executor.CompositionProvision
+type ResourceRoot = executor.ResourceRoot
+type ResourceLimits = executor.ResourceLimits
+
+type InvocationAdmission = executor.InvocationAdmission
+type InvocationDescriptor = executor.InvocationDescriptor
+type InvocationOutcome = executor.InvocationOutcome
+type InvocationFreeze = executor.InvocationFreeze
+type InvocationPreparation = executor.InvocationPreparation

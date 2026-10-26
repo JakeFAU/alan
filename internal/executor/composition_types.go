@@ -11,6 +11,7 @@ import (
 // public schema-4 gate stays closed until admission, completion and conservation
 // validation are implemented. Descriptor versions are independent of program IDs.
 const compositionSchemaVersion = 4
+const compositionProtocolVersion = "alan/composition/v1"
 const compositionProfileVersion = "alan/composition-foundation/v1"
 const compositionTemplateVersion = "alan/template/v1"
 const compositionBindingVersion = "alan/binding/v1"
@@ -39,6 +40,7 @@ type compositionTemplate struct {
 	Templates, Capabilities            []string
 }
 type compositionProvision struct {
+	Version   string `json:",omitempty"`
 	Roots     []compositionRoot
 	Templates []compositionTemplate
 }
@@ -61,6 +63,7 @@ type compositionStaticMember struct {
 	Run    RunID
 }
 type compositionBinding struct {
+	Protocol                                                              string `json:",omitempty"`
 	ID, Version, Namespace, InvocationID, OperationID, TemplateID, RootID string
 	Caller                                                                RunID
 	Depth                                                                 int64
@@ -181,4 +184,38 @@ func validateCompositionEncoding(c compositionProvision) error {
 		}
 	}
 	return nil
+}
+
+// Public immutable provisioning descriptors. Activation remains gated until the
+// complete composition validator and resource enforcement are installed.
+type CompositionProvision = compositionProvision
+type ResourceRoot = compositionRoot
+type ResourceLimits = compositionLimits
+type TemplateDescriptor = compositionTemplate
+type TemplateMember = compositionTemplateMember
+
+// RetainTemplate validates the same closed template used at store provisioning.
+func RetainTemplate(t TemplateDescriptor, artifacts []Artifact) (TemplateDescriptor, error) {
+	programs := map[string]Program{}
+	for _, a := range artifacts {
+		var p Program
+		if err := decode(a.Bytes, &p); err != nil {
+			return t, err
+		}
+		raw, id, err := EncodeProgram(p)
+		if err != nil {
+			return t, err
+		}
+		if id != a.ID || p.Semantics != a.Semantics || string(raw) != string(a.Bytes) {
+			return t, ErrCorrupt
+		}
+		programs[id] = p
+	}
+	return retainTemplate(t, DefaultLimits(), func(id string) (Program, error) {
+		p, ok := programs[id]
+		if !ok {
+			return p, fmt.Errorf("missing template artifact")
+		}
+		return p, nil
+	})
 }

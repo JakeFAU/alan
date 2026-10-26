@@ -13,9 +13,9 @@ func checkStepIdentifiers(s Step) error {
 		required = append(required, s.name)
 	case "send", "receive":
 		required = append(required, s.declaration)
-	case "request":
+	case "request", "invoke":
 		required = append(required, s.destination, s.declaration)
-	case "await":
+	case "await", "await-invocation":
 		required = append(required, s.declaration, s.request)
 	}
 	for _, name := range required {

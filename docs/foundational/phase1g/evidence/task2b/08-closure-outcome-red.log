@@ -1,0 +1,21 @@
+=== RUN   TestInvocationRootClosureSerializesWithAdmission
+=== RUN   TestInvocationRootClosureSerializesWithAdmission/true
+=== RUN   TestInvocationRootClosureSerializesWithAdmission/false
+--- PASS: TestInvocationRootClosureSerializesWithAdmission (0.02s)
+    --- PASS: TestInvocationRootClosureSerializesWithAdmission/true (0.01s)
+    --- PASS: TestInvocationRootClosureSerializesWithAdmission/false (0.01s)
+=== RUN   TestInvocationRetryIsDurableUnsupported
+    invocation_test.go:306: {{{["controller",1,2,0] {controller 1} 2 0 lifecycle root 1 control map[operation:{string 0 Retry false <nil>} revision:{int 1  false <nil>}]} 1 Retry 1} 2 false retry_cancelled_disabled 0 0x3d5bbf9dfc80 0x3d5bbf9dfd00}
+--- FAIL: TestInvocationRetryIsDurableUnsupported (0.01s)
+=== RUN   TestInvocationPublishesAuthenticatedAbsentResponse
+    invocation_test.go:336: { false  <nil> } unsupported version
+--- FAIL: TestInvocationPublishesAuthenticatedAbsentResponse (0.00s)
+=== RUN   TestInvocationProfileCannotLeakIntoLegacyStore
+    invocation_test.go:353: schema3 accepted invocation <nil>
+--- FAIL: TestInvocationProfileCannotLeakIntoLegacyStore (0.00s)
+=== RUN   TestInvocationCatalogueRejectsSchemaMismatch
+    invocation_test.go:370: mismatched public response declaration accepted
+--- FAIL: TestInvocationCatalogueRejectsSchemaMismatch (0.00s)
+FAIL
+FAIL	github.com/JakeFAU/alan/internal/executor	0.201s
+FAIL

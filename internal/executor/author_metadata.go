@@ -15,6 +15,7 @@ const CollectionCompilerVersion = "alan/author/v2"
 // ProgramMetadata is immutable compiler evidence retained in the program bytes.
 type ProgramMetadata struct {
 	Compiler        string
+	Invocations     map[string]InvocationDeclaration `json:",omitempty"`
 	Name            string
 	Inputs, Outputs recordschema.Retained
 	Templates       map[string]string
@@ -24,6 +25,10 @@ type ProgramMetadata struct {
 	Ports           map[string]PortDeclaration
 	Collections     map[string]recordschema.Field `json:",omitempty"`
 	Receives        map[int]recordschema.Retained
+}
+type InvocationDeclaration struct {
+	TemplateID    string
+	Input, Output recordschema.Retained
 }
 type EffectDeclaration struct {
 	Capability    string
@@ -79,6 +84,17 @@ func validateMetadata(p Program) error {
 	}
 	for _, s := range []recordschema.Retained{m.Inputs, m.Outputs} {
 		if err := s.Check(); err != nil {
+			return err
+		}
+	}
+	for name, e := range m.Invocations {
+		if p.Semantics != CollectionSemanticVersion || recordschema.CheckIdentifier(name) != nil || !digestIdentity(e.TemplateID) {
+			return ErrVersion
+		}
+		if err := e.Input.Check(); err != nil {
+			return err
+		}
+		if err := e.Output.Check(); err != nil {
 			return err
 		}
 	}

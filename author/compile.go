@@ -30,7 +30,10 @@ func Compile(d Definition) (Artifact, error) {
 	}
 	m.Labels = c.labels
 	c.program.Author = m
-	var err error
+	catalogue, err := retainInvocations(d, m)
+	if err != nil {
+		return Artifact{}, err
+	}
 	if m.Inputs, err = d.Inputs.Retain(); err != nil {
 		return Artifact{}, fmt.Errorf("inputs: %w", err)
 	}
@@ -75,7 +78,7 @@ func Compile(d Definition) (Artifact, error) {
 	if err != nil {
 		return Artifact{}, err
 	}
-	if usesCollections {
+	if usesCollections || len(d.Invocations) > 0 {
 		c.program.Semantics = executor.CollectionSemanticVersion
 		m.Compiler = executor.CollectionCompilerVersion
 	}
@@ -137,7 +140,7 @@ func Compile(d Definition) (Artifact, error) {
 	if len(raw) > executor.DefaultLimits().MaxProgramBytes {
 		return Artifact{}, fmt.Errorf("compiled artifact byte limit")
 	}
-	return Artifact{id: id, raw: string(raw)}, nil
+	return Artifact{id: id, raw: string(raw), catalogue: catalogue}, nil
 }
 func keys[V any](m map[string]V) []string { return slices.Sorted(maps.Keys(m)) }
 func (c *compiler) err(pc int, format string, args ...any) error {
@@ -300,6 +303,30 @@ func (c *compiler) step(s Step, name string) error {
 			in.Bind = maps.Clone(s.bindings)
 			c.records[pc] = p.Receive.Record
 			c.program.Author.Receives[pc] = p.Receive
+		}
+	case "invoke", "await-invocation":
+		e, ok := c.program.Author.Invocations[s.declaration]
+		if !ok {
+			return fmt.Errorf("unknown invocation %q", s.declaration)
+		}
+		if s.kind == "invoke" {
+			in.Op = "emit"
+			in.Effect = &executor.Effect{Kind: "invocation", Target: executor.Lit(executor.Text(e.TemplateID)), Generation: executor.Lit(executor.Int(1)), Obligation: executor.Lit(executor.Text(s.declaration)), Payload: operands(s.values)}
+			in.Updates = operands(s.updates)
+			c.records[pc] = e.Input.Record
+			c.requests[pc] = "invocation:" + s.declaration
+		} else {
+			in.Op = "receive"
+			in.Match = &executor.Match{Kind: "invocation", Provenance: "runtime-invocation", Source: executor.Lit(executor.Text(e.TemplateID)), Generation: executor.Lit(executor.Int(1)), Obligation: executor.Lit(executor.Text(s.declaration)), Operation: executor.Ref(s.request)}
+			in.Bind = maps.Clone(s.bindings)
+			record := executor.InvocationOutcomeRecord(e.Output.Record)
+			retained, err := record.Retain()
+			if err != nil {
+				return err
+			}
+			c.records[pc] = record
+			c.program.Author.Receives[pc] = retained
+			c.await[pc] = "invocation:" + s.declaration
 		}
 	case "request", "await":
 		e, ok := c.program.Author.Effects[s.declaration]

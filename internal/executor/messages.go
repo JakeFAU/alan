@@ -144,14 +144,21 @@ func (s *Store) AuthorizeIntent(ctx context.Context, id string) (Authorization, 
 	if err = tx.QueryRowContext(ctx, "SELECT generation,retired FROM subjects WHERE id=?", intent.Run.Subject).Scan(&generation, &retired); err != nil {
 		return result, err
 	}
+	reply := false
+	if s.invocationEnabled() {
+		_, reply, err = compositionReplyBinding(ctx, tx, intent.Intent)
+		if err != nil {
+			return result, err
+		}
+	}
 	switch {
 	case source.Revision != intent.revision:
 		result.Reason = "source_revision_changed"
 	case generation != intent.Run.Generation:
 		result.Reason = "source_generation_changed"
-	case retired:
+	case retired && !reply:
 		result.Reason = "source_retired"
-	case source.Projection.Status != "open":
+	case source.Projection.Status != "open" && !reply:
 		result.Reason = "source_closed"
 	default:
 		result.Allowed = true
@@ -189,6 +196,19 @@ func (s *Store) DeliverMessage(ctx context.Context, intentID, transportID string
 	}
 	if intent.Kind != "message" {
 		return AdmissionResult{}, fmt.Errorf("intent is not an ordinary message")
+	}
+	if s.invocationEnabled() {
+		b, reply, e := compositionReplyBinding(ctx, tx, intent.Intent)
+		if e != nil {
+			return AdmissionResult{}, e
+		}
+		if reply {
+			result, e := recordCompositionReply(ctx, tx, b, intent, auth, transportID, s.limits)
+			if e != nil {
+				return result, e
+			}
+			return result, s.commitOwnedTx(ctx, tx)
+		}
 	}
 	descriptor := messageDescriptor(intent.Intent, transportID)
 	denial := ""
@@ -427,6 +447,10 @@ func admit(ctx context.Context, tx *sql.Tx, d AdmissionDescriptor, limits Limits
 					result.Reason = "route_denied"
 				} else {
 					program, e := loadProgram(ctx, tx, target.ProgramID, limits)
+					if e != nil {
+						return result, e
+					}
+					program, e = boundCompositionProgram(ctx, tx, program, target.ID, limits)
 					if e != nil {
 						return result, e
 					}

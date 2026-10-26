@@ -48,6 +48,7 @@ type Permission struct {
 	Obligation                      string
 }
 type Provision struct {
+	Composition *CompositionProvision `json:",omitempty"`
 	Assets      []effects.Asset
 	Programs    []Artifact
 	Subjects    []Subject
@@ -271,6 +272,9 @@ func verifyConnection(ctx context.Context, q queryer, readonly bool) (string, st
 // Create provisions a new store in one transaction; it never re-provisions an
 // existing file. Open is the only recovery path.
 func Create(ctx context.Context, path string, p Provision, limits Limits) (*Store, error) {
+	if p.Composition != nil {
+		return nil, ErrVersion
+	}
 	return createStore(ctx, path, p, limits, nil)
 }
 
@@ -325,6 +329,11 @@ func createStore(ctx context.Context, path string, p Provision, limits Limits, c
 			return nil, err
 		}
 	}
+	if composition != nil && composition.Version == compositionProtocolVersion {
+		if _, err = tx.ExecContext(ctx, invocationSchema); err != nil {
+			return nil, err
+		}
+	}
 	if _, err = tx.ExecContext(ctx, "INSERT INTO metadata VALUES(1,?,?,?,?)", version, SemanticVersion, ExternalKeyVersion, s.namespace); err != nil {
 		return nil, err
 	}
@@ -344,6 +353,15 @@ func createStore(ctx context.Context, path string, p Provision, limits Limits, c
 		}
 	}
 	for _, a := range p.Programs {
+		if composition == nil {
+			var program Program
+			if err = decode(a.Bytes, &program); err != nil {
+				return nil, err
+			}
+			if programHasInvocations(program) {
+				return nil, ErrVersion
+			}
+		}
 		if err = insertArtifact(ctx, tx, a, limits); err != nil {
 			return nil, err
 		}
@@ -697,6 +715,9 @@ func (s *Store) Commit(ctx context.Context, a Authority, selected string) (RunSt
 		return RunState{}, ErrLimit
 	}
 	p, err := loadProgram(ctx, tx, r.ProgramID, s.limits)
+	if err == nil && s.invocationEnabled() {
+		p, err = boundCompositionProgram(ctx, tx, p, r.ID, s.limits)
+	}
 	if err != nil {
 		return RunState{}, err
 	}

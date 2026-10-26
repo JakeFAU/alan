@@ -17,6 +17,7 @@ const MaxNesting = 64
 
 type Definition struct {
 	Name            string
+	Invocations     map[string]Template
 	Inputs, Outputs schema.Record
 	Collections     map[string]schema.Field
 	Values          map[string]schema.Value
@@ -94,8 +95,9 @@ func Await(effect, request string, bindings map[string]string) Step {
 
 // Artifact owns immutable encoded bytes. Accessors return independent copies.
 type Artifact struct {
-	id  string
-	raw string
+	id        string
+	raw       string
+	catalogue string
 }
 
 func (a Artifact) ID() string    { return a.id }

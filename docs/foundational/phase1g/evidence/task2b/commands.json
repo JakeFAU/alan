@@ -1,0 +1,445 @@
+[
+  {
+    "cwd": "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan",
+    "argv": [
+      "go",
+      "test",
+      "./author",
+      "-run",
+      "TestInvocationAuthoring|TestTemplateRejects",
+      "-count=1"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "go_status_from_original_output": 1,
+    "original_shell_status": 0,
+    "status_note": "Original shell redirected Go output and ended with cat; Go status is established by original PASS/FAIL output, not separately captured numeric shell status.",
+    "output": "01-author-red.log",
+    "output_sha256": "ee0b47b2ff54fd33a8fb3a2550436e65af1814b438b181b7cedb83a89b96cd47",
+    "note": "Missing APIs plus initial test typo schema.String; compilation RED, not behavioral proof."
+  },
+  {
+    "cwd": "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan",
+    "argv": [
+      "go",
+      "test",
+      "./author",
+      "-run",
+      "TestInvocationAuthoring|TestTemplateRejects",
+      "-count=1"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "go_status_from_original_output": 1,
+    "original_shell_status": 0,
+    "status_note": "Original shell redirected Go output and ended with cat; Go status is established by original PASS/FAIL output, not separately captured numeric shell status.",
+    "output": "02-author-observed.log",
+    "output_sha256": "9c36eabbf50667207a12f5cb69c3960b507103cde769361576977d83d05ceb96",
+    "note": "Import-name collision with executor schema constant; implementation build failure."
+  },
+  {
+    "cwd": "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan",
+    "argv": [
+      "go",
+      "test",
+      "./author",
+      "-run",
+      "TestInvocationAuthoring|TestTemplateRejects",
+      "-count=1"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "go_status_from_original_output": 1,
+    "original_shell_status": 0,
+    "status_note": "Original shell redirected Go output and ended with cat; Go status is established by original PASS/FAIL output, not separately captured numeric shell status.",
+    "output": "03-author-green.log",
+    "output_sha256": "5d9b30434dc7bf6b2bc75c1d35a4604a1d677e4123f002f914d0dec57f946b65",
+    "note": "Despite filename, FAILED: outcome status schema omitted required MaxBytes."
+  },
+  {
+    "cwd": "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan",
+    "argv": [
+      "go",
+      "test",
+      "./author",
+      "-run",
+      "TestInvocationAuthoring|TestTemplateRejects",
+      "-count=1"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "go_status_from_original_output": 0,
+    "original_shell_status": 0,
+    "status_note": "Original shell redirected Go output and ended with cat; Go status is established by original PASS/FAIL output, not separately captured numeric shell status.",
+    "output": "04-author-green.log",
+    "output_sha256": "3bd73c917ea2662b0ce832b64e97cdbc94435e8c07f9758e6da094ea96418a7c",
+    "note": "Author outcome/closure tests passed."
+  },
+  {
+    "cwd": "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan",
+    "argv": [
+      "go",
+      "test",
+      "./internal/executor",
+      "-run",
+      "^TestInvocation",
+      "-count=1"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "go_status_from_original_output": 1,
+    "original_shell_status": 0,
+    "status_note": "Original shell redirected Go output and ended with cat; Go status is established by original PASS/FAIL output, not separately captured numeric shell status.",
+    "output": "05-admission-red.log",
+    "output_sha256": "f993d08b781713f63660ac5f8df77bab1671b44c75b86fc8aa5e344827fbd5a8",
+    "note": "Missing protocol APIs plus initial nonexistent test store path field; compilation RED."
+  },
+  {
+    "cwd": "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan",
+    "argv": [
+      "go",
+      "test",
+      "./internal/executor",
+      "-run",
+      "^TestInvocation",
+      "-count=1",
+      "-v"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "go_status_from_original_output": 0,
+    "original_shell_status": 0,
+    "status_note": "Original shell redirected Go output and ended with cat; Go status is established by original PASS/FAIL output, not separately captured numeric shell status.",
+    "output": "06-protocol-observed.log",
+    "output_sha256": "15dc9a6634681e1c9c2863f8dabaa8a0ba75d2c5a7d469919aab6957924d3835",
+    "note": "Atomic admission, denials, rollback, late replies and conflicting replies passed."
+  },
+  {
+    "cwd": "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan",
+    "argv": [
+      "go",
+      "test",
+      "./internal/executor",
+      "-run",
+      "TestInvocation(RootClosure|Retry|Publishes|Profile|Catalogue)",
+      "-count=1",
+      "-v"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "go_status_from_original_output": 1,
+    "original_shell_status": 0,
+    "status_note": "Original shell redirected Go output and ended with cat; Go status is established by original PASS/FAIL output, not separately captured numeric shell status.",
+    "output": "07-closure-outcome-red.log",
+    "output_sha256": "46a4ae65849e123aec98005eeaef4c2276546eb89cd4b684a8e171d714d7e0ef",
+    "note": "Missing settlement API and test field assignment typo; compilation failure."
+  },
+  {
+    "cwd": "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan",
+    "argv": [
+      "go",
+      "test",
+      "./internal/executor",
+      "-run",
+      "TestInvocation(RootClosure|Retry|Publishes|Profile|Catalogue)",
+      "-count=1",
+      "-v"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "go_status_from_original_output": 1,
+    "original_shell_status": 0,
+    "status_note": "Original shell redirected Go output and ended with cat; Go status is established by original PASS/FAIL output, not separately captured numeric shell status.",
+    "output": "08-closure-outcome-red.log",
+    "output_sha256": "8fb06ebaf20956431f93949b872fbf02098b26f1b61e32d25a2868dad7897ef6",
+    "note": "Behavioral RED: wrong scoped Retry reason, settlement stub ErrVersion, schema3 invocation accepted, mismatched catalogue output accepted. Root closure tests already passed."
+  },
+  {
+    "cwd": "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan",
+    "argv": [
+      "go",
+      "test",
+      "./internal/executor",
+      "-run",
+      "^TestInvocation",
+      "-count=1",
+      "-v"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "go_status_from_original_output": 0,
+    "original_shell_status": 0,
+    "status_note": "Original shell redirected Go output and ended with cat; Go status is established by original PASS/FAIL output, not separately captured numeric shell status.",
+    "output": "09-closure-outcome-green.log",
+    "output_sha256": "eed349a83502afc62c83362fdad07a00ce2bf4512458dc4a744544a0a9e0e6e9",
+    "note": "Closure/outcome/catalogue/version fixes passed."
+  },
+  {
+    "cwd": "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan",
+    "argv": [
+      "go",
+      "test",
+      "./internal/executor",
+      "-run",
+      "TestInvocation(Ancestor|SuccessWaits|PrivateReopen)",
+      "-count=1",
+      "-v"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "go_status_from_original_output": 0,
+    "original_shell_status": 0,
+    "status_note": "Original shell redirected Go output and ended with cat; Go status is established by original PASS/FAIL output, not separately captured numeric shell status.",
+    "output": "10-nested-observed.log",
+    "output_sha256": "ef5d7e45ae0b233edea2250d37e889a72dc4e6337777ef2f56ea9bd81ae0d07b",
+    "note": "Additional coverage of existing protocol implementation; no separate RED claim."
+  },
+  {
+    "cwd": "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan",
+    "argv": [
+      "go",
+      "test",
+      "./author",
+      "./internal/executor",
+      "-count=1"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "go_status_from_original_output": 1,
+    "original_shell_status": 0,
+    "status_note": "Original shell redirected Go output and ended with cat; Go status is established by original PASS/FAIL output, not separately captured numeric shell status.",
+    "output": "11-focused-packages.log",
+    "output_sha256": "9909444ae289988d603e6034c2a6bea4e32ec1ad8c77d103b74be06dfe48799d",
+    "note": "Regression: foundation protocol-fact test returned nonexistent-table SQL error rather than ErrVersion."
+  },
+  {
+    "cwd": "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan",
+    "argv": [
+      "go",
+      "test",
+      "./internal/executor",
+      "-run",
+      "TestInvocation(ReplyException|FailureFreeze)",
+      "-count=1",
+      "-v"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "go_status_from_original_output": 0,
+    "original_shell_status": 0,
+    "status_note": "Original shell redirected Go output and ended with cat; Go status is established by original PASS/FAIL output, not separately captured numeric shell status.",
+    "output": "12-exception-freeze-observed.log",
+    "output_sha256": "e7da5c7e38c6a3e5f6bfccbd90d1f98f62c3f1a6d2715c26ffe2552ce387c0c6",
+    "note": "Additional reply-only lifetime and frozen-prefix/rollback coverage; no separate RED claim."
+  },
+  {
+    "cwd": "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan",
+    "argv": [
+      "go",
+      "test",
+      "./internal/executor",
+      "-run",
+      "TestCompositionFactAppendRejects|TestInvocation",
+      "-count=1"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "go_status_from_original_output": 0,
+    "original_shell_status": 0,
+    "status_note": "Original shell redirected Go output and ended with cat; Go status is established by original PASS/FAIL output, not separately captured numeric shell status.",
+    "output": "13-foundation-guard-green.log",
+    "output_sha256": "5526bf62d9421e6772a103e05f270813d61c5d92889d90be1c016e6dc3cb3a37",
+    "note": "Fixes log11 profile dispatch regression; does NOT resolve deferred Task2a M1."
+  },
+  {
+    "cwd": "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan",
+    "argv": [
+      "go",
+      "test",
+      "./internal/executor",
+      "-run",
+      "TestInvocation(InstructionsRequire|PendingIntent)",
+      "-count=1",
+      "-v"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "go_status_from_original_output": 1,
+    "original_shell_status": 0,
+    "status_note": "Original shell redirected Go output and ended with cat; Go status is established by original PASS/FAIL output, not separately captured numeric shell status.",
+    "output": "14-version-boundary-red.log",
+    "output_sha256": "f1a7cb4c5180bdb6458ca2fd15227139ba0b8b69ec021af2ea9eaf3e5da93dc9",
+    "note": "Behavioral RED: legacy raw invocation instruction encoded; private pending-intent store reopened."
+  },
+  {
+    "cwd": "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan",
+    "argv": [
+      "go",
+      "test",
+      "./author",
+      "./internal/executor",
+      "-run",
+      "TestInvocation|TestTemplate|TestComposition",
+      "-count=1"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "go_status_from_original_output": 0,
+    "original_shell_status": 0,
+    "status_note": "Original shell redirected Go output and ended with cat; Go status is established by original PASS/FAIL output, not separately captured numeric shell status.",
+    "output": "15-version-boundary-green.log",
+    "output_sha256": "a6b024875cbb24927350c71b04fb07e32c0056a93e8b3010fbf686d638fc93ae",
+    "note": "Version gates fixed."
+  },
+  {
+    "cwd": "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan",
+    "argv": [
+      "go",
+      "test",
+      "./internal/executor",
+      "-run",
+      "TestInvocationAdmission(Denials|Charges)",
+      "-count=1",
+      "-v"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "go_status_from_original_output": 0,
+    "original_shell_status": 0,
+    "status_note": "Original shell redirected Go output and ended with cat; Go status is established by original PASS/FAIL output, not separately captured numeric shell status.",
+    "output": "16-charge-capability-observed.log",
+    "output_sha256": "be55915dea18ac90e7c7441266976a6f81c93652ba4fad5ece9f70a45309ea74",
+    "note": "Root capability denial and shared nested charge conservation; no separate RED claim."
+  },
+  {
+    "cwd": "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan",
+    "argv": [
+      "go",
+      "test",
+      "./internal/executor",
+      "-run",
+      "^TestInvocationReplySurvives",
+      "-count=1",
+      "-v"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "go_status_from_original_output": 1,
+    "original_shell_status": 0,
+    "status_note": "Original shell redirected Go output and ended with cat; Go status is established by original PASS/FAIL output, not separately captured numeric shell status.",
+    "output": "17-reply-bound-red.log",
+    "output_sha256": "582a7593bf21d4af3e17e2924ebcfb896c03afc3e9e2222fcc40aca72a2081b5",
+    "note": "Behavioral RED: reply candidate path omitted transport descriptor byte limit."
+  },
+  {
+    "cwd": "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan",
+    "argv": [
+      "go",
+      "test",
+      "./author",
+      "./internal/executor",
+      "-run",
+      "TestInvocation|TestTemplate|TestComposition",
+      "-count=1"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "go_status_from_original_output": 0,
+    "original_shell_status": 0,
+    "status_note": "Original shell redirected Go output and ended with cat; Go status is established by original PASS/FAIL output, not separately captured numeric shell status.",
+    "output": "18-final-focused-green.log",
+    "output_sha256": "d2732a3eb0a80a2bcf17f3f6f6800f89252f9ba3a87bf9f977b0185105e10c04",
+    "note": "Final focused suite passed after bound/encoding cleanup and formatting."
+  },
+  {
+    "cwd": "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan",
+    "argv": [
+      "go",
+      "test",
+      "./...",
+      "-count=1"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 0,
+    "source_identity": "8aa1265af03319dd40064f405d600017cc88a031bd4b0435d6950895d383fa07",
+    "output": "19-default-suite.log",
+    "output_sha256": "0a3d051b7dd73508d8edccdf37741827ebd84a8a2c6d6a79ad804de14842f364"
+  }
+]

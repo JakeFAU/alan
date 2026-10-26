@@ -12,6 +12,9 @@ import (
 )
 
 func retainCompositionTemplate(ctx context.Context, q queryer, t compositionTemplate, l Limits) (compositionTemplate, error) {
+	return retainTemplate(t, l, func(id string) (Program, error) { return loadProgram(ctx, q, id, l) })
+}
+func retainTemplate(t compositionTemplate, l Limits, lookup func(string) (Program, error)) (compositionTemplate, error) {
 	if err := validateCompositionEncoding(compositionProvision{Templates: []compositionTemplate{t}}); err != nil {
 		return t, err
 	}
@@ -50,7 +53,7 @@ func retainCompositionTemplate(ctx context.Context, q queryer, t compositionTemp
 		if recordschema.CheckIdentifier(name) != nil {
 			return t, fmt.Errorf("invalid template member")
 		}
-		p, err := loadProgram(ctx, q, m.ProgramID, l)
+		p, err := lookup(m.ProgramID)
 		if err != nil {
 			return t, err
 		}
@@ -135,6 +138,16 @@ func validateCompositionEndpoints(p Program) error {
 			if in.Effect == nil {
 				return fmt.Errorf("missing template effect")
 			}
+			if in.Effect.Kind == "invocation" {
+				matched := false
+				for name, e := range p.Author.Invocations {
+					matched = matched || reflect.DeepEqual(in.Effect.Target, Lit(Text(e.TemplateID))) && reflect.DeepEqual(in.Effect.Obligation, Lit(Text(name))) && reflect.DeepEqual(in.Effect.Generation, Lit(Int(1)))
+				}
+				if !matched {
+					return fmt.Errorf("undeclared invocation endpoint")
+				}
+				continue
+			}
 			if in.Effect.Kind == "adapter" {
 				matched := false
 				for name, e := range p.Author.Effects {
@@ -154,7 +167,7 @@ func validateCompositionEndpoints(p Program) error {
 		if !send && !receive {
 			continue
 		}
-		if receive && in.Match.Kind == "adapter" {
+		if receive && (in.Match.Kind == "adapter" || in.Match.Kind == "invocation") {
 			continue
 		}
 		if receive && (in.Match.Kind != "message" || in.Match.Provenance != "ordinary-message" || !reflect.DeepEqual(in.Match.Operation, Lit(Text("")))) {
@@ -189,7 +202,7 @@ func retainCompositionBinding(namespace, rootID string, t compositionTemplate, b
 	if err := validateCompositionEncoding(compositionProvision{Templates: []compositionTemplate{t}}); err != nil {
 		return empty, err
 	}
-	if b.Version != compositionBindingVersion || t.Version != compositionTemplateVersion {
+	if b.Version != compositionBindingVersion || t.Version != compositionTemplateVersion || b.Protocol != "" && b.Protocol != compositionProtocolVersion {
 		return empty, ErrVersion
 	}
 	templateID := t.ID
@@ -301,6 +314,10 @@ func resolveCompositionProgram(p Program, env compositionEnvironment, member str
 			} else {
 				out.Code[pc].Match.Source = Lit(Text(peer.Subject))
 				out.Code[pc].Match.Generation = Lit(Int(peer.Generation))
+				if b.Protocol == compositionProtocolVersion && port.Peer == t.CallerPeer {
+					out.Code[pc].Match.Provenance = "runtime-invocation-request"
+					out.Code[pc].Match.Operation = Lit(Text(b.OperationID))
+				}
 			}
 			found = true
 		}
