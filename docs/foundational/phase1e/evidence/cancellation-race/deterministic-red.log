@@ -1,0 +1,28 @@
+=== RUN   TestCancellationAfterDequeueAccountsCompletion
+=== RUN   TestCancellationAfterDequeueAccountsCompletion/adapter
+    cancellation_regression_test.go:85: dequeued evidence lost during cancellation
+=== RUN   TestCancellationAfterDequeueAccountsCompletion/fixture
+    cancellation_regression_test.go:85: dequeued evidence lost during cancellation
+--- FAIL: TestCancellationAfterDequeueAccountsCompletion (0.02s)
+    --- FAIL: TestCancellationAfterDequeueAccountsCompletion/adapter (0.01s)
+    --- FAIL: TestCancellationAfterDequeueAccountsCompletion/fixture (0.01s)
+=== RUN   TestCancellationDuringAdapterSettlementPreservesEvidence
+    cancellation_regression_test.go:114: accounting has no bounded deadline
+    cancellation_regression_test.go:124: cancellation interrupted owned settlement or advanced program {0 1 false [{agent 1}] [{["agent",1,1,0] {agent 1} 1 0 adapter model 1 call map[input:{string 0 question false}]}] [["adapter-delivery","[\"agent\",1,1,0]"]] [] [] 0}
+--- FAIL: TestCancellationDuringAdapterSettlementPreservesEvidence (0.00s)
+FAIL
+FAIL	github.com/JakeFAU/alan/internal/executor	0.268s
+=== RUN   TestCancellationAfterDequeueRetainsRealModelCandidate
+    process_test.go:58: EVIDENCE {"binary_sha256":"328c783b0fbfcab4a1904c1ef339495d74de5797f4fe82bcb6a1fc3f0e140515","command":["go","build","-buildvcs=false","-o","/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1e-process-4120602166/alan-evidence","./cmd/alan-evidence"],"race_children":false,"type":"build"}
+    process_test.go:58: EVIDENCE {"binary_sha256":"7cebbe7d027dbf8d55f0a1503809c035641e9d8987051188c037d9fd696fed5f","command":["go","test","-c","-tags","integration","-buildvcs=false","-o","/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1e-process-4120602166/provider","./internal/evidencetest"],"race_children":false,"type":"build"}
+    process_test.go:601: EVIDENCE {"binary_sha256":"7cebbe7d027dbf8d55f0a1503809c035641e9d8987051188c037d9fd696fed5f","command":["/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1e-process-4120602166/provider","-test.run=^TestProviderChild$","-test.v"],"pid":55812,"race_children":false,"type":"process-start"}
+    process_test.go:601: EVIDENCE {"event":{"Kind":"ready","Endpoint":"http://127.0.0.1:56622","ClientID":"","Wire":"","WireDigest":"","Response":"","PID":55812,"Ordinal":0},"type":"provider-ready"}
+    process_test.go:602: EVIDENCE {"command":["/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1e-process-4120602166/alan-evidence","init","--db","/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/TestCancellationAfterDequeueRetainsRealModelCandidate1924689126/002/app.sqlite","--question","What does WAL retain?","--model","controlled-requested-model","--endpoint","http://127.0.0.1:56622","--corpus","/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/TestCancellationAfterDequeueRetainsRealModelCandidate1924689126/002/source.txt","--request-timeout","2m"],"credential":"synthetic fixture supplied only when running","exit_code":0,"output":"{\n  \"config\": {\n    \"Model\": \"controlled-requested-model\",\n    \"Endpoint\": \"http://127.0.0.1:56622\",\n    \"MaxModelRequests\": 3,\n    \"MaxLookupRequests\": 2,\n    \"MaxOutputTokens\": 1024,\n    \"MaxResponseBytes\": 65536,\n    \"RequestTimeout\": 120000000000\n  },\n  \"namespace\": \"9b10d55a017fc707ef0b199aebb75d1e8d9a753bc95624db26f15b417645af15\",\n  \"status\": \"initialized; no model contact\"\n}\n","pid":55813,"race_children":false,"type":"cli"}
+    process_test.go:603: EVIDENCE {"filters":[{"Scenario":"TestCancellationAfterDequeueRetainsRealModelCandidate","Token":"TestCancellationAfterDequeueRetainsRealModelCandidate-0","Store":"/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/TestCancellationAfterDequeueRetainsRealModelCandidate1924689126/002/app.sqlite","Boundary":"runner.received","Phase":"pre-account","Subject":"assistant","PID":0,"Generation":0,"Epoch":0,"Sequence":0,"Intent":"","Attempt":"","InFlight":null}],"type":"barrier-config"}
+    process_test.go:603: EVIDENCE {"binary_sha256":"328c783b0fbfcab4a1904c1ef339495d74de5797f4fe82bcb6a1fc3f0e140515","command":["/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1e-process-4120602166/alan-evidence","run","--db","/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/TestCancellationAfterDequeueRetainsRealModelCandidate1924689126/002/app.sqlite"],"pid":55816,"race_children":false,"type":"process-start"}
+    process_test.go:604: EVIDENCE {"event":{"Scenario":"TestCancellationAfterDequeueRetainsRealModelCandidate","Token":"TestCancellationAfterDequeueRetainsRealModelCandidate-0","Store":"/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/TestCancellationAfterDequeueRetainsRealModelCandidate1924689126/002/app.sqlite","Boundary":"runner.received","Phase":"pre-account","Subject":"assistant","PID":55816,"Generation":1,"Epoch":2,"Sequence":15,"Intent":"[\"assistant\",1,15,0]","Attempt":"[\"authorization\",\"[\\\"assistant\\\",1,15,0]\"]","InFlight":null},"type":"boundary"}
+    process_test.go:629: received candidate lost during owner cancellation
+--- FAIL: TestCancellationAfterDequeueRetainsRealModelCandidate (2.55s)
+FAIL
+FAIL	github.com/JakeFAU/alan/internal/evidencetest	2.799s
+FAIL

@@ -21,7 +21,7 @@ func exactProtocolKeys(raw []byte) error {
 			return e
 		}
 		for _, item := range items {
-			object, e := protocolObject(item, "type", "role", "content")
+			object, e := protocolObject(item, "type", "role", "status", "content")
 			if e != nil {
 				return e
 			}

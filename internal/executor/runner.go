@@ -107,7 +107,7 @@ func (s *Store) Run(ctx context.Context, options RunOptions) (report RunReport, 
 		select {
 		case result := <-completions:
 			active--
-			if err := s.accountExternal(ctx, result); err != nil {
+			if err := s.accountReceived(ctx, result); err != nil {
 				return report, err
 			}
 			progressed = true
@@ -217,7 +217,7 @@ func (s *Store) Run(ctx context.Context, options RunOptions) (report RunReport, 
 			return report, ctx.Err()
 		case result := <-completions:
 			active--
-			if err = s.accountExternal(ctx, result); err != nil {
+			if err = s.accountReceived(ctx, result); err != nil {
 				return report, err
 			}
 		}
@@ -538,4 +538,20 @@ func (s *Store) retryEligibleWork(ctx context.Context, d pendingDelivery) (bool,
 		return !a.Allowed, nil
 	}
 	return e == nil, e
+}
+
+// accountReceived owns a result already removed from the completion queue.
+// Caller cancellation must not discard it or interrupt receipt/settlement writes.
+// Only accounting uses the bounded detached context; scheduling retains ctx.
+func (s *Store) accountReceived(ctx context.Context, result externalCompletion) error {
+	event := result.work.event
+	if result.adapter != nil {
+		event = result.adapter.event
+	}
+	event.Boundary = "runner.received"
+	event.Phase = "pre-account"
+	observed := boundary.Reached(ctx, event)
+	cleanup, stop := context.WithTimeout(context.WithoutCancel(ctx), runnerCleanupTimeout)
+	defer stop()
+	return errors.Join(observed, s.accountExternal(cleanup, result), ctx.Err())
 }

@@ -74,22 +74,23 @@ PR #5 is confirmed merged. Fresh fetch gives base `d708493646aeae3c1e70a03cf2bb2
 **Files:** new reusable example package and `cmd/alan-evidence` (or equivalent small command), public external-consumer example, bundled corpus, README/runbook additions and application tests.
 **Consumes:** author API, public runtime, OpenAI and lookup adapters. **Produces:** runnable `init/run/inspect/replay` application with configured provider/model and static composition.
 
-- [ ] A caller uses only the evidence helper's declared request/result endpoint. Inside, an ordinary planning/synthesis program requests an ordinary retrieval component which emits lookup and returns evidence. No caller access to child state/names, no runtime role branch.
-- [ ] Ordinary program selects lookup, clarification or insufficient evidence from recorded validated model output; invalid/refused/incomplete output yields explicit failure. The adapter never directly executes a proposed tool.
-- [ ] Successful path: question -> model proposal -> ordinary validation/branch -> separately committed authorized lookup -> retained evidence -> second model request -> ordinary citation checks -> published answer. Require exact retained document/version/snippet equality for the single citation, and report this as mechanical provenance checking rather than proof of every answer sentence.
-- [ ] Persist per-question model/lookup spent counters; defaults max 3 model requests/max 2 lookup requests, configurable positive bounded token/output sizes. Stop at explicit budget disposition without resetting on physical reopen. Expose logical requests, actual attempt counts, optional usage and unknowns separately.
-- [ ] Controlled responses exercise all branches, wrong tool/endpoint/citation, nested contract and author-readable inspection. Opt-in live mode requires model+credential; default tests never spend money.
+- [x] A caller uses only the evidence helper's declared request/result endpoint. Inside, an ordinary planning/synthesis program requests an ordinary retrieval component which emits lookup and returns evidence. No caller access to child state/names, no runtime role branch.
+- [x] Ordinary program selects lookup, clarification or insufficient evidence from recorded validated model output; invalid/refused/incomplete output yields explicit failure. The adapter never directly executes a proposed tool.
+- [x] Successful path: question -> model proposal -> ordinary validation/branch -> separately committed authorized lookup -> retained evidence -> second model request -> ordinary citation checks -> published answer. Require exact retained document/version/snippet equality for the single citation, and report this as mechanical provenance checking rather than proof of every answer sentence.
+- [x] Persist per-question model/lookup spent counters; defaults max 3 model requests/max 2 lookup requests, configurable positive bounded token/output sizes. Stop at explicit budget disposition without resetting on physical reopen. Expose logical requests, actual attempt counts, optional usage and unknowns separately.
+- [x] Controlled responses exercise all branches, wrong tool/endpoint/citation, nested contract and author-readable inspection. Opt-in live mode requires model+credential; default tests never spend money.
 
 ## Task 5: Process qualification, review and publication
 
 **Files:** subprocess controller/tests, controlled durable HTTP provider fixture, negative controls, `docs/foundational/phase1e/*`, appended decisions, final README.
 
-- [ ] Retain controlled endpoint contacts independently. Kill only after acknowledged model-result/tool-result/unknown-provider boundaries; reopen same store with budgets and IDs intact. Recorded tool result survives source-corpus change/removal. Replay with no credentials/provider/corpus path causes zero adapter invocations.
-- [ ] Requalify held model plus independent peer/caller progress, saturation and reordered mixed completions, cancellation/closure/late evidence and old Phase 1D/1D.1 cases.
-- [ ] Unchanged independent checks reject at least one test-only bypass of record-consume-validate-tool-commit ordering or replay-triggered provider contact. Preserve exact counterexamples and complete source inputs.
-- [ ] If credentials and explicit model become available, run only the bounded bundled-corpus live probe and offline replay. Otherwise record live NOT RUN and usable command; controlled evidence is not described as live inference.
-- [ ] Full/focused/race including children, vet, gofmt, module verification, previous research/runtime comparisons; raw causal evidence, source/dependency manifests and complete credential-free archive/offline reproduction.
+- [x] Retain controlled endpoint contacts independently. Kill only after acknowledged model-result/tool-result/unknown-provider boundaries; reopen same store with budgets and IDs intact. Recorded tool result survives source-corpus change/removal. Replay with no credentials/provider/corpus path causes zero adapter invocations.
+- [x] Requalify held model plus independent peer/caller progress, saturation and reordered mixed completions, cancellation/closure/late evidence and old Phase 1D/1D.1 cases.
+- [x] Unchanged independent checks reject at least one test-only bypass of record-consume-validate-tool-commit ordering or replay-triggered provider contact. Preserve exact counterexamples and complete source inputs.
+- [x] If credentials and explicit model become available, run only the bounded bundled-corpus live probe and offline replay. Otherwise record live NOT RUN and usable command; controlled evidence is not described as live inference.
+- [x] Full/focused/race including children, vet, gofmt, module verification, previous research/runtime comparisons; raw causal evidence, source/dependency manifests and complete credential-free archive/offline reproduction.
 - [ ] Independent adversarial whole-branch review of source/contracts/fixtures/evidence; correct or explicitly scope legitimate findings, retain originals. Commit/push dedicated branch and open draft PR against verified base. No merge/release.
+
 
 ## Alternatives and stopping point
 

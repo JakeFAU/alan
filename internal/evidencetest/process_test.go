@@ -597,6 +597,60 @@ func TestCancellationRetainsRealReceivedModelCandidate(t *testing.T) {
 	emit(t, map[string]any{"scenario": t.Name(), "injection": "external controller SIGTERM; no supervisory policy claim", "barrier": ack, "pid": child.cmd.Process.Pid, "signal": "SIGTERM", "exit_code": 1, "output": string(raw), "before": before, "after_cancel": after, "after_recovery": final, "provider_contacts": p.events(t)})
 }
 
+func TestCancellationAfterDequeueRetainsRealModelCandidate(t *testing.T) {
+	p := startProvider(t, false)
+	db, corpus := initialize(t, p)
+	child := paused(t, db, boundary.Event{Boundary: "runner.received", Phase: "pre-account", Subject: "assistant"})
+	ack := ackBoundary(t, child, "runner.received", "assistant")
+	before := inspect(t, db)
+	if err := validateDurableBoundary(before.Snapshot, ack); err != nil {
+		t.Fatal(err)
+	}
+	if len(before.Results) != 0 || len(before.Unknown) != 1 {
+		t.Fatal("candidate must not already be recorded")
+	}
+	if err := child.cmd.Process.Signal(syscall.SIGTERM); err != nil {
+		t.Fatal(err)
+	}
+	done := make(chan error, 1)
+	go func() { done <- child.cmd.Wait() }()
+	select {
+	case err := <-done:
+		child.stopped = true
+		if err == nil || child.cmd.ProcessState.ExitCode() != 1 {
+			t.Fatalf("expected canceled CLI exit 1: %v", err)
+		}
+	case <-time.After(15 * time.Second):
+		t.Fatal("watchdog: cancellation did not drain child")
+	}
+	raw, err := os.ReadFile(child.log.Name())
+	if err != nil {
+		t.Fatal(err)
+	}
+	after := inspect(t, db)
+	emit(t, map[string]any{"scenario": t.Name(), "stage": "after-cancel-before-assertion", "barrier": ack, "before": before, "after_cancel": after, "provider_contacts": p.events(t), "output": string(raw)})
+	if len(after.Results) != 1 || after.Results[0].Candidate.ID != ack.Intent || len(after.Unknown) != 0 || len(after.Snapshot.Tables["settlements"]) != 1 {
+		t.Fatal("received candidate lost during owner cancellation")
+	}
+	if after.ModelRequests != before.ModelRequests || after.LookupRequests != 0 || after.Attempts != before.Attempts || contacts(p.events(t)) != 1 || !reflect.DeepEqual(after.Snapshot.Tables["history"], before.Snapshot.Tables["history"]) {
+		t.Fatal("cancellation authorized or executed new work")
+	}
+	if attempt(t, after, ack.Intent).AuthorizationID != ack.Attempt {
+		t.Fatal("cancellation lost original authorization")
+	}
+	if err := os.Remove(corpus); err != nil {
+		t.Fatal(err)
+	}
+	invoke(t, true, "recover", "--db", db)
+	final := inspect(t, db)
+	assertSuccess(t, final)
+	assertContacts(t, final, p.events(t))
+	if contacts(p.events(t)) != 2 {
+		t.Fatal("cancel recovery repeated original model")
+	}
+	emit(t, map[string]any{"scenario": t.Name(), "injection": "external controller SIGTERM; no supervisory policy claim", "barrier": ack, "pid": child.cmd.Process.Pid, "signal": "SIGTERM", "exit_code": 1, "output": string(raw), "before": before, "after_cancel": after, "after_recovery": final, "provider_contacts": p.events(t)})
+}
+
 // validateAcknowledgment authenticates controller correlation, not a security
 // signature. Every selected field, token, process and store must match exactly.
 func validateAcknowledgment(got boundary.Event, filters []boundary.Event, pid int, used map[string]bool) error {

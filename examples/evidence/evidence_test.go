@@ -34,6 +34,8 @@ func TestControlledApplication(t *testing.T) {
 		{"invalid", "lookup", "lookup", "WAL", "invalid", "invalid_result", 3, 2, 1},
 		{"refusal", "lookup", "lookup", "WAL", "refusal", "invalid_result", 3, 2, 1},
 		{"incomplete", "lookup", "lookup", "WAL", "incomplete", "invalid_result", 3, 2, 1},
+		{"item-incomplete", "lookup", "lookup", "WAL", "item-incomplete", "invalid_result", 3, 2, 1},
+		{"item-in-progress", "lookup", "lookup", "WAL", "item-in-progress", "invalid_result", 3, 2, 1},
 		{"model-budget", "lookup", "lookup", "WAL", "", "budget_exhausted", 1, 2, 1},
 		{"zero-model-budget", "lookup", "lookup", "WAL", "", "budget_exhausted", 0, 2, 0},
 		{"lookup-budget", "lookup", "lookup", "WAL", "", "budget_exhausted", 3, 0, 1},
@@ -83,7 +85,14 @@ func TestControlledApplication(t *testing.T) {
 				if tc.special == "refusal" {
 					content = map[string]any{"type": "refusal", "refusal": "controlled refusal"}
 				}
-				_ = json.NewEncoder(w).Encode(map[string]any{"id": "controlled-response", "model": "controlled-returned", "status": status, "output": []any{map[string]any{"type": "message", "role": "assistant", "content": []any{content}}}, "usage": map[string]any{"input_tokens": 20, "output_tokens": 10, "total_tokens": 30}})
+				item := map[string]any{"type": "message", "role": "assistant", "content": []any{content}}
+				if tc.special == "item-incomplete" {
+					item["status"] = "incomplete"
+				}
+				if tc.special == "item-in-progress" {
+					item["status"] = "in_progress"
+				}
+				_ = json.NewEncoder(w).Encode(map[string]any{"id": "controlled-response", "model": "controlled-returned", "status": status, "output": []any{item}, "usage": map[string]any{"input_tokens": 20, "output_tokens": 10, "total_tokens": 30}})
 			}))
 			defer srv.Close()
 			c := evidence.DefaultConfig()

@@ -71,3 +71,42 @@ GOTOOLCHAIN=local go test -count=1 -tags integration ./...
 Tests use controlled loopback HTTP with the actual OpenAI serializer/parser, exercise alternate/invalid/citation/budget branches, preserve unknown pending identities across close/open, and check physical CLI and independent-module consumers. Under `-race`, their actual child executables are also built with `-race`. CLI tests delete the corpus source and stop the provider before offline replay. Provider contact counts are separate from runtime accounting. Process-kill boundary qualification is a separate phase task; these application tests do not claim SIGKILL coverage.
 
 **Live gate: NOT RUN.** No model ID or authorized credential is configured in the qualification environment. The explicit commands above are the opt-in live path; init alone never spends money. A live run should retain its inspect output (non-secret), final disposition and citation, actual available usage, provider IDs, and offline replay of that same store. Wording need not match the controlled fixture. No fabricated model identifier or live answer is supplied.
+
+## Process qualification and offline source reproduction
+
+Run the actual subprocess crash/contact suite without paid provider access:
+
+```sh
+GOTOOLCHAIN=local go test -count=1 -tags integration -v ./internal/evidencetest
+GOTOOLCHAIN=local go test -count=1 -race -tags integration ./internal/evidencetest
+```
+
+It builds the actual application CLI and a separate controlled provider. The race mode instruments both child binaries. Explicit inherited-pipe acknowledgments establish kill boundaries; watchdogs only detect stalls. The full repository commands in the README also retain prior semantics, supervision and durable-dispatch regressions.
+
+From the repository root, verify the published complete source/dependency archive and rerun its tests with an initially empty module cache:
+
+```sh
+GOTOOLCHAIN=local PYTHONDONTWRITEBYTECODE=1 \
+  python3 docs/foundational/phase1e/tools/reproduce.py
+```
+
+This checks every archived member against `archive-manifest.json`, extracts to a fresh temporary directory, runs the comparison-tool controls, full integration-tagged Go suite, dependency verification and tagged vet, and uses only the bundled local dependency proxy. It requires the declared installed Go/C toolchain and local process/loopback permissions. It does not need Git history, a model credential, the original corpus path or a module download from the network. It writes the actual result to `evidence/archive-reproduction.json`.
+
+To regenerate current-source evidence from a checkout after intentionally changing source:
+
+```sh
+export GOTOOLCHAIN=local
+export PYTHONDONTWRITEBYTECODE=1
+python3 docs/foundational/phase1e/tools/freeze.py
+python3 docs/foundational/phase1e/tools/qualify.py default
+python3 docs/foundational/phase1e/tools/qualify.py normal
+python3 docs/foundational/phase1e/tools/qualify.py race
+python3 docs/foundational/phase1e/tools/checks.py
+python3 docs/foundational/phase1e/tools/package.py
+python3 docs/foundational/phase1e/tools/reproduce.py
+python3 docs/foundational/phase1e/tools/collect.py
+```
+
+`freeze.py` records a new working-tree identity; it does not relabel historical evidence. `normal` includes the integration tag; `default` records the default selection separately. `checks.py` compares exact ordered search behavior while validating changed source provenance, and compares the declared runtime/model public checkpoint projections. Raw schema-version/namespace/resource records remain available and are not claimed byte-identical to the old implementation. The original overly strict comparison failure and its source are retained under `evidence/tooling-correction`; comparator negative controls reject changes to behavior, order, traces, projections and source identity.
+
+`source.tar.gz` is the complete current executable/test/tool source and required frozen comparison fixtures, with the pinned SQLite dependency proxy. Earlier defective source and independent review inputs remain in the separately named evidence archives alongside it. Generated final evidence and later review/publication records stay alongside the source archive to avoid a recursive archive hash. No schema migration, live inference, power-loss durability or unbounded liveness claim follows from these commands.

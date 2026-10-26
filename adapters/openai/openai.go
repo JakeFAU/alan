@@ -195,6 +195,7 @@ func (a *Adapter) Execute(ctx context.Context, p effects.Prepared) (c effects.Ca
 		Error             json.RawMessage
 		Output            []struct {
 			Type, Role string
+			Status     json.RawMessage
 			Content    []struct{ Type, Text, Refusal string }
 		}
 		Usage *struct {
@@ -230,6 +231,15 @@ func (a *Adapter) Execute(ctx context.Context, p effects.Prepared) (c effects.Ca
 	invalid := false
 	refusal := false
 	for _, item := range body.Output {
+		// Omission is supported for compatibility; present status must be terminal.
+		// RawMessage distinguishes an omitted field from explicit null.
+		if len(item.Status) > 0 {
+			var status string
+			if json.Unmarshal(item.Status, &status) != nil || status != "completed" {
+				c.Disposition = "protocol_invalid"
+				return c
+			}
+		}
 		switch item.Type {
 		case "reasoning":
 		case "message":
