@@ -1,0 +1,52 @@
+{
+  "SourceID": "ee144b08e6abac10c704c990e83a80314326a1eac3956bc5ecf9489f8f0afd5a",
+  "ArchiveSHA256": "4ea1db7953fdc754941ea45b35fa2c5d806a36309cadd1a149af7185af5c38fd",
+  "VerifiedMembers": 94,
+  "InitialModuleCacheEmpty": true,
+  "Environment": {
+    "GOTOOLCHAIN": "local",
+    "GOMODCACHE": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1d1-offline-ouo_pxon/module-cache",
+    "GOCACHE": "/tmp/alan-phase1d1-offline-build",
+    "GOPROXY": "file:///var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1d1-offline-ouo_pxon/dependencies",
+    "GOSUMDB": "off",
+    "GOFLAGS": "-mod=readonly"
+  },
+  "Commands": [
+    {
+      "Command": [
+        "go",
+        "test",
+        "-count=1",
+        "./..."
+      ],
+      "ExitCode": 0,
+      "ElapsedSeconds": 31.186,
+      "Stdout": "ok  \tgithub.com/JakeFAU/alan/cmd/alan\t1.238s\n?   \tgithub.com/JakeFAU/alan/cmd/alan-resource\t[no test files]\nok  \tgithub.com/JakeFAU/alan/internal/boundary\t0.409s\nok  \tgithub.com/JakeFAU/alan/internal/durabletest\t13.043s\nok  \tgithub.com/JakeFAU/alan/internal/executor\t8.382s\nok  \tgithub.com/JakeFAU/alan/internal/fixture\t0.492s\nok  \tgithub.com/JakeFAU/alan/research/semantics\t5.670s\n",
+      "Stderr": "go: downloading github.com/mattn/go-sqlite3 v1.14.52\n"
+    },
+    {
+      "Command": [
+        "go",
+        "mod",
+        "verify"
+      ],
+      "ExitCode": 0,
+      "ElapsedSeconds": 0.073,
+      "Stdout": "all modules verified\n",
+      "Stderr": ""
+    },
+    {
+      "Command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "ExitCode": 0,
+      "ElapsedSeconds": 1.37,
+      "Stdout": "",
+      "Stderr": ""
+    }
+  ],
+  "ElapsedSeconds": 32.731,
+  "Result": "PASS"
+}

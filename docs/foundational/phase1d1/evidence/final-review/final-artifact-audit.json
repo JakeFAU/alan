@@ -1,0 +1,56 @@
+{
+  "source_sha256": "9fef40370632bdf7416d5bdb2e8472f31ae2adc80ae5145cd7c9c90ccfe63e63",
+  "source_files": 58,
+  "archive_sha256": "cb0763f6a9e23a1c9a35f647b4658d61adba16a8acaddc40767e70a390b5d535",
+  "archive_members": 95,
+  "qualification_index_rows": 431,
+  "modes": {
+    "normal": {
+      "passing_events": 357,
+      "records": 214,
+      "raw_sha256": "60cbee8c21c616df399057dd7ac6b9526d765cd772c756ae5da1d9d16a0b2e89",
+      "elapsed_seconds": 19.801
+    },
+    "race": {
+      "passing_events": 357,
+      "records": 214,
+      "raw_sha256": "2223ba4d5855c96e6d12d737b799c81a5adae7e5c7d7b23869690220976b9273",
+      "elapsed_seconds": 102.571
+    }
+  },
+  "offline_reproduction": {
+    "result": "PASS",
+    "initial_module_cache_empty": true,
+    "commands": [
+      {
+        "Command": [
+          "go",
+          "test",
+          "-count=1",
+          "./..."
+        ],
+        "ExitCode": 0,
+        "ElapsedSeconds": 39.266
+      },
+      {
+        "Command": [
+          "go",
+          "mod",
+          "verify"
+        ],
+        "ExitCode": 0,
+        "ElapsedSeconds": 0.072
+      },
+      {
+        "Command": [
+          "go",
+          "vet",
+          "./..."
+        ],
+        "ExitCode": 0,
+        "ElapsedSeconds": 0.765
+      }
+    ]
+  },
+  "pre_review_source_and_353_event_logs_preserved": true
+}

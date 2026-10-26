@@ -1,0 +1,108 @@
+{
+  "SourceID": "9fef40370632bdf7416d5bdb2e8472f31ae2adc80ae5145cd7c9c90ccfe63e63",
+  "Commands": [
+    {
+      "Command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "ExitCode": 0,
+      "Stdout": "",
+      "Stderr": ""
+    },
+    {
+      "Command": [
+        "gofmt",
+        "-l",
+        "cmd",
+        "internal",
+        "research"
+      ],
+      "ExitCode": 0,
+      "Stdout": "",
+      "Stderr": ""
+    },
+    {
+      "Command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "ExitCode": 0,
+      "Stdout": "",
+      "Stderr": ""
+    },
+    {
+      "Command": [
+        "go",
+        "mod",
+        "verify"
+      ],
+      "ExitCode": 0,
+      "Stdout": "all modules verified\n",
+      "Stderr": ""
+    }
+  ],
+  "ResearchComparison": [
+    {
+      "Mode": "normal",
+      "Marker": "QUALIFICATION",
+      "Records": 15,
+      "Equal": true,
+      "Scope": "Exact ordered deterministic payload equality against reproduced6effdc0 baseline; wrapper source identity differs. No normalization."
+    },
+    {
+      "Mode": "normal",
+      "Marker": "COMPOSITION",
+      "Records": 20,
+      "Equal": true,
+      "Scope": "Exact ordered deterministic payload equality against reproduced6effdc0 baseline; wrapper source identity differs. No normalization."
+    },
+    {
+      "Mode": "normal",
+      "Marker": "SUPERVISION",
+      "Records": 32,
+      "Equal": true,
+      "Scope": "Exact ordered deterministic payload equality against reproduced6effdc0 baseline; wrapper source identity differs. No normalization."
+    },
+    {
+      "Mode": "normal",
+      "Marker": "CONFORMANCE",
+      "Records": 6,
+      "AssertionsPass": true,
+      "ExactPayloads": 4,
+      "Scope": "Six existing independent checkpoint comparisons pass; ephemeral endpoint URLs/program IDs in two fixtures vary. Raw records preserved, no equality claim for those fixtures."
+    },
+    {
+      "Mode": "race",
+      "Marker": "QUALIFICATION",
+      "Records": 15,
+      "Equal": true,
+      "Scope": "Exact ordered deterministic payload equality against reproduced6effdc0 baseline; wrapper source identity differs. No normalization."
+    },
+    {
+      "Mode": "race",
+      "Marker": "COMPOSITION",
+      "Records": 20,
+      "Equal": true,
+      "Scope": "Exact ordered deterministic payload equality against reproduced6effdc0 baseline; wrapper source identity differs. No normalization."
+    },
+    {
+      "Mode": "race",
+      "Marker": "SUPERVISION",
+      "Records": 32,
+      "Equal": true,
+      "Scope": "Exact ordered deterministic payload equality against reproduced6effdc0 baseline; wrapper source identity differs. No normalization."
+    },
+    {
+      "Mode": "race",
+      "Marker": "CONFORMANCE",
+      "Records": 6,
+      "AssertionsPass": true,
+      "ExactPayloads": 4,
+      "Scope": "Six existing independent checkpoint comparisons pass; ephemeral endpoint URLs/program IDs in two fixtures vary. Raw records preserved, no equality claim for those fixtures."
+    }
+  ],
+  "Note": "Process/runtime records are checked by causal invariants in tests, not compared byte-for-byte or sorted."
+}

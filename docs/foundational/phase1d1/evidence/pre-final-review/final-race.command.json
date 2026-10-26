@@ -1,0 +1,76 @@
+{
+  "Kind": "verification_command",
+  "SourceID": "ee144b08e6abac10c704c990e83a80314326a1eac3956bc5ecf9489f8f0afd5a",
+  "Mode": "race",
+  "Command": [
+    "go",
+    "test",
+    "-json",
+    "-count=1",
+    "-race",
+    "./..."
+  ],
+  "Directory": "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan",
+  "StartedUTC": "2026-10-25T19:55:37.992081+00:00",
+  "ElapsedSeconds": 90.856,
+  "Environment": {
+    "GOTOOLCHAIN": "local",
+    "GOFLAGS": "-mod=readonly",
+    "GOCACHE": "/tmp/alan-phase1d1-go-build",
+    "GOPROXY": "off",
+    "GOSUMDB": "off"
+  },
+  "ExitCode": 0,
+  "Stderr": "",
+  "Packages": [
+    {
+      "Package": "github.com/JakeFAU/alan/cmd/alan-resource",
+      "Result": "skip",
+      "ElapsedSeconds": 0.002
+    },
+    {
+      "Package": "github.com/JakeFAU/alan/internal/boundary",
+      "Result": "pass",
+      "ElapsedSeconds": 1.174
+    },
+    {
+      "Package": "github.com/JakeFAU/alan/internal/fixture",
+      "Result": "pass",
+      "ElapsedSeconds": 1.2810000000000001
+    },
+    {
+      "Package": "github.com/JakeFAU/alan/cmd/alan",
+      "Result": "pass",
+      "ElapsedSeconds": 2.079
+    },
+    {
+      "Package": "github.com/JakeFAU/alan/internal/executor",
+      "Result": "pass",
+      "ElapsedSeconds": 12.111
+    },
+    {
+      "Package": "github.com/JakeFAU/alan/internal/durabletest",
+      "Result": "pass",
+      "ElapsedSeconds": 81.176
+    },
+    {
+      "Package": "github.com/JakeFAU/alan/research/semantics",
+      "Result": "pass",
+      "ElapsedSeconds": 89.426
+    }
+  ],
+  "PassingEvents": 353,
+  "Failures": [],
+  "Markers": {
+    "COMPOSITION": 20,
+    "ASYNC": 22,
+    "DURABLE": 119,
+    "QUALIFICATION": 15,
+    "CONFORMANCE": 6,
+    "SUPERVISION": 32
+  },
+  "RawLog": "docs/foundational/phase1d1/evidence/final-race.go-test.jsonl.gz",
+  "RawSHA256": "cca06dcfaf8f9ad94a7c7789ef70e267a78bb33f04fd5bc6400bfc372631fcfb",
+  "GzipSHA256": "befeeecf8e1ce324d505f70eec4f8a032799c52bf7d29e64dc133247e792ccf7",
+  "SourceUnchanged": true
+}

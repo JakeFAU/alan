@@ -1,0 +1,76 @@
+{
+  "Kind": "verification_command",
+  "SourceID": "9fef40370632bdf7416d5bdb2e8472f31ae2adc80ae5145cd7c9c90ccfe63e63",
+  "Mode": "race",
+  "Command": [
+    "go",
+    "test",
+    "-json",
+    "-count=1",
+    "-race",
+    "./..."
+  ],
+  "Directory": "/tmp/alan-phase1e-baseline-source",
+  "StartedUTC": "2026-10-25T21:40:44.343489+00:00",
+  "ElapsedSeconds": 106.432,
+  "Environment": {
+    "GOTOOLCHAIN": "local",
+    "GOFLAGS": "-mod=readonly",
+    "GOCACHE": "/tmp/alan-phase1e-go-build",
+    "GOPROXY": "off",
+    "GOSUMDB": "off"
+  },
+  "ExitCode": 0,
+  "Stderr": "",
+  "Packages": [
+    {
+      "Package": "github.com/JakeFAU/alan/cmd/alan-resource",
+      "Result": "skip",
+      "ElapsedSeconds": 0
+    },
+    {
+      "Package": "github.com/JakeFAU/alan/internal/boundary",
+      "Result": "pass",
+      "ElapsedSeconds": 1.169
+    },
+    {
+      "Package": "github.com/JakeFAU/alan/internal/fixture",
+      "Result": "pass",
+      "ElapsedSeconds": 1.291
+    },
+    {
+      "Package": "github.com/JakeFAU/alan/cmd/alan",
+      "Result": "pass",
+      "ElapsedSeconds": 2.3529999999999998
+    },
+    {
+      "Package": "github.com/JakeFAU/alan/internal/executor",
+      "Result": "pass",
+      "ElapsedSeconds": 13.634
+    },
+    {
+      "Package": "github.com/JakeFAU/alan/internal/durabletest",
+      "Result": "pass",
+      "ElapsedSeconds": 84.414
+    },
+    {
+      "Package": "github.com/JakeFAU/alan/research/semantics",
+      "Result": "pass",
+      "ElapsedSeconds": 87.524
+    }
+  ],
+  "PassingEvents": 357,
+  "Failures": [],
+  "Markers": {
+    "COMPOSITION": 20,
+    "ASYNC": 22,
+    "DURABLE": 119,
+    "QUALIFICATION": 15,
+    "CONFORMANCE": 6,
+    "SUPERVISION": 32
+  },
+  "RawLog": "/tmp/alan-phase1e-baseline-evidence/final-race.go-test.jsonl.gz",
+  "RawSHA256": "0af8c3c56b620983e2f7e863c74338c502ca6ddd738bcb03fb12fbc88968c94c",
+  "GzipSHA256": "0af65ba09b1bda6d7a084939bba3bdb20184619566ce605c95e49a600c140466",
+  "SourceUnchanged": true
+}

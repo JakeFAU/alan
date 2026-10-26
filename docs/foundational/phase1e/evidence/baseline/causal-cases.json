@@ -1,0 +1,230 @@
+{
+  "normal": [
+    {
+      "scenario": "TestAutomaticAsyncHeldProgressAndConcurrentCrash/idempotent/settle",
+      "profile": "idempotent",
+      "cut": "settle",
+      "race_children": false,
+      "causal_order": [
+        "endpoint-held",
+        "peer-committed",
+        "peer-delivered",
+        "held-live",
+        "response-released",
+        "result-settled"
+      ],
+      "endpoint_contacts": 1,
+      "endpoint_applications": 1,
+      "endpoint_total": 5,
+      "before_release_external_receipts": 0,
+      "after_external_receipts": 1,
+      "after_settlements": 1
+    },
+    {
+      "scenario": "TestAutomaticAsyncHeldProgressAndConcurrentCrash/idempotent/held-kill",
+      "profile": "idempotent",
+      "cut": "held-kill",
+      "race_children": false,
+      "causal_order": [
+        "endpoint-held",
+        "peer-committed",
+        "peer-delivered",
+        "held-live"
+      ],
+      "endpoint_contacts": 2,
+      "endpoint_applications": 1,
+      "endpoint_total": 5,
+      "before_release_external_receipts": 0,
+      "after_external_receipts": 1,
+      "after_settlements": 1
+    },
+    {
+      "scenario": "TestAutomaticAsyncHeldProgressAndConcurrentCrash/idempotent/received-kill",
+      "profile": "idempotent",
+      "cut": "received-kill",
+      "race_children": false,
+      "causal_order": [
+        "endpoint-held",
+        "peer-committed",
+        "peer-delivered",
+        "held-live"
+      ],
+      "endpoint_contacts": 2,
+      "endpoint_applications": 1,
+      "endpoint_total": 5,
+      "before_release_external_receipts": 0,
+      "after_external_receipts": 1,
+      "after_settlements": 1
+    },
+    {
+      "scenario": "TestAutomaticAsyncHeldProgressAndConcurrentCrash/non-idempotent/settle",
+      "profile": "non-idempotent",
+      "cut": "settle",
+      "race_children": false,
+      "causal_order": [
+        "endpoint-held",
+        "peer-committed",
+        "peer-delivered",
+        "held-live",
+        "response-released",
+        "result-settled"
+      ],
+      "endpoint_contacts": 1,
+      "endpoint_applications": 1,
+      "endpoint_total": 5,
+      "before_release_external_receipts": 0,
+      "after_external_receipts": 1,
+      "after_settlements": 1
+    },
+    {
+      "scenario": "TestAutomaticAsyncHeldProgressAndConcurrentCrash/non-idempotent/held-kill",
+      "profile": "non-idempotent",
+      "cut": "held-kill",
+      "race_children": false,
+      "causal_order": [
+        "endpoint-held",
+        "peer-committed",
+        "peer-delivered",
+        "held-live"
+      ],
+      "endpoint_contacts": 1,
+      "endpoint_applications": 1,
+      "endpoint_total": 5,
+      "before_release_external_receipts": 0,
+      "after_external_receipts": 0,
+      "after_settlements": 0
+    },
+    {
+      "scenario": "TestAutomaticAsyncHeldProgressAndConcurrentCrash/non-idempotent/received-kill",
+      "profile": "non-idempotent",
+      "cut": "received-kill",
+      "race_children": false,
+      "causal_order": [
+        "endpoint-held",
+        "peer-committed",
+        "peer-delivered",
+        "held-live"
+      ],
+      "endpoint_contacts": 1,
+      "endpoint_applications": 1,
+      "endpoint_total": 5,
+      "before_release_external_receipts": 0,
+      "after_external_receipts": 0,
+      "after_settlements": 0
+    }
+  ],
+  "race": [
+    {
+      "scenario": "TestAutomaticAsyncHeldProgressAndConcurrentCrash/idempotent/settle",
+      "profile": "idempotent",
+      "cut": "settle",
+      "race_children": true,
+      "causal_order": [
+        "endpoint-held",
+        "peer-committed",
+        "peer-delivered",
+        "held-live",
+        "response-released",
+        "result-settled"
+      ],
+      "endpoint_contacts": 1,
+      "endpoint_applications": 1,
+      "endpoint_total": 5,
+      "before_release_external_receipts": 0,
+      "after_external_receipts": 1,
+      "after_settlements": 1
+    },
+    {
+      "scenario": "TestAutomaticAsyncHeldProgressAndConcurrentCrash/idempotent/held-kill",
+      "profile": "idempotent",
+      "cut": "held-kill",
+      "race_children": true,
+      "causal_order": [
+        "endpoint-held",
+        "peer-committed",
+        "peer-delivered",
+        "held-live"
+      ],
+      "endpoint_contacts": 2,
+      "endpoint_applications": 1,
+      "endpoint_total": 5,
+      "before_release_external_receipts": 0,
+      "after_external_receipts": 1,
+      "after_settlements": 1
+    },
+    {
+      "scenario": "TestAutomaticAsyncHeldProgressAndConcurrentCrash/idempotent/received-kill",
+      "profile": "idempotent",
+      "cut": "received-kill",
+      "race_children": true,
+      "causal_order": [
+        "endpoint-held",
+        "peer-committed",
+        "peer-delivered",
+        "held-live"
+      ],
+      "endpoint_contacts": 2,
+      "endpoint_applications": 1,
+      "endpoint_total": 5,
+      "before_release_external_receipts": 0,
+      "after_external_receipts": 1,
+      "after_settlements": 1
+    },
+    {
+      "scenario": "TestAutomaticAsyncHeldProgressAndConcurrentCrash/non-idempotent/settle",
+      "profile": "non-idempotent",
+      "cut": "settle",
+      "race_children": true,
+      "causal_order": [
+        "endpoint-held",
+        "peer-committed",
+        "peer-delivered",
+        "held-live",
+        "response-released",
+        "result-settled"
+      ],
+      "endpoint_contacts": 1,
+      "endpoint_applications": 1,
+      "endpoint_total": 5,
+      "before_release_external_receipts": 0,
+      "after_external_receipts": 1,
+      "after_settlements": 1
+    },
+    {
+      "scenario": "TestAutomaticAsyncHeldProgressAndConcurrentCrash/non-idempotent/held-kill",
+      "profile": "non-idempotent",
+      "cut": "held-kill",
+      "race_children": true,
+      "causal_order": [
+        "endpoint-held",
+        "peer-committed",
+        "peer-delivered",
+        "held-live"
+      ],
+      "endpoint_contacts": 1,
+      "endpoint_applications": 1,
+      "endpoint_total": 5,
+      "before_release_external_receipts": 0,
+      "after_external_receipts": 0,
+      "after_settlements": 0
+    },
+    {
+      "scenario": "TestAutomaticAsyncHeldProgressAndConcurrentCrash/non-idempotent/received-kill",
+      "profile": "non-idempotent",
+      "cut": "received-kill",
+      "race_children": true,
+      "causal_order": [
+        "endpoint-held",
+        "peer-committed",
+        "peer-delivered",
+        "held-live"
+      ],
+      "endpoint_contacts": 1,
+      "endpoint_applications": 1,
+      "endpoint_total": 5,
+      "before_release_external_receipts": 0,
+      "after_external_receipts": 0,
+      "after_settlements": 0
+    }
+  ]
+}

@@ -1,0 +1,201 @@
+{
+  "source_sha256": "ee144b08e6abac10c704c990e83a80314326a1eac3956bc5ecf9489f8f0afd5a",
+  "gates": [
+    {
+      "kind": "normal",
+      "test_actions": {
+        "pass": 353
+      },
+      "cli_cases": [
+        {
+          "profile": "idempotent",
+          "cut": "settle",
+          "events": [
+            "endpoint-held",
+            "peer-committed",
+            "peer-delivered",
+            "held-live",
+            "response-released",
+            "result-settled"
+          ],
+          "contacts": 1,
+          "race_children": false
+        },
+        {
+          "profile": "idempotent",
+          "cut": "held-kill",
+          "events": [
+            "endpoint-held",
+            "peer-committed",
+            "peer-delivered",
+            "held-live"
+          ],
+          "contacts": 2,
+          "race_children": false
+        },
+        {
+          "profile": "idempotent",
+          "cut": "received-kill",
+          "events": [
+            "endpoint-held",
+            "peer-committed",
+            "peer-delivered",
+            "held-live"
+          ],
+          "contacts": 2,
+          "race_children": false
+        },
+        {
+          "profile": "non-idempotent",
+          "cut": "settle",
+          "events": [
+            "endpoint-held",
+            "peer-committed",
+            "peer-delivered",
+            "held-live",
+            "response-released",
+            "result-settled"
+          ],
+          "contacts": 1,
+          "race_children": false
+        },
+        {
+          "profile": "non-idempotent",
+          "cut": "held-kill",
+          "events": [
+            "endpoint-held",
+            "peer-committed",
+            "peer-delivered",
+            "held-live"
+          ],
+          "contacts": 1,
+          "race_children": false
+        },
+        {
+          "profile": "non-idempotent",
+          "cut": "received-kill",
+          "events": [
+            "endpoint-held",
+            "peer-committed",
+            "peer-delivered",
+            "held-live"
+          ],
+          "contacts": 1,
+          "race_children": false
+        }
+      ]
+    },
+    {
+      "kind": "race",
+      "test_actions": {
+        "pass": 353
+      },
+      "cli_cases": [
+        {
+          "profile": "idempotent",
+          "cut": "settle",
+          "events": [
+            "endpoint-held",
+            "peer-committed",
+            "peer-delivered",
+            "held-live",
+            "response-released",
+            "result-settled"
+          ],
+          "contacts": 1,
+          "race_children": true
+        },
+        {
+          "profile": "idempotent",
+          "cut": "held-kill",
+          "events": [
+            "endpoint-held",
+            "peer-committed",
+            "peer-delivered",
+            "held-live"
+          ],
+          "contacts": 2,
+          "race_children": true
+        },
+        {
+          "profile": "idempotent",
+          "cut": "received-kill",
+          "events": [
+            "endpoint-held",
+            "peer-committed",
+            "peer-delivered",
+            "held-live"
+          ],
+          "contacts": 2,
+          "race_children": true
+        },
+        {
+          "profile": "non-idempotent",
+          "cut": "settle",
+          "events": [
+            "endpoint-held",
+            "peer-committed",
+            "peer-delivered",
+            "held-live",
+            "response-released",
+            "result-settled"
+          ],
+          "contacts": 1,
+          "race_children": true
+        },
+        {
+          "profile": "non-idempotent",
+          "cut": "held-kill",
+          "events": [
+            "endpoint-held",
+            "peer-committed",
+            "peer-delivered",
+            "held-live"
+          ],
+          "contacts": 1,
+          "race_children": true
+        },
+        {
+          "profile": "non-idempotent",
+          "cut": "received-kill",
+          "events": [
+            "endpoint-held",
+            "peer-committed",
+            "peer-delivered",
+            "held-live"
+          ],
+          "contacts": 1,
+          "race_children": true
+        }
+      ]
+    }
+  ],
+  "source_files_verified": 57,
+  "probe_artifacts": [
+    {
+      "path": "/tmp/phase1d1-review-probes/control-audit.json",
+      "bytes": 700,
+      "sha256": "0ec563da05faf401ae251b3524edddb226d4ee43b15091be9a0bf45c4ecf48d5"
+    },
+    {
+      "path": "/tmp/phase1d1-review-probes/overlay.json",
+      "bytes": 158,
+      "sha256": "452675845ca4a7056598a624a3a4e93aaab94a34525bf2fbf22886a88cecd5bb"
+    },
+    {
+      "path": "/tmp/phase1d1-review-probes/probe_test.go",
+      "bytes": 3959,
+      "sha256": "50b2680d270fd94aab07887f272dfe4a4362f7921b72b36ae3a362ec6dc380d9"
+    },
+    {
+      "path": "/tmp/phase1d1-review-probes/result.log",
+      "bytes": 3754,
+      "sha256": "aba568d02650d7fce0609759d24b4de26cee5e403228cfb959ac6430b8f2c718"
+    },
+    {
+      "path": "/tmp/phase1d1-review-probes/synchronous-red.log",
+      "bytes": 19843,
+      "sha256": "012504f9493f13ea95cf806505a3e9d1487142c17acb8b53ced088c0609423f7"
+    }
+  ]
+}

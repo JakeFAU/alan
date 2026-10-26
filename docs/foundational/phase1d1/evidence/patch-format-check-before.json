@@ -1,0 +1,13 @@
+{
+  "Command": [
+    "git",
+    "diff",
+    "--check",
+    "6effdc02259af5335633bfc41e9786386430fa7c",
+    "HEAD"
+  ],
+  "ExitCode": 2,
+  "Stdout": "docs/foundational/phase1d1/evidence/final-fix/phase1d1-final-fix.diff:4: space before tab in indent.\n+ \t\tif count == 0 && intent.Kind == \"external\" {\ndocs/foundational/phase1d1/evidence/final-fix/phase1d1-final-fix.diff:5: space before tab in indent.\n+ \t\t\ta, e := loadExternalAttempt(ctx, s.conn, id)\ndocs/foundational/phase1d1/evidence/final-fix/phase1d1-final-fix.diff:6: space before tab in indent.\n+ \t\t\tif e == nil && a.Allowed {\ndocs/foundational/phase1d1/evidence/final-fix/phase1d1-final-fix.diff:16: space before tab in indent.\n+ \t\t\t} else if e != nil && !errors.Is(e, sql.ErrNoRows) {\ndocs/foundational/phase1d1/evidence/final-fix/phase1d1-final-fix.diff:17: space before tab in indent.\n+ \t\t\t\treturn report, errors.Join(runErr, e)\ndocs/foundational/phase1d1/evidence/final-fix/phase1d1-final-fix.diff:18: space before tab in indent.\n+ \t\t\t}\n",
+  "Stderr": "",
+  "Cause": "Retained unified patch context uses a leading space before original Go indentation; this is evidence syntax, not runtime source whitespace."
+}

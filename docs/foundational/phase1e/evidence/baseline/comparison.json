@@ -1,0 +1,273 @@
+{
+  "current_source_id": "9fef40370632bdf7416d5bdb2e8472f31ae2adc80ae5145cd7c9c90ccfe63e63",
+  "historical_source_id": "9fef40370632bdf7416d5bdb2e8472f31ae2adc80ae5145cd7c9c90ccfe63e63",
+  "comparison_source": "retained Phase 1D1 final records",
+  "modes": {
+    "normal": {
+      "pass_events": 357,
+      "markers": {
+        "COMPOSITION": 20,
+        "QUALIFICATION": 15,
+        "CONFORMANCE": 6,
+        "SUPERVISION": 32,
+        "ASYNC": 22,
+        "DURABLE": 119
+      },
+      "comparisons": {
+        "QUALIFICATION": {
+          "count": 15,
+          "expected": 15,
+          "exact_ordered_payload_equal_to_phase1d1_final": true
+        },
+        "COMPOSITION": {
+          "count": 20,
+          "expected": 20,
+          "exact_ordered_payload_equal_to_phase1d1_final": true
+        },
+        "SUPERVISION": {
+          "count": 32,
+          "expected": 32,
+          "exact_ordered_payload_equal_to_phase1d1_final": true
+        }
+      },
+      "conformance": {
+        "count": 6,
+        "all_passed": true,
+        "test_fixture_order_equal": true,
+        "exact_payloads_equal": 4,
+        "fixtures": [
+          {
+            "test": "TestRuntimeConformanceAcceptedLossAndSuccessor",
+            "fixture": "B_accepted_lost_ack_and_successor",
+            "passed": true,
+            "checkpoints": 12
+          },
+          {
+            "test": "TestRuntimeConformanceInterruptedCommittedRequest",
+            "fixture": "C_committed_intent_interrupted",
+            "passed": true,
+            "checkpoints": 13
+          },
+          {
+            "test": "TestRuntimeConformanceRejectionSurvivesFailure",
+            "fixture": "B_rejected_then_failed_retransmission",
+            "passed": true,
+            "checkpoints": 12
+          },
+          {
+            "test": "TestRuntimeConformanceObservationDoesNotGrantAuthority",
+            "fixture": "I_observation_without_lifecycle_authority",
+            "passed": true,
+            "checkpoints": 11
+          },
+          {
+            "test": "TestRuntimeConformanceExternalGenerationsAndLateReceipt",
+            "fixture": "J_unknown_effect_recovery_late_settlement",
+            "passed": true,
+            "checkpoints": 30
+          },
+          {
+            "test": "TestRuntimeConformanceClosureBeforeExternalAuthorization",
+            "fixture": "J_unknown_effect_recovery_late_settlement",
+            "passed": true,
+            "checkpoints": 3
+          }
+        ]
+      },
+      "scenario_tests": {
+        "TestAsyncHeldRequestPeerProgress": [
+          "TestAsyncHeldRequestPeerProgress"
+        ],
+        "TestAsyncSaturationLeavesBacklogAndDeliversPeer": [
+          "TestAsyncSaturationLeavesBacklogAndDeliversPeer",
+          "TestAsyncSaturationLeavesBacklogAndDeliversPeer/1",
+          "TestAsyncSaturationLeavesBacklogAndDeliversPeer/2",
+          "TestAsyncSaturationLeavesBacklogAndDeliversPeer/3"
+        ],
+        "TestAsyncReorderedReceiptsConsumeWithoutHeadOfLineAndReplay": [
+          "TestAsyncReorderedReceiptsConsumeWithoutHeadOfLineAndReplay"
+        ],
+        "TestAsyncCancelAccountsReceivedCandidateAndPreservesUnknown": [
+          "TestAsyncCancelAccountsReceivedCandidateAndPreservesUnknown"
+        ],
+        "TestAsyncLimitsWithHeldWork": [
+          "TestAsyncLimitsWithHeldWork",
+          "TestAsyncLimitsWithHeldWork/dispatch",
+          "TestAsyncLimitsWithHeldWork/steps"
+        ],
+        "TestAsyncLateReceiptValidatesRetainedEpochAndRejectsForgery": [
+          "TestAsyncLateReceiptValidatesRetainedEpochAndRejectsForgery"
+        ],
+        "TestAsyncOrdinarySupervisorAdvancesWhileExternalHeld": [
+          "TestAsyncOrdinarySupervisorAdvancesWhileExternalHeld"
+        ],
+        "TestAsyncKnownReceiptSurvivesSettlementFailure": [
+          "TestAsyncKnownReceiptSurvivesSettlementFailure"
+        ],
+        "TestAsyncAuthorizedTransportFinishesAfterOrdinarySourceClosure": [
+          "TestAsyncAuthorizedTransportFinishesAfterOrdinarySourceClosure"
+        ],
+        "TestAutomaticAsyncHeldProgressAndConcurrentCrash": [
+          "TestAutomaticAsyncHeldProgressAndConcurrentCrash",
+          "TestAutomaticAsyncHeldProgressAndConcurrentCrash/idempotent/held-kill",
+          "TestAutomaticAsyncHeldProgressAndConcurrentCrash/idempotent/received-kill",
+          "TestAutomaticAsyncHeldProgressAndConcurrentCrash/idempotent/settle",
+          "TestAutomaticAsyncHeldProgressAndConcurrentCrash/non-idempotent/held-kill",
+          "TestAutomaticAsyncHeldProgressAndConcurrentCrash/non-idempotent/received-kill",
+          "TestAutomaticAsyncHeldProgressAndConcurrentCrash/non-idempotent/settle"
+        ],
+        "TestRuntimeConformanceAcceptedLossAndSuccessor": [
+          "TestRuntimeConformanceAcceptedLossAndSuccessor"
+        ],
+        "TestRuntimeConformanceRejectionSurvivesFailure": [
+          "TestRuntimeConformanceRejectionSurvivesFailure"
+        ],
+        "TestRuntimeConformanceExternalGenerationsAndLateReceipt": [
+          "TestRuntimeConformanceExternalGenerationsAndLateReceipt"
+        ]
+      },
+      "process_evidence": {
+        "process_records": 85,
+        "race_children_values": {
+          "False": 85
+        },
+        "sigkill_exit_signal_count": 20,
+        "explicit_sigkill_records": 2,
+        "async_durable_records": 6
+      }
+    },
+    "race": {
+      "pass_events": 357,
+      "markers": {
+        "COMPOSITION": 20,
+        "ASYNC": 22,
+        "DURABLE": 119,
+        "QUALIFICATION": 15,
+        "CONFORMANCE": 6,
+        "SUPERVISION": 32
+      },
+      "comparisons": {
+        "QUALIFICATION": {
+          "count": 15,
+          "expected": 15,
+          "exact_ordered_payload_equal_to_phase1d1_final": true
+        },
+        "COMPOSITION": {
+          "count": 20,
+          "expected": 20,
+          "exact_ordered_payload_equal_to_phase1d1_final": true
+        },
+        "SUPERVISION": {
+          "count": 32,
+          "expected": 32,
+          "exact_ordered_payload_equal_to_phase1d1_final": true
+        }
+      },
+      "conformance": {
+        "count": 6,
+        "all_passed": true,
+        "test_fixture_order_equal": true,
+        "exact_payloads_equal": 4,
+        "fixtures": [
+          {
+            "test": "TestRuntimeConformanceAcceptedLossAndSuccessor",
+            "fixture": "B_accepted_lost_ack_and_successor",
+            "passed": true,
+            "checkpoints": 12
+          },
+          {
+            "test": "TestRuntimeConformanceInterruptedCommittedRequest",
+            "fixture": "C_committed_intent_interrupted",
+            "passed": true,
+            "checkpoints": 13
+          },
+          {
+            "test": "TestRuntimeConformanceRejectionSurvivesFailure",
+            "fixture": "B_rejected_then_failed_retransmission",
+            "passed": true,
+            "checkpoints": 12
+          },
+          {
+            "test": "TestRuntimeConformanceObservationDoesNotGrantAuthority",
+            "fixture": "I_observation_without_lifecycle_authority",
+            "passed": true,
+            "checkpoints": 11
+          },
+          {
+            "test": "TestRuntimeConformanceExternalGenerationsAndLateReceipt",
+            "fixture": "J_unknown_effect_recovery_late_settlement",
+            "passed": true,
+            "checkpoints": 30
+          },
+          {
+            "test": "TestRuntimeConformanceClosureBeforeExternalAuthorization",
+            "fixture": "J_unknown_effect_recovery_late_settlement",
+            "passed": true,
+            "checkpoints": 3
+          }
+        ]
+      },
+      "scenario_tests": {
+        "TestAsyncHeldRequestPeerProgress": [
+          "TestAsyncHeldRequestPeerProgress"
+        ],
+        "TestAsyncSaturationLeavesBacklogAndDeliversPeer": [
+          "TestAsyncSaturationLeavesBacklogAndDeliversPeer",
+          "TestAsyncSaturationLeavesBacklogAndDeliversPeer/1",
+          "TestAsyncSaturationLeavesBacklogAndDeliversPeer/2",
+          "TestAsyncSaturationLeavesBacklogAndDeliversPeer/3"
+        ],
+        "TestAsyncReorderedReceiptsConsumeWithoutHeadOfLineAndReplay": [
+          "TestAsyncReorderedReceiptsConsumeWithoutHeadOfLineAndReplay"
+        ],
+        "TestAsyncCancelAccountsReceivedCandidateAndPreservesUnknown": [
+          "TestAsyncCancelAccountsReceivedCandidateAndPreservesUnknown"
+        ],
+        "TestAsyncLimitsWithHeldWork": [
+          "TestAsyncLimitsWithHeldWork",
+          "TestAsyncLimitsWithHeldWork/dispatch",
+          "TestAsyncLimitsWithHeldWork/steps"
+        ],
+        "TestAsyncLateReceiptValidatesRetainedEpochAndRejectsForgery": [
+          "TestAsyncLateReceiptValidatesRetainedEpochAndRejectsForgery"
+        ],
+        "TestAsyncOrdinarySupervisorAdvancesWhileExternalHeld": [
+          "TestAsyncOrdinarySupervisorAdvancesWhileExternalHeld"
+        ],
+        "TestAsyncKnownReceiptSurvivesSettlementFailure": [
+          "TestAsyncKnownReceiptSurvivesSettlementFailure"
+        ],
+        "TestAsyncAuthorizedTransportFinishesAfterOrdinarySourceClosure": [
+          "TestAsyncAuthorizedTransportFinishesAfterOrdinarySourceClosure"
+        ],
+        "TestAutomaticAsyncHeldProgressAndConcurrentCrash": [
+          "TestAutomaticAsyncHeldProgressAndConcurrentCrash",
+          "TestAutomaticAsyncHeldProgressAndConcurrentCrash/idempotent/held-kill",
+          "TestAutomaticAsyncHeldProgressAndConcurrentCrash/idempotent/received-kill",
+          "TestAutomaticAsyncHeldProgressAndConcurrentCrash/idempotent/settle",
+          "TestAutomaticAsyncHeldProgressAndConcurrentCrash/non-idempotent/held-kill",
+          "TestAutomaticAsyncHeldProgressAndConcurrentCrash/non-idempotent/received-kill",
+          "TestAutomaticAsyncHeldProgressAndConcurrentCrash/non-idempotent/settle"
+        ],
+        "TestRuntimeConformanceAcceptedLossAndSuccessor": [
+          "TestRuntimeConformanceAcceptedLossAndSuccessor"
+        ],
+        "TestRuntimeConformanceRejectionSurvivesFailure": [
+          "TestRuntimeConformanceRejectionSurvivesFailure"
+        ],
+        "TestRuntimeConformanceExternalGenerationsAndLateReceipt": [
+          "TestRuntimeConformanceExternalGenerationsAndLateReceipt"
+        ]
+      },
+      "process_evidence": {
+        "process_records": 85,
+        "race_children_values": {
+          "True": 85
+        },
+        "sigkill_exit_signal_count": 20,
+        "explicit_sigkill_records": 2,
+        "async_durable_records": 6
+      }
+    }
+  }
+}

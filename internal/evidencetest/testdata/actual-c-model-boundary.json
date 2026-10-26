@@ -1,0 +1,87 @@
+{
+  "actual_filter": {
+    "Boundary": "adapter.result-recorded",
+    "Phase": "pre-settlement",
+    "Subject": "assistant",
+    "Store": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/TestRecordedModelAndLookupCrashRecoveryC-model47378696/002/app.sqlite",
+    "Scenario": "TestRecordedModelAndLookupCrashRecovery/C-model",
+    "Token": "TestRecordedModelAndLookupCrashRecovery/C-model-0"
+  },
+  "original_acknowledgment": {
+    "Scenario": "TestRecordedModelAndLookupCrashRecovery/C-model",
+    "Token": "TestRecordedModelAndLookupCrashRecovery/C-model-0",
+    "Store": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/TestRecordedModelAndLookupCrashRecoveryC-model47378696/002/app.sqlite",
+    "Boundary": "adapter.result-recorded",
+    "Phase": "pre-settlement",
+    "Subject": "assistant",
+    "PID": 26784,
+    "Generation": 1,
+    "Epoch": 2,
+    "Sequence": 15,
+    "Intent": "[\"assistant\",1,15,0]",
+    "Attempt": "[\"authorization\",\"[\\\"assistant\\\",1,15,0]\"]",
+    "InFlight": null
+  },
+  "substituted_acknowledgment": {
+    "Scenario": "TestRecordedModelAndLookupCrashRecovery/C-model",
+    "Token": "TestRecordedModelAndLookupCrashRecovery/C-model-0",
+    "Store": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/TestRecordedModelAndLookupCrashRecoveryC-model47378696/002/app.sqlite",
+    "Boundary": "adapter.result-recorded",
+    "Phase": "pre-settlement",
+    "Subject": "assistant",
+    "PID": 26784,
+    "Generation": 1,
+    "Epoch": 2,
+    "Sequence": 16,
+    "Intent": "[\"assistant\",1,15,0]",
+    "Attempt": "[\"authorization\",\"[\\\"assistant\\\",1,15,0]\"]",
+    "InFlight": null
+  },
+  "source_sha256": "a9d29b31578f24c3433fbb0158c8898826882c4ee134148935f5d698fbf10057",
+  "snapshot": {
+    "Namespace": "263fc8b68ae08683ad33d7e382b1009e24df72640281c4e22a4bdc820803e11b",
+    "KeyVersion": 2,
+    "Tables": {
+      "attempts": [
+        {
+          "descriptor": "{\"Intent\":{\"ID\":\"[\\\"caller\\\",1,1,0]\",\"Run\":{\"Subject\":\"caller\",\"Generation\":1},\"Sequence\":1,\"Ordinal\":0,\"Kind\":\"message\",\"Target\":\"assistant\",\"Generation\":1,\"Obligation\":\"evidence\",\"Payload\":{\"question\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"What does WAL retain?\",\"Flag\":false}}},\"Revision\":1}",
+          "id": "[\"authorization\",\"[\\\"caller\\\",1,1,0]\"]",
+          "intent_id": "[\"caller\",1,1,0]",
+          "result": "{\"ID\":\"[\\\"authorization\\\",\\\"[\\\\\\\"caller\\\\\\\",1,1,0]\\\"]\",\"IntentID\":\"[\\\"caller\\\",1,1,0]\",\"Allowed\":true,\"Reason\":\"authorized\",\"Source\":{\"Run\":{\"Subject\":\"caller\",\"Generation\":1},\"Epoch\":2,\"Sequence\":1,\"Revision\":1},\"ClosureOperation\":\"\"}"
+        },
+        {
+          "descriptor": "{\"Intent\":{\"ID\":\"[\\\"assistant\\\",1,15,0]\",\"Run\":{\"Subject\":\"assistant\",\"Generation\":1},\"Sequence\":15,\"Ordinal\":0,\"Kind\":\"adapter\",\"Target\":\"evidence-model\",\"Generation\":1,\"Obligation\":\"plan\",\"Payload\":{\"instructions\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"Choose lookup, clarification, or insufficient_evidence. For lookup set tool to exactly \\\"lookup\\\" and supply a nonempty query of at most 512 UTF-8 bytes. Never propose another tool or endpoint. Use message for clarification or insufficient evidence. Return all schema fields; unused fields are empty strings.\",\"Flag\":false},\"question\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"What does WAL retain?\",\"Flag\":false}}},\"Revision\":1}",
+          "id": "[\"authorization\",\"[\\\"assistant\\\",1,15,0]\"]",
+          "intent_id": "[\"assistant\",1,15,0]",
+          "result": "{\"ID\":\"[\\\"authorization\\\",\\\"[\\\\\\\"assistant\\\\\\\",1,15,0]\\\"]\",\"IntentID\":\"[\\\"assistant\\\",1,15,0]\",\"Allowed\":true,\"Reason\":\"authorized\",\"Source\":{\"Run\":{\"Subject\":\"assistant\",\"Generation\":1},\"Epoch\":2,\"Sequence\":15,\"Revision\":1},\"ClosureOperation\":\"\"}"
+        }
+      ],
+      "adapter_attempts": [
+        {
+          "descriptor": "{\"Intent\":{\"ID\":\"[\\\"assistant\\\",1,15,0]\",\"Run\":{\"Subject\":\"assistant\",\"Generation\":1},\"Sequence\":15,\"Ordinal\":0,\"Kind\":\"adapter\",\"Target\":\"evidence-model\",\"Generation\":1,\"Obligation\":\"plan\",\"Payload\":{\"instructions\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"Choose lookup, clarification, or insufficient_evidence. For lookup set tool to exactly \\\"lookup\\\" and supply a nonempty query of at most 512 UTF-8 bytes. Never propose another tool or endpoint. Use message for clarification or insufficient evidence. Return all schema fields; unused fields are empty strings.\",\"Flag\":false},\"question\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"What does WAL retain?\",\"Flag\":false}}},\"AuthorizationID\":\"[\\\"authorization\\\",\\\"[\\\\\\\"assistant\\\\\\\",1,15,0]\\\"]\",\"Prepared\":{\"Request\":{\"ID\":\"[\\\"assistant\\\",1,15,0]\",\"Key\":\"[2,\\\"263fc8b68ae08683ad33d7e382b1009e24df72640281c4e22a4bdc820803e11b\\\",\\\"[\\\\\\\"assistant\\\\\\\",1,15,0]\\\"]\",\"Capability\":\"evidence-model\",\"Effect\":\"plan\",\"Input\":{\"ID\":\"fb2a8bf4cc59ebbf863128b206973f05e3e9ce3bdba0b50d7828f7f725e40f88\",\"Record\":{\"instructions\":{\"Kind\":\"string\",\"MaxBytes\":4096,\"Enum\":null},\"question\":{\"Kind\":\"string\",\"MaxBytes\":4096,\"Enum\":null}}},\"Output\":{\"ID\":\"0a6411ca286972311d8e3fb386c9725b12546997f36b957ea826dba5bb92c8f0\",\"Record\":{\"decision\":{\"Kind\":\"string\",\"MaxBytes\":64,\"Enum\":[\"clarification\",\"insufficient_evidence\",\"lookup\"]},\"message\":{\"Kind\":\"string\",\"MaxBytes\":8192,\"Enum\":null},\"query\":{\"Kind\":\"string\",\"MaxBytes\":512,\"Enum\":null},\"tool\":{\"Kind\":\"string\",\"MaxBytes\":512,\"Enum\":null}}},\"Payload\":{\"instructions\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"Choose lookup, clarification, or insufficient_evidence. For lookup set tool to exactly \\\"lookup\\\" and supply a nonempty query of at most 512 UTF-8 bytes. Never propose another tool or endpoint. Use message for clarification or insufficient evidence. Return all schema fields; unused fields are empty strings.\",\"Flag\":false},\"question\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"What does WAL retain?\",\"Flag\":false}},\"Assets\":[{\"ID\":\"selected-corpus\",\"Source\":\"/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/TestRecordedModelAndLookupCrashRecoveryC-model47378696/002/source.txt\",\"Version\":\"bcdf04a60c21be85488f48d87ad918f0d06423b517de5660ea05db7b104c17be\",\"Content\":\"WAL retains a durable log.\\n\"}]},\"Digest\":\"d7e46a7718d30434504f6c4863ff742b167378e8502b45b119c131aa7eaa9379\",\"Protocol\":\"openai/responses/v1\",\"Endpoint\":\"http://127.0.0.1:51384\",\"Model\":\"controlled-requested-model\",\"MaxOutputTokens\":1024,\"MaxResponseBytes\":65536,\"Wire\":\"{\\\"input\\\":[{\\\"content\\\":\\\"{\\\\\\\"question\\\\\\\":\\\\\\\"What does WAL retain?\\\\\\\"}\\\",\\\"role\\\":\\\"user\\\"}],\\\"instructions\\\":\\\"Choose lookup, clarification, or insufficient_evidence. For lookup set tool to exactly \\\\\\\"lookup\\\\\\\" and supply a nonempty query of at most 512 UTF-8 bytes. Never propose another tool or endpoint. Use message for clarification or insufficient evidence. Return all schema fields; unused fields are empty strings.\\\",\\\"max_output_tokens\\\":1024,\\\"model\\\":\\\"controlled-requested-model\\\",\\\"store\\\":false,\\\"text\\\":{\\\"format\\\":{\\\"name\\\":\\\"alan_0a6411ca286972311d8e3fb386c9725b12546997f36b957ea826dba5bb9\\\",\\\"schema\\\":{\\\"additionalProperties\\\":false,\\\"properties\\\":{\\\"decision\\\":{\\\"enum\\\":[\\\"clarification\\\",\\\"insufficient_evidence\\\",\\\"lookup\\\"],\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"},\\\"query\\\":{\\\"type\\\":\\\"string\\\"},\\\"tool\\\":{\\\"type\\\":\\\"string\\\"}},\\\"required\\\":[\\\"decision\\\",\\\"message\\\",\\\"query\\\",\\\"tool\\\"],\\\"type\\\":\\\"object\\\"},\\\"strict\\\":true,\\\"type\\\":\\\"json_schema\\\"}},\\\"truncation\\\":\\\"disabled\\\"}\"},\"Allowed\":true,\"Reason\":\"authorized\"}",
+          "intent_id": "[\"assistant\",1,15,0]"
+        }
+      ],
+      "intents": [
+        {
+          "descriptor": "{\"ID\":\"[\\\"caller\\\",1,1,0]\",\"Run\":{\"Subject\":\"caller\",\"Generation\":1},\"Sequence\":1,\"Ordinal\":0,\"Kind\":\"message\",\"Target\":\"assistant\",\"Generation\":1,\"Obligation\":\"evidence\",\"Payload\":{\"question\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"What does WAL retain?\",\"Flag\":false}}}",
+          "generation": 1,
+          "id": "[\"caller\",1,1,0]",
+          "ordinal": 0,
+          "sequence": 1,
+          "source_revision": 1,
+          "subject": "caller"
+        },
+        {
+          "descriptor": "{\"ID\":\"[\\\"assistant\\\",1,15,0]\",\"Run\":{\"Subject\":\"assistant\",\"Generation\":1},\"Sequence\":15,\"Ordinal\":0,\"Kind\":\"adapter\",\"Target\":\"evidence-model\",\"Generation\":1,\"Obligation\":\"plan\",\"Payload\":{\"instructions\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"Choose lookup, clarification, or insufficient_evidence. For lookup set tool to exactly \\\"lookup\\\" and supply a nonempty query of at most 512 UTF-8 bytes. Never propose another tool or endpoint. Use message for clarification or insufficient evidence. Return all schema fields; unused fields are empty strings.\",\"Flag\":false},\"question\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"What does WAL retain?\",\"Flag\":false}}}",
+          "generation": 1,
+          "id": "[\"assistant\",1,15,0]",
+          "ordinal": 0,
+          "sequence": 15,
+          "source_revision": 1,
+          "subject": "assistant"
+        }
+      ]
+    }
+  }
+}

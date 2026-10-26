@@ -1,0 +1,20 @@
+{
+  "baseline": "6effdc02259af5335633bfc41e9786386430fa7c",
+  "test_sha256": "0d09aab90953d472c5f7ae8265b5cf76c83a3c4ea02b50bcd25811cc6f387993",
+  "command": [
+    "go",
+    "test",
+    "./internal/executor",
+    "-run",
+    "^TestAsyncHeldRequestPeerProgress$",
+    "-count=1",
+    "-v"
+  ],
+  "expected": "FAIL: held request ended before peer commit",
+  "environment": {
+    "GOTOOLCHAIN": "local",
+    "GOCACHE": "/tmp/alan-phase1d1-go-build",
+    "GOPROXY": "off",
+    "GOSUMDB": "off"
+  }
+}

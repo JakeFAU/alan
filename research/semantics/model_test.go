@@ -22,6 +22,12 @@ const (
 )
 
 type instruction struct {
+	Source         int    `json:",omitempty"`
+	Delta          int    `json:",omitempty"`
+	Mode           string `json:",omitempty"`
+	Slot           int    `json:",omitempty"`
+	Key            string `json:",omitempty"`
+	FromReg        bool   `json:",omitempty"`
 	Op             opcode
 	Reg, Value, PC int
 	Receipt        bool
@@ -31,6 +37,8 @@ type instruction struct {
 }
 type bounds struct{ Generations, Epochs, Commits, Continuations, Proposals, Intents, Attempts, Inbox, Value int }
 type config struct {
+	Supervision                *supervisionContract `json:",omitempty"`
+	Composition                *compositionContract `json:",omitempty"`
 	Programs                   map[string][]instruction
 	Version                    string
 	Routes                     map[string]string
@@ -47,11 +55,20 @@ type authority struct {
 }
 type continuation struct{ ID, PC int }
 type observation struct {
+	Notice                     string `json:",omitempty"`
+	Envelope                   string `json:",omitempty"`
+	Sender                     string `json:",omitempty"`
+	SenderG                    int    `json:",omitempty"`
+	Origin                     string `json:",omitempty"`
 	ID, Tag, Correlation, Kind string
 	Value                      int
 	Consumed                   bool
 }
 type projection struct {
+	Local    *localData       `json:",omitempty"`
+	Saved    []envelope       `json:",omitempty"`
+	Pending  []pendingRequest `json:",omitempty"`
+	Accepted []string         `json:",omitempty"`
 	Data     [2]int
 	Refs     [2]string
 	Frontier []continuation
@@ -87,13 +104,15 @@ type run struct {
 	Outcome    *outcome
 }
 type descriptor struct {
-	Kind    opcode
-	A       string
-	G, N    int
-	Tag     string
-	Value   int
-	Target  string
-	TargetG int
+	Lifecycle string `json:",omitempty"`
+	Envelope  string `json:",omitempty"`
+	Kind      opcode
+	A         string
+	G, N      int
+	Tag       string
+	Value     int
+	Target    string
+	TargetG   int
 }
 type intent struct {
 	Descriptor          descriptor
@@ -109,6 +128,8 @@ type proposal struct {
 	Intent    *descriptor
 }
 type message struct {
+	Envelope       string `json:",omitempty"`
+	SenderG        int    `json:",omitempty"`
 	Source, Target string
 	G              int
 	Tag            string
@@ -141,6 +162,7 @@ type receipt struct {
 	Value           int
 }
 type machine struct {
+	Lifecycle  *lifecycleLedger `json:",omitempty"`
 	Config     config
 	Subjects   map[string]*authority
 	Runs       map[string]*run
@@ -217,6 +239,11 @@ func fixture(code []instruction) machine {
 }
 func life(k kind, a string, g int) event { return event{Kind: k, A: a, G: g, Owner: "owner", W: 7} }
 func (m machine) hasAttempt(id string) bool {
+	if m.Lifecycle != nil {
+		if _, ok := m.Lifecycle.Authorized[id]; ok {
+			return true
+		}
+	}
 	for _, a := range m.Attempts {
 		if a.Intent == id {
 			return true
@@ -256,6 +283,12 @@ func step(before machine, e event) (machine, string) {
 	reject := func(why string) (machine, string) { return before, why }
 	r := m.Runs[runID(e.A, e.G)]
 	s := m.Subjects[e.A]
+	if handled, why := supervisionStep(&m, e); handled {
+		if why != "" {
+			return reject(why)
+		}
+		return m, ""
+	}
 	switch e.Kind {
 	case prepare:
 		if r == nil || s.Current != e.G || s.Retired || r.Projection.Status != "active" {
@@ -374,7 +407,7 @@ func step(before machine, e event) (machine, string) {
 		}
 		m.Admissions[transport] = &admission{Origin: e.Origin, RawID: e.ID, Message: msg, Bound: bound, Accepted: accepted}
 		if accepted {
-			targetRun.Inbox[admissionObservationID(transport)] = observation{ID: admissionObservationID(transport), Tag: msg.Tag, Value: msg.Value, Kind: "message"}
+			targetRun.Inbox[admissionObservationID(transport)] = admittedObservation(transport, e.Origin, msg)
 		}
 	case acknowledge:
 		a := m.Admissions[transportID(e.Origin, e.ID)]
@@ -386,6 +419,9 @@ func step(before machine, e event) (machine, string) {
 		in := m.Intents[e.ID]
 		if in == nil {
 			return reject("uncommitted intent")
+		}
+		if in.Descriptor.Lifecycle != "" {
+			return reject("lifecycle authorization required")
 		}
 		r = m.Runs[runID(in.Descriptor.A, in.Descriptor.G)]
 		s = m.Subjects[in.Descriptor.A]
@@ -418,6 +454,9 @@ func step(before machine, e event) (machine, string) {
 			return reject("already applied")
 		}
 		d := m.Intents[a.Intent].Descriptor
+		if d.Lifecycle != "" {
+			return reject("lifecycle is not external work")
+		}
 		value := d.Value
 		if d.Kind == send {
 			m.World.Outbox[e.ID] = sentMessage(d)
@@ -515,6 +554,9 @@ func step(before machine, e event) (machine, string) {
 			return reject("no frozen notification")
 		}
 		m.Delivered[runID(e.A, e.G)] = *r.Outcome
+		if why := terminalAdmission(&m, e); why != "" {
+			return reject(why)
+		}
 	default:
 		panic("unknown event: " + e.Kind)
 	}
@@ -542,49 +584,68 @@ func reduce(c config, r *run, selected selection) (*proposal, string) {
 		panic("invalid register")
 	}
 	p.After.Frontier[index].PC++
-	switch in.Op {
-	case set:
-		p.After.Data[in.Reg] = in.Value
-	case branch:
-		if p.After.Data[in.Reg] == in.Value {
-			p.After.Frontier[index].PC = in.PC
-		}
-	case fork:
-		if len(p.After.Frontier) >= c.Bounds.Continuations {
-			return nil, "capacity:continuations"
-		}
-		p.After.Frontier = append(p.After.Frontier, continuation{ID: p.After.NextC, PC: in.PC})
-		p.After.NextC++
-	case receive:
-		o, ok := r.Inbox[selected.Observation]
-		if !ok || o.Consumed || o.Tag != in.Tag {
-			return nil, "waiting"
-		}
-		if in.Receipt {
-			if o.Kind != "receipt" || r.Projection.Refs[in.Ref] == "" || o.Correlation != r.Projection.Refs[in.Ref] {
+	handled, localWhy := localInstruction(c, r, p, in, index)
+	if localWhy != "" {
+		return nil, localWhy
+	}
+	if !handled {
+		switch in.Op {
+		case set:
+			p.After.Data[in.Reg] = in.Value
+		case branch:
+			if p.After.Data[in.Reg] == in.Value {
+				p.After.Frontier[index].PC = in.PC
+			}
+		case fork:
+			if len(p.After.Frontier) >= c.Bounds.Continuations {
+				return nil, "capacity:continuations"
+			}
+			p.After.Frontier = append(p.After.Frontier, continuation{ID: p.After.NextC, PC: in.PC})
+			p.After.NextC++
+		case receive:
+			o, ok := r.Inbox[selected.Observation]
+			if !ok || o.Consumed || o.Tag != in.Tag {
+				return nil, "waiting"
+			}
+			if in.Receipt {
+				if o.Kind != "receipt" || r.Projection.Refs[in.Ref] == "" || o.Correlation != r.Projection.Refs[in.Ref] {
+					return nil, "correlation"
+				}
+			} else if o.Kind != "message" {
 				return nil, "correlation"
 			}
-		} else if o.Kind != "message" {
-			return nil, "correlation"
+			if why := compositionReceive(c, r, p, in, o); why != "" {
+				return nil, why
+			}
+			p.Observed = &o
+			p.After.Data[in.Reg] += o.Value
+		case emit, send:
+			target := in.Target
+			if in.Mode == "reply" {
+				if in.Slot < 0 || in.Slot >= len(r.Projection.Saved) {
+					return nil, "missing upstream"
+				}
+				target = r.Projection.Saved[in.Slot].ReplyTo
+			}
+			if in.Op == send && !c.Edges[r.A+">"+target] {
+				return nil, "scope"
+			}
+			p.After.Refs[in.Ref] = intentID(r.A, r.G, r.N+1)
+			p.Intent = &descriptor{Kind: in.Op, A: r.A, G: r.G, N: r.N + 1, Tag: in.Tag, Value: in.Value, Target: target, TargetG: in.TargetG}
+			if why := compositionSend(r, p, in); why != "" {
+				return nil, why
+			}
+		case done:
+			p.After.Frontier = slices.Delete(p.After.Frontier, index, index+1)
+		case success, fault:
+			p.After.Status = "succeeded"
+			if in.Op == fault {
+				p.After.Status = "failed"
+			}
+			p.After.Frontier = nil
+		default:
+			panic("unknown instruction: " + in.Op)
 		}
-		p.Observed = &o
-		p.After.Data[in.Reg] += o.Value
-	case emit, send:
-		if in.Op == send && !c.Edges[r.A+">"+in.Target] {
-			return nil, "scope"
-		}
-		p.After.Refs[in.Ref] = intentID(r.A, r.G, r.N+1)
-		p.Intent = &descriptor{Kind: in.Op, A: r.A, G: r.G, N: r.N + 1, Tag: in.Tag, Value: in.Value, Target: in.Target, TargetG: in.TargetG}
-	case done:
-		p.After.Frontier = slices.Delete(p.After.Frontier, index, index+1)
-	case success, fault:
-		p.After.Status = "succeeded"
-		if in.Op == fault {
-			p.After.Status = "failed"
-		}
-		p.After.Frontier = nil
-	default:
-		panic("unknown instruction: " + in.Op)
 	}
 	if in.Op != receive && selected.Observation != "" {
 		return nil, "unexpected observation"
@@ -614,5 +675,9 @@ func admissionObservationID(id string) string { return "message:" + id }
 func messageObservationID(raw string) string  { return admissionObservationID(transportID("", raw)) }
 func sendObservationID(id string) string      { return admissionObservationID(transportID("send", id)) }
 func sentMessage(d descriptor) message {
-	return message{Source: d.A, Target: d.Target, G: d.TargetG, Tag: d.Tag, Value: d.Value}
+	msg := message{Source: d.A, Target: d.Target, G: d.TargetG, Tag: d.Tag, Value: d.Value, Envelope: d.Envelope}
+	if d.Envelope != "" {
+		msg.SenderG = d.G
+	}
+	return msg
 }
