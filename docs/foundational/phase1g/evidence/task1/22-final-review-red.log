@@ -1,0 +1,28 @@
+--- FAIL: TestCollectionClosedProjectionRetainsSnapshot (0.00s)
+    collections_test.go:307: closed mid-loop projection became corrupt: closed projection retains cursors
+--- FAIL: TestCollectionCompilerRejectsCyclicStepGraph (0.01s)
+    collections_test.go:317: cyclic graph did not reject within compiler bounds: exit status 2
+        runtime: goroutine stack exceeds 1048576-byte limit
+        runtime: sp=0x6b6ab0460400 stack=[0x6b6ab0460000, 0x6b6ab0560000]
+        fatal error: stack overflow
+        
+        runtime stack:
+        runtime.throw({0x104a16927?, 0x200000008?})
+        	/opt/homebrew/Cellar/go/1.27.3/libexec/src/runtime/panic.go:1243 +0x38 fp=0x16b8861e0 sp=0x16b8861b0 pc=0x1045fa7e8
+        runtime.newstack()
+        	/opt/homebrew/Cellar/go/1.27.3/libexec/src/runtime/stack.go:1207 +0x480 fp=0x16b886310 sp=0x16b8861e0 pc=0x1045dc070
+        runtime.morestack()
+        	/opt/homebrew/Cellar/go/1.27.3/libexec/src/runtime/asm_arm64.s:487 +0x70 fp=0x16b886310 sp=0x16b886310 pc=0x1045fff60
+        
+        goroutine 21 gp=0x6b6ab0282960 m=0 mp=0x104e7f9a0 [running]:
+        github.com/JakeFAU/alan/author.definitionHasCollections.func1({0x6b6ab0310000?, 0x1?, 0x1?})
+        	/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan/author/compile.go:688 +0x1d0 fp=0x6b6ab0460400 sp=0x6b6ab0460400 pc=0x1048976a0
+        github.com/JakeFAU/alan/author.definitionHasCollections.func1({0x6b6ab0310000?, 0x0?, 0x0?})
+        	/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan/author/compile.go:690 +0x16c fp=0x6b6ab0460520 sp=0x6b6ab0460400 pc=0x10489763c
+        github.com/JakeFAU/alan/author.definitionHasCollections.func1({0x6b6ab0310000?, 0x0?, 0x0?})
+        	/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan/author/compile.go:690 +0x16c fp=0x6b6ab0460640 sp=0x6b6ab0460520 pc=0x10489763c
+        github.com/JakeFAU/alan/author.definitionHasCollections.func1({0x6b6ab0310000?, 0x0?, 0x0?})
+        	/Users/jacob/.codex/worktrees/alan-phase1d1-dispa
+FAIL
+FAIL	github.com/JakeFAU/alan/author	0.270s
+FAIL

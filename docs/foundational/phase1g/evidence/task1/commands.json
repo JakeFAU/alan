@@ -1,0 +1,160 @@
+{
+  "cwd": "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan",
+  "environment": {
+    "GOPROXY": "off",
+    "GOSUMDB": "off",
+    "GOCACHE": "/tmp/alan-phase1f-go-build"
+  },
+  "commands": [
+    {
+      "log": "01-schema-red.log",
+      "command": "go test ./schema -run TestBoundedLists -count=1",
+      "exit_code": 1,
+      "interpretation": "Expected behavioral RED: unsupported list schema for accepted counts."
+    },
+    {
+      "log": "02-schema-green.log",
+      "command": "go test ./schema -run TestBoundedLists -count=1",
+      "exit_code": 0,
+      "interpretation": "GREEN for 0/1/3/7/8 accepted and 9 rejected."
+    },
+    {
+      "log": "03-author-red.log",
+      "command": "go test ./author -run 'TestCollections|TestCollectionCompiler' -count=1",
+      "exit_code": 1,
+      "interpretation": "Expected API RED: Collections, Append and ForEach absent."
+    },
+    {
+      "log": "04-author-first-green-attempt.log",
+      "command": "go test ./schema ./author ./internal/executor -run 'TestBoundedLists|TestCollections|TestCollectionCompiler' -count=1",
+      "exit_code": 1,
+      "interpretation": "Build failure: schema import conflicted with existing package-level schema SQL constant; fixed import alias."
+    },
+    {
+      "log": "05-author-green-attempt.log",
+      "command": "go test ./schema ./author ./internal/executor -run 'TestBoundedLists|TestCollections|TestCollectionCompiler' -count=1",
+      "exit_code": 1,
+      "interpretation": "Test assertion error: runner wraps ErrLimit; corrected to errors.Is."
+    },
+    {
+      "log": "06-author-green.log",
+      "command": "go test ./schema ./author ./internal/executor -run 'TestBoundedLists|TestCollections|TestCollectionCompiler' -count=1",
+      "exit_code": 0,
+      "interpretation": "GREEN including per-instruction reopen/replay."
+    },
+    {
+      "log": "07-boundary-red.log",
+      "command": "go test ./schema ./effects -run 'TestList|TestResultCollection' -count=1",
+      "exit_code": 1,
+      "interpretation": "Behavioral RED: unknown list JSON fields accepted; failed effect lacked canonical list default."
+    },
+    {
+      "log": "08-boundary-green.log",
+      "command": "go test ./schema ./effects -run 'TestList|TestResultCollection' -count=1",
+      "exit_code": 0,
+      "interpretation": "GREEN strict decoding, defaults and copies."
+    },
+    {
+      "log": "09-nested-provider-red.log",
+      "command": "go test ./author ./adapters/openai -run 'TestNestedCollection|TestCollectionLoop|TestPrepareRejectsUnsupportedCollections' -count=1",
+      "exit_code": 1,
+      "interpretation": "RED: typed input-list replacement and provider refusal missing. Request test also exposed reuse of JSON decode destination; fixed test to fresh projection."
+    },
+    {
+      "log": "10-alias-amplification-red.log",
+      "command": "go test ./schema -run TestListRejectsAliasedAggregateBeforeCopy -count=1",
+      "exit_code": 1,
+      "interpretation": "Behavioral RED: small aliased nested graph accepted beyond aggregate byte bound."
+    },
+    {
+      "log": "11-nested-boundary-green.log",
+      "command": "go test ./schema ./effects ./author ./adapters/openai -run 'TestList|TestResultCollection|TestNestedCollection|TestCollectionLoop|TestPrepareRejectsUnsupportedCollections' -count=1",
+      "exit_code": 0,
+      "interpretation": "GREEN aggregate preflight, nested snapshots, request correlation and explicit provider refusal."
+    },
+    {
+      "log": "12-legacy-red.log",
+      "command": "go test ./internal/executor -run TestLegacySemanticsRejectCollections -count=1",
+      "exit_code": 1,
+      "interpretation": "Behavioral RED: legacy untyped program admitted collection payload."
+    },
+    {
+      "log": "13-legacy-green.log",
+      "command": "go test ./internal/executor -run TestLegacySemanticsRejectCollections -count=1",
+      "exit_code": 0,
+      "interpretation": "GREEN legacy collection refusal."
+    },
+    {
+      "log": "14-focused-green.log",
+      "command": "go test ./schema ./author ./effects ./adapters/openai ./internal/executor -count=1",
+      "exit_code": 1,
+      "interpretation": "Failed attempt despite original filename: existing TestGeneratedOutputHonorsExactConfiguredJSONBoundary revealed historical untyped invalid-UTF8 scalar acceptance; restored exact legacy behavior."
+    },
+    {
+      "log": "15-missing-cursor-red.log",
+      "command": "go test ./author -run TestCollectionReducerStructuralBranchAndMissingCursor -count=1",
+      "exit_code": 0,
+      "interpretation": "Invalid probe: reused decoded Program retained old input schema map and rejected for identity mismatch. Not RED evidence; corrected fixture before next run."
+    },
+    {
+      "log": "16-missing-cursor-red.log",
+      "command": "go test ./author -run TestCollectionReducerStructuralBranchAndMissingCursor -count=1",
+      "exit_code": 1,
+      "interpretation": "Genuine behavioral RED after fresh decode: body could execute with missing cursor."
+    },
+    {
+      "log": "17-cursor-legacy-green.log",
+      "command": "go test ./author ./internal/executor -run 'TestCollectionReducerStructuralBranchAndMissingCursor|TestGeneratedOutputHonorsExactConfiguredJSONBoundary|TestNestedCollection|TestCollectionLoop' -count=1",
+      "exit_code": 0,
+      "interpretation": "GREEN missing-cursor refusal and original legacy scalar output boundary."
+    },
+    {
+      "log": "18-focused.log",
+      "command": "go test ./schema ./author ./effects ./adapters/openai ./internal/executor -count=1",
+      "exit_code": 0,
+      "interpretation": "Complete focused packages passed."
+    },
+    {
+      "log": "19-typed-literal-red.log",
+      "command": "go test ./author -run TestCollectionLiteralsAtTypedBoundaries -count=1",
+      "exit_code": 1,
+      "interpretation": "Behavioral RED: nested literal interpreted with outer collection schema."
+    },
+    {
+      "log": "20-typed-literal-green.log",
+      "command": "go test ./author -run TestCollectionLiteralsAtTypedBoundaries -count=1",
+      "exit_code": 0,
+      "interpretation": "GREEN expected-schema literal checking."
+    },
+    {
+      "log": "21-default-suite.log",
+      "command": "GOTOOLCHAIN=local go test -count=1 ./...",
+      "exit_code": 0,
+      "interpretation": "First full default suite passed."
+    },
+    {
+      "log": "22-final-review-red.log",
+      "command": "go test ./author -run 'TestCollectionClosedProjection|TestCollectionCompilerRejectsCyclic' -count=1",
+      "exit_code": 1,
+      "interpretation": "Self-review RED: closed cursor projection rejected as corrupt; feature-detection prepass overflowed cyclic author graph stack (child output capped in test at 1500 bytes)."
+    },
+    {
+      "log": "23-final-review-green.log",
+      "command": "go test ./author -run 'TestCollectionClosedProjection|TestCollectionCompilerRejectsCyclic' -count=1",
+      "exit_code": 0,
+      "interpretation": "GREEN lifecycle-closed residual validity and bounded author prepass."
+    },
+    {
+      "log": "24-final-default-suite.log",
+      "command": "GOTOOLCHAIN=local go test -count=1 ./...",
+      "exit_code": 0,
+      "interpretation": "Final full default suite passed after production source changes."
+    },
+    {
+      "log": "25-overflow-verification.log",
+      "command": "go test ./author -run TestCollectionAppendOverflowLeavesInputUnchanged -count=1",
+      "exit_code": 0,
+      "interpretation": "Supplementary reducer regression passed; test-only addition after final full-suite binary compiled, no production changes afterward."
+    }
+  ]
+}

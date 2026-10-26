@@ -7,7 +7,7 @@ import "github.com/JakeFAU/alan/schema"
 func checkStepIdentifiers(s Step) error {
 	var required []string
 	switch s.kind {
-	case "set", "add":
+	case "set", "add", "append":
 		required = append(required, s.destination)
 	case "label", "goto":
 		required = append(required, s.name)
