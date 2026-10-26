@@ -89,7 +89,7 @@ PR #5 is confirmed merged. Fresh fetch gives base `d708493646aeae3c1e70a03cf2bb2
 - [x] Unchanged independent checks reject at least one test-only bypass of record-consume-validate-tool-commit ordering or replay-triggered provider contact. Preserve exact counterexamples and complete source inputs.
 - [x] If credentials and explicit model become available, run only the bounded bundled-corpus live probe and offline replay. Otherwise record live NOT RUN and usable command; controlled evidence is not described as live inference.
 - [x] Full/focused/race including children, vet, gofmt, module verification, previous research/runtime comparisons; raw causal evidence, source/dependency manifests and complete credential-free archive/offline reproduction.
-- [ ] Independent adversarial whole-branch review of source/contracts/fixtures/evidence; correct or explicitly scope legitimate findings, retain originals. Commit/push dedicated branch and open draft PR against verified base. No merge/release.
+- [x] Independent adversarial whole-branch review of source/contracts/fixtures/evidence; correct or explicitly scope legitimate findings, retain originals. Commit/push dedicated branch and open draft PR against verified base. No merge/release.
 
 
 ## Alternatives and stopping point
