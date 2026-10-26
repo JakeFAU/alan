@@ -1,0 +1,315 @@
+{
+  "id": "dev-01-baseline",
+  "operations": [
+    {
+      "id": "[\"assistant\",1,15,0]",
+      "reserved_usd": 0.10896875,
+      "status": "usage-known",
+      "ack": {
+        "Scenario": "dev-01-baseline",
+        "Token": "spend-0",
+        "Store": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1f-dev-01-baseline-97but175/run.sqlite",
+        "Boundary": "adapter.authorized",
+        "Phase": "pre-transport",
+        "Subject": "assistant",
+        "PID": 65830,
+        "Generation": 1,
+        "Epoch": 2,
+        "Sequence": 15,
+        "Intent": "[\"assistant\",1,15,0]",
+        "Attempt": "[\"authorization\",\"[\\\"assistant\\\",1,15,0]\"]",
+        "InFlight": [
+          "[\"authorization\",\"[\\\"assistant\\\",1,15,0]\"]"
+        ]
+      },
+      "prepared": {
+        "Request": {
+          "ID": "[\"assistant\",1,15,0]",
+          "Key": "[2,\"9c81f60175708890d7d1786f08ac4b2b6d87c55181eac3b7f8602e68a152f371\",\"[\\\"assistant\\\",1,15,0]\"]",
+          "Capability": "evidence-model",
+          "Effect": "plan",
+          "Input": {
+            "ID": "fb2a8bf4cc59ebbf863128b206973f05e3e9ce3bdba0b50d7828f7f725e40f88",
+            "Record": {
+              "instructions": {
+                "Kind": "string",
+                "MaxBytes": 4096,
+                "Enum": null
+              },
+              "question": {
+                "Kind": "string",
+                "MaxBytes": 4096,
+                "Enum": null
+              }
+            }
+          },
+          "Output": {
+            "ID": "0a6411ca286972311d8e3fb386c9725b12546997f36b957ea826dba5bb92c8f0",
+            "Record": {
+              "decision": {
+                "Kind": "string",
+                "MaxBytes": 64,
+                "Enum": [
+                  "clarification",
+                  "insufficient_evidence",
+                  "lookup"
+                ]
+              },
+              "message": {
+                "Kind": "string",
+                "MaxBytes": 8192,
+                "Enum": null
+              },
+              "query": {
+                "Kind": "string",
+                "MaxBytes": 512,
+                "Enum": null
+              },
+              "tool": {
+                "Kind": "string",
+                "MaxBytes": 512,
+                "Enum": null
+              }
+            }
+          },
+          "Payload": {
+            "instructions": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "Choose lookup, clarification, or insufficient_evidence. For lookup set tool to exactly \"lookup\" and supply a nonempty query of at most 512 UTF-8 bytes. Never propose another tool or endpoint. Use message for clarification or insufficient evidence. Return all schema fields; unused fields are empty strings.",
+              "Flag": false
+            },
+            "question": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "For Cedar agent 3.2 on the production Linux fleet in window C17, which of kernels 6.1 and 5.15 is supported, and exactly when and to what version should we roll back?",
+              "Flag": false
+            }
+          },
+          "Assets": [
+            {
+              "ID": "phase1f-birch",
+              "Source": "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan/docs/foundational/phase1f/evaluation/corpus/birch.txt",
+              "Version": "f5648bd18afd4f1efb7e5d85281ce2d0104e6ea8863903f35a2c43f545073027",
+              "Content": "Birch exporter 7 readiness packet, revision 1, applies to production window B09 and contains the transport check and rollback procedure only.\nBirch exporter 7 production window B09 retention approval: no signed data-retention approval or rejection is recorded in this packet. The packet does not establish whether retention was approved.\nBirch exporter 7 production window B09 rollback: restore exporter 6 if delivery failures exceed 2 percent for eight consecutive minutes.\n"
+            },
+            {
+              "ID": "phase1f-cedar",
+              "Source": "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan/docs/foundational/phase1f/evaluation/corpus/cedar.txt",
+              "Version": "9ef0dfbfc7ce878bb033ac002be584b378193054dd56609af2d4494e4b296749",
+              "Content": "Cedar agent 3.2 rollout record, revision 1, applies to the production Linux fleet in change window C17.\nCedar agent 3.2 production Linux compatibility: hosts running kernel 6.1 or newer are supported; hosts running kernel 5.15 are unsupported.\nCedar agent 3.2 production Linux rollback: retain agent 3.1 and restore it if the agent error rate exceeds 2 percent for five consecutive minutes.\n"
+            },
+            {
+              "ID": "phase1f-heron",
+              "Source": "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan/docs/foundational/phase1f/evaluation/corpus/heron.txt",
+              "Version": "2d59e72f0f48b99895e2d7497a69672d6313c6a84fd432b1e7696808b8b511a0",
+              "Content": "Heron cache 4 window H18 has two final canary reports with equal authority, both revision 1 and both about the same production pool. Neither supersedes the other; no resolution is recorded.\nHeron cache 4 production window H18 canary readiness, service final report: the canary passed and expansion is ready.\nHeron cache 4 production window H18 canary readiness, reliability final report: the canary failed and expansion is not ready.\nHeron cache 4 production window H18 rollback: both teams agree to restore cache 3 if cache errors exceed 5 percent for two consecutive minutes.\n"
+            },
+            {
+              "ID": "phase1f-larch",
+              "Source": "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan/docs/foundational/phase1f/evaluation/corpus/larch.txt",
+              "Version": "87693660b05a354b3b2ddbe205928ce1be5ca18d27045696c6be7b3e33202fc1",
+              "Content": "Larch index 5 readiness packet, revision 1, applies to production window L24 and contains the compatibility check and rollback procedure only.\nLarch index 5 production window L24 security approval: no signed security approval or rejection is recorded in this packet. The packet does not establish whether security approved the change.\nLarch index 5 production window L24 rollback: restore the index 4 snapshot if query failures exceed 1 percent for three consecutive minutes.\n"
+            },
+            {
+              "ID": "phase1f-maple",
+              "Source": "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan/docs/foundational/phase1f/evaluation/corpus/maple.txt",
+              "Version": "0b06f717436d38d5f1ec799e8ead043d0919afc2f62374bfec91b732bdf7a152",
+              "Content": "Maple ingestion 2.4 readiness record, revision 1, applies to the production standard profile in window P12.\nMaple ingestion 2.4 production standard profile compatibility and rollback: schema version 4 is supported and schema version 3 is unsupported; restore ingestion 2.3 if rejected records exceed 3 percent for four consecutive minutes.\n"
+            },
+            {
+              "ID": "phase1f-marlin",
+              "Source": "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan/docs/foundational/phase1f/evaluation/corpus/marlin.txt",
+              "Version": "12cfacc413b898194288a42054075218408911d001e1f41c42abd6a83e2bbf62",
+              "Content": "Marlin database 6 window M31 has two final readiness reports with equal authority, both revision 1 and both about the same production cluster. Neither supersedes the other; no resolution is recorded.\nMarlin database 6 production window M31 migration readiness, operations final report: migration validation passed and the migration is ready.\nMarlin database 6 production window M31 migration readiness, database final report: migration validation failed and the migration is not ready.\nMarlin database 6 production window M31 rollback: both teams agree to restore the database 5 snapshot if replication lag exceeds 45 seconds for five consecutive minutes.\n"
+            },
+            {
+              "ID": "phase1f-quartz",
+              "Source": "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan/docs/foundational/phase1f/evaluation/corpus/quartz.txt",
+              "Version": "faa8adec67482975e84d81a2eec808f32a7bdb9aa89333a1aed7d74d912f299b",
+              "Content": "Quartz gateway 8 rollout record, revision 1, covers the east and west production regions; neither region is the default.\nQuartz gateway 8 production concurrency limit: the east region allows 120 concurrent requests per instance; the west region allows 80 concurrent requests per instance. A region must be specified to select one limit.\nQuartz gateway 8 production rollback: in both east and west regions, restore gateway 7 if p95 latency exceeds 300 milliseconds for ten consecutive minutes.\n"
+            },
+            {
+              "ID": "phase1f-saffron",
+              "Source": "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan/docs/foundational/phase1f/evaluation/corpus/saffron.txt",
+              "Version": "ab8f3839444a672c5f640aaa78e442022231ec10c0e86e28125cec9a120cdbd1",
+              "Content": "Saffron worker 9 readiness record, revision 1, defines production fast and bulk profiles; neither profile is the default.\nSaffron worker 9 production queue limit: the fast profile allows 400 queued jobs; the bulk profile allows 900 queued jobs. A profile must be specified to select one limit.\nSaffron worker 9 production rollback: for either fast or bulk, restore worker 8 if job failures exceed 4 percent for six consecutive minutes.\n"
+            }
+          ]
+        },
+        "Digest": "a33b1d6b317a46dd7c805b5d7ba61055b8b08206bb9d58585fd746cc919dd715",
+        "Protocol": "openai/responses/v1",
+        "Endpoint": "https://api.openai.com/v1/responses",
+        "Model": "gpt-6.1-sol",
+        "MaxOutputTokens": 4096,
+        "MaxResponseBytes": 65536,
+        "Wire": "{\"input\":[{\"content\":\"{\\\"question\\\":\\\"For Cedar agent 3.2 on the production Linux fleet in window C17, which of kernels 6.1 and 5.15 is supported, and exactly when and to what version should we roll back?\\\"}\",\"role\":\"user\"}],\"instructions\":\"Choose lookup, clarification, or insufficient_evidence. For lookup set tool to exactly \\\"lookup\\\" and supply a nonempty query of at most 512 UTF-8 bytes. Never propose another tool or endpoint. Use message for clarification or insufficient evidence. Return all schema fields; unused fields are empty strings.\",\"max_output_tokens\":4096,\"model\":\"gpt-6.1-sol\",\"store\":false,\"text\":{\"format\":{\"name\":\"alan_0a6411ca286972311d8e3fb386c9725b12546997f36b957ea826dba5bb9\",\"schema\":{\"additionalProperties\":false,\"properties\":{\"decision\":{\"enum\":[\"clarification\",\"insufficient_evidence\",\"lookup\"],\"type\":\"string\"},\"message\":{\"type\":\"string\"},\"query\":{\"type\":\"string\"},\"tool\":{\"type\":\"string\"}},\"required\":[\"decision\",\"message\",\"query\",\"tool\"],\"type\":\"object\"},\"strict\":true,\"type\":\"json_schema\"}},\"truncation\":\"disabled\"}"
+      },
+      "request_id": "req_ff8a843786af403489e0807658c78a83",
+      "response_id": "resp_01acf4b29ed1143c016adf6374681c87d29db38a62146a8411",
+      "estimated_token_cost_usd": 0.002244,
+      "budget_charge_usd": 0.00358125,
+      "usage": {
+        "InputTokens": 207,
+        "OutputTokens": 183,
+        "TotalTokens": 390,
+        "Details": {
+          "input_tokens": 207,
+          "input_tokens_details": {
+            "cache_write_tokens": 0,
+            "cached_tokens": 0
+          },
+          "output_tokens": 183,
+          "output_tokens_details": {
+            "reasoning_tokens": 62
+          },
+          "total_tokens": 390
+        }
+      },
+      "returned_model": "gpt-6.1-sol",
+      "service_tier": "default"
+    },
+    {
+      "id": "[\"assistant/retrieval\",1,15,0]",
+      "reserved_usd": 0.0,
+      "status": "local",
+      "ack": {
+        "Scenario": "dev-01-baseline",
+        "Token": "spend-1",
+        "Store": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1f-dev-01-baseline-97but175/run.sqlite",
+        "Boundary": "adapter.authorized",
+        "Phase": "pre-transport",
+        "Subject": "assistant/retrieval",
+        "PID": 65830,
+        "Generation": 1,
+        "Epoch": 2,
+        "Sequence": 15,
+        "Intent": "[\"assistant/retrieval\",1,15,0]",
+        "Attempt": "[\"authorization\",\"[\\\"assistant/retrieval\\\",1,15,0]\"]",
+        "InFlight": [
+          "[\"authorization\",\"[\\\"assistant/retrieval\\\",1,15,0]\"]"
+        ]
+      },
+      "prepared": {
+        "Request": {
+          "ID": "[\"assistant/retrieval\",1,15,0]",
+          "Key": "[2,\"9c81f60175708890d7d1786f08ac4b2b6d87c55181eac3b7f8602e68a152f371\",\"[\\\"assistant/retrieval\\\",1,15,0]\"]",
+          "Capability": "evidence-lookup",
+          "Effect": "lookup",
+          "Input": {
+            "ID": "089537156ea44a0730d74a0900346c082f753006f682d15c1da26a28aa6cd246",
+            "Record": {
+              "query": {
+                "Kind": "string",
+                "MaxBytes": 512,
+                "Enum": null
+              }
+            }
+          },
+          "Output": {
+            "ID": "a49809bc83229a1ec5bc0492094b8f226952f3714889a3802ac12038ff1b8718",
+            "Record": {
+              "document": {
+                "Kind": "string",
+                "MaxBytes": 512,
+                "Enum": null
+              },
+              "end": {
+                "Kind": "int",
+                "MaxBytes": 0,
+                "Enum": null
+              },
+              "snippet": {
+                "Kind": "string",
+                "MaxBytes": 2048,
+                "Enum": null
+              },
+              "start": {
+                "Kind": "int",
+                "MaxBytes": 0,
+                "Enum": null
+              },
+              "version": {
+                "Kind": "string",
+                "MaxBytes": 64,
+                "Enum": null
+              }
+            }
+          },
+          "Payload": {
+            "query": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "Find authoritative support guidance and the C17 production Linux fleet rollout/rollback plan for Cedar agent 3.2. Determine whether kernels 6.1 and 5.15 are supported, and identify the exact rollback timing (including timezone or triggering condition) and target version. Include any C17-specific exceptions or superseding instructions.",
+              "Flag": false
+            }
+          },
+          "Assets": [
+            {
+              "ID": "phase1f-birch",
+              "Source": "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan/docs/foundational/phase1f/evaluation/corpus/birch.txt",
+              "Version": "f5648bd18afd4f1efb7e5d85281ce2d0104e6ea8863903f35a2c43f545073027",
+              "Content": "Birch exporter 7 readiness packet, revision 1, applies to production window B09 and contains the transport check and rollback procedure only.\nBirch exporter 7 production window B09 retention approval: no signed data-retention approval or rejection is recorded in this packet. The packet does not establish whether retention was approved.\nBirch exporter 7 production window B09 rollback: restore exporter 6 if delivery failures exceed 2 percent for eight consecutive minutes.\n"
+            },
+            {
+              "ID": "phase1f-cedar",
+              "Source": "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan/docs/foundational/phase1f/evaluation/corpus/cedar.txt",
+              "Version": "9ef0dfbfc7ce878bb033ac002be584b378193054dd56609af2d4494e4b296749",
+              "Content": "Cedar agent 3.2 rollout record, revision 1, applies to the production Linux fleet in change window C17.\nCedar agent 3.2 production Linux compatibility: hosts running kernel 6.1 or newer are supported; hosts running kernel 5.15 are unsupported.\nCedar agent 3.2 production Linux rollback: retain agent 3.1 and restore it if the agent error rate exceeds 2 percent for five consecutive minutes.\n"
+            },
+            {
+              "ID": "phase1f-heron",
+              "Source": "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan/docs/foundational/phase1f/evaluation/corpus/heron.txt",
+              "Version": "2d59e72f0f48b99895e2d7497a69672d6313c6a84fd432b1e7696808b8b511a0",
+              "Content": "Heron cache 4 window H18 has two final canary reports with equal authority, both revision 1 and both about the same production pool. Neither supersedes the other; no resolution is recorded.\nHeron cache 4 production window H18 canary readiness, service final report: the canary passed and expansion is ready.\nHeron cache 4 production window H18 canary readiness, reliability final report: the canary failed and expansion is not ready.\nHeron cache 4 production window H18 rollback: both teams agree to restore cache 3 if cache errors exceed 5 percent for two consecutive minutes.\n"
+            },
+            {
+              "ID": "phase1f-larch",
+              "Source": "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan/docs/foundational/phase1f/evaluation/corpus/larch.txt",
+              "Version": "87693660b05a354b3b2ddbe205928ce1be5ca18d27045696c6be7b3e33202fc1",
+              "Content": "Larch index 5 readiness packet, revision 1, applies to production window L24 and contains the compatibility check and rollback procedure only.\nLarch index 5 production window L24 security approval: no signed security approval or rejection is recorded in this packet. The packet does not establish whether security approved the change.\nLarch index 5 production window L24 rollback: restore the index 4 snapshot if query failures exceed 1 percent for three consecutive minutes.\n"
+            },
+            {
+              "ID": "phase1f-maple",
+              "Source": "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan/docs/foundational/phase1f/evaluation/corpus/maple.txt",
+              "Version": "0b06f717436d38d5f1ec799e8ead043d0919afc2f62374bfec91b732bdf7a152",
+              "Content": "Maple ingestion 2.4 readiness record, revision 1, applies to the production standard profile in window P12.\nMaple ingestion 2.4 production standard profile compatibility and rollback: schema version 4 is supported and schema version 3 is unsupported; restore ingestion 2.3 if rejected records exceed 3 percent for four consecutive minutes.\n"
+            },
+            {
+              "ID": "phase1f-marlin",
+              "Source": "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan/docs/foundational/phase1f/evaluation/corpus/marlin.txt",
+              "Version": "12cfacc413b898194288a42054075218408911d001e1f41c42abd6a83e2bbf62",
+              "Content": "Marlin database 6 window M31 has two final readiness reports with equal authority, both revision 1 and both about the same production cluster. Neither supersedes the other; no resolution is recorded.\nMarlin database 6 production window M31 migration readiness, operations final report: migration validation passed and the migration is ready.\nMarlin database 6 production window M31 migration readiness, database final report: migration validation failed and the migration is not ready.\nMarlin database 6 production window M31 rollback: both teams agree to restore the database 5 snapshot if replication lag exceeds 45 seconds for five consecutive minutes.\n"
+            },
+            {
+              "ID": "phase1f-quartz",
+              "Source": "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan/docs/foundational/phase1f/evaluation/corpus/quartz.txt",
+              "Version": "faa8adec67482975e84d81a2eec808f32a7bdb9aa89333a1aed7d74d912f299b",
+              "Content": "Quartz gateway 8 rollout record, revision 1, covers the east and west production regions; neither region is the default.\nQuartz gateway 8 production concurrency limit: the east region allows 120 concurrent requests per instance; the west region allows 80 concurrent requests per instance. A region must be specified to select one limit.\nQuartz gateway 8 production rollback: in both east and west regions, restore gateway 7 if p95 latency exceeds 300 milliseconds for ten consecutive minutes.\n"
+            },
+            {
+              "ID": "phase1f-saffron",
+              "Source": "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan/docs/foundational/phase1f/evaluation/corpus/saffron.txt",
+              "Version": "ab8f3839444a672c5f640aaa78e442022231ec10c0e86e28125cec9a120cdbd1",
+              "Content": "Saffron worker 9 readiness record, revision 1, defines production fast and bulk profiles; neither profile is the default.\nSaffron worker 9 production queue limit: the fast profile allows 400 queued jobs; the bulk profile allows 900 queued jobs. A profile must be specified to select one limit.\nSaffron worker 9 production rollback: for either fast or bulk, restore worker 8 if job failures exceed 4 percent for six consecutive minutes.\n"
+            }
+          ]
+        },
+        "Digest": "49ac085547e22ee6ed6beed8648142cfe46533a31460f4ba107768680c933122",
+        "Protocol": "lookup/tokens/v1",
+        "Endpoint": "",
+        "Model": "",
+        "MaxOutputTokens": 0,
+        "MaxResponseBytes": 8192,
+        "Wire": ""
+      },
+      "budget_charge_usd": 0
+    }
+  ],
+  "status": "finished",
+  "max_attempts": 17,
+  "binary_sha256": "e6d15718e33e7ebf126ab1a1d6f69ff2e35ecf6acbe12ab9848cba485e44ebd6",
+  "exit_code": 0,
+  "elapsed_seconds": 9.332,
+  "controller_error": null
+}

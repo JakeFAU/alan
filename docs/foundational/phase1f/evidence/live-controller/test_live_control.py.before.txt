@@ -1,0 +1,61 @@
+"""Unchanged monitors reject causal-identity and spending faults without live calls."""
+import copy
+import json
+from pathlib import Path
+import unittest
+import live_control as c
+
+ROOT=Path(__file__).resolve().parents[4]
+
+class Controls(unittest.TestCase):
+    def setUp(self):
+        self.view=json.loads((ROOT/'docs/foundational/phase1f/evidence/live-phase1e/inspect.json').read_text())
+        row=self.view['Snapshot']['Tables']['adapter_attempts'][0]
+        self.attempt=json.loads(row['descriptor'])
+        intent=self.attempt['Intent']
+        auth=next(json.loads(r['result']) for r in self.view['Snapshot']['Tables']['attempts']
+                  if r['id']==self.attempt['AuthorizationID'])
+        self.event=dict(PID=123,Store='/tmp/test.sqlite',Boundary='adapter.authorized',Phase='pre-transport',
+                        Token='test',Intent=intent['ID'],Attempt=auth['ID'],Subject=intent['Run']['Subject'],
+                        Generation=intent['Run']['Generation'],Epoch=auth['Source']['Epoch'],Sequence=intent['Sequence'])
+    def check(self,event=None):
+        return c.validate_boundary(event or self.event,self.view,123,'/tmp/test.sqlite',{'test'})
+    def test_retained_boundary(self):
+        self.assertEqual(self.check(),self.attempt)
+    def test_epoch_substitution(self):
+        e=dict(self.event);e['Epoch']+=1
+        with self.assertRaisesRegex(ValueError,'epoch/sequence'):self.check(e)
+    def test_sequence_substitution(self):
+        e=dict(self.event);e['Sequence']+=1
+        with self.assertRaisesRegex(ValueError,'sequence'):self.check(e)
+    def test_uncommitted_intent(self):
+        self.view['Snapshot']['Tables']['adapter_attempts']=[]
+        with self.assertRaisesRegex(ValueError,'missing'):self.check()
+    def test_repeated_token(self):
+        tokens={'test'}
+        c.validate_boundary(self.event,self.view,123,'/tmp/test.sqlite',tokens)
+        with self.assertRaisesRegex(ValueError,'token'):
+            c.validate_boundary(self.event,self.view,123,'/tmp/test.sqlite',tokens)
+    def test_reservation_and_rejection(self):
+        p=self.attempt['Prepared'];self.assertGreater(c.reservation(p),.05)
+        p=copy.deepcopy(p);p['Model']='another-model'
+        with self.assertRaisesRegex(ValueError,'model'):c.reservation(p)
+    def test_spending_limit_and_duplicate(self):
+        run={'operations':[]};ledger={'maximum_total_usd':10,'controlled_runs':[run],
+                                   'reservations':[{'unknown_spend_reservation_usd':9.9}]}
+        with self.assertRaisesRegex(ValueError,'limit'):c.add_operation(ledger,run,dict(id='one',reserved_usd=.2))
+        self.assertEqual(run['operations'],[])
+        c.add_operation(ledger,run,dict(id='one',reserved_usd=.05))
+        with self.assertRaisesRegex(ValueError,'duplicate'):c.add_operation(ledger,run,dict(id='one',reserved_usd=.01))
+    def test_unknown_keeps_reservation(self):
+        run={'operations':[dict(id='missing-result',reserved_usd=.2)]}
+        c.reconcile(run,self.view)
+        self.assertEqual(c.charge({'controlled_runs':[run]}),.2)
+        self.assertNotIn('budget_charge_usd',run['operations'][0])
+    def test_actual_usage_reconciliation(self):
+        run={'operations':[dict(id=self.event['Intent'],reserved_usd=c.reservation(self.attempt['Prepared']))]}
+        c.reconcile(run,self.view)
+        self.assertEqual(run['operations'][0]['status'],'usage-known')
+        self.assertAlmostEqual(run['operations'][0]['estimated_token_cost_usd'],.001686)
+
+if __name__=='__main__':unittest.main()

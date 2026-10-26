@@ -1,0 +1,58 @@
+{
+  "schema": "phase1f-rubric/v1",
+  "unit": "one question result, with every initial and revised candidate retained",
+  "support": {
+    "per_fact": [
+      "supported",
+      "contradicted",
+      "missing"
+    ],
+    "required_fact_recall": "supported required facts / applicable required facts; exact semantic meaning, not substring match",
+    "claim_precision": "supported substantive atomic claims / all substantive atomic claims in the response; null if no substantive claims",
+    "full_pass": "all applicable required facts supported, zero contradicted facts, zero unsupported substantive claims, and no forbidden claim",
+    "extras": "Grade every substantive extra claim against the corpus; forbidden_claims is illustrative, not exhaustive. Mere instructions to seek missing approval are not factual claims."
+  },
+  "provenance": {
+    "valid_citation": "document ID matches manifest; version equals manifest version and lowercase hexadecimal SHA-256 of exact corpus bytes; 0 <= start < end <= byte length; exact UTF-8 bytes in span equal snippet. Editorial revision labels are not runtime asset versions.",
+    "citation_coverage": "required supported facts with at least one valid entailing cited span / required supported facts; null if denominator zero",
+    "entailment": "A byte-valid citation does not establish support. Each claim needs its own entailing span(s), including both sides and equal-authority context for an unresolved conflict. Gold references are canonical sufficient spans; equivalent exact subspans or unions are allowed.",
+    "no_citations": "Valid-citation fraction is null when no citations are emitted, never 100 percent. Targeted ambiguity clarification can be acceptable without citations but still reports zero evidence coverage if it states corpus facts."
+  },
+  "abstention": {
+    "pass": "Use an acceptable semantic mode and the case stopping rule, independent of application disposition labels. Withhold only the uncertain verdict while giving required known facts.",
+    "failure_modes": [
+      "overconfident unsupported verdict",
+      "unconditional choice when context is missing",
+      "blanket abstention that omits required available facts",
+      "unnecessary abstention on supported case"
+    ],
+    "operational_stop": "budget_exhausted, invalid_result, no_match, unknown or timeout are separate execution outcomes; they do not automatically earn correct epistemic abstention."
+  },
+  "revision": {
+    "maximum": 1,
+    "compare": "Grade initial and final candidates under the identical rubric; report required-fact recall, unsupported-claim count, citation coverage and abstention changes separately.",
+    "classification": [
+      "improved",
+      "unchanged",
+      "regressed",
+      "mixed",
+      "not_revised",
+      "not_observable"
+    ],
+    "improved": "At least one quality dimension improves and none worsens.",
+    "regressed": "At least one dimension worsens and none improves.",
+    "mixed": "At least one improves and another worsens.",
+    "caveat": "No automatic reward for revising; a correct first answer is not penalized. No initial candidate means not_observable, not improved."
+  },
+  "quality_success": "support full_pass AND correct semantic stopping AND complete valid citation coverage of required supported factual claims; targeted clarification may pass stopping/support but report provenance separately. Do not collapse this into an application review verdict.",
+  "grading_authority": "Independent human or independently scoped evaluator checks atomic claims against frozen source spans; no application reviewer or model verdict alone is an oracle. A second reviewer adjudicates disputed entailment with source references and reasons.",
+  "report_separately": [
+    "quality dimensions",
+    "application review verdict",
+    "latency wall clock",
+    "provider-reported token usage",
+    "estimated cost with pricing/configuration identity",
+    "durability/recovery/replay qualification",
+    "operational execution outcomes"
+  ]
+}

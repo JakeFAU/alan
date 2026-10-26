@@ -1,0 +1,94 @@
+package reviewprobe
+import ("context"; "sync"; "github.com/JakeFAU/alan/effects"; "github.com/JakeFAU/alan/schema")
+type controlled struct {
+	mu      sync.Mutex
+	mode    string
+	reviews int
+}
+
+func (a *controlled) Prepare(r effects.Request) (effects.Prepared, error) {
+	return effects.Prepared{Request: r, Protocol: "controlled/v1", MaxResponseBytes: 65536}, nil
+}
+func (a *controlled) Execute(_ context.Context, p effects.Prepared) effects.Candidate {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	r := p.Request
+	in := r.Payload
+	out := map[string]schema.Value{}
+	if (a.mode == "unknown-helper" && r.Effect == "plan" && in["question"].Text == "alpha") || (a.mode == "unknown-review" && r.Effect == "review") || (a.mode == "unknown-review2" && r.Effect == "review" && a.reviews == 1) {
+		return effects.Candidate{ID: r.ID, Key: r.Key, Disposition: "unknown"}
+	}
+	switch r.Effect {
+	case "decompose":
+		out = map[string]schema.Value{"decision": schema.Text("investigate"), "subquestion1": schema.Text("alpha"), "subquestion2": schema.Text("beta"), "message": schema.Text("")}
+		if a.mode == "clarify" {
+			out["decision"] = schema.Text("clarification")
+			out["message"] = schema.Text("Which release?")
+		}
+		if a.mode == "bad-plan" {
+			out["decision"] = schema.Text("shell")
+		}
+		if a.mode == "empty-plan" {
+			out["subquestion2"] = schema.Text("")
+		}
+	case "plan":
+		q := in["question"].Text
+		if a.mode == "missing" || a.mode == "false-support" {
+			q = "unfindable"
+		}
+		out = map[string]schema.Value{"decision": schema.Text("lookup"), "tool": schema.Text("lookup"), "query": schema.Text(q), "message": schema.Text("")}
+	case "synthesize":
+		out = map[string]schema.Value{"answer": schema.Text(in["snippet"].Text)}
+		for _, k := range []string{"document", "version", "snippet", "start", "end"} {
+			out[k] = in[k]
+		}
+		if a.mode == "bad-citation" {
+			out["version"] = schema.Text("fabricated")
+		}
+	case "compose":
+		candidate := "Linux supported; rollback version 2."
+		if in["e1_snippet"].Text != "alpha release supports Linux." || in["e2_snippet"].Text != "beta rollback requires version 2." {
+			candidate = "INVALID INPUT"
+		}
+		if candidate != "INVALID INPUT" && in["e3_snippet"].Text == "gamma approval is recorded." && in["e4_snippet"].Text == "delta window is seven minutes." {
+			candidate = "Linux supported; rollback version 2; approval recorded; seven minutes."
+		}
+		out = map[string]schema.Value{"decision": schema.Text("answer"), "candidate": schema.Text(candidate)}
+		if a.mode == "empty-candidate" {
+			out["candidate"] = schema.Text("")
+		}
+		if a.mode == "invalid-synthesis" {
+			out["decision"] = schema.Text("fabricated")
+		}
+
+		if a.mode == "missing" {
+			out["decision"] = schema.Text("insufficient_evidence")
+			out["candidate"] = schema.Text("The packet does not establish support.")
+		}
+	case "review":
+		a.reviews++
+		decision := "accept"
+		missingRevisionFacts := in["e3_snippet"].Text != "gamma approval is recorded." || in["e4_snippet"].Text != "delta window is seven minutes."
+		if ((a.mode == "revise" || a.mode == "unknown-review2") && missingRevisionFacts) || a.mode == "again" {
+			decision = "revise"
+		}
+		if a.mode == "stop" {
+			decision = "stop"
+		}
+		if in["candidate"].Text == "INVALID INPUT" || in["e1_snippet"].Text != "alpha release supports Linux." || in["e2_snippet"].Text != "beta rollback requires version 2." {
+			decision = "stop"
+		}
+		out = map[string]schema.Value{"decision": schema.Text(decision), "reason": schema.Text("Checked candidate against supplied evidence."), "subquestion1": schema.Text("gamma"), "subquestion2": schema.Text("delta")}
+		if a.mode == "bad-review" {
+			out["reason"] = schema.Text("")
+		}
+		if a.mode == "bad-review-query" {
+			out["decision"] = schema.Text("revise")
+			out["subquestion1"] = schema.Text("")
+		}
+	default:
+		panic("unexpected effect " + r.Effect)
+	}
+	return effects.Candidate{ID: r.ID, Key: r.Key, Disposition: "validated", Payload: out}
+}
+

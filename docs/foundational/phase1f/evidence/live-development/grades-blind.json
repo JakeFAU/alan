@@ -1,0 +1,1374 @@
+{
+  "schema": "phase1f-independent-blind-grades/v1",
+  "grader": {
+    "identity": "phase1f_development_grader independent scoped agent",
+    "independence": "Read only the task grading brief, permitted frozen development protocol/rubric/inputs/gold/manifest/corpus and blinded output packet. Did not read system mapping, implementation, raw provider records, application review verdicts, normalized outputs or heldout files. No network, provider calls, credentials, subagents or commits used.",
+    "blinding_limit": "Opaque IDs conceal explicit labels; output and citation structure may suggest provenance. No system identities were inferred or used.",
+    "adjudication_status": "pending independent second review"
+  },
+  "source_hashes": [
+    {
+      "path": "docs/foundational/phase1f/evaluation/protocol.md",
+      "sha256": "bcc8d0373e0c336517596957f53053c14171f77782919e5873f5f3411aa875c9"
+    },
+    {
+      "path": "docs/foundational/phase1f/evaluation/rubric.json",
+      "sha256": "295a4bccfa3d25929007caca5a5601867a6d90444d62504045f944d304f56a0b"
+    },
+    {
+      "path": "docs/foundational/phase1f/evaluation/development-inputs.json",
+      "sha256": "0f149a4c10f2b1ee64a58bfdf1039bb1e4445c93d80510e0b503b0b9f8b810c3"
+    },
+    {
+      "path": "docs/foundational/phase1f/evaluation/development-gold.json",
+      "sha256": "092d1569170da2fa91e23850ddde856bd3587f1881959e59c9d0467b1da6fa21"
+    },
+    {
+      "path": "docs/foundational/phase1f/evaluation/corpus/manifest.json",
+      "sha256": "0c1d4763cd254f29c131be1bdcf9666c6bba4aaa8ab3d1978f66e84b6275bac8"
+    },
+    {
+      "path": "docs/foundational/phase1f/evaluation/corpus/cedar.txt",
+      "sha256": "9ef0dfbfc7ce878bb033ac002be584b378193054dd56609af2d4494e4b296749"
+    },
+    {
+      "path": "docs/foundational/phase1f/evaluation/corpus/quartz.txt",
+      "sha256": "faa8adec67482975e84d81a2eec808f32a7bdb9aa89333a1aed7d74d912f299b"
+    },
+    {
+      "path": "docs/foundational/phase1f/evaluation/corpus/larch.txt",
+      "sha256": "87693660b05a354b3b2ddbe205928ce1be5ca18d27045696c6be7b3e33202fc1"
+    },
+    {
+      "path": "docs/foundational/phase1f/evaluation/corpus/marlin.txt",
+      "sha256": "12cfacc413b898194288a42054075218408911d001e1f41c42abd6a83e2bbf62"
+    },
+    {
+      "path": "docs/foundational/phase1f/evaluation/corpus/maple.txt",
+      "sha256": "0b06f717436d38d5f1ec799e8ead043d0919afc2f62374bfec91b732bdf7a152"
+    },
+    {
+      "path": "docs/foundational/phase1f/evaluation/corpus/saffron.txt",
+      "sha256": "ab8f3839444a672c5f640aaa78e442022231ec10c0e86e28125cec9a120cdbd1"
+    },
+    {
+      "path": "docs/foundational/phase1f/evaluation/corpus/birch.txt",
+      "sha256": "f5648bd18afd4f1efb7e5d85281ce2d0104e6ea8863903f35a2c43f545073027"
+    },
+    {
+      "path": "docs/foundational/phase1f/evaluation/corpus/heron.txt",
+      "sha256": "2d59e72f0f48b99895e2d7497a69672d6313c6a84fd432b1e7696808b8b511a0"
+    },
+    {
+      "path": "docs/foundational/phase1f/evidence/live-development/blind-packets.json",
+      "sha256": "b304ca3f72214e0932d0fffd9b8c976234a8f5ea1c594970a4fbea67f5e0fd10"
+    }
+  ],
+  "method": {
+    "citation_index_base": 0,
+    "source_verification": "All eight manifest content hashes, versions, byte lengths and listed line spans checked against exact corpus bytes. Every emitted citation independently byte-validated.",
+    "required_fact_unit": "Frozen required-fact groups, not uniformly weighted atomic claims. Full group credit only; partial semantics are recorded in reasons. No pooled support score is reported.",
+    "absence_handling": "Subset-scoped absence statements are distinguished from packet-wide absence assertions. Missing policy values are graded missing rather than contradicted unless a wrong value/opposite factual claim is actually supplied.",
+    "semantic_mode": "Determined by delivered answer content, independently of application disposition. Conditional regional answers retain all five applicable groups, even when the output also asks a clarification question.",
+    "precision": "null throughout: required-fact groups and extra-claim review do not supply a faithful denominator for all substantive atomic claims.",
+    "revision": "Observed initial-to-final semantic comparison only; identical content does not establish whether a revision call occurred."
+  },
+  "results": [
+    {
+      "id": "response-01",
+      "case_id": "dev-04",
+      "execution_outcome_as_emitted": "public-result",
+      "final": {
+        "answer": "The supplied evidence is insufficient to determine whether the final reports establish migration readiness for Marlin database 6 in production window M31, or exactly when and to what version to roll back. It establishes only that two final readiness reports concern the same production cluster, are both revision 1 and equally authoritative, and neither supersedes the other; no resolution is recorded. Their readiness findings are not provided, so we cannot determine whether they agree or conflict. No rollback timing, trigger, or target version is supplied. The reports’ actual findings and rollback instructions are needed to answer substantively.",
+        "disposition_as_emitted": "insufficient_evidence",
+        "semantic_mode": "blanket_abstention_with_partial_authority_context",
+        "required_facts": [
+          {
+            "id": "ops-pass",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "The answer never states this report's actual validation/readiness finding. Both findings exist in Marlin lines 2 and 3.",
+            "citation_covered": false
+          },
+          {
+            "id": "db-fail",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "The answer never states this report's actual validation/readiness finding. Both findings exist in Marlin lines 2 and 3.",
+            "citation_covered": false
+          },
+          {
+            "id": "conflict-unresolved",
+            "status": "missing",
+            "answer_excerpt": "It establishes only that two final readiness reports concern the same production cluster, are both revision 1 and equally authoritative, and neither supersedes the other; no resolution is recorded. Their readiness findings are not provided, so we cannot determine whether they agree or conflict.",
+            "reason": "Partial coverage: common cluster/window and all authority metadata are present. However, this answer explicitly cannot determine whether the reports agree or conflict and withholds whether they establish readiness. It does not express the full gold group's unresolved-conflict/readiness conclusion. No contrary factual verdict is asserted, hence missing rather than contradicted.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-target",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No statement of the required fact is delivered.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No statement of the required fact is delivered.",
+            "citation_covered": false
+          }
+        ],
+        "excluded_required_facts": [],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 0,
+            "valid": true,
+            "reason": "Document and SHA-256 version match the manifest; bounded span equals the exact UTF-8 snippet bytes."
+          },
+          {
+            "index": 1,
+            "valid": true,
+            "reason": "Document and SHA-256 version match the manifest; bounded span equals the exact UTF-8 snippet bytes."
+          },
+          {
+            "index": 2,
+            "valid": true,
+            "reason": "Document and SHA-256 version match the manifest; bounded span equals the exact UTF-8 snippet bytes."
+          },
+          {
+            "index": 3,
+            "valid": true,
+            "reason": "Document and SHA-256 version match the manifest; bounded span equals the exact UTF-8 snippet bytes."
+          }
+        ],
+        "stopping_correct": false,
+        "stopping_reason": "Fails to report both actual findings and the agreed rollback, and does not request authoritative reconciliation of the known conflict. A header-only or subset-limited abstention is incomplete under the contradiction stopping rule.",
+        "evidence_scope_notes": [
+          {
+            "answer_excerpt": "Their readiness findings are not provided, so we cannot determine whether they agree or conflict. No rollback timing, trigger, or target version is supplied.",
+            "reason": "Read in the opening supplied-evidence scope, these are accurate limitations of the repeated header, not corpus-wide absence assertions. The frozen corpus supplies both findings and agreed rollback. Asking for findings/rollback does not identify the known conflict or request authoritative reconciliation."
+          }
+        ],
+        "substantive_claim_precision": null,
+        "precision_reason": "Not all substantive assertions are exhaustively atomized; no claim denominator is invented.",
+        "counts": {
+          "applicable_required_facts": 5,
+          "supported": 0,
+          "contradicted": 0,
+          "missing": 5,
+          "citation_covered": 0,
+          "emitted_citations": 4,
+          "valid_citations": 4,
+          "unsupported_extra_claims": 0
+        },
+        "required_fact_recall": 0.0,
+        "citation_validity": 1.0,
+        "citation_coverage": null,
+        "support_full_pass": false,
+        "quality_success": false
+      },
+      "initial": {
+        "answer": "The final reports do not establish that migration is ready for Marlin database 6 in production window M31. Two final readiness reports cover the same production cluster, both revision 1 and equally authoritative; neither supersedes the other, and no resolution is recorded. The supplied evidence also specifies neither an exact rollback time or trigger nor a target version, so no exact rollback instruction can be supported.",
+        "disposition_as_emitted": null,
+        "semantic_mode": "partial_answer_with_abstention",
+        "required_facts": [
+          {
+            "id": "ops-pass",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "The answer never states this report's actual validation/readiness finding. Both findings exist in Marlin lines 2 and 3.",
+            "citation_covered": false
+          },
+          {
+            "id": "db-fail",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "The answer never states this report's actual validation/readiness finding. Both findings exist in Marlin lines 2 and 3.",
+            "citation_covered": false
+          },
+          {
+            "id": "conflict-unresolved",
+            "status": "supported",
+            "answer_excerpt": "The final reports do not establish that migration is ready for Marlin database 6 in production window M31. Two final readiness reports cover the same production cluster, both revision 1 and equally authoritative; neither supersedes the other, and no resolution is recorded.",
+            "reason": "This reproduces the full literal gold group: common window/cluster, equal authority, neither superseding, no recorded resolution, and readiness not established. The opposing findings are separate missing groups. Only the header is cited, so the citations cannot entail the complete conflict/readiness conclusion; both report findings are also needed.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-target",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No statement of the required fact is delivered.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No statement of the required fact is delivered.",
+            "citation_covered": false
+          }
+        ],
+        "excluded_required_facts": [],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 0,
+            "valid": true,
+            "reason": "Document and SHA-256 version match the manifest; bounded span equals the exact UTF-8 snippet bytes."
+          },
+          {
+            "index": 1,
+            "valid": true,
+            "reason": "Document and SHA-256 version match the manifest; bounded span equals the exact UTF-8 snippet bytes."
+          }
+        ],
+        "stopping_correct": false,
+        "stopping_reason": "Fails to report both actual findings and the agreed rollback, and does not request authoritative reconciliation of the known conflict. A header-only or subset-limited abstention is incomplete under the contradiction stopping rule.",
+        "evidence_scope_notes": [
+          {
+            "answer_excerpt": "The supplied evidence also specifies neither an exact rollback time or trigger nor a target version, so no exact rollback instruction can be supported.",
+            "reason": "Scoped to supplied evidence, the repeated header lacks rollback. Marlin line 4 provides the exact agreed rollback, so omission is a completeness failure, not credit for correct stopping."
+          }
+        ],
+        "substantive_claim_precision": null,
+        "precision_reason": "Not all substantive assertions are exhaustively atomized; no claim denominator is invented.",
+        "counts": {
+          "applicable_required_facts": 5,
+          "supported": 1,
+          "contradicted": 0,
+          "missing": 4,
+          "citation_covered": 0,
+          "emitted_citations": 2,
+          "valid_citations": 2,
+          "unsupported_extra_claims": 0
+        },
+        "required_fact_recall": 0.2,
+        "citation_validity": 1.0,
+        "citation_coverage": 0.0,
+        "support_full_pass": false,
+        "quality_success": false
+      },
+      "diagnostic_final_candidate": {
+        "label": "diagnostic candidate, not independently accepted by this field",
+        "answer": "The supplied evidence is insufficient to determine whether the final reports establish migration readiness for Marlin database 6 in production window M31, or exactly when and to what version to roll back. It establishes only that two final readiness reports concern the same production cluster, are both revision 1 and equally authoritative, and neither supersedes the other; no resolution is recorded. Their readiness findings are not provided, so we cannot determine whether they agree or conflict. No rollback timing, trigger, or target version is supplied. The reports’ actual findings and rollback instructions are needed to answer substantively.",
+        "equals_delivered_final": true,
+        "grading_note": "Matches the delivered final answer byte-for-byte; the grade above belongs to the delivered final and is not substituted from diagnostic content."
+      },
+      "revision_candidate_change": "regressed",
+      "revision_candidate_change_reasons": [
+        "Under the literal full-group reading, initial supports 1/5 required groups and final 0/5: the final becomes agnostic about whether the reports agree/conflict and establish readiness. Both have zero covered required groups and incorrect stopping. Additional repeated header citations add no coverage.",
+        "Sensitivity: if adjudication requires the opposing findings to count the initial conflict-unresolved group itself, the tracked quality dimensions are unchanged rather than regressed."
+      ]
+    },
+    {
+      "id": "response-02",
+      "case_id": "dev-03",
+      "execution_outcome_as_emitted": "public-result",
+      "final": {
+        "answer": "Security approval is not established by this packet: it records neither a signed security approval nor a rejection. The supplied evidence also does not specify an exact rollback time or target version. Although revision 1 contains a compatibility check and rollback procedure for production window L24, it does not establish when or to which version to roll back.",
+        "disposition_as_emitted": "answer",
+        "semantic_mode": "partial_answer_with_abstention",
+        "required_facts": [
+          {
+            "id": "approval-unknown",
+            "status": "supported",
+            "answer_excerpt": "Security approval is not established by this packet: it records neither a signed security approval nor a rejection.",
+            "reason": "Explicitly withholds approval and states that neither signed approval nor rejection is recorded; Larch line 2 entails the full group.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-target",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No statement of the required fact is delivered.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No statement of the required fact is delivered.",
+            "citation_covered": false
+          }
+        ],
+        "excluded_required_facts": [],
+        "unsupported_extra_claims": [
+          {
+            "claim": "Although revision 1 contains a compatibility check and rollback procedure for production window L24, it does not establish when or to which version to roll back.",
+            "reason": "The natural referent of \"it\" is revision 1/the packet, not merely the selected snippets. As a packet-wide assertion this is false: Larch line 3 establishes both the exact rollback trigger and index 4 snapshot. The preceding sentence has a narrower supplied-evidence scope; if that scope is carried through this sentence, this is instead a subset disclaimer. This scope ambiguity is flagged for adjudication."
+          }
+        ],
+        "citations": [
+          {
+            "index": 0,
+            "valid": true,
+            "reason": "Document and SHA-256 version match the manifest; bounded span equals the exact UTF-8 snippet bytes."
+          },
+          {
+            "index": 1,
+            "valid": true,
+            "reason": "Document and SHA-256 version match the manifest; bounded span equals the exact UTF-8 snippet bytes."
+          }
+        ],
+        "stopping_correct": false,
+        "stopping_reason": "Approval abstention is correct, but stopping omits the known rollback target and trigger required in a missing-evidence case.",
+        "evidence_scope_notes": [
+          {
+            "answer_excerpt": "The supplied evidence also does not specify an exact rollback time or target version.",
+            "reason": "This sentence is explicitly scoped to supplied evidence; the emitted selected spans do not contain the rollback values. It still loses completeness against Larch line 3, which requires the index 4 snapshot and query failures >1 percent for three consecutive minutes."
+          }
+        ],
+        "substantive_claim_precision": null,
+        "precision_reason": "Not all substantive assertions are exhaustively atomized; no claim denominator is invented.",
+        "counts": {
+          "applicable_required_facts": 3,
+          "supported": 1,
+          "contradicted": 0,
+          "missing": 2,
+          "citation_covered": 1,
+          "emitted_citations": 2,
+          "valid_citations": 2,
+          "unsupported_extra_claims": 1
+        },
+        "required_fact_recall": 0.3333333333333333,
+        "citation_validity": 1.0,
+        "citation_coverage": 1.0,
+        "support_full_pass": false,
+        "quality_success": false
+      },
+      "initial": {
+        "answer": "Security approval is not established by this packet: it records neither a signed security approval nor a rejection. The supplied evidence also does not specify an exact rollback time or target version. Although revision 1 contains a compatibility check and rollback procedure for production window L24, it does not establish when or to which version to roll back.",
+        "disposition_as_emitted": null,
+        "semantic_mode": "partial_answer_with_abstention",
+        "required_facts": [
+          {
+            "id": "approval-unknown",
+            "status": "supported",
+            "answer_excerpt": "Security approval is not established by this packet: it records neither a signed security approval nor a rejection.",
+            "reason": "Explicitly withholds approval and states that neither signed approval nor rejection is recorded; Larch line 2 entails the full group.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-target",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No statement of the required fact is delivered.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No statement of the required fact is delivered.",
+            "citation_covered": false
+          }
+        ],
+        "excluded_required_facts": [],
+        "unsupported_extra_claims": [
+          {
+            "claim": "Although revision 1 contains a compatibility check and rollback procedure for production window L24, it does not establish when or to which version to roll back.",
+            "reason": "The natural referent of \"it\" is revision 1/the packet, not merely the selected snippets. As a packet-wide assertion this is false: Larch line 3 establishes both the exact rollback trigger and index 4 snapshot. The preceding sentence has a narrower supplied-evidence scope; if that scope is carried through this sentence, this is instead a subset disclaimer. This scope ambiguity is flagged for adjudication."
+          }
+        ],
+        "citations": [
+          {
+            "index": 0,
+            "valid": true,
+            "reason": "Document and SHA-256 version match the manifest; bounded span equals the exact UTF-8 snippet bytes."
+          },
+          {
+            "index": 1,
+            "valid": true,
+            "reason": "Document and SHA-256 version match the manifest; bounded span equals the exact UTF-8 snippet bytes."
+          }
+        ],
+        "stopping_correct": false,
+        "stopping_reason": "Approval abstention is correct, but stopping omits the known rollback target and trigger required in a missing-evidence case.",
+        "evidence_scope_notes": [
+          {
+            "answer_excerpt": "The supplied evidence also does not specify an exact rollback time or target version.",
+            "reason": "This sentence is explicitly scoped to supplied evidence; the emitted selected spans do not contain the rollback values. It still loses completeness against Larch line 3, which requires the index 4 snapshot and query failures >1 percent for three consecutive minutes."
+          }
+        ],
+        "substantive_claim_precision": null,
+        "precision_reason": "Not all substantive assertions are exhaustively atomized; no claim denominator is invented.",
+        "counts": {
+          "applicable_required_facts": 3,
+          "supported": 1,
+          "contradicted": 0,
+          "missing": 2,
+          "citation_covered": 1,
+          "emitted_citations": 2,
+          "valid_citations": 2,
+          "unsupported_extra_claims": 1
+        },
+        "required_fact_recall": 0.3333333333333333,
+        "citation_validity": 1.0,
+        "citation_coverage": 1.0,
+        "support_full_pass": false,
+        "quality_success": false
+      },
+      "diagnostic_final_candidate": {
+        "label": "diagnostic candidate, not independently accepted by this field",
+        "answer": "Security approval is not established by this packet: it records neither a signed security approval nor a rejection. The supplied evidence also does not specify an exact rollback time or target version. Although revision 1 contains a compatibility check and rollback procedure for production window L24, it does not establish when or to which version to roll back.",
+        "equals_delivered_final": true,
+        "grading_note": "Matches the delivered final answer byte-for-byte; the grade above belongs to the delivered final and is not substituted from diagnostic content."
+      },
+      "revision_candidate_change": "unchanged",
+      "revision_candidate_change_reasons": [
+        "Initial and delivered final answer/citation content are identical. Disposition changes alone are not semantic improvements. No revision occurrence is inferred from this comparison."
+      ]
+    },
+    {
+      "id": "response-03",
+      "case_id": "dev-01",
+      "execution_outcome_as_emitted": "public-result",
+      "final": {
+        "answer": "For Cedar agent 3.2 on the production Linux fleet in change window C17, kernel 6.1 is supported; kernel 5.15 is unsupported. The supplied evidence does not specify a rollback trigger, exact timing, or target agent version, so exact rollback instructions cannot be determined. Kernel incompatibility alone does not establish a rollback policy.",
+        "disposition_as_emitted": "answer",
+        "semantic_mode": "partial_answer_with_abstention",
+        "required_facts": [
+          {
+            "id": "kernel-61",
+            "status": "supported",
+            "answer_excerpt": "kernel 6.1 is supported",
+            "reason": "Correct kernel 6.1 support; the compatibility span entails this.",
+            "citation_covered": true
+          },
+          {
+            "id": "kernel-515",
+            "status": "supported",
+            "answer_excerpt": "kernel 5.15 is unsupported",
+            "reason": "Correct kernel 5.15 exclusion; the compatibility span entails this.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-target",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No statement of the required fact is delivered.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No statement of the required fact is delivered.",
+            "citation_covered": false
+          }
+        ],
+        "excluded_required_facts": [],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 0,
+            "valid": true,
+            "reason": "Document and SHA-256 version match the manifest; bounded span equals the exact UTF-8 snippet bytes."
+          },
+          {
+            "index": 1,
+            "valid": true,
+            "reason": "Document and SHA-256 version match the manifest; bounded span equals the exact UTF-8 snippet bytes."
+          },
+          {
+            "index": 2,
+            "valid": true,
+            "reason": "Document and SHA-256 version match the manifest; bounded span equals the exact UTF-8 snippet bytes."
+          },
+          {
+            "index": 3,
+            "valid": true,
+            "reason": "Document and SHA-256 version match the manifest; bounded span equals the exact UTF-8 snippet bytes."
+          }
+        ],
+        "stopping_correct": false,
+        "stopping_reason": "The supported case requires both compatibility and complete rollback. The answer unnecessarily withholds the known target and trigger.",
+        "evidence_scope_notes": [
+          {
+            "answer_excerpt": "The supplied evidence does not specify a rollback trigger, exact timing, or target agent version, so exact rollback instructions cannot be determined. Kernel incompatibility alone does not establish a rollback policy.",
+            "reason": "The absence statement is scoped to supplied evidence, whose emitted spans contain no rollback policy. This is defensible about that subset, not a claim that the entire corpus lacks rollback. Cedar line 3 supplies agent 3.1 and strict error rate >2 percent for five consecutive minutes, so both gold groups remain missing. The final observation about incompatibility alone is a sound distinction and adds no required-fact coverage."
+          }
+        ],
+        "substantive_claim_precision": null,
+        "precision_reason": "Not all substantive assertions are exhaustively atomized; no claim denominator is invented.",
+        "counts": {
+          "applicable_required_facts": 4,
+          "supported": 2,
+          "contradicted": 0,
+          "missing": 2,
+          "citation_covered": 2,
+          "emitted_citations": 4,
+          "valid_citations": 4,
+          "unsupported_extra_claims": 0
+        },
+        "required_fact_recall": 0.5,
+        "citation_validity": 1.0,
+        "citation_coverage": 1.0,
+        "support_full_pass": false,
+        "quality_success": false
+      },
+      "initial": {
+        "answer": "For Cedar agent 3.2 on the production Linux fleet in window C17, kernel 6.1 is supported; kernel 5.15 is unsupported. The supplied evidence does not establish exactly when to roll back or which agent version to roll back to, so exact rollback instructions cannot be determined.",
+        "disposition_as_emitted": null,
+        "semantic_mode": "partial_answer_with_abstention",
+        "required_facts": [
+          {
+            "id": "kernel-61",
+            "status": "supported",
+            "answer_excerpt": "kernel 6.1 is supported",
+            "reason": "Correct kernel 6.1 support; the compatibility span entails this.",
+            "citation_covered": true
+          },
+          {
+            "id": "kernel-515",
+            "status": "supported",
+            "answer_excerpt": "kernel 5.15 is unsupported",
+            "reason": "Correct kernel 5.15 exclusion; the compatibility span entails this.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-target",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No statement of the required fact is delivered.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No statement of the required fact is delivered.",
+            "citation_covered": false
+          }
+        ],
+        "excluded_required_facts": [],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 0,
+            "valid": true,
+            "reason": "Document and SHA-256 version match the manifest; bounded span equals the exact UTF-8 snippet bytes."
+          },
+          {
+            "index": 1,
+            "valid": true,
+            "reason": "Document and SHA-256 version match the manifest; bounded span equals the exact UTF-8 snippet bytes."
+          }
+        ],
+        "stopping_correct": false,
+        "stopping_reason": "The supported case requires both compatibility and complete rollback. The answer unnecessarily withholds the known target and trigger.",
+        "evidence_scope_notes": [
+          {
+            "answer_excerpt": "The supplied evidence does not establish exactly when to roll back or which agent version to roll back to, so exact rollback instructions cannot be determined.",
+            "reason": "The absence statement is scoped to supplied evidence, whose emitted spans contain no rollback policy. This is defensible about that subset, not a claim that the entire corpus lacks rollback. Cedar line 3 supplies agent 3.1 and strict error rate >2 percent for five consecutive minutes, so both gold groups remain missing. The final observation about incompatibility alone is a sound distinction and adds no required-fact coverage."
+          }
+        ],
+        "substantive_claim_precision": null,
+        "precision_reason": "Not all substantive assertions are exhaustively atomized; no claim denominator is invented.",
+        "counts": {
+          "applicable_required_facts": 4,
+          "supported": 2,
+          "contradicted": 0,
+          "missing": 2,
+          "citation_covered": 2,
+          "emitted_citations": 2,
+          "valid_citations": 2,
+          "unsupported_extra_claims": 0
+        },
+        "required_fact_recall": 0.5,
+        "citation_validity": 1.0,
+        "citation_coverage": 1.0,
+        "support_full_pass": false,
+        "quality_success": false
+      },
+      "diagnostic_final_candidate": {
+        "label": "diagnostic candidate, not independently accepted by this field",
+        "answer": "For Cedar agent 3.2 on the production Linux fleet in change window C17, kernel 6.1 is supported; kernel 5.15 is unsupported. The supplied evidence does not specify a rollback trigger, exact timing, or target agent version, so exact rollback instructions cannot be determined. Kernel incompatibility alone does not establish a rollback policy.",
+        "equals_delivered_final": true,
+        "grading_note": "Matches the delivered final answer byte-for-byte; the grade above belongs to the delivered final and is not substituted from diagnostic content."
+      },
+      "revision_candidate_change": "unchanged",
+      "revision_candidate_change_reasons": [
+        "Initial and final both support and cite the two kernel facts, omit both rollback groups, and stop incorrectly. Added window context and repeated citations do not change the required-fact, unsupported-claim, coverage or stopping dimensions."
+      ]
+    },
+    {
+      "id": "response-04",
+      "case_id": "dev-04",
+      "execution_outcome_as_emitted": "public-result",
+      "final": {
+        "answer": "The supplied evidence does not establish that migration is ready for Marlin database 6 in production window M31. It identifies two equally authoritative final readiness reports, both revision 1, with neither superseding the other and no recorded resolution. It provides no rollback time or target version, so exactly when and to what version to roll back cannot be determined.",
+        "disposition_as_emitted": "answer",
+        "semantic_mode": "partial_answer_with_abstention",
+        "required_facts": [
+          {
+            "id": "ops-pass",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "The answer never states this report's actual validation/readiness finding. Both findings exist in Marlin lines 2 and 3.",
+            "citation_covered": false
+          },
+          {
+            "id": "db-fail",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "The answer never states this report's actual validation/readiness finding. Both findings exist in Marlin lines 2 and 3.",
+            "citation_covered": false
+          },
+          {
+            "id": "conflict-unresolved",
+            "status": "missing",
+            "answer_excerpt": "The supplied evidence does not establish that migration is ready for Marlin database 6 in production window M31. It identifies two equally authoritative final readiness reports, both revision 1, with neither superseding the other and no recorded resolution.",
+            "reason": "Partial coverage: common window, equal authority, neither superseding, no resolution, and readiness not established by the subset are present. The full group is withheld because the answer omits same-cluster identity and never establishes an actual unresolved disagreement from the opposing findings. The header-only citation would fail conflict coverage even if an adjudicator credits the semantic group.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-target",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No statement of the required fact is delivered.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No statement of the required fact is delivered.",
+            "citation_covered": false
+          }
+        ],
+        "excluded_required_facts": [],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 0,
+            "valid": true,
+            "reason": "Document and SHA-256 version match the manifest; bounded span equals the exact UTF-8 snippet bytes."
+          }
+        ],
+        "stopping_correct": false,
+        "stopping_reason": "Fails to report both actual findings and the agreed rollback, and does not request authoritative reconciliation of the known conflict. A header-only or subset-limited abstention is incomplete under the contradiction stopping rule.",
+        "evidence_scope_notes": [
+          {
+            "answer_excerpt": "It provides no rollback time or target version, so exactly when and to what version to roll back cannot be determined.",
+            "reason": "The referent is the supplied evidence, not clearly the complete packet. The emitted header indeed lacks rollback. Marlin line 4 nevertheless gives the agreed database 5 snapshot and replication lag >45 seconds for five consecutive minutes; both groups remain missing."
+          }
+        ],
+        "substantive_claim_precision": null,
+        "precision_reason": "Not all substantive assertions are exhaustively atomized; no claim denominator is invented.",
+        "counts": {
+          "applicable_required_facts": 5,
+          "supported": 0,
+          "contradicted": 0,
+          "missing": 5,
+          "citation_covered": 0,
+          "emitted_citations": 1,
+          "valid_citations": 1,
+          "unsupported_extra_claims": 0
+        },
+        "required_fact_recall": 0.0,
+        "citation_validity": 1.0,
+        "citation_coverage": null,
+        "support_full_pass": false,
+        "quality_success": false
+      },
+      "initial": {
+        "answer": "The supplied evidence does not establish that migration is ready for Marlin database 6 in production window M31. It identifies two equally authoritative final readiness reports, both revision 1, with neither superseding the other and no recorded resolution. It provides no rollback time or target version, so exactly when and to what version to roll back cannot be determined.",
+        "disposition_as_emitted": "answer",
+        "semantic_mode": "partial_answer_with_abstention",
+        "required_facts": [
+          {
+            "id": "ops-pass",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "The answer never states this report's actual validation/readiness finding. Both findings exist in Marlin lines 2 and 3.",
+            "citation_covered": false
+          },
+          {
+            "id": "db-fail",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "The answer never states this report's actual validation/readiness finding. Both findings exist in Marlin lines 2 and 3.",
+            "citation_covered": false
+          },
+          {
+            "id": "conflict-unresolved",
+            "status": "missing",
+            "answer_excerpt": "The supplied evidence does not establish that migration is ready for Marlin database 6 in production window M31. It identifies two equally authoritative final readiness reports, both revision 1, with neither superseding the other and no recorded resolution.",
+            "reason": "Partial coverage: common window, equal authority, neither superseding, no resolution, and readiness not established by the subset are present. The full group is withheld because the answer omits same-cluster identity and never establishes an actual unresolved disagreement from the opposing findings. The header-only citation would fail conflict coverage even if an adjudicator credits the semantic group.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-target",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No statement of the required fact is delivered.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No statement of the required fact is delivered.",
+            "citation_covered": false
+          }
+        ],
+        "excluded_required_facts": [],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 0,
+            "valid": true,
+            "reason": "Document and SHA-256 version match the manifest; bounded span equals the exact UTF-8 snippet bytes."
+          }
+        ],
+        "stopping_correct": false,
+        "stopping_reason": "Fails to report both actual findings and the agreed rollback, and does not request authoritative reconciliation of the known conflict. A header-only or subset-limited abstention is incomplete under the contradiction stopping rule.",
+        "evidence_scope_notes": [
+          {
+            "answer_excerpt": "It provides no rollback time or target version, so exactly when and to what version to roll back cannot be determined.",
+            "reason": "The referent is the supplied evidence, not clearly the complete packet. The emitted header indeed lacks rollback. Marlin line 4 nevertheless gives the agreed database 5 snapshot and replication lag >45 seconds for five consecutive minutes; both groups remain missing."
+          }
+        ],
+        "substantive_claim_precision": null,
+        "precision_reason": "Not all substantive assertions are exhaustively atomized; no claim denominator is invented.",
+        "counts": {
+          "applicable_required_facts": 5,
+          "supported": 0,
+          "contradicted": 0,
+          "missing": 5,
+          "citation_covered": 0,
+          "emitted_citations": 1,
+          "valid_citations": 1,
+          "unsupported_extra_claims": 0
+        },
+        "required_fact_recall": 0.0,
+        "citation_validity": 1.0,
+        "citation_coverage": null,
+        "support_full_pass": false,
+        "quality_success": false
+      },
+      "diagnostic_final_candidate": null,
+      "revision_candidate_change": "unchanged",
+      "revision_candidate_change_reasons": [
+        "Initial and delivered final answer/citation content are identical. Disposition changes alone are not semantic improvements. No revision occurrence is inferred from this comparison."
+      ]
+    },
+    {
+      "id": "response-05",
+      "case_id": "dev-01",
+      "execution_outcome_as_emitted": "public-result",
+      "final": {
+        "answer": "",
+        "disposition_as_emitted": "invalid_result",
+        "semantic_mode": "no_answer_operational_failure",
+        "required_facts": [
+          {
+            "id": "kernel-61",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No statement of the required fact is delivered.",
+            "citation_covered": false
+          },
+          {
+            "id": "kernel-515",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No statement of the required fact is delivered.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-target",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No statement of the required fact is delivered.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No statement of the required fact is delivered.",
+            "citation_covered": false
+          }
+        ],
+        "excluded_required_facts": [],
+        "unsupported_extra_claims": [],
+        "citations": [],
+        "stopping_correct": false,
+        "stopping_reason": "Empty delivered answer with invalid_result. Operational failure provides no epistemic abstention or known facts.",
+        "evidence_scope_notes": [],
+        "substantive_claim_precision": null,
+        "precision_reason": "Not all substantive assertions are exhaustively atomized; no claim denominator is invented.",
+        "counts": {
+          "applicable_required_facts": 4,
+          "supported": 0,
+          "contradicted": 0,
+          "missing": 4,
+          "citation_covered": 0,
+          "emitted_citations": 0,
+          "valid_citations": 0,
+          "unsupported_extra_claims": 0
+        },
+        "required_fact_recall": 0.0,
+        "citation_validity": null,
+        "citation_coverage": null,
+        "support_full_pass": false,
+        "quality_success": false
+      },
+      "initial": {
+        "answer": "",
+        "disposition_as_emitted": "invalid_result",
+        "semantic_mode": "no_answer_operational_failure",
+        "required_facts": [
+          {
+            "id": "kernel-61",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No statement of the required fact is delivered.",
+            "citation_covered": false
+          },
+          {
+            "id": "kernel-515",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No statement of the required fact is delivered.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-target",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No statement of the required fact is delivered.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No statement of the required fact is delivered.",
+            "citation_covered": false
+          }
+        ],
+        "excluded_required_facts": [],
+        "unsupported_extra_claims": [],
+        "citations": [],
+        "stopping_correct": false,
+        "stopping_reason": "Empty delivered answer with invalid_result. Operational failure provides no epistemic abstention or known facts.",
+        "evidence_scope_notes": [],
+        "substantive_claim_precision": null,
+        "precision_reason": "Not all substantive assertions are exhaustively atomized; no claim denominator is invented.",
+        "counts": {
+          "applicable_required_facts": 4,
+          "supported": 0,
+          "contradicted": 0,
+          "missing": 4,
+          "citation_covered": 0,
+          "emitted_citations": 0,
+          "valid_citations": 0,
+          "unsupported_extra_claims": 0
+        },
+        "required_fact_recall": 0.0,
+        "citation_validity": null,
+        "citation_coverage": null,
+        "support_full_pass": false,
+        "quality_success": false
+      },
+      "diagnostic_final_candidate": null,
+      "revision_candidate_change": "unchanged",
+      "revision_candidate_change_reasons": [
+        "Initial and delivered final answer/citation content are identical. Disposition changes alone are not semantic improvements. No revision occurrence is inferred from this comparison."
+      ]
+    },
+    {
+      "id": "response-06",
+      "case_id": "dev-03",
+      "execution_outcome_as_emitted": "public-result",
+      "final": {
+        "answer": "Security approval is not established by this packet: no signed approval or rejection is recorded. The supplied evidence specifies neither a rollback time nor a target version, so neither can be determined.",
+        "disposition_as_emitted": "answer",
+        "semantic_mode": "partial_answer_with_abstention",
+        "required_facts": [
+          {
+            "id": "approval-unknown",
+            "status": "supported",
+            "answer_excerpt": "Security approval is not established by this packet: no signed approval or rejection is recorded.",
+            "reason": "Explicitly withholds approval and states that neither signed approval nor rejection is recorded; Larch line 2 entails the full group.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-target",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No statement of the required fact is delivered.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No statement of the required fact is delivered.",
+            "citation_covered": false
+          }
+        ],
+        "excluded_required_facts": [],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 0,
+            "valid": true,
+            "reason": "Document and SHA-256 version match the manifest; bounded span equals the exact UTF-8 snippet bytes."
+          }
+        ],
+        "stopping_correct": false,
+        "stopping_reason": "Approval abstention is correct, but stopping omits the known rollback target and trigger required in a missing-evidence case.",
+        "evidence_scope_notes": [
+          {
+            "answer_excerpt": "The supplied evidence specifies neither a rollback time nor a target version, so neither can be determined.",
+            "reason": "This sentence is explicitly scoped to supplied evidence; the emitted selected spans do not contain the rollback values. It still loses completeness against Larch line 3, which requires the index 4 snapshot and query failures >1 percent for three consecutive minutes."
+          }
+        ],
+        "substantive_claim_precision": null,
+        "precision_reason": "Not all substantive assertions are exhaustively atomized; no claim denominator is invented.",
+        "counts": {
+          "applicable_required_facts": 3,
+          "supported": 1,
+          "contradicted": 0,
+          "missing": 2,
+          "citation_covered": 1,
+          "emitted_citations": 1,
+          "valid_citations": 1,
+          "unsupported_extra_claims": 0
+        },
+        "required_fact_recall": 0.3333333333333333,
+        "citation_validity": 1.0,
+        "citation_coverage": 1.0,
+        "support_full_pass": false,
+        "quality_success": false
+      },
+      "initial": {
+        "answer": "Security approval is not established by this packet: no signed approval or rejection is recorded. The supplied evidence specifies neither a rollback time nor a target version, so neither can be determined.",
+        "disposition_as_emitted": "answer",
+        "semantic_mode": "partial_answer_with_abstention",
+        "required_facts": [
+          {
+            "id": "approval-unknown",
+            "status": "supported",
+            "answer_excerpt": "Security approval is not established by this packet: no signed approval or rejection is recorded.",
+            "reason": "Explicitly withholds approval and states that neither signed approval nor rejection is recorded; Larch line 2 entails the full group.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-target",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No statement of the required fact is delivered.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No statement of the required fact is delivered.",
+            "citation_covered": false
+          }
+        ],
+        "excluded_required_facts": [],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 0,
+            "valid": true,
+            "reason": "Document and SHA-256 version match the manifest; bounded span equals the exact UTF-8 snippet bytes."
+          }
+        ],
+        "stopping_correct": false,
+        "stopping_reason": "Approval abstention is correct, but stopping omits the known rollback target and trigger required in a missing-evidence case.",
+        "evidence_scope_notes": [
+          {
+            "answer_excerpt": "The supplied evidence specifies neither a rollback time nor a target version, so neither can be determined.",
+            "reason": "This sentence is explicitly scoped to supplied evidence; the emitted selected spans do not contain the rollback values. It still loses completeness against Larch line 3, which requires the index 4 snapshot and query failures >1 percent for three consecutive minutes."
+          }
+        ],
+        "substantive_claim_precision": null,
+        "precision_reason": "Not all substantive assertions are exhaustively atomized; no claim denominator is invented.",
+        "counts": {
+          "applicable_required_facts": 3,
+          "supported": 1,
+          "contradicted": 0,
+          "missing": 2,
+          "citation_covered": 1,
+          "emitted_citations": 1,
+          "valid_citations": 1,
+          "unsupported_extra_claims": 0
+        },
+        "required_fact_recall": 0.3333333333333333,
+        "citation_validity": 1.0,
+        "citation_coverage": 1.0,
+        "support_full_pass": false,
+        "quality_success": false
+      },
+      "diagnostic_final_candidate": null,
+      "revision_candidate_change": "unchanged",
+      "revision_candidate_change_reasons": [
+        "Initial and delivered final answer/citation content are identical. Disposition changes alone are not semantic improvements. No revision occurrence is inferred from this comparison."
+      ]
+    },
+    {
+      "id": "response-07",
+      "case_id": "dev-02",
+      "execution_outcome_as_emitted": "public-result",
+      "final": {
+        "answer": "For Quartz gateway 8 in production, configure 120 concurrent requests per instance in the east region or 80 in the west region. Specify the region to select the correct limit. The supplied evidence does not state when to roll back or which version to roll back to.",
+        "disposition_as_emitted": "answer",
+        "semantic_mode": "conditional_answer",
+        "required_facts": [
+          {
+            "id": "missing-region",
+            "status": "supported",
+            "answer_excerpt": "Specify the region to select the correct limit.",
+            "reason": "The imperative, together with the two regional branches, makes explicit that a region is necessary and no unconditional limit has been selected. Quartz line 2 entails this.",
+            "citation_covered": true
+          },
+          {
+            "id": "east-limit",
+            "status": "supported",
+            "answer_excerpt": "configure 120 concurrent requests per instance in the east region",
+            "reason": "All east limit semantics are present and entailed by Quartz line 2.",
+            "citation_covered": true
+          },
+          {
+            "id": "west-limit",
+            "status": "supported",
+            "answer_excerpt": "configure 120 concurrent requests per instance in the east region or 80 in the west region",
+            "reason": "The shared unit \"concurrent requests per instance\" applies grammatically to the west branch; Quartz line 2 entails 80 for west.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-target",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No statement of the required fact is delivered.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No statement of the required fact is delivered.",
+            "citation_covered": false
+          }
+        ],
+        "excluded_required_facts": [],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 0,
+            "valid": true,
+            "reason": "Document and SHA-256 version match the manifest; bounded span equals the exact UTF-8 snippet bytes."
+          }
+        ],
+        "stopping_correct": false,
+        "stopping_reason": "This supplies both conditional limits, so the conditional-answer rule applies. It omits the common rollback; it is not merely a targeted clarification eligible to omit rollback.",
+        "evidence_scope_notes": [
+          {
+            "answer_excerpt": "The supplied evidence does not state when to roll back or which version to roll back to.",
+            "reason": "True about the emitted concurrency-only snippet, without asserting corpus-wide absence. Quartz line 3 nevertheless supplies gateway 7 and p95 latency >300 milliseconds for ten consecutive minutes in either region; both required rollback groups are missing."
+          }
+        ],
+        "substantive_claim_precision": null,
+        "precision_reason": "Not all substantive assertions are exhaustively atomized; no claim denominator is invented.",
+        "counts": {
+          "applicable_required_facts": 5,
+          "supported": 3,
+          "contradicted": 0,
+          "missing": 2,
+          "citation_covered": 3,
+          "emitted_citations": 1,
+          "valid_citations": 1,
+          "unsupported_extra_claims": 0
+        },
+        "required_fact_recall": 0.6,
+        "citation_validity": 1.0,
+        "citation_coverage": 1.0,
+        "support_full_pass": false,
+        "quality_success": false
+      },
+      "initial": {
+        "answer": "For Quartz gateway 8 in production, configure 120 concurrent requests per instance in the east region or 80 in the west region. Specify the region to select the correct limit. The supplied evidence does not state when to roll back or which version to roll back to.",
+        "disposition_as_emitted": "answer",
+        "semantic_mode": "conditional_answer",
+        "required_facts": [
+          {
+            "id": "missing-region",
+            "status": "supported",
+            "answer_excerpt": "Specify the region to select the correct limit.",
+            "reason": "The imperative, together with the two regional branches, makes explicit that a region is necessary and no unconditional limit has been selected. Quartz line 2 entails this.",
+            "citation_covered": true
+          },
+          {
+            "id": "east-limit",
+            "status": "supported",
+            "answer_excerpt": "configure 120 concurrent requests per instance in the east region",
+            "reason": "All east limit semantics are present and entailed by Quartz line 2.",
+            "citation_covered": true
+          },
+          {
+            "id": "west-limit",
+            "status": "supported",
+            "answer_excerpt": "configure 120 concurrent requests per instance in the east region or 80 in the west region",
+            "reason": "The shared unit \"concurrent requests per instance\" applies grammatically to the west branch; Quartz line 2 entails 80 for west.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-target",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No statement of the required fact is delivered.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No statement of the required fact is delivered.",
+            "citation_covered": false
+          }
+        ],
+        "excluded_required_facts": [],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 0,
+            "valid": true,
+            "reason": "Document and SHA-256 version match the manifest; bounded span equals the exact UTF-8 snippet bytes."
+          }
+        ],
+        "stopping_correct": false,
+        "stopping_reason": "This supplies both conditional limits, so the conditional-answer rule applies. It omits the common rollback; it is not merely a targeted clarification eligible to omit rollback.",
+        "evidence_scope_notes": [
+          {
+            "answer_excerpt": "The supplied evidence does not state when to roll back or which version to roll back to.",
+            "reason": "True about the emitted concurrency-only snippet, without asserting corpus-wide absence. Quartz line 3 nevertheless supplies gateway 7 and p95 latency >300 milliseconds for ten consecutive minutes in either region; both required rollback groups are missing."
+          }
+        ],
+        "substantive_claim_precision": null,
+        "precision_reason": "Not all substantive assertions are exhaustively atomized; no claim denominator is invented.",
+        "counts": {
+          "applicable_required_facts": 5,
+          "supported": 3,
+          "contradicted": 0,
+          "missing": 2,
+          "citation_covered": 3,
+          "emitted_citations": 1,
+          "valid_citations": 1,
+          "unsupported_extra_claims": 0
+        },
+        "required_fact_recall": 0.6,
+        "citation_validity": 1.0,
+        "citation_coverage": 1.0,
+        "support_full_pass": false,
+        "quality_success": false
+      },
+      "diagnostic_final_candidate": null,
+      "revision_candidate_change": "unchanged",
+      "revision_candidate_change_reasons": [
+        "Initial and delivered final answer/citation content are identical. Disposition changes alone are not semantic improvements. No revision occurrence is inferred from this comparison."
+      ]
+    },
+    {
+      "id": "response-08",
+      "case_id": "dev-02",
+      "execution_outcome_as_emitted": "public-result",
+      "final": {
+        "answer": "Which region are you configuring? Quartz gateway 8’s production concurrency limit is 120 concurrent requests per instance in east or 80 in west; the region is required to select one limit.\n\nRollback rule: if p95 latency exceeds 300 milliseconds for ten consecutive minutes, restore gateway 7 in both east and west regions.",
+        "disposition_as_emitted": "clarification",
+        "semantic_mode": "conditional_answer",
+        "required_facts": [
+          {
+            "id": "missing-region",
+            "status": "supported",
+            "answer_excerpt": "Which region are you configuring?",
+            "reason": "Targeted question is reinforced by \"the region is required to select one limit\" and the east/west branches. Quartz line 2 and the user question establish the missing region.",
+            "citation_covered": true
+          },
+          {
+            "id": "east-limit",
+            "status": "supported",
+            "answer_excerpt": "production concurrency limit is 120 concurrent requests per instance in east or 80 in west",
+            "reason": "Correct east branch, value and per-instance unit; Quartz line 2 entails it.",
+            "citation_covered": true
+          },
+          {
+            "id": "west-limit",
+            "status": "supported",
+            "answer_excerpt": "production concurrency limit is 120 concurrent requests per instance in east or 80 in west",
+            "reason": "Shared request/per-instance unit applies to west; Quartz line 2 entails it.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-target",
+            "status": "supported",
+            "answer_excerpt": "restore gateway 7 in both east and west regions",
+            "reason": "Exact version and common applicability; Quartz line 3 entails it.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "supported",
+            "answer_excerpt": "if p95 latency exceeds 300 milliseconds for ten consecutive minutes, restore gateway 7 in both east and west regions.",
+            "reason": "All group semantics are present: p95, strict exceeds, 300 milliseconds, ten consecutive minutes, both regions; Quartz line 3 entails it.",
+            "citation_covered": true
+          }
+        ],
+        "excluded_required_facts": [],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 0,
+            "valid": true,
+            "reason": "Document and SHA-256 version match the manifest; bounded span equals the exact UTF-8 snippet bytes."
+          },
+          {
+            "index": 1,
+            "valid": true,
+            "reason": "Document and SHA-256 version match the manifest; bounded span equals the exact UTF-8 snippet bytes."
+          }
+        ],
+        "stopping_correct": true,
+        "stopping_reason": "Asks for the missing region, supplies both branches without choosing a default, and supplies the exact common rollback. Classified by semantic content as a conditional answer despite the final clarification disposition.",
+        "evidence_scope_notes": [],
+        "substantive_claim_precision": null,
+        "precision_reason": "Not all substantive assertions are exhaustively atomized; no claim denominator is invented.",
+        "counts": {
+          "applicable_required_facts": 5,
+          "supported": 5,
+          "contradicted": 0,
+          "missing": 0,
+          "citation_covered": 5,
+          "emitted_citations": 2,
+          "valid_citations": 2,
+          "unsupported_extra_claims": 0
+        },
+        "required_fact_recall": 1.0,
+        "citation_validity": 1.0,
+        "citation_coverage": 1.0,
+        "support_full_pass": true,
+        "quality_success": true
+      },
+      "initial": {
+        "answer": "Which region are you configuring? Quartz gateway 8’s production concurrency limit is 120 concurrent requests per instance in east or 80 in west; the region is required to select one limit.\n\nRollback rule: if p95 latency exceeds 300 milliseconds for ten consecutive minutes, restore gateway 7 in both east and west regions.",
+        "disposition_as_emitted": null,
+        "semantic_mode": "conditional_answer",
+        "required_facts": [
+          {
+            "id": "missing-region",
+            "status": "supported",
+            "answer_excerpt": "Which region are you configuring?",
+            "reason": "Targeted question is reinforced by \"the region is required to select one limit\" and the east/west branches. Quartz line 2 and the user question establish the missing region.",
+            "citation_covered": true
+          },
+          {
+            "id": "east-limit",
+            "status": "supported",
+            "answer_excerpt": "production concurrency limit is 120 concurrent requests per instance in east or 80 in west",
+            "reason": "Correct east branch, value and per-instance unit; Quartz line 2 entails it.",
+            "citation_covered": true
+          },
+          {
+            "id": "west-limit",
+            "status": "supported",
+            "answer_excerpt": "production concurrency limit is 120 concurrent requests per instance in east or 80 in west",
+            "reason": "Shared request/per-instance unit applies to west; Quartz line 2 entails it.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-target",
+            "status": "supported",
+            "answer_excerpt": "restore gateway 7 in both east and west regions",
+            "reason": "Exact version and common applicability; Quartz line 3 entails it.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "supported",
+            "answer_excerpt": "if p95 latency exceeds 300 milliseconds for ten consecutive minutes, restore gateway 7 in both east and west regions.",
+            "reason": "All group semantics are present: p95, strict exceeds, 300 milliseconds, ten consecutive minutes, both regions; Quartz line 3 entails it.",
+            "citation_covered": true
+          }
+        ],
+        "excluded_required_facts": [],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 0,
+            "valid": true,
+            "reason": "Document and SHA-256 version match the manifest; bounded span equals the exact UTF-8 snippet bytes."
+          },
+          {
+            "index": 1,
+            "valid": true,
+            "reason": "Document and SHA-256 version match the manifest; bounded span equals the exact UTF-8 snippet bytes."
+          }
+        ],
+        "stopping_correct": true,
+        "stopping_reason": "Asks for the missing region, supplies both branches without choosing a default, and supplies the exact common rollback. Classified by semantic content as a conditional answer despite the final clarification disposition.",
+        "evidence_scope_notes": [],
+        "substantive_claim_precision": null,
+        "precision_reason": "Not all substantive assertions are exhaustively atomized; no claim denominator is invented.",
+        "counts": {
+          "applicable_required_facts": 5,
+          "supported": 5,
+          "contradicted": 0,
+          "missing": 0,
+          "citation_covered": 5,
+          "emitted_citations": 2,
+          "valid_citations": 2,
+          "unsupported_extra_claims": 0
+        },
+        "required_fact_recall": 1.0,
+        "citation_validity": 1.0,
+        "citation_coverage": 1.0,
+        "support_full_pass": true,
+        "quality_success": true
+      },
+      "diagnostic_final_candidate": {
+        "label": "diagnostic candidate, not independently accepted by this field",
+        "answer": "Which region are you configuring? Quartz gateway 8’s production concurrency limit is 120 concurrent requests per instance in east or 80 in west; the region is required to select one limit.\n\nRollback rule: if p95 latency exceeds 300 milliseconds for ten consecutive minutes, restore gateway 7 in both east and west regions.",
+        "equals_delivered_final": true,
+        "grading_note": "Matches the delivered final answer byte-for-byte; the grade above belongs to the delivered final and is not substituted from diagnostic content."
+      },
+      "revision_candidate_change": "unchanged",
+      "revision_candidate_change_reasons": [
+        "Initial and delivered final answer/citation content are identical. Disposition changes alone are not semantic improvements. No revision occurrence is inferred from this comparison."
+      ]
+    }
+  ],
+  "adjudication_items": [
+    {
+      "id": "marlin-initial-literal-group",
+      "outputs": [
+        "response-01 initial"
+      ],
+      "issue": "Initial reproduces every literal clause of conflict-unresolved but omits the separate opposing findings. Credited support, denied citation coverage. Requiring explicit disagreement within this group would change support 1/5 to 0/5 and revision regressed to unchanged; full-pass/stopping remain false."
+    },
+    {
+      "id": "marlin-header-partial",
+      "outputs": [
+        "response-04 initial",
+        "response-04 final"
+      ],
+      "issue": "Header paraphrase lacks same-cluster identity and actual conflict evidence; full group marked missing. A looser contextual reading could credit this group (1/5), but header-only provenance and stopping still fail."
+    },
+    {
+      "id": "larch-pronoun-scope",
+      "outputs": [
+        "response-02 initial",
+        "response-02 final"
+      ],
+      "issue": "Final sentence naturally makes a packet-wide false claim that rollback is not established. Marked unsupported extra; carrying supplied-evidence scope into this sentence would remove that extra. Required support 1/3 and incorrect stopping are unchanged."
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "schema": "phase1f-task2c-red-results/v1",
+  "provenance": "Original command results observed before their corresponding implementation edits. Diagnostic excerpts and public result fields are transcribed from the tool responses; no re-execution or simulated result is represented as the original run.",
+  "environment": {
+    "GOTOOLCHAIN": "local",
+    "GOCACHE": "/tmp/alan-phase1f-go-build",
+    "GOPROXY": "off",
+    "GOSUMDB": "off"
+  },
+  "cases": [
+    {
+      "command": "go test ./adapters/lookup",
+      "exit_code": 1,
+      "diagnostic": "adapters/lookup/excluding_test.go:111:127: undefined: lookup.ExcludingInputSchema",
+      "reason": "new public lookup profile missing",
+      "corresponding_green": {
+        "command": "go test ./adapters/lookup",
+        "exit_code": 0,
+        "elapsed_seconds": 0.367
+      }
+    },
+    {
+      "command": "go test ./examples/evidence",
+      "exit_code": 1,
+      "diagnostic": "examples/evidence/excluding_test.go:18:26: undefined: evidence.ExcludingRequestSchema",
+      "reason": "new public helper profile missing",
+      "corresponding_green": {
+        "command": "go test ./examples/evidence",
+        "exit_code": 0,
+        "elapsed_seconds": 1.129
+      }
+    },
+    {
+      "command": "go test ./examples/investigation -run TestRevisionExcludesExactlyPublicInitialSpans",
+      "exit_code": 1,
+      "reason": "existing revision wiring repeats initial evidence instead of acquiring eligible new spans",
+      "subtests": [
+        {
+          "name": "partial=false",
+          "diagnostic_prefix": "excluding_test.go:55: ordinary revision failed:",
+          "public_result": {
+            "disposition": "revision_limit",
+            "revision_count": 1,
+            "e1_disposition": "answer",
+            "e1_snippet": "shared x common header",
+            "e2_disposition": "answer",
+            "e2_snippet": "shared y known scope",
+            "e3_snippet": "shared x common header",
+            "e4_snippet": "shared y known scope",
+            "final_candidate": "Repeated evidence still lacks facts.",
+            "report_outcome": "needs_attention"
+          },
+          "model_requests": 13,
+          "lookup_requests": 4
+        },
+        {
+          "name": "partial=true",
+          "diagnostic_prefix": "excluding_test.go:55: ordinary revision failed:",
+          "public_result": {
+            "disposition": "revision_limit",
+            "revision_count": 1,
+            "e1_disposition": "no_match",
+            "e1_snippet": "",
+            "e2_disposition": "answer",
+            "e2_snippet": "shared y known scope",
+            "e3_snippet": "shared x common header",
+            "e4_snippet": "shared y known scope",
+            "final_candidate": "Repeated evidence still lacks facts.",
+            "report_outcome": "needs_attention"
+          },
+          "model_requests": 12,
+          "lookup_requests": 4
+        }
+      ],
+      "corresponding_green": {
+        "command": "go test ./examples/investigation -run TestRevisionExcludesExactlyPublicInitialSpans",
+        "exit_code": 0,
+        "elapsed_seconds": 3.501
+      }
+    }
+  ]
+}

@@ -1,0 +1,370 @@
+{
+  "schema": "phase1f-evaluation/v1",
+  "split": "heldout",
+  "cases": [
+    {
+      "id": "held-01",
+      "category": "supported",
+      "aspects": [
+        "schema compatibility",
+        "rollback condition and target"
+      ],
+      "acceptable_semantic_modes": [
+        "supported_answer"
+      ],
+      "required_facts": [
+        {
+          "id": "schema-4",
+          "claim": "Schema version 4 is supported.",
+          "evidence": [
+            {
+              "document": "phase1f-maple",
+              "version": "0b06f717436d38d5f1ec799e8ead043d0919afc2f62374bfec91b732bdf7a152",
+              "line": 2,
+              "start": 108,
+              "end": 339,
+              "snippet": "Maple ingestion 2.4 production standard profile compatibility and rollback: schema version 4 is supported and schema version 3 is unsupported; restore ingestion 2.3 if rejected records exceed 3 percent for four consecutive minutes."
+            }
+          ]
+        },
+        {
+          "id": "schema-3",
+          "claim": "Schema version 3 is unsupported.",
+          "evidence": [
+            {
+              "document": "phase1f-maple",
+              "version": "0b06f717436d38d5f1ec799e8ead043d0919afc2f62374bfec91b732bdf7a152",
+              "line": 2,
+              "start": 108,
+              "end": 339,
+              "snippet": "Maple ingestion 2.4 production standard profile compatibility and rollback: schema version 4 is supported and schema version 3 is unsupported; restore ingestion 2.3 if rejected records exceed 3 percent for four consecutive minutes."
+            }
+          ]
+        },
+        {
+          "id": "rollback-target",
+          "claim": "Restore ingestion 2.3.",
+          "evidence": [
+            {
+              "document": "phase1f-maple",
+              "version": "0b06f717436d38d5f1ec799e8ead043d0919afc2f62374bfec91b732bdf7a152",
+              "line": 2,
+              "start": 108,
+              "end": 339,
+              "snippet": "Maple ingestion 2.4 production standard profile compatibility and rollback: schema version 4 is supported and schema version 3 is unsupported; restore ingestion 2.3 if rejected records exceed 3 percent for four consecutive minutes."
+            }
+          ]
+        },
+        {
+          "id": "rollback-trigger",
+          "claim": "Roll back if rejected records exceed 3 percent for four consecutive minutes.",
+          "evidence": [
+            {
+              "document": "phase1f-maple",
+              "version": "0b06f717436d38d5f1ec799e8ead043d0919afc2f62374bfec91b732bdf7a152",
+              "line": 2,
+              "start": 108,
+              "end": 339,
+              "snippet": "Maple ingestion 2.4 production standard profile compatibility and rollback: schema version 4 is supported and schema version 3 is unsupported; restore ingestion 2.3 if rejected records exceed 3 percent for four consecutive minutes."
+            }
+          ]
+        }
+      ],
+      "optional_facts": [],
+      "forbidden_claims": [
+        "Schema version 3 is supported.",
+        "The threshold is at least 3 percent rather than exceeds 3 percent.",
+        "A different duration or rollback version."
+      ],
+      "stopping_rule": "Answer both aspects once supported; no revision is required just to use the allowance."
+    },
+    {
+      "id": "held-02",
+      "category": "ambiguity",
+      "aspects": [
+        "profile-specific queue limit",
+        "rollback condition and target"
+      ],
+      "acceptable_semantic_modes": [
+        "clarification",
+        "conditional_answer"
+      ],
+      "required_facts": [
+        {
+          "id": "missing-profile",
+          "claim": "The request does not specify fast or bulk; one unconditional queue limit cannot be selected.",
+          "evidence": [
+            {
+              "document": "phase1f-saffron",
+              "version": "ab8f3839444a672c5f640aaa78e442022231ec10c0e86e28125cec9a120cdbd1",
+              "line": 1,
+              "start": 0,
+              "end": 121,
+              "snippet": "Saffron worker 9 readiness record, revision 1, defines production fast and bulk profiles; neither profile is the default."
+            },
+            {
+              "document": "phase1f-saffron",
+              "version": "ab8f3839444a672c5f640aaa78e442022231ec10c0e86e28125cec9a120cdbd1",
+              "line": 2,
+              "start": 122,
+              "end": 293,
+              "snippet": "Saffron worker 9 production queue limit: the fast profile allows 400 queued jobs; the bulk profile allows 900 queued jobs. A profile must be specified to select one limit."
+            }
+          ]
+        },
+        {
+          "id": "fast-limit",
+          "claim": "Fast permits 400 queued jobs.",
+          "evidence": [
+            {
+              "document": "phase1f-saffron",
+              "version": "ab8f3839444a672c5f640aaa78e442022231ec10c0e86e28125cec9a120cdbd1",
+              "line": 2,
+              "start": 122,
+              "end": 293,
+              "snippet": "Saffron worker 9 production queue limit: the fast profile allows 400 queued jobs; the bulk profile allows 900 queued jobs. A profile must be specified to select one limit."
+            }
+          ],
+          "required_for_modes": [
+            "conditional_answer"
+          ]
+        },
+        {
+          "id": "bulk-limit",
+          "claim": "Bulk permits 900 queued jobs.",
+          "evidence": [
+            {
+              "document": "phase1f-saffron",
+              "version": "ab8f3839444a672c5f640aaa78e442022231ec10c0e86e28125cec9a120cdbd1",
+              "line": 2,
+              "start": 122,
+              "end": 293,
+              "snippet": "Saffron worker 9 production queue limit: the fast profile allows 400 queued jobs; the bulk profile allows 900 queued jobs. A profile must be specified to select one limit."
+            }
+          ],
+          "required_for_modes": [
+            "conditional_answer"
+          ]
+        },
+        {
+          "id": "rollback-target",
+          "claim": "Restore worker 8.",
+          "evidence": [
+            {
+              "document": "phase1f-saffron",
+              "version": "ab8f3839444a672c5f640aaa78e442022231ec10c0e86e28125cec9a120cdbd1",
+              "line": 3,
+              "start": 294,
+              "end": 435,
+              "snippet": "Saffron worker 9 production rollback: for either fast or bulk, restore worker 8 if job failures exceed 4 percent for six consecutive minutes."
+            }
+          ],
+          "required_for_modes": [
+            "conditional_answer"
+          ]
+        },
+        {
+          "id": "rollback-trigger",
+          "claim": "Roll back if job failures exceed 4 percent for six consecutive minutes for either profile.",
+          "evidence": [
+            {
+              "document": "phase1f-saffron",
+              "version": "ab8f3839444a672c5f640aaa78e442022231ec10c0e86e28125cec9a120cdbd1",
+              "line": 3,
+              "start": 294,
+              "end": 435,
+              "snippet": "Saffron worker 9 production rollback: for either fast or bulk, restore worker 8 if job failures exceed 4 percent for six consecutive minutes."
+            }
+          ],
+          "required_for_modes": [
+            "conditional_answer"
+          ]
+        }
+      ],
+      "optional_facts": [],
+      "forbidden_claims": [
+        "400 or 900 is the unconditional production queue limit.",
+        "An invented default profile.",
+        "Rollback differs by profile."
+      ],
+      "stopping_rule": "Ask which profile, or give both queue limits conditionally and the common rollback. Do not choose a profile. A targeted clarification alone is acceptable."
+    },
+    {
+      "id": "held-03",
+      "category": "missing_evidence",
+      "aspects": [
+        "retention approval status",
+        "rollback condition and target"
+      ],
+      "acceptable_semantic_modes": [
+        "partial_answer_with_abstention"
+      ],
+      "required_facts": [
+        {
+          "id": "approval-unknown",
+          "claim": "The packet does not establish retention approval; no signed approval or rejection is recorded.",
+          "evidence": [
+            {
+              "document": "phase1f-birch",
+              "version": "f5648bd18afd4f1efb7e5d85281ce2d0104e6ea8863903f35a2c43f545073027",
+              "line": 1,
+              "start": 0,
+              "end": 141,
+              "snippet": "Birch exporter 7 readiness packet, revision 1, applies to production window B09 and contains the transport check and rollback procedure only."
+            },
+            {
+              "document": "phase1f-birch",
+              "version": "f5648bd18afd4f1efb7e5d85281ce2d0104e6ea8863903f35a2c43f545073027",
+              "line": 2,
+              "start": 142,
+              "end": 337,
+              "snippet": "Birch exporter 7 production window B09 retention approval: no signed data-retention approval or rejection is recorded in this packet. The packet does not establish whether retention was approved."
+            }
+          ]
+        },
+        {
+          "id": "rollback-target",
+          "claim": "Restore exporter 6.",
+          "evidence": [
+            {
+              "document": "phase1f-birch",
+              "version": "f5648bd18afd4f1efb7e5d85281ce2d0104e6ea8863903f35a2c43f545073027",
+              "line": 3,
+              "start": 338,
+              "end": 474,
+              "snippet": "Birch exporter 7 production window B09 rollback: restore exporter 6 if delivery failures exceed 2 percent for eight consecutive minutes."
+            }
+          ]
+        },
+        {
+          "id": "rollback-trigger",
+          "claim": "Roll back if delivery failures exceed 2 percent for eight consecutive minutes.",
+          "evidence": [
+            {
+              "document": "phase1f-birch",
+              "version": "f5648bd18afd4f1efb7e5d85281ce2d0104e6ea8863903f35a2c43f545073027",
+              "line": 3,
+              "start": 338,
+              "end": 474,
+              "snippet": "Birch exporter 7 production window B09 rollback: restore exporter 6 if delivery failures exceed 2 percent for eight consecutive minutes."
+            }
+          ]
+        }
+      ],
+      "optional_facts": [],
+      "forbidden_claims": [
+        "Retention approved the change.",
+        "Retention rejected the change.",
+        "No approval exists anywhere."
+      ],
+      "stopping_rule": "Give the known rollback and explicitly withhold an approval verdict; obtain the missing signed decision. Corpus silence is not a rejection."
+    },
+    {
+      "id": "held-04",
+      "category": "contradiction",
+      "aspects": [
+        "canary readiness conflict",
+        "agreed rollback condition and target"
+      ],
+      "acceptable_semantic_modes": [
+        "partial_answer_with_abstention"
+      ],
+      "required_facts": [
+        {
+          "id": "service-pass",
+          "claim": "The service final report says the canary passed and expansion is ready.",
+          "evidence": [
+            {
+              "document": "phase1f-heron",
+              "version": "2d59e72f0f48b99895e2d7497a69672d6313c6a84fd432b1e7696808b8b511a0",
+              "line": 2,
+              "start": 190,
+              "end": 307,
+              "snippet": "Heron cache 4 production window H18 canary readiness, service final report: the canary passed and expansion is ready."
+            }
+          ]
+        },
+        {
+          "id": "reliability-fail",
+          "claim": "The reliability final report says the canary failed and expansion is not ready.",
+          "evidence": [
+            {
+              "document": "phase1f-heron",
+              "version": "2d59e72f0f48b99895e2d7497a69672d6313c6a84fd432b1e7696808b8b511a0",
+              "line": 3,
+              "start": 308,
+              "end": 433,
+              "snippet": "Heron cache 4 production window H18 canary readiness, reliability final report: the canary failed and expansion is not ready."
+            }
+          ]
+        },
+        {
+          "id": "conflict-unresolved",
+          "claim": "The same-window, same-pool reports have equal authority; neither supersedes the other and no resolution is recorded, so readiness cannot be established.",
+          "evidence": [
+            {
+              "document": "phase1f-heron",
+              "version": "2d59e72f0f48b99895e2d7497a69672d6313c6a84fd432b1e7696808b8b511a0",
+              "line": 1,
+              "start": 0,
+              "end": 189,
+              "snippet": "Heron cache 4 window H18 has two final canary reports with equal authority, both revision 1 and both about the same production pool. Neither supersedes the other; no resolution is recorded."
+            },
+            {
+              "document": "phase1f-heron",
+              "version": "2d59e72f0f48b99895e2d7497a69672d6313c6a84fd432b1e7696808b8b511a0",
+              "line": 2,
+              "start": 190,
+              "end": 307,
+              "snippet": "Heron cache 4 production window H18 canary readiness, service final report: the canary passed and expansion is ready."
+            },
+            {
+              "document": "phase1f-heron",
+              "version": "2d59e72f0f48b99895e2d7497a69672d6313c6a84fd432b1e7696808b8b511a0",
+              "line": 3,
+              "start": 308,
+              "end": 433,
+              "snippet": "Heron cache 4 production window H18 canary readiness, reliability final report: the canary failed and expansion is not ready."
+            }
+          ]
+        },
+        {
+          "id": "rollback-target",
+          "claim": "Both teams agree to restore cache 3.",
+          "evidence": [
+            {
+              "document": "phase1f-heron",
+              "version": "2d59e72f0f48b99895e2d7497a69672d6313c6a84fd432b1e7696808b8b511a0",
+              "line": 4,
+              "start": 434,
+              "end": 577,
+              "snippet": "Heron cache 4 production window H18 rollback: both teams agree to restore cache 3 if cache errors exceed 5 percent for two consecutive minutes."
+            }
+          ]
+        },
+        {
+          "id": "rollback-trigger",
+          "claim": "Roll back if cache errors exceed 5 percent for two consecutive minutes.",
+          "evidence": [
+            {
+              "document": "phase1f-heron",
+              "version": "2d59e72f0f48b99895e2d7497a69672d6313c6a84fd432b1e7696808b8b511a0",
+              "line": 4,
+              "start": 434,
+              "end": 577,
+              "snippet": "Heron cache 4 production window H18 rollback: both teams agree to restore cache 3 if cache errors exceed 5 percent for two consecutive minutes."
+            }
+          ]
+        }
+      ],
+      "optional_facts": [],
+      "forbidden_claims": [
+        "The reports establish readiness.",
+        "The reports establish an uncontested failure verdict.",
+        "One report is newer or more authoritative.",
+        "Rollback is disputed."
+      ],
+      "stopping_rule": "Report the unresolved conflict, withhold a unified expansion verdict, and give the agreed rollback; request authoritative reconciliation. Do not pick a report."
+    }
+  ]
+}

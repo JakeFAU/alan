@@ -1,0 +1,28 @@
+# Independent revision 3 adjudication
+
+Every original required-fact classification and stopping grade is upheld. Only response-08 passes delivered quality. Response-01 improves semantically but remains incomplete under the strict grouped gold and reconciliation stopping rule; response-02/03 delivered answers remain exactly empty. No application policy or result-dependent gold change is made.
+
+| Opaque ID | Case | Initial support | Delivered support | Covered supported facts | Strict stopping | Initial to delivered |
+|---|---|---:|---:|---:|---|---|
+| response-01 | dev-04 | 3/5 | 4/5 | 4/4 | fail | improved |
+| response-02 | dev-03 | 1/3 | 0/3 | unavailable | fail | regressed |
+| response-03 | dev-01 | 2/4 | 0/4 | unavailable | fail | regressed |
+| response-04 | dev-04 | 1/5 | 1/5 | 1/1 | fail | unchanged |
+| response-05 | dev-01 | 2/4 | 2/4 | 2/2 | fail | unchanged |
+| response-06 | dev-03 | 1/3 | 1/3 | 1/1 | fail | unchanged |
+| response-07 | dev-02 | 3/5 | 3/5 | 3/3 | fail | unchanged |
+| response-08 | dev-02 | 5/5 | 5/5 | 5/5 | pass | unchanged |
+
+These are heterogeneous frozen fact groups, without pooled recall or an invented uniform atomic weight. All 68 initial/final fact rows were independently checked, as were the diagnostic fact rows. Response-04 correctly attributes operations readiness but omits database failure, authority context and both rollback groups. Response-05 answers both kernels but omits rollback. Response-06 preserves unknown approval but omits rollback. Response-07 provides a conditional answer, so both rollback groups apply; it is not clarification alone. Response-08 has both branches, region requirement and exact common rollback. Numeric exceeds remains strict and all credited rollback versions/durations/units match gold. No required fact is contradicted; omitted scoped facts remain missing.
+
+For response-01, the full conflict group requires equal authority, same window/cluster, non-supersession and unresolved readiness. The answer expresses opposed reports and an unresolved conflict but omits authority/non-supersession context. Marlin line 1 [0,199) supplies this context and is uncited. Duplicate database citations add no coverage. The stopping rule expressly requests authoritative reconciliation; no request appears. Strict group missing and stopping false stand. A relaxed core-semantic stopping reading would pass practical withholding/rollback; relaxed full-group support would leave only 4/5 required facts citation-covered. Neither changes strict quality failure. Its 11 supported substantive claims and 11/11 precision do not supply omitted gold semantics.
+
+For response-02 diagnostic text, index 4 snapshot and query failures above 1% for three consecutive minutes are explicit: all three required groups retain support and semantic stopping remains correct. The additional version/build sentence is ambiguous between an extra snapshot identifier and denial of the already named version. Precision stays null and semantic full-support stays false conservatively. Under the extra-identifier interpretation precision would be 10/10 and full-support true; under version denial it would be 9/10 and false. These are conditional analyses only. The delivered final remains empty, 0/3, stopping false.
+
+Broad assertions limited to supplied evidence cannot establish absence from the complete corpus. They are retained as unverifiable scoped assertions with null precision, while independently known omitted facts lose completeness. Response-04 has a narrower plausible reading: It refers to the cited operations statement, which lacks rollback, allowing 4/4 precision if that exact scope is adopted. Conservatively the original null remains; support/stopping are unaffected. No unsupported corpus-absence claim is fabricated from scoped language.
+
+One enumeration refinement is recorded in grades-adjudicated.json: response-02 initial bundled packet revision and window into one claim. These are split, changing 10 enumerated/8 supported to 11/9; two unverifiable claims still make precision null. Every original count was arithmetically consistent with its listed assertions. Diagnostic response-08 wording is clarified to refer to corpus support rather than to associated diagnostic citations. No fact, stopping, revision classification, or delivered precision changes.
+
+Independent byte checks verified all eight corpus hashes/sizes/content-SHA versions, all 25 line spans, and every one of 30 emitted initial/final citation instances. All answer strings and claim/fact excerpts match exact packet text; original fact/count/metric arithmetic matches. All emitted citation bytes are valid, including those attached to empty answers. Validity does not create answer content or complete conflict entailment. Diagnostic strings have no explicit citation association, including when identical to delivered text: their citation validity/coverage and quality success remain unavailable. Response-03 diagnostic semantics are complete (4/4, eight supported assertions), without promoting them into delivery.
+
+Original grades-blind.json and grading-report.md are preserved. Exact hashes of the original grades/report, brief, protocol/rubric, development questions/gold, manifest, blind packet and corpus bytes are recorded in grades-adjudicated.json. Opaque labels provide practical blinding only; output shape can reveal system family. No mapping, normalized output, application implementation/reviewer verdicts, provider record, older grades, heldout questions/gold, credentials, network, subagents or commits were used. This adjudicates the frozen development evaluation only.

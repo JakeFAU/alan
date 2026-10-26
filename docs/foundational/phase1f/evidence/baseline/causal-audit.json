@@ -1,0 +1,474 @@
+{
+  "default": {
+    "DurableProcessRecords": 85,
+    "SIGKILLRecords": 20,
+    "RaceChildrenRecordCount": 93,
+    "RaceChildrenValue": false,
+    "EvidenceBuildCommands": [],
+    "AsyncCausalCases": [
+      {
+        "Test": "TestAutomaticAsyncHeldProgressAndConcurrentCrash/idempotent/settle",
+        "Profile": "idempotent",
+        "Cut": "settle",
+        "OrderedEvents": [
+          "endpoint-held",
+          "peer-committed",
+          "peer-delivered",
+          "held-live",
+          "response-released",
+          "result-settled"
+        ],
+        "Contacts": 1,
+        "Applications": 1,
+        "Total": 5,
+        "ExecutorBinarySHA256": "3a2506c75ab784f7d1f83ee6ecabab9000b007e1d4b80cc45f5e235a0143a690",
+        "ResourceBinarySHA256": "6aee083bb67c111f3d0b36c52a8092cd3c6afe9507da30ec64231ee534b3f4e7",
+        "RawRecordIndex": 78
+      },
+      {
+        "Test": "TestAutomaticAsyncHeldProgressAndConcurrentCrash/idempotent/held-kill",
+        "Profile": "idempotent",
+        "Cut": "held-kill",
+        "OrderedEvents": [
+          "endpoint-held",
+          "peer-committed",
+          "peer-delivered",
+          "held-live"
+        ],
+        "Contacts": 2,
+        "Applications": 1,
+        "Total": 5,
+        "ExecutorBinarySHA256": "3a2506c75ab784f7d1f83ee6ecabab9000b007e1d4b80cc45f5e235a0143a690",
+        "ResourceBinarySHA256": "6aee083bb67c111f3d0b36c52a8092cd3c6afe9507da30ec64231ee534b3f4e7",
+        "RawRecordIndex": 84
+      },
+      {
+        "Test": "TestAutomaticAsyncHeldProgressAndConcurrentCrash/idempotent/received-kill",
+        "Profile": "idempotent",
+        "Cut": "received-kill",
+        "OrderedEvents": [
+          "endpoint-held",
+          "peer-committed",
+          "peer-delivered",
+          "held-live"
+        ],
+        "Contacts": 2,
+        "Applications": 1,
+        "Total": 5,
+        "ExecutorBinarySHA256": "3a2506c75ab784f7d1f83ee6ecabab9000b007e1d4b80cc45f5e235a0143a690",
+        "ResourceBinarySHA256": "6aee083bb67c111f3d0b36c52a8092cd3c6afe9507da30ec64231ee534b3f4e7",
+        "RawRecordIndex": 93
+      },
+      {
+        "Test": "TestAutomaticAsyncHeldProgressAndConcurrentCrash/non-idempotent/settle",
+        "Profile": "non-idempotent",
+        "Cut": "settle",
+        "OrderedEvents": [
+          "endpoint-held",
+          "peer-committed",
+          "peer-delivered",
+          "held-live",
+          "response-released",
+          "result-settled"
+        ],
+        "Contacts": 1,
+        "Applications": 1,
+        "Total": 5,
+        "ExecutorBinarySHA256": "3a2506c75ab784f7d1f83ee6ecabab9000b007e1d4b80cc45f5e235a0143a690",
+        "ResourceBinarySHA256": "6aee083bb67c111f3d0b36c52a8092cd3c6afe9507da30ec64231ee534b3f4e7",
+        "RawRecordIndex": 96
+      },
+      {
+        "Test": "TestAutomaticAsyncHeldProgressAndConcurrentCrash/non-idempotent/held-kill",
+        "Profile": "non-idempotent",
+        "Cut": "held-kill",
+        "OrderedEvents": [
+          "endpoint-held",
+          "peer-committed",
+          "peer-delivered",
+          "held-live"
+        ],
+        "Contacts": 1,
+        "Applications": 1,
+        "Total": 5,
+        "ExecutorBinarySHA256": "3a2506c75ab784f7d1f83ee6ecabab9000b007e1d4b80cc45f5e235a0143a690",
+        "ResourceBinarySHA256": "6aee083bb67c111f3d0b36c52a8092cd3c6afe9507da30ec64231ee534b3f4e7",
+        "RawRecordIndex": 102
+      },
+      {
+        "Test": "TestAutomaticAsyncHeldProgressAndConcurrentCrash/non-idempotent/received-kill",
+        "Profile": "non-idempotent",
+        "Cut": "received-kill",
+        "OrderedEvents": [
+          "endpoint-held",
+          "peer-committed",
+          "peer-delivered",
+          "held-live"
+        ],
+        "Contacts": 1,
+        "Applications": 1,
+        "Total": 5,
+        "ExecutorBinarySHA256": "3a2506c75ab784f7d1f83ee6ecabab9000b007e1d4b80cc45f5e235a0143a690",
+        "ResourceBinarySHA256": "6aee083bb67c111f3d0b36c52a8092cd3c6afe9507da30ec64231ee534b3f4e7",
+        "RawRecordIndex": 109
+      }
+    ],
+    "RetainedSubstitutionControls": []
+  },
+  "normal": {
+    "DurableProcessRecords": 85,
+    "SIGKILLRecords": 20,
+    "RaceChildrenRecordCount": 128,
+    "RaceChildrenValue": false,
+    "EvidenceBuildCommands": [
+      {
+        "binary_sha256": "6be5d88df2e31ac0b300ec91cbb3fd0259a7b1e423c12a980d3250efd2f2aa9b",
+        "command": [
+          "go",
+          "build",
+          "-buildvcs=false",
+          "-o",
+          "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1e-process-1578544886/alan-evidence",
+          "./cmd/alan-evidence"
+        ],
+        "race_children": false,
+        "type": "build"
+      },
+      {
+        "binary_sha256": "0f074c7b64009fea526977cb2b07802a19c65290826ddb5834648a639a9006f3",
+        "command": [
+          "go",
+          "test",
+          "-c",
+          "-tags",
+          "integration",
+          "-buildvcs=false",
+          "-o",
+          "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1e-process-1578544886/provider",
+          "./internal/evidencetest"
+        ],
+        "race_children": false,
+        "type": "build"
+      }
+    ],
+    "AsyncCausalCases": [
+      {
+        "Test": "TestAutomaticAsyncHeldProgressAndConcurrentCrash/idempotent/settle",
+        "Profile": "idempotent",
+        "Cut": "settle",
+        "OrderedEvents": [
+          "endpoint-held",
+          "peer-committed",
+          "peer-delivered",
+          "held-live",
+          "response-released",
+          "result-settled"
+        ],
+        "Contacts": 1,
+        "Applications": 1,
+        "Total": 5,
+        "ExecutorBinarySHA256": "3a2506c75ab784f7d1f83ee6ecabab9000b007e1d4b80cc45f5e235a0143a690",
+        "ResourceBinarySHA256": "6aee083bb67c111f3d0b36c52a8092cd3c6afe9507da30ec64231ee534b3f4e7",
+        "RawRecordIndex": 76
+      },
+      {
+        "Test": "TestAutomaticAsyncHeldProgressAndConcurrentCrash/idempotent/held-kill",
+        "Profile": "idempotent",
+        "Cut": "held-kill",
+        "OrderedEvents": [
+          "endpoint-held",
+          "peer-committed",
+          "peer-delivered",
+          "held-live"
+        ],
+        "Contacts": 2,
+        "Applications": 1,
+        "Total": 5,
+        "ExecutorBinarySHA256": "3a2506c75ab784f7d1f83ee6ecabab9000b007e1d4b80cc45f5e235a0143a690",
+        "ResourceBinarySHA256": "6aee083bb67c111f3d0b36c52a8092cd3c6afe9507da30ec64231ee534b3f4e7",
+        "RawRecordIndex": 84
+      },
+      {
+        "Test": "TestAutomaticAsyncHeldProgressAndConcurrentCrash/idempotent/received-kill",
+        "Profile": "idempotent",
+        "Cut": "received-kill",
+        "OrderedEvents": [
+          "endpoint-held",
+          "peer-committed",
+          "peer-delivered",
+          "held-live"
+        ],
+        "Contacts": 2,
+        "Applications": 1,
+        "Total": 5,
+        "ExecutorBinarySHA256": "3a2506c75ab784f7d1f83ee6ecabab9000b007e1d4b80cc45f5e235a0143a690",
+        "ResourceBinarySHA256": "6aee083bb67c111f3d0b36c52a8092cd3c6afe9507da30ec64231ee534b3f4e7",
+        "RawRecordIndex": 91
+      },
+      {
+        "Test": "TestAutomaticAsyncHeldProgressAndConcurrentCrash/non-idempotent/settle",
+        "Profile": "non-idempotent",
+        "Cut": "settle",
+        "OrderedEvents": [
+          "endpoint-held",
+          "peer-committed",
+          "peer-delivered",
+          "held-live",
+          "response-released",
+          "result-settled"
+        ],
+        "Contacts": 1,
+        "Applications": 1,
+        "Total": 5,
+        "ExecutorBinarySHA256": "3a2506c75ab784f7d1f83ee6ecabab9000b007e1d4b80cc45f5e235a0143a690",
+        "ResourceBinarySHA256": "6aee083bb67c111f3d0b36c52a8092cd3c6afe9507da30ec64231ee534b3f4e7",
+        "RawRecordIndex": 97
+      },
+      {
+        "Test": "TestAutomaticAsyncHeldProgressAndConcurrentCrash/non-idempotent/held-kill",
+        "Profile": "non-idempotent",
+        "Cut": "held-kill",
+        "OrderedEvents": [
+          "endpoint-held",
+          "peer-committed",
+          "peer-delivered",
+          "held-live"
+        ],
+        "Contacts": 1,
+        "Applications": 1,
+        "Total": 5,
+        "ExecutorBinarySHA256": "3a2506c75ab784f7d1f83ee6ecabab9000b007e1d4b80cc45f5e235a0143a690",
+        "ResourceBinarySHA256": "6aee083bb67c111f3d0b36c52a8092cd3c6afe9507da30ec64231ee534b3f4e7",
+        "RawRecordIndex": 107
+      },
+      {
+        "Test": "TestAutomaticAsyncHeldProgressAndConcurrentCrash/non-idempotent/received-kill",
+        "Profile": "non-idempotent",
+        "Cut": "received-kill",
+        "OrderedEvents": [
+          "endpoint-held",
+          "peer-committed",
+          "peer-delivered",
+          "held-live"
+        ],
+        "Contacts": 1,
+        "Applications": 1,
+        "Total": 5,
+        "ExecutorBinarySHA256": "3a2506c75ab784f7d1f83ee6ecabab9000b007e1d4b80cc45f5e235a0143a690",
+        "ResourceBinarySHA256": "6aee083bb67c111f3d0b36c52a8092cd3c6afe9507da30ec64231ee534b3f4e7",
+        "RawRecordIndex": 115
+      }
+    ],
+    "RetainedSubstitutionControls": [
+      {
+        "type": "cancellation-durable-identity-control",
+        "case": "original",
+        "rejected": false,
+        "result": "<nil>"
+      },
+      {
+        "type": "cancellation-durable-identity-control",
+        "case": "epoch",
+        "rejected": true,
+        "result": "boundary not bound to durable source authority"
+      },
+      {
+        "type": "cancellation-durable-identity-control",
+        "case": "sequence",
+        "rejected": true,
+        "result": "boundary sequence 24 differs from retained adapter intent sequence 15"
+      },
+      {
+        "type": "durable-sequence-control",
+        "case": "original",
+        "rejected": false,
+        "result": "<nil>"
+      },
+      {
+        "type": "durable-sequence-control",
+        "case": "substituted",
+        "rejected": true,
+        "result": "boundary sequence 16 differs from retained adapter intent sequence 15"
+      }
+    ]
+  },
+  "race": {
+    "DurableProcessRecords": 85,
+    "SIGKILLRecords": 20,
+    "RaceChildrenRecordCount": 128,
+    "RaceChildrenValue": true,
+    "EvidenceBuildCommands": [
+      {
+        "binary_sha256": "02e5145058e9b401027bab3de2d41f64f22a8b419263760f50cd1d033d7783ea",
+        "command": [
+          "go",
+          "build",
+          "-buildvcs=false",
+          "-o",
+          "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1e-process-229036665/alan-evidence",
+          "-race",
+          "./cmd/alan-evidence"
+        ],
+        "race_children": true,
+        "type": "build"
+      },
+      {
+        "binary_sha256": "40cbf6c6fad7fcb6cc2dd3047ff5bdc2753f50bef7348b8849d77d85f514c682",
+        "command": [
+          "go",
+          "test",
+          "-c",
+          "-tags",
+          "integration",
+          "-buildvcs=false",
+          "-o",
+          "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1e-process-229036665/provider",
+          "-race",
+          "./internal/evidencetest"
+        ],
+        "race_children": true,
+        "type": "build"
+      }
+    ],
+    "AsyncCausalCases": [
+      {
+        "Test": "TestAutomaticAsyncHeldProgressAndConcurrentCrash/idempotent/settle",
+        "Profile": "idempotent",
+        "Cut": "settle",
+        "OrderedEvents": [
+          "endpoint-held",
+          "peer-committed",
+          "peer-delivered",
+          "held-live",
+          "response-released",
+          "result-settled"
+        ],
+        "Contacts": 1,
+        "Applications": 1,
+        "Total": 5,
+        "ExecutorBinarySHA256": "4b235f1d631025aa9b47c29552c431aa540092e6f9704bc83caaf56c5184b8e8",
+        "ResourceBinarySHA256": "24aaf098daeed03fc265864d27558143f16aa2464f25d4335abebbab70e8f538",
+        "RawRecordIndex": 41
+      },
+      {
+        "Test": "TestAutomaticAsyncHeldProgressAndConcurrentCrash/idempotent/held-kill",
+        "Profile": "idempotent",
+        "Cut": "held-kill",
+        "OrderedEvents": [
+          "endpoint-held",
+          "peer-committed",
+          "peer-delivered",
+          "held-live"
+        ],
+        "Contacts": 2,
+        "Applications": 1,
+        "Total": 5,
+        "ExecutorBinarySHA256": "4b235f1d631025aa9b47c29552c431aa540092e6f9704bc83caaf56c5184b8e8",
+        "ResourceBinarySHA256": "24aaf098daeed03fc265864d27558143f16aa2464f25d4335abebbab70e8f538",
+        "RawRecordIndex": 79
+      },
+      {
+        "Test": "TestAutomaticAsyncHeldProgressAndConcurrentCrash/idempotent/received-kill",
+        "Profile": "idempotent",
+        "Cut": "received-kill",
+        "OrderedEvents": [
+          "endpoint-held",
+          "peer-committed",
+          "peer-delivered",
+          "held-live"
+        ],
+        "Contacts": 2,
+        "Applications": 1,
+        "Total": 5,
+        "ExecutorBinarySHA256": "4b235f1d631025aa9b47c29552c431aa540092e6f9704bc83caaf56c5184b8e8",
+        "ResourceBinarySHA256": "24aaf098daeed03fc265864d27558143f16aa2464f25d4335abebbab70e8f538",
+        "RawRecordIndex": 101
+      },
+      {
+        "Test": "TestAutomaticAsyncHeldProgressAndConcurrentCrash/non-idempotent/settle",
+        "Profile": "non-idempotent",
+        "Cut": "settle",
+        "OrderedEvents": [
+          "endpoint-held",
+          "peer-committed",
+          "peer-delivered",
+          "held-live",
+          "response-released",
+          "result-settled"
+        ],
+        "Contacts": 1,
+        "Applications": 1,
+        "Total": 5,
+        "ExecutorBinarySHA256": "4b235f1d631025aa9b47c29552c431aa540092e6f9704bc83caaf56c5184b8e8",
+        "ResourceBinarySHA256": "24aaf098daeed03fc265864d27558143f16aa2464f25d4335abebbab70e8f538",
+        "RawRecordIndex": 127
+      },
+      {
+        "Test": "TestAutomaticAsyncHeldProgressAndConcurrentCrash/non-idempotent/held-kill",
+        "Profile": "non-idempotent",
+        "Cut": "held-kill",
+        "OrderedEvents": [
+          "endpoint-held",
+          "peer-committed",
+          "peer-delivered",
+          "held-live"
+        ],
+        "Contacts": 1,
+        "Applications": 1,
+        "Total": 5,
+        "ExecutorBinarySHA256": "4b235f1d631025aa9b47c29552c431aa540092e6f9704bc83caaf56c5184b8e8",
+        "ResourceBinarySHA256": "24aaf098daeed03fc265864d27558143f16aa2464f25d4335abebbab70e8f538",
+        "RawRecordIndex": 157
+      },
+      {
+        "Test": "TestAutomaticAsyncHeldProgressAndConcurrentCrash/non-idempotent/received-kill",
+        "Profile": "non-idempotent",
+        "Cut": "received-kill",
+        "OrderedEvents": [
+          "endpoint-held",
+          "peer-committed",
+          "peer-delivered",
+          "held-live"
+        ],
+        "Contacts": 1,
+        "Applications": 1,
+        "Total": 5,
+        "ExecutorBinarySHA256": "4b235f1d631025aa9b47c29552c431aa540092e6f9704bc83caaf56c5184b8e8",
+        "ResourceBinarySHA256": "24aaf098daeed03fc265864d27558143f16aa2464f25d4335abebbab70e8f538",
+        "RawRecordIndex": 177
+      }
+    ],
+    "RetainedSubstitutionControls": [
+      {
+        "type": "cancellation-durable-identity-control",
+        "case": "original",
+        "rejected": false,
+        "result": "<nil>"
+      },
+      {
+        "type": "cancellation-durable-identity-control",
+        "case": "epoch",
+        "rejected": true,
+        "result": "boundary not bound to durable source authority"
+      },
+      {
+        "type": "cancellation-durable-identity-control",
+        "case": "sequence",
+        "rejected": true,
+        "result": "boundary sequence 24 differs from retained adapter intent sequence 15"
+      },
+      {
+        "type": "durable-sequence-control",
+        "case": "original",
+        "rejected": false,
+        "result": "<nil>"
+      },
+      {
+        "type": "durable-sequence-control",
+        "case": "substituted",
+        "rejected": true,
+        "result": "boundary sequence 16 differs from retained adapter intent sequence 15"
+      }
+    ]
+  }
+}

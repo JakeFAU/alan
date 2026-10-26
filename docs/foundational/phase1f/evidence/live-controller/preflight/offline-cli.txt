@@ -1,0 +1,5 @@
+#!/bin/sh
+if [ "$1" = run ]; then
+ exec /usr/bin/sandbox-exec -p '(version 1) (allow default) (deny network*)' /tmp/alan-phase1f-investigate "$@"
+fi
+exec /tmp/alan-phase1f-investigate "$@"

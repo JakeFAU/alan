@@ -1,0 +1,13 @@
+=== RUN   TestNewTransitionCounterexamples
+=== RUN   TestNewTransitionCounterexamples/initial-clarification
+    probe_test.go:53: scenario=initial-clarification disposition=clarification models=6 lookups=2 revisions=0 initial_review="" final_review="" outer=needs_attention
+=== RUN   TestNewTransitionCounterexamples/revision-abstention
+    probe_test.go:53: scenario=revision-abstention disposition=insufficient_evidence models=12 lookups=4 revisions=1 initial_review="revise" final_review="revise" outer=needs_attention
+=== RUN   TestNewTransitionCounterexamples/second-review-invalid
+    probe_test.go:53: scenario=second-review-invalid disposition=invalid_result models=13 lookups=4 revisions=1 initial_review="revise" final_review="invalid_result" outer=needs_attention
+--- PASS: TestNewTransitionCounterexamples (3.65s)
+    --- PASS: TestNewTransitionCounterexamples/initial-clarification (0.86s)
+    --- PASS: TestNewTransitionCounterexamples/revision-abstention (1.37s)
+    --- PASS: TestNewTransitionCounterexamples/second-review-invalid (1.41s)
+PASS
+ok  	external.example/reviewprobe	3.897s

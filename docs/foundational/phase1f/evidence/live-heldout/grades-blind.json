@@ -1,0 +1,1569 @@
+{
+  "schema": "phase1f-independent-heldout-grades/v1",
+  "grader": {
+    "identity": "independent opaque-output grader /root/phase1f_heldout_grader",
+    "method": "Direct semantic comparison to exact frozen corpus and heldout gold; separate deterministic byte validation.",
+    "independence": "No system mapping, application source/review verdicts, raw/normalized provider records, older grades, network, credentials, subagents, or commits read/used.",
+    "blinding_limit": "Opaque IDs conceal labels practically; answer shape, revisions and citation structure can reveal likely system differences. No identity guesses are recorded."
+  },
+  "source_hashes": {
+    "docs/foundational/phase1f/evaluation/protocol.md": "bcc8d0373e0c336517596957f53053c14171f77782919e5873f5f3411aa875c9",
+    "docs/foundational/phase1f/evaluation/rubric.json": "295a4bccfa3d25929007caca5a5601867a6d90444d62504045f944d304f56a0b",
+    "docs/foundational/phase1f/evaluation/heldout-inputs.json": "57641425198d3a3b02c3d6e685701e51ea2b581fc78541bceccc752a69148dcb",
+    "docs/foundational/phase1f/evaluation/heldout-gold.json": "5ddce62c4bc796c000f93548f50ac46e93198127c498605ad6e7a82fafe7a437",
+    "docs/foundational/phase1f/evaluation/corpus/manifest.json": "0c1d4763cd254f29c131be1bdcf9666c6bba4aaa8ab3d1978f66e84b6275bac8",
+    "docs/foundational/phase1f/evidence/live-heldout/blind-packets.json": "114d8c1ea5c9bf040ad64fa243d85fdd8571684060691a353de5591b134603dc",
+    "docs/foundational/phase1f/evaluation/corpus/cedar.txt": "9ef0dfbfc7ce878bb033ac002be584b378193054dd56609af2d4494e4b296749",
+    "docs/foundational/phase1f/evaluation/corpus/quartz.txt": "faa8adec67482975e84d81a2eec808f32a7bdb9aa89333a1aed7d74d912f299b",
+    "docs/foundational/phase1f/evaluation/corpus/larch.txt": "87693660b05a354b3b2ddbe205928ce1be5ca18d27045696c6be7b3e33202fc1",
+    "docs/foundational/phase1f/evaluation/corpus/marlin.txt": "12cfacc413b898194288a42054075218408911d001e1f41c42abd6a83e2bbf62",
+    "docs/foundational/phase1f/evaluation/corpus/maple.txt": "0b06f717436d38d5f1ec799e8ead043d0919afc2f62374bfec91b732bdf7a152",
+    "docs/foundational/phase1f/evaluation/corpus/saffron.txt": "ab8f3839444a672c5f640aaa78e442022231ec10c0e86e28125cec9a120cdbd1",
+    "docs/foundational/phase1f/evaluation/corpus/birch.txt": "f5648bd18afd4f1efb7e5d85281ce2d0104e6ea8863903f35a2c43f545073027",
+    "docs/foundational/phase1f/evaluation/corpus/heron.txt": "2d59e72f0f48b99895e2d7497a69672d6313c6a84fd432b1e7696808b8b511a0"
+  },
+  "conventions": {
+    "required_facts": "Whole gold groups only: all required semantics are necessary; partial groups are missing with reasons. No pooled fact-recall score is reported.",
+    "precision": "All listed claims preserve exact answer excerpts. Precision is computed only where the list is asserted complete and corpus-verifiable. A rollback condition is one substantive operational proposition containing its metric, strict comparison, unit and consecutive duration; target is separate. Context applicability is included when asserted. Scope-unverifiable evidence-subset absence claims cause null precision, not an invented denominator.",
+    "citation_indices": "One-based; source spans use zero-based UTF-8 bytes. Duplicates and irrelevant references add no coverage.",
+    "semantic_modes": "Classified by delivered text independent of disposition; mode-conditional requirements apply to semantic conditional answers.",
+    "stopping": "Substantive stopping is distinguished from operational delivery failure. Adjudication needed on whether explicit next-action wording is mandatory after complete missing-evidence answer."
+  },
+  "results": [
+    {
+      "id": "response-01",
+      "case_id": "held-03",
+      "final": {
+        "semantic_mode": "partial_answer_with_abstention",
+        "answer": "Retention approval is not established by this packet for Birch exporter 7 in production window B09. It explicitly records neither a signed data-retention approval nor a rejection; this does not mean approval was denied.\n\nRoll back by restoring exporter 6 if delivery failures exceed 2 percent for eight consecutive minutes. That is the specified trigger and target; no specific clock time or deadline is stated in the supplied evidence. Revision 1 identifies the readiness packet, not the rollback target.",
+        "required_facts": [
+          {
+            "id": "approval-unknown",
+            "status": "supported",
+            "answer_excerpt": "Retention approval is not established by this packet for Birch exporter 7 in production window B09. It explicitly records neither a signed data-retention approval nor a rejection; this does not mean approval was denied.",
+            "reason": "Exact required semantics are present; cited source entails them.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-target",
+            "status": "supported",
+            "answer_excerpt": "Roll back by restoring exporter 6",
+            "reason": "Exact required semantics are present; cited source entails them.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "supported",
+            "answer_excerpt": "if delivery failures exceed 2 percent for eight consecutive minutes.",
+            "reason": "Exact required semantics are present; cited source entails them.",
+            "citation_covered": true
+          }
+        ],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 1,
+            "valid": true,
+            "reason": "Document ID, SHA-256 version, bounds, and exact UTF-8 snippet bytes verified."
+          },
+          {
+            "index": 2,
+            "valid": true,
+            "reason": "Document ID, SHA-256 version, bounds, and exact UTF-8 snippet bytes verified."
+          },
+          {
+            "index": 3,
+            "valid": true,
+            "reason": "Document ID, SHA-256 version, bounds, and exact UTF-8 snippet bytes verified."
+          },
+          {
+            "index": 4,
+            "valid": true,
+            "reason": "Document ID, SHA-256 version, bounds, and exact UTF-8 snippet bytes verified. Duplicate span adds no coverage."
+          }
+        ],
+        "stopping_correct": true,
+        "stopping_reason": "Provides the known exact rollback and explicitly withholds the approval verdict. An explicit instruction to obtain the signed decision is absent; the interpretation that withholding plus complete known facts suffices is flagged for adjudication.",
+        "substantive_claims": [
+          {
+            "answer_excerpt": "Retention approval is not established by this packet for Birch exporter 7 in production window B09.",
+            "status": "supported",
+            "reason": "Supported by the frozen corpus."
+          },
+          {
+            "answer_excerpt": "neither a signed data-retention approval",
+            "status": "supported",
+            "reason": "No signed approval is recorded, as explicitly scoped to this packet."
+          },
+          {
+            "answer_excerpt": "nor a rejection",
+            "status": "supported",
+            "reason": "No rejection is recorded, as explicitly scoped to this packet."
+          },
+          {
+            "answer_excerpt": "this does not mean approval was denied.",
+            "status": "supported",
+            "reason": "Supported by the frozen corpus."
+          },
+          {
+            "answer_excerpt": "Roll back by restoring exporter 6",
+            "status": "supported",
+            "reason": "Supported by the frozen corpus."
+          },
+          {
+            "answer_excerpt": "if delivery failures exceed 2 percent for eight consecutive minutes.",
+            "status": "supported",
+            "reason": "Supported by the frozen corpus."
+          },
+          {
+            "answer_excerpt": "no specific clock time",
+            "status": "supported",
+            "reason": "No clock time is specified anywhere in the frozen Birch packet."
+          },
+          {
+            "answer_excerpt": "or deadline is stated in the supplied evidence.",
+            "status": "supported",
+            "reason": "No deadline is specified anywhere in the frozen Birch packet."
+          },
+          {
+            "answer_excerpt": "Revision 1 identifies the readiness packet",
+            "status": "supported",
+            "reason": "Supported by the frozen corpus."
+          },
+          {
+            "answer_excerpt": "not the rollback target.",
+            "status": "supported",
+            "reason": "The target is exporter 6; revision 1 is editorial metadata."
+          }
+        ],
+        "precision_limit": null,
+        "counts": {
+          "applicable_required_facts": 3,
+          "supported": 3,
+          "contradicted": 0,
+          "missing": 0,
+          "citation_covered": 3,
+          "required_fact_recall": 1.0,
+          "citation_coverage": 1.0,
+          "valid_citations": 4,
+          "emitted_citations": 4,
+          "citation_validity": 1.0,
+          "substantive_claims": 10,
+          "supported_substantive_claims": 10,
+          "substantive_claim_precision": 1.0
+        }
+      },
+      "initial": {
+        "semantic_mode": "partial_answer_with_abstention",
+        "answer": "Retention approval is not established by this packet for Birch exporter 7 in production window B09: it explicitly records neither a signed data-retention approval nor a rejection. This does not establish that approval was denied.\n\nThe supplied excerpt identifies the readiness packet as revision 1 and says it contains the transport check and rollback procedure, but it does not provide an exact rollback time or trigger, or a target version. The rollback procedure itself needs focused retrieval to determine those details; revision 1 is the packet revision, not an established rollback target.",
+        "required_facts": [
+          {
+            "id": "approval-unknown",
+            "status": "supported",
+            "answer_excerpt": "Retention approval is not established by this packet for Birch exporter 7 in production window B09: it explicitly records neither a signed data-retention approval nor a rejection.",
+            "reason": "Exact required semantics are present; cited source entails them.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-target",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No answer text supplies this required fact.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No answer text supplies this required fact.",
+            "citation_covered": false
+          }
+        ],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 1,
+            "valid": true,
+            "reason": "Document ID, SHA-256 version, bounds, and exact UTF-8 snippet bytes verified."
+          },
+          {
+            "index": 2,
+            "valid": true,
+            "reason": "Document ID, SHA-256 version, bounds, and exact UTF-8 snippet bytes verified."
+          }
+        ],
+        "stopping_correct": false,
+        "stopping_reason": "Correctly withholds approval verdict, but omits the available exact rollback target and trigger.",
+        "substantive_claims": [],
+        "precision_limit": "The answer makes claims about the supplied evidence subset, but the blind packet does not enumerate the complete supplied evidence set. Required-fact recall is graded against the whole corpus. No complete, verified substantive-claim denominator is asserted.",
+        "counts": {
+          "applicable_required_facts": 3,
+          "supported": 1,
+          "contradicted": 0,
+          "missing": 2,
+          "citation_covered": 1,
+          "required_fact_recall": 0.3333333333333333,
+          "citation_coverage": 1.0,
+          "valid_citations": 2,
+          "emitted_citations": 2,
+          "citation_validity": 1.0,
+          "substantive_claims": null,
+          "supported_substantive_claims": null,
+          "substantive_claim_precision": null
+        }
+      },
+      "revision_candidate_change": "improved",
+      "revision_reasons": [
+        "Required grouped facts and citation-covered required facts increase from 1/3 to 3/3, with correct substantive stopping; no dimension worsens."
+      ],
+      "diagnostic_unaccepted_content": {
+        "answer": "Retention approval is not established by this packet for Birch exporter 7 in production window B09. It explicitly records neither a signed data-retention approval nor a rejection; this does not mean approval was denied.\n\nRoll back by restoring exporter 6 if delivery failures exceed 2 percent for eight consecutive minutes. That is the specified trigger and target; no specific clock time or deadline is stated in the supplied evidence. Revision 1 identifies the readiness packet, not the rollback target.",
+        "accepted": false,
+        "substituted_for_final": false,
+        "citation_association_available": false,
+        "citation_coverage": null,
+        "observation": "Retained separately as unaccepted text. Packet does not explicitly associate diagnostic prose with citations; no diagnostic provenance score is inferred."
+      }
+    },
+    {
+      "id": "response-02",
+      "case_id": "held-03",
+      "final": {
+        "semantic_mode": "partial_answer_with_abstention",
+        "answer": "No. This packet does not establish retention approval for Birch exporter 7 in production window B09; neither signed approval nor rejection is recorded. The supplied evidence gives no rollback timing or target version, so neither can be determined.",
+        "required_facts": [
+          {
+            "id": "approval-unknown",
+            "status": "supported",
+            "answer_excerpt": "This packet does not establish retention approval for Birch exporter 7 in production window B09; neither signed approval nor rejection is recorded.",
+            "reason": "Exact required semantics are present; cited source entails them.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-target",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No answer text supplies this required fact.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No answer text supplies this required fact.",
+            "citation_covered": false
+          }
+        ],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 1,
+            "valid": true,
+            "reason": "Document ID, SHA-256 version, bounds, and exact UTF-8 snippet bytes verified."
+          }
+        ],
+        "stopping_correct": false,
+        "stopping_reason": "Approval is appropriately unknown, but exact known rollback facts are omitted. Evidence-subset insufficiency does not satisfy corpus completeness.",
+        "substantive_claims": [
+          {
+            "answer_excerpt": "This packet does not establish retention approval for Birch exporter 7 in production window B09;",
+            "status": "supported",
+            "reason": "Supported by the frozen corpus."
+          },
+          {
+            "answer_excerpt": "neither signed approval",
+            "status": "supported",
+            "reason": "Packet records no signed approval."
+          },
+          {
+            "answer_excerpt": "nor rejection is recorded.",
+            "status": "supported",
+            "reason": "Packet records no signed rejection."
+          },
+          {
+            "answer_excerpt": "The supplied evidence gives no rollback timing or target version, so neither can be determined.",
+            "status": "scope_unverifiable",
+            "reason": "True of the emitted excerpt alone, but false if read as an absence claim about the whole frozen packet. Full supplied subset is unavailable."
+          }
+        ],
+        "precision_limit": "The answer makes claims about the supplied evidence subset, but the blind packet does not enumerate the complete supplied evidence set. Required-fact recall is graded against the whole corpus. No complete, verified substantive-claim denominator is asserted.",
+        "counts": {
+          "applicable_required_facts": 3,
+          "supported": 1,
+          "contradicted": 0,
+          "missing": 2,
+          "citation_covered": 1,
+          "required_fact_recall": 0.3333333333333333,
+          "citation_coverage": 1.0,
+          "valid_citations": 1,
+          "emitted_citations": 1,
+          "citation_validity": 1.0,
+          "substantive_claims": null,
+          "supported_substantive_claims": null,
+          "substantive_claim_precision": null
+        }
+      },
+      "initial": {
+        "semantic_mode": "partial_answer_with_abstention",
+        "answer": "No. This packet does not establish retention approval for Birch exporter 7 in production window B09; neither signed approval nor rejection is recorded. The supplied evidence gives no rollback timing or target version, so neither can be determined.",
+        "required_facts": [
+          {
+            "id": "approval-unknown",
+            "status": "supported",
+            "answer_excerpt": "This packet does not establish retention approval for Birch exporter 7 in production window B09; neither signed approval nor rejection is recorded.",
+            "reason": "Exact required semantics are present; cited source entails them.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-target",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No answer text supplies this required fact.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No answer text supplies this required fact.",
+            "citation_covered": false
+          }
+        ],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 1,
+            "valid": true,
+            "reason": "Document ID, SHA-256 version, bounds, and exact UTF-8 snippet bytes verified."
+          }
+        ],
+        "stopping_correct": false,
+        "stopping_reason": "Approval is appropriately unknown, but exact known rollback facts are omitted. Evidence-subset insufficiency does not satisfy corpus completeness.",
+        "substantive_claims": [
+          {
+            "answer_excerpt": "This packet does not establish retention approval for Birch exporter 7 in production window B09;",
+            "status": "supported",
+            "reason": "Supported by the frozen corpus."
+          },
+          {
+            "answer_excerpt": "neither signed approval",
+            "status": "supported",
+            "reason": "Packet records no signed approval."
+          },
+          {
+            "answer_excerpt": "nor rejection is recorded.",
+            "status": "supported",
+            "reason": "Packet records no signed rejection."
+          },
+          {
+            "answer_excerpt": "The supplied evidence gives no rollback timing or target version, so neither can be determined.",
+            "status": "scope_unverifiable",
+            "reason": "True of the emitted excerpt alone, but false if read as an absence claim about the whole frozen packet. Full supplied subset is unavailable."
+          }
+        ],
+        "precision_limit": "The answer makes claims about the supplied evidence subset, but the blind packet does not enumerate the complete supplied evidence set. Required-fact recall is graded against the whole corpus. No complete, verified substantive-claim denominator is asserted.",
+        "counts": {
+          "applicable_required_facts": 3,
+          "supported": 1,
+          "contradicted": 0,
+          "missing": 2,
+          "citation_covered": 1,
+          "required_fact_recall": 0.3333333333333333,
+          "citation_coverage": 1.0,
+          "valid_citations": 1,
+          "emitted_citations": 1,
+          "citation_validity": 1.0,
+          "substantive_claims": null,
+          "supported_substantive_claims": null,
+          "substantive_claim_precision": null
+        }
+      },
+      "revision_candidate_change": "unchanged",
+      "revision_reasons": [
+        "Initial and final answer/citations are identical."
+      ]
+    },
+    {
+      "id": "response-03",
+      "case_id": "held-04",
+      "final": {
+        "semantic_mode": "attributed_partial_answer",
+        "answer": "The supplied service final report states that the H18 canary passed and expansion is ready. It does not specify rollback timing or a rollback version, so neither can be determined from this evidence.",
+        "required_facts": [
+          {
+            "id": "service-pass",
+            "status": "supported",
+            "answer_excerpt": "The supplied service final report states that the H18 canary passed and expansion is ready.",
+            "reason": "Exact required semantics are present; cited source entails them.",
+            "citation_covered": true
+          },
+          {
+            "id": "reliability-fail",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No answer text supplies this required fact.",
+            "citation_covered": false
+          },
+          {
+            "id": "conflict-unresolved",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No answer text supplies this required fact.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-target",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No answer text supplies this required fact.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No answer text supplies this required fact.",
+            "citation_covered": false
+          }
+        ],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 1,
+            "valid": true,
+            "reason": "Document ID, SHA-256 version, bounds, and exact UTF-8 snippet bytes verified."
+          }
+        ],
+        "stopping_correct": false,
+        "stopping_reason": "Only the service report is represented. The answer does not assert an uncontested verdict, but omits the reliability failure, unresolved equal-authority conflict, and agreed rollback.",
+        "substantive_claims": [
+          {
+            "answer_excerpt": "The supplied service final report states that the H18 canary passed",
+            "status": "supported",
+            "reason": "Supported by the frozen corpus."
+          },
+          {
+            "answer_excerpt": "and expansion is ready.",
+            "status": "supported",
+            "reason": "Attributed to service report, not accepted as the unified verdict."
+          },
+          {
+            "answer_excerpt": "It does not specify rollback timing or a rollback version, so neither can be determined from this evidence.",
+            "status": "scope_unverifiable",
+            "reason": "True of the cited service-report line; full corpus has the exact rollback. Complete supplied subset is unavailable."
+          }
+        ],
+        "precision_limit": "The answer makes claims about the supplied evidence subset, but the blind packet does not enumerate the complete supplied evidence set. Required-fact recall is graded against the whole corpus. No complete, verified substantive-claim denominator is asserted.",
+        "counts": {
+          "applicable_required_facts": 5,
+          "supported": 1,
+          "contradicted": 0,
+          "missing": 4,
+          "citation_covered": 1,
+          "required_fact_recall": 0.2,
+          "citation_coverage": 1.0,
+          "valid_citations": 1,
+          "emitted_citations": 1,
+          "citation_validity": 1.0,
+          "substantive_claims": null,
+          "supported_substantive_claims": null,
+          "substantive_claim_precision": null
+        }
+      },
+      "initial": {
+        "semantic_mode": "attributed_partial_answer",
+        "answer": "The supplied service final report states that the H18 canary passed and expansion is ready. It does not specify rollback timing or a rollback version, so neither can be determined from this evidence.",
+        "required_facts": [
+          {
+            "id": "service-pass",
+            "status": "supported",
+            "answer_excerpt": "The supplied service final report states that the H18 canary passed and expansion is ready.",
+            "reason": "Exact required semantics are present; cited source entails them.",
+            "citation_covered": true
+          },
+          {
+            "id": "reliability-fail",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No answer text supplies this required fact.",
+            "citation_covered": false
+          },
+          {
+            "id": "conflict-unresolved",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No answer text supplies this required fact.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-target",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No answer text supplies this required fact.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No answer text supplies this required fact.",
+            "citation_covered": false
+          }
+        ],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 1,
+            "valid": true,
+            "reason": "Document ID, SHA-256 version, bounds, and exact UTF-8 snippet bytes verified."
+          }
+        ],
+        "stopping_correct": false,
+        "stopping_reason": "Only the service report is represented. The answer does not assert an uncontested verdict, but omits the reliability failure, unresolved equal-authority conflict, and agreed rollback.",
+        "substantive_claims": [
+          {
+            "answer_excerpt": "The supplied service final report states that the H18 canary passed",
+            "status": "supported",
+            "reason": "Supported by the frozen corpus."
+          },
+          {
+            "answer_excerpt": "and expansion is ready.",
+            "status": "supported",
+            "reason": "Attributed to service report, not accepted as the unified verdict."
+          },
+          {
+            "answer_excerpt": "It does not specify rollback timing or a rollback version, so neither can be determined from this evidence.",
+            "status": "scope_unverifiable",
+            "reason": "True of the cited service-report line; full corpus has the exact rollback. Complete supplied subset is unavailable."
+          }
+        ],
+        "precision_limit": "The answer makes claims about the supplied evidence subset, but the blind packet does not enumerate the complete supplied evidence set. Required-fact recall is graded against the whole corpus. No complete, verified substantive-claim denominator is asserted.",
+        "counts": {
+          "applicable_required_facts": 5,
+          "supported": 1,
+          "contradicted": 0,
+          "missing": 4,
+          "citation_covered": 1,
+          "required_fact_recall": 0.2,
+          "citation_coverage": 1.0,
+          "valid_citations": 1,
+          "emitted_citations": 1,
+          "citation_validity": 1.0,
+          "substantive_claims": null,
+          "supported_substantive_claims": null,
+          "substantive_claim_precision": null
+        }
+      },
+      "revision_candidate_change": "unchanged",
+      "revision_reasons": [
+        "Initial and final answer/citations are identical."
+      ]
+    },
+    {
+      "id": "response-04",
+      "case_id": "held-02",
+      "final": {
+        "semantic_mode": "conditional_answer",
+        "answer": "For Saffron worker 9 in production, configure a queue limit of 400 jobs for the fast profile or 900 jobs for the bulk profile. You must specify the profile to select one limit. The supplied evidence does not state when to roll back or which version to roll back to.",
+        "required_facts": [
+          {
+            "id": "missing-profile",
+            "status": "supported",
+            "answer_excerpt": "You must specify the profile to select one limit.",
+            "reason": "Context and both branches convey the missing fast/bulk choice; cited queue line requires a profile.",
+            "citation_covered": true
+          },
+          {
+            "id": "fast-limit",
+            "status": "supported",
+            "answer_excerpt": "400 jobs for the fast profile",
+            "reason": "Exact required semantics are present; cited source entails them.",
+            "citation_covered": true
+          },
+          {
+            "id": "bulk-limit",
+            "status": "supported",
+            "answer_excerpt": "900 jobs for the bulk profile.",
+            "reason": "Exact required semantics are present; cited source entails them.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-target",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No answer text supplies this required fact.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No answer text supplies this required fact.",
+            "citation_covered": false
+          }
+        ],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 1,
+            "valid": true,
+            "reason": "Document ID, SHA-256 version, bounds, and exact UTF-8 snippet bytes verified."
+          }
+        ],
+        "stopping_correct": false,
+        "stopping_reason": "Conditional queue answer is correct, but choosing conditional-answer mode makes the common exact rollback required; both rollback facts are absent. This is more than a targeted clarification alone.",
+        "substantive_claims": [
+          {
+            "answer_excerpt": "400 jobs for the fast profile",
+            "status": "supported",
+            "reason": "Supported by the frozen corpus."
+          },
+          {
+            "answer_excerpt": "900 jobs for the bulk profile.",
+            "status": "supported",
+            "reason": "Supported by the frozen corpus."
+          },
+          {
+            "answer_excerpt": "You must specify the profile to select one limit.",
+            "status": "supported",
+            "reason": "Supported by the frozen corpus."
+          },
+          {
+            "answer_excerpt": "The supplied evidence does not state when to roll back or which version to roll back to.",
+            "status": "scope_unverifiable",
+            "reason": "True of the emitted queue line, but frozen Saffron line 3 contains both rollback details. Complete supplied subset is unavailable."
+          }
+        ],
+        "precision_limit": "The answer makes claims about the supplied evidence subset, but the blind packet does not enumerate the complete supplied evidence set. Required-fact recall is graded against the whole corpus. No complete, verified substantive-claim denominator is asserted.",
+        "counts": {
+          "applicable_required_facts": 5,
+          "supported": 3,
+          "contradicted": 0,
+          "missing": 2,
+          "citation_covered": 3,
+          "required_fact_recall": 0.6,
+          "citation_coverage": 1.0,
+          "valid_citations": 1,
+          "emitted_citations": 1,
+          "citation_validity": 1.0,
+          "substantive_claims": null,
+          "supported_substantive_claims": null,
+          "substantive_claim_precision": null
+        }
+      },
+      "initial": {
+        "semantic_mode": "conditional_answer",
+        "answer": "For Saffron worker 9 in production, configure a queue limit of 400 jobs for the fast profile or 900 jobs for the bulk profile. You must specify the profile to select one limit. The supplied evidence does not state when to roll back or which version to roll back to.",
+        "required_facts": [
+          {
+            "id": "missing-profile",
+            "status": "supported",
+            "answer_excerpt": "You must specify the profile to select one limit.",
+            "reason": "Context and both branches convey the missing fast/bulk choice; cited queue line requires a profile.",
+            "citation_covered": true
+          },
+          {
+            "id": "fast-limit",
+            "status": "supported",
+            "answer_excerpt": "400 jobs for the fast profile",
+            "reason": "Exact required semantics are present; cited source entails them.",
+            "citation_covered": true
+          },
+          {
+            "id": "bulk-limit",
+            "status": "supported",
+            "answer_excerpt": "900 jobs for the bulk profile.",
+            "reason": "Exact required semantics are present; cited source entails them.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-target",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No answer text supplies this required fact.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No answer text supplies this required fact.",
+            "citation_covered": false
+          }
+        ],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 1,
+            "valid": true,
+            "reason": "Document ID, SHA-256 version, bounds, and exact UTF-8 snippet bytes verified."
+          }
+        ],
+        "stopping_correct": false,
+        "stopping_reason": "Conditional queue answer is correct, but choosing conditional-answer mode makes the common exact rollback required; both rollback facts are absent. This is more than a targeted clarification alone.",
+        "substantive_claims": [
+          {
+            "answer_excerpt": "400 jobs for the fast profile",
+            "status": "supported",
+            "reason": "Supported by the frozen corpus."
+          },
+          {
+            "answer_excerpt": "900 jobs for the bulk profile.",
+            "status": "supported",
+            "reason": "Supported by the frozen corpus."
+          },
+          {
+            "answer_excerpt": "You must specify the profile to select one limit.",
+            "status": "supported",
+            "reason": "Supported by the frozen corpus."
+          },
+          {
+            "answer_excerpt": "The supplied evidence does not state when to roll back or which version to roll back to.",
+            "status": "scope_unverifiable",
+            "reason": "True of the emitted queue line, but frozen Saffron line 3 contains both rollback details. Complete supplied subset is unavailable."
+          }
+        ],
+        "precision_limit": "The answer makes claims about the supplied evidence subset, but the blind packet does not enumerate the complete supplied evidence set. Required-fact recall is graded against the whole corpus. No complete, verified substantive-claim denominator is asserted.",
+        "counts": {
+          "applicable_required_facts": 5,
+          "supported": 3,
+          "contradicted": 0,
+          "missing": 2,
+          "citation_covered": 3,
+          "required_fact_recall": 0.6,
+          "citation_coverage": 1.0,
+          "valid_citations": 1,
+          "emitted_citations": 1,
+          "citation_validity": 1.0,
+          "substantive_claims": null,
+          "supported_substantive_claims": null,
+          "substantive_claim_precision": null
+        }
+      },
+      "revision_candidate_change": "unchanged",
+      "revision_reasons": [
+        "Initial and final answer/citations are identical."
+      ]
+    },
+    {
+      "id": "response-05",
+      "case_id": "held-01",
+      "final": {
+        "semantic_mode": "supported_answer",
+        "answer": "For Maple ingestion 2.4 with the production standard profile in P12, schema version 4 is supported; schema version 3 is unsupported. Roll back to ingestion 2.3 if rejected records exceed 3% for four consecutive minutes.",
+        "required_facts": [
+          {
+            "id": "schema-4",
+            "status": "supported",
+            "answer_excerpt": "schema version 4 is supported;",
+            "reason": "Exact required semantics are present; cited source entails them.",
+            "citation_covered": true
+          },
+          {
+            "id": "schema-3",
+            "status": "supported",
+            "answer_excerpt": "schema version 3 is unsupported.",
+            "reason": "Exact required semantics are present; cited source entails them.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-target",
+            "status": "supported",
+            "answer_excerpt": "Roll back to ingestion 2.3",
+            "reason": "Exact required semantics are present; cited source entails them.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "supported",
+            "answer_excerpt": "if rejected records exceed 3% for four consecutive minutes.",
+            "reason": "Exact required semantics are present; cited source entails them.",
+            "citation_covered": true
+          }
+        ],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 1,
+            "valid": true,
+            "reason": "Document ID, SHA-256 version, bounds, and exact UTF-8 snippet bytes verified."
+          }
+        ],
+        "stopping_correct": true,
+        "stopping_reason": "All supported aspects are answered, including strict >3%, exact consecutive duration and ingestion 2.3; no revision is required.",
+        "substantive_claims": [
+          {
+            "answer_excerpt": "For Maple ingestion 2.4 with the production standard profile in P12,",
+            "status": "supported",
+            "reason": "Corpus header establishes requested deployment/window applicability; canonical gold allows line 2 for required facts."
+          },
+          {
+            "answer_excerpt": "schema version 4 is supported;",
+            "status": "supported",
+            "reason": "Supported by the frozen corpus."
+          },
+          {
+            "answer_excerpt": "schema version 3 is unsupported.",
+            "status": "supported",
+            "reason": "Supported by the frozen corpus."
+          },
+          {
+            "answer_excerpt": "Roll back to ingestion 2.3",
+            "status": "supported",
+            "reason": "Supported by the frozen corpus."
+          },
+          {
+            "answer_excerpt": "if rejected records exceed 3% for four consecutive minutes.",
+            "status": "supported",
+            "reason": "Supported by the frozen corpus."
+          }
+        ],
+        "precision_limit": null,
+        "counts": {
+          "applicable_required_facts": 4,
+          "supported": 4,
+          "contradicted": 0,
+          "missing": 0,
+          "citation_covered": 4,
+          "required_fact_recall": 1.0,
+          "citation_coverage": 1.0,
+          "valid_citations": 1,
+          "emitted_citations": 1,
+          "citation_validity": 1.0,
+          "substantive_claims": 5,
+          "supported_substantive_claims": 5,
+          "substantive_claim_precision": 1.0
+        }
+      },
+      "initial": {
+        "semantic_mode": "supported_answer",
+        "answer": "For Maple ingestion 2.4 with the production standard profile in P12, schema version 4 is supported; schema version 3 is unsupported. Roll back to ingestion 2.3 if rejected records exceed 3% for four consecutive minutes.",
+        "required_facts": [
+          {
+            "id": "schema-4",
+            "status": "supported",
+            "answer_excerpt": "schema version 4 is supported;",
+            "reason": "Exact required semantics are present; cited source entails them.",
+            "citation_covered": true
+          },
+          {
+            "id": "schema-3",
+            "status": "supported",
+            "answer_excerpt": "schema version 3 is unsupported.",
+            "reason": "Exact required semantics are present; cited source entails them.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-target",
+            "status": "supported",
+            "answer_excerpt": "Roll back to ingestion 2.3",
+            "reason": "Exact required semantics are present; cited source entails them.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "supported",
+            "answer_excerpt": "if rejected records exceed 3% for four consecutive minutes.",
+            "reason": "Exact required semantics are present; cited source entails them.",
+            "citation_covered": true
+          }
+        ],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 1,
+            "valid": true,
+            "reason": "Document ID, SHA-256 version, bounds, and exact UTF-8 snippet bytes verified."
+          }
+        ],
+        "stopping_correct": true,
+        "stopping_reason": "All supported aspects are answered, including strict >3%, exact consecutive duration and ingestion 2.3; no revision is required.",
+        "substantive_claims": [
+          {
+            "answer_excerpt": "For Maple ingestion 2.4 with the production standard profile in P12,",
+            "status": "supported",
+            "reason": "Corpus header establishes requested deployment/window applicability; canonical gold allows line 2 for required facts."
+          },
+          {
+            "answer_excerpt": "schema version 4 is supported;",
+            "status": "supported",
+            "reason": "Supported by the frozen corpus."
+          },
+          {
+            "answer_excerpt": "schema version 3 is unsupported.",
+            "status": "supported",
+            "reason": "Supported by the frozen corpus."
+          },
+          {
+            "answer_excerpt": "Roll back to ingestion 2.3",
+            "status": "supported",
+            "reason": "Supported by the frozen corpus."
+          },
+          {
+            "answer_excerpt": "if rejected records exceed 3% for four consecutive minutes.",
+            "status": "supported",
+            "reason": "Supported by the frozen corpus."
+          }
+        ],
+        "precision_limit": null,
+        "counts": {
+          "applicable_required_facts": 4,
+          "supported": 4,
+          "contradicted": 0,
+          "missing": 0,
+          "citation_covered": 4,
+          "required_fact_recall": 1.0,
+          "citation_coverage": 1.0,
+          "valid_citations": 1,
+          "emitted_citations": 1,
+          "citation_validity": 1.0,
+          "substantive_claims": 5,
+          "supported_substantive_claims": 5,
+          "substantive_claim_precision": 1.0
+        }
+      },
+      "revision_candidate_change": "unchanged",
+      "revision_reasons": [
+        "Initial and final answer/citations are identical; first answer is complete."
+      ]
+    },
+    {
+      "id": "response-06",
+      "case_id": "held-01",
+      "final": {
+        "semantic_mode": "supported_answer",
+        "answer": "For Maple ingestion 2.4 using the production standard profile in window P12, readiness record revision 1 specifies:\n- Schema version 4 is supported; schema version 3 is unsupported.\n- Roll back to ingestion 2.3 if rejected records exceed 3% for four consecutive minutes.",
+        "required_facts": [
+          {
+            "id": "schema-4",
+            "status": "supported",
+            "answer_excerpt": "Schema version 4 is supported;",
+            "reason": "Exact required semantics are present; cited source entails them.",
+            "citation_covered": true
+          },
+          {
+            "id": "schema-3",
+            "status": "supported",
+            "answer_excerpt": "schema version 3 is unsupported.",
+            "reason": "Exact required semantics are present; cited source entails them.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-target",
+            "status": "supported",
+            "answer_excerpt": "Roll back to ingestion 2.3",
+            "reason": "Exact required semantics are present; cited source entails them.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "supported",
+            "answer_excerpt": "if rejected records exceed 3% for four consecutive minutes.",
+            "reason": "Exact required semantics are present; cited source entails them.",
+            "citation_covered": true
+          }
+        ],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 1,
+            "valid": true,
+            "reason": "Document ID, SHA-256 version, bounds, and exact UTF-8 snippet bytes verified."
+          },
+          {
+            "index": 2,
+            "valid": true,
+            "reason": "Document ID, SHA-256 version, bounds, and exact UTF-8 snippet bytes verified. Duplicate span adds no coverage."
+          },
+          {
+            "index": 3,
+            "valid": true,
+            "reason": "Document ID, SHA-256 version, bounds, and exact UTF-8 snippet bytes verified."
+          },
+          {
+            "index": 4,
+            "valid": true,
+            "reason": "Document ID, SHA-256 version, bounds, and exact UTF-8 snippet bytes verified. Irrelevant Birch evidence gives no Maple fact coverage."
+          }
+        ],
+        "stopping_correct": true,
+        "stopping_reason": "Answers all supported aspects in the requested P12 scope. Duplicate line 2 and unrelated Birch citation add no coverage.",
+        "substantive_claims": [
+          {
+            "answer_excerpt": "For Maple ingestion 2.4 using the production standard profile in window P12,",
+            "status": "supported",
+            "reason": "Supported by the frozen corpus."
+          },
+          {
+            "answer_excerpt": "readiness record revision 1 specifies:",
+            "status": "supported",
+            "reason": "Supported by the frozen corpus."
+          },
+          {
+            "answer_excerpt": "Schema version 4 is supported;",
+            "status": "supported",
+            "reason": "Supported by the frozen corpus."
+          },
+          {
+            "answer_excerpt": "schema version 3 is unsupported.",
+            "status": "supported",
+            "reason": "Supported by the frozen corpus."
+          },
+          {
+            "answer_excerpt": "Roll back to ingestion 2.3",
+            "status": "supported",
+            "reason": "Supported by the frozen corpus."
+          },
+          {
+            "answer_excerpt": "if rejected records exceed 3% for four consecutive minutes.",
+            "status": "supported",
+            "reason": "Supported by the frozen corpus."
+          }
+        ],
+        "precision_limit": null,
+        "counts": {
+          "applicable_required_facts": 4,
+          "supported": 4,
+          "contradicted": 0,
+          "missing": 0,
+          "citation_covered": 4,
+          "required_fact_recall": 1.0,
+          "citation_coverage": 1.0,
+          "valid_citations": 4,
+          "emitted_citations": 4,
+          "citation_validity": 1.0,
+          "substantive_claims": 6,
+          "supported_substantive_claims": 6,
+          "substantive_claim_precision": 1.0
+        }
+      },
+      "initial": {
+        "semantic_mode": "supported_answer_with_scope_abstention",
+        "answer": "For Maple ingestion 2.4 using the production standard profile, schema version 4 is supported and schema version 3 is unsupported. Roll back to ingestion 2.3 if rejected records exceed 3% for four consecutive minutes. The supplied excerpt does not establish whether these rules apply specifically in window P12; a P12-specific source is needed to confirm that scope.",
+        "required_facts": [
+          {
+            "id": "schema-4",
+            "status": "supported",
+            "answer_excerpt": "schema version 4 is supported",
+            "reason": "Exact required semantics are present; cited source entails them.",
+            "citation_covered": true
+          },
+          {
+            "id": "schema-3",
+            "status": "supported",
+            "answer_excerpt": "schema version 3 is unsupported.",
+            "reason": "Exact required semantics are present; cited source entails them.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-target",
+            "status": "supported",
+            "answer_excerpt": "Roll back to ingestion 2.3",
+            "reason": "Exact required semantics are present; cited source entails them.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "supported",
+            "answer_excerpt": "if rejected records exceed 3% for four consecutive minutes.",
+            "reason": "Exact required semantics are present; cited source entails them.",
+            "citation_covered": true
+          }
+        ],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 1,
+            "valid": true,
+            "reason": "Document ID, SHA-256 version, bounds, and exact UTF-8 snippet bytes verified."
+          },
+          {
+            "index": 2,
+            "valid": true,
+            "reason": "Document ID, SHA-256 version, bounds, and exact UTF-8 snippet bytes verified. Duplicate span adds no coverage."
+          }
+        ],
+        "stopping_correct": false,
+        "stopping_reason": "All four gold facts are stated, but the answer unnecessarily withholds P12 applicability although the corpus header establishes it. Its excerpt-only caveat may be accurate about that excerpt, not the complete corpus.",
+        "substantive_claims": [],
+        "precision_limit": "The answer makes claims about the supplied evidence subset, but the blind packet does not enumerate the complete supplied evidence set. Required-fact recall is graded against the whole corpus. No complete, verified substantive-claim denominator is asserted.",
+        "counts": {
+          "applicable_required_facts": 4,
+          "supported": 4,
+          "contradicted": 0,
+          "missing": 0,
+          "citation_covered": 4,
+          "required_fact_recall": 1.0,
+          "citation_coverage": 1.0,
+          "valid_citations": 2,
+          "emitted_citations": 2,
+          "citation_validity": 1.0,
+          "substantive_claims": null,
+          "supported_substantive_claims": null,
+          "substantive_claim_precision": null
+        }
+      },
+      "revision_candidate_change": "improved",
+      "revision_reasons": [
+        "Required facts remain 4/4 with coverage; final resolves unnecessary P12-scope abstention and adds the relevant scope header. Irrelevant citation adds no coverage and is not counted as a substantive unsupported claim."
+      ],
+      "diagnostic_unaccepted_content": {
+        "answer": "For Maple ingestion 2.4 using the production standard profile in window P12, readiness record revision 1 specifies:\n- Schema version 4 is supported; schema version 3 is unsupported.\n- Roll back to ingestion 2.3 if rejected records exceed 3% for four consecutive minutes.",
+        "accepted": false,
+        "substituted_for_final": false,
+        "citation_association_available": false,
+        "citation_coverage": null,
+        "observation": "Retained separately as unaccepted text. Packet does not explicitly associate diagnostic prose with citations; no diagnostic provenance score is inferred."
+      }
+    },
+    {
+      "id": "response-07",
+      "case_id": "held-04",
+      "final": {
+        "semantic_mode": "no_answer",
+        "answer": "",
+        "required_facts": [
+          {
+            "id": "service-pass",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No answer text supplies this required fact.",
+            "citation_covered": false
+          },
+          {
+            "id": "reliability-fail",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No answer text supplies this required fact.",
+            "citation_covered": false
+          },
+          {
+            "id": "conflict-unresolved",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No answer text supplies this required fact.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-target",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No answer text supplies this required fact.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No answer text supplies this required fact.",
+            "citation_covered": false
+          }
+        ],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 1,
+            "valid": true,
+            "reason": "Document ID, SHA-256 version, bounds, and exact UTF-8 snippet bytes verified. The delivered answer is empty, so this supports no delivered claim."
+          },
+          {
+            "index": 2,
+            "valid": true,
+            "reason": "Document ID, SHA-256 version, bounds, and exact UTF-8 snippet bytes verified. The delivered answer is empty, so this supports no delivered claim."
+          },
+          {
+            "index": 3,
+            "valid": true,
+            "reason": "Document ID, SHA-256 version, bounds, and exact UTF-8 snippet bytes verified. The delivered answer is empty, so this supports no delivered claim."
+          },
+          {
+            "index": 4,
+            "valid": true,
+            "reason": "Document ID, SHA-256 version, bounds, and exact UTF-8 snippet bytes verified. The delivered answer is empty, so this supports no delivered claim."
+          }
+        ],
+        "stopping_correct": false,
+        "stopping_reason": "Delivered answer is empty. revision_limit is an operational stop, not an epistemic abstention; diagnostic prose cannot replace delivered content.",
+        "substantive_claims": [],
+        "precision_limit": "No substantive delivered claims.",
+        "counts": {
+          "applicable_required_facts": 5,
+          "supported": 0,
+          "contradicted": 0,
+          "missing": 5,
+          "citation_covered": 0,
+          "required_fact_recall": 0.0,
+          "citation_coverage": null,
+          "valid_citations": 4,
+          "emitted_citations": 4,
+          "citation_validity": 1.0,
+          "substantive_claims": null,
+          "supported_substantive_claims": null,
+          "substantive_claim_precision": null
+        }
+      },
+      "initial": {
+        "semantic_mode": "partial_answer_with_abstention",
+        "answer": "The service final report states that the canary passed and Heron cache 4 is ready for expansion in production window H18. However, the evidence identifies two equally authoritative final reports, neither superseding the other, with no recorded resolution. The second report’s findings are not supplied, so we cannot establish whether the final reports agree on readiness or conflict. The supplied excerpts also do not specify an exact rollback time or target version. Focused retrieval of the second report and the H18 rollback instructions is needed to resolve these gaps.",
+        "required_facts": [
+          {
+            "id": "service-pass",
+            "status": "supported",
+            "answer_excerpt": "The service final report states that the canary passed and Heron cache 4 is ready for expansion in production window H18.",
+            "reason": "Exact required semantics are present; cited source entails them.",
+            "citation_covered": true
+          },
+          {
+            "id": "reliability-fail",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No answer text supplies this required fact.",
+            "citation_covered": false
+          },
+          {
+            "id": "conflict-unresolved",
+            "status": "missing",
+            "answer_excerpt": "the evidence identifies two equally authoritative final reports, neither superseding the other, with no recorded resolution.",
+            "reason": "Partial group: authority, non-supersession and no resolution are stated, but the second finding and actual unresolved conflict are not established; same-pool scope is not stated. Full grouped fact receives no support credit.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-target",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No answer text supplies this required fact.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "No answer text supplies this required fact.",
+            "citation_covered": false
+          }
+        ],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 1,
+            "valid": true,
+            "reason": "Document ID, SHA-256 version, bounds, and exact UTF-8 snippet bytes verified."
+          },
+          {
+            "index": 2,
+            "valid": true,
+            "reason": "Document ID, SHA-256 version, bounds, and exact UTF-8 snippet bytes verified."
+          }
+        ],
+        "stopping_correct": false,
+        "stopping_reason": "Properly avoids a unified readiness verdict, but omits the known reliability failure and rollback and never establishes the actual conflict. Further retrieval request is sensible for the selected excerpts but incomplete against the corpus.",
+        "substantive_claims": [],
+        "precision_limit": "The answer makes claims about the supplied evidence subset, but the blind packet does not enumerate the complete supplied evidence set. Required-fact recall is graded against the whole corpus. No complete, verified substantive-claim denominator is asserted.",
+        "counts": {
+          "applicable_required_facts": 5,
+          "supported": 1,
+          "contradicted": 0,
+          "missing": 4,
+          "citation_covered": 1,
+          "required_fact_recall": 0.2,
+          "citation_coverage": 1.0,
+          "valid_citations": 2,
+          "emitted_citations": 2,
+          "citation_validity": 1.0,
+          "substantive_claims": null,
+          "supported_substantive_claims": null,
+          "substantive_claim_precision": null
+        }
+      },
+      "revision_candidate_change": "regressed",
+      "revision_reasons": [
+        "Delivered content falls from 1/5 supported required facts to 0/5; citation byte validity remains intact, but final has no content to cover. Diagnostic candidate is not delivery."
+      ],
+      "diagnostic_unaccepted_content": {
+        "answer": "The final reports do not establish a single readiness verdict for Heron cache 4 in H18: the service final report says the canary passed and expansion is ready, while the reliability final report says it failed and expansion is not ready. Both reports have equal authority, neither supersedes the other, and no resolution is recorded.\n\nBoth teams agree to roll back to cache 3 if cache errors exceed 5 percent for two consecutive minutes. This is a condition-based trigger; the supplied excerpts do not specify an exact clock time. If a clock time is required, focused retrieval of the H18 rollback schedule or instructions is still needed.",
+        "accepted": false,
+        "substituted_for_final": false,
+        "citation_association_available": false,
+        "citation_coverage": null,
+        "observation": "Retained separately as unaccepted text. Packet does not explicitly associate diagnostic prose with citations; no diagnostic provenance score is inferred. It states both opposed reports and known exact rollback; full grouped conflict semantics need adjudication because same-pool scope is not explicit. Request for a clock time goes beyond the condition-based question and is not needed."
+      }
+    },
+    {
+      "id": "response-08",
+      "case_id": "held-02",
+      "final": {
+        "semantic_mode": "conditional_answer",
+        "answer": "Which production profile are you using: fast or bulk? Configure a queue limit of 400 queued jobs for fast or 900 for bulk. For either profile, roll back from Saffron worker 9 to worker 8 if job failures exceed 4% for six consecutive minutes.",
+        "required_facts": [
+          {
+            "id": "missing-profile",
+            "status": "supported",
+            "answer_excerpt": "Which production profile are you using: fast or bulk?",
+            "reason": "Targeted question plus both conditional branches conveys the missing profile; cited queue line entails need for a profile.",
+            "citation_covered": true
+          },
+          {
+            "id": "fast-limit",
+            "status": "supported",
+            "answer_excerpt": "400 queued jobs for fast",
+            "reason": "Exact required semantics are present; cited source entails them.",
+            "citation_covered": true
+          },
+          {
+            "id": "bulk-limit",
+            "status": "supported",
+            "answer_excerpt": "900 for bulk.",
+            "reason": "Exact required semantics are present; cited source entails them.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-target",
+            "status": "supported",
+            "answer_excerpt": "roll back from Saffron worker 9 to worker 8",
+            "reason": "Exact required semantics are present; cited source entails them.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "supported",
+            "answer_excerpt": "For either profile, roll back from Saffron worker 9 to worker 8 if job failures exceed 4% for six consecutive minutes.",
+            "reason": "Exact required semantics are present; cited source entails them.",
+            "citation_covered": true
+          }
+        ],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 1,
+            "valid": true,
+            "reason": "Document ID, SHA-256 version, bounds, and exact UTF-8 snippet bytes verified."
+          },
+          {
+            "index": 2,
+            "valid": true,
+            "reason": "Document ID, SHA-256 version, bounds, and exact UTF-8 snippet bytes verified."
+          }
+        ],
+        "stopping_correct": true,
+        "stopping_reason": "Supplies both limits conditionally and the common exact rollback. Semantic mode is conditional_answer despite final disposition clarification.",
+        "substantive_claims": [
+          {
+            "answer_excerpt": "400 queued jobs for fast",
+            "status": "supported",
+            "reason": "Supported by the frozen corpus."
+          },
+          {
+            "answer_excerpt": "900 for bulk.",
+            "status": "supported",
+            "reason": "Supported by the frozen corpus."
+          },
+          {
+            "answer_excerpt": "For either profile,",
+            "status": "supported",
+            "reason": "Common rollback applicability is explicit in the source."
+          },
+          {
+            "answer_excerpt": "roll back from Saffron worker 9 to worker 8",
+            "status": "supported",
+            "reason": "Supported by the frozen corpus."
+          },
+          {
+            "answer_excerpt": "if job failures exceed 4% for six consecutive minutes.",
+            "status": "supported",
+            "reason": "Supported by the frozen corpus."
+          }
+        ],
+        "precision_limit": null,
+        "counts": {
+          "applicable_required_facts": 5,
+          "supported": 5,
+          "contradicted": 0,
+          "missing": 0,
+          "citation_covered": 5,
+          "required_fact_recall": 1.0,
+          "citation_coverage": 1.0,
+          "valid_citations": 2,
+          "emitted_citations": 2,
+          "citation_validity": 1.0,
+          "substantive_claims": 5,
+          "supported_substantive_claims": 5,
+          "substantive_claim_precision": 1.0
+        }
+      },
+      "initial": {
+        "semantic_mode": "conditional_answer",
+        "answer": "Which production profile are you using: fast or bulk? Configure a queue limit of 400 queued jobs for fast or 900 for bulk. For either profile, roll back from Saffron worker 9 to worker 8 if job failures exceed 4% for six consecutive minutes.",
+        "required_facts": [
+          {
+            "id": "missing-profile",
+            "status": "supported",
+            "answer_excerpt": "Which production profile are you using: fast or bulk?",
+            "reason": "Targeted question plus both conditional branches conveys the missing profile; cited queue line entails need for a profile.",
+            "citation_covered": true
+          },
+          {
+            "id": "fast-limit",
+            "status": "supported",
+            "answer_excerpt": "400 queued jobs for fast",
+            "reason": "Exact required semantics are present; cited source entails them.",
+            "citation_covered": true
+          },
+          {
+            "id": "bulk-limit",
+            "status": "supported",
+            "answer_excerpt": "900 for bulk.",
+            "reason": "Exact required semantics are present; cited source entails them.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-target",
+            "status": "supported",
+            "answer_excerpt": "roll back from Saffron worker 9 to worker 8",
+            "reason": "Exact required semantics are present; cited source entails them.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "supported",
+            "answer_excerpt": "For either profile, roll back from Saffron worker 9 to worker 8 if job failures exceed 4% for six consecutive minutes.",
+            "reason": "Exact required semantics are present; cited source entails them.",
+            "citation_covered": true
+          }
+        ],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 1,
+            "valid": true,
+            "reason": "Document ID, SHA-256 version, bounds, and exact UTF-8 snippet bytes verified."
+          },
+          {
+            "index": 2,
+            "valid": true,
+            "reason": "Document ID, SHA-256 version, bounds, and exact UTF-8 snippet bytes verified."
+          }
+        ],
+        "stopping_correct": true,
+        "stopping_reason": "Supplies both limits conditionally and the common exact rollback. Semantic mode is conditional_answer despite final disposition clarification.",
+        "substantive_claims": [
+          {
+            "answer_excerpt": "400 queued jobs for fast",
+            "status": "supported",
+            "reason": "Supported by the frozen corpus."
+          },
+          {
+            "answer_excerpt": "900 for bulk.",
+            "status": "supported",
+            "reason": "Supported by the frozen corpus."
+          },
+          {
+            "answer_excerpt": "For either profile,",
+            "status": "supported",
+            "reason": "Common rollback applicability is explicit in the source."
+          },
+          {
+            "answer_excerpt": "roll back from Saffron worker 9 to worker 8",
+            "status": "supported",
+            "reason": "Supported by the frozen corpus."
+          },
+          {
+            "answer_excerpt": "if job failures exceed 4% for six consecutive minutes.",
+            "status": "supported",
+            "reason": "Supported by the frozen corpus."
+          }
+        ],
+        "precision_limit": null,
+        "counts": {
+          "applicable_required_facts": 5,
+          "supported": 5,
+          "contradicted": 0,
+          "missing": 0,
+          "citation_covered": 5,
+          "required_fact_recall": 1.0,
+          "citation_coverage": 1.0,
+          "valid_citations": 2,
+          "emitted_citations": 2,
+          "citation_validity": 1.0,
+          "substantive_claims": 5,
+          "supported_substantive_claims": 5,
+          "substantive_claim_precision": 1.0
+        }
+      },
+      "revision_candidate_change": "unchanged",
+      "revision_reasons": [
+        "Answer/citations are identical; semantic conditional answer is unchanged despite disposition labels."
+      ],
+      "diagnostic_unaccepted_content": {
+        "answer": "Which production profile are you using: fast or bulk? Configure a queue limit of 400 queued jobs for fast or 900 for bulk. For either profile, roll back from Saffron worker 9 to worker 8 if job failures exceed 4% for six consecutive minutes.",
+        "accepted": false,
+        "substituted_for_final": false,
+        "citation_association_available": false,
+        "citation_coverage": null,
+        "observation": "Retained separately as unaccepted text. Packet does not explicitly associate diagnostic prose with citations; no diagnostic provenance score is inferred."
+      }
+    }
+  ],
+  "adjudication_questions": [
+    {
+      "id": "A1",
+      "outputs": [
+        "response-01/final"
+      ],
+      "issue": "Missing-evidence stopping",
+      "primary_grade": "stopping_correct=true",
+      "reason": "All known rollback facts and explicit approval withholding are present. Gold also says obtain the missing signed decision; answer gives no explicit request. Reviewer should decide whether this procedural wording is mandatory."
+    },
+    {
+      "id": "A2",
+      "outputs": [
+        "response-07/initial",
+        "response-07/diagnostic_unaccepted_content"
+      ],
+      "issue": "Grouped conflict fact",
+      "primary_grade": "initial conflict-unresolved=missing; diagnostic not delivery-scored",
+      "reason": "Initial includes authority/non-supersession/no resolution but lacks actual second report/conflict and same-pool text. Diagnostic includes both sides/authority but not explicit same-pool scope. Preserve full-group semantics rather than partial credit masquerading as atomic weighting."
+    },
+    {
+      "id": "A3",
+      "outputs": [
+        "response-02/final",
+        "response-03/final",
+        "response-04/final",
+        "response-01/initial",
+        "response-06/initial",
+        "response-07/initial"
+      ],
+      "issue": "Evidence-subset absence and precision",
+      "primary_grade": "Missing corpus facts; no categorical unsupported-extra finding for explicitly scoped absence; precision=null.",
+      "reason": "Emitted snippets lack the described facts while complete corpus supplies them. Supplied input evidence is not fully enumerated in blind packets, so subset-wide absence cannot have a verified precision denominator."
+    },
+    {
+      "id": "A4",
+      "outputs": [
+        "response-04/final",
+        "response-08/final"
+      ],
+      "issue": "Semantic mode despite clarification wording",
+      "primary_grade": "conditional_answer",
+      "reason": "Both give substantive conditional limits, so rollback requirements apply; asking for profile in response-08 does not erase its substantive answer."
+    },
+    {
+      "id": "A5",
+      "outputs": [
+        "response-06/initial"
+      ],
+      "issue": "Unnecessary scope abstention",
+      "primary_grade": "stopping_correct=false",
+      "reason": "All gold facts present but P12 applicability explicitly withheld despite frozen header; excerpt-scope caveat alone may be true."
+    },
+    {
+      "id": "A6",
+      "outputs": [
+        "response-07/final"
+      ],
+      "issue": "Empty delivery versus diagnostic",
+      "primary_grade": "0/5 required facts; stopping_correct=false",
+      "reason": "No diagnostic substitution; emitted references remain byte-valid but cover no delivered text."
+    }
+  ]
+}

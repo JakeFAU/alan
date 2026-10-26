@@ -1,0 +1,29 @@
+# Phase 1F immutable merged Phase 1E baseline reproduction
+
+**PASS.** New offline reproduction from merged Git commit `e2157a8fb2837ea3d7d0232683072182a0ee832b` (tree `9983e6fd01b6649eeb8ce340ae364edef43e4b99`). This Git identity is distinct from the published executable/input identity `8f95bda980504caec8c29cbe196297f61abafe7941d11ddc51effc19c9321caa`. All 133 published files matched their lengths, hashes and aggregate before and after in both the merged worktree and the isolated frozen source.
+
+The published `source.tar.gz` (SHA-256 `74a23f3b5786fd5a9ec3755622f2ce5e0383ee6e2d8aa3529f9f2d0fe0d2dac4`) was copied here and all 224 members verified before extraction to `/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1f-baseline-source-c7i4u7dw`. Tests ran only in that extraction. The archive carries the published source identity; it is not a newly generated Git-merge archive. Qualification and review reports are copied alongside it.
+
+Platform: `macOS-27.2-arm64-arm-64bit-Mach-O`, `go version go1.27.3 darwin/arm64`, CGO enabled, `Apple clang version 21.0.0 (clang-2100.3.34.2)`. Environment: `GOTOOLCHAIN=local GOFLAGS=-mod=readonly GOCACHE=/tmp/alan-phase1f-go-build GOPROXY=off GOSUMDB=off`, with `OPENAI_API_KEY` unset. No `.env` file was read and no live provider call was made. Controlled HTTP providers use loopback, fixture credentials and child processes.
+
+| Command in frozen source | Result |
+| --- | --- |
+| `go test -json -count=1 ./...` | PASS, 462 test/subtest pass events, zero failures, 6.641s |
+| `go test -json -count=1 -tags integration ./...` | PASS, 655 test/subtest pass events, zero failures, 7.679s |
+| `go test -json -count=1 -race -tags integration ./...` | PASS, 655 test/subtest pass events, zero failures, 106.429s |
+| `python3 -m unittest discover -s docs/foundational/phase1e/tools -p test_comparison.py -v` | PASS, seven comparison controls |
+| `go vet ./...`; `go vet -tags integration ./...` | PASS |
+| `gofmt -l author schema runtime effects adapters cmd internal research examples` | PASS, empty output |
+| `go mod verify` | PASS, all modules verified |
+
+`final-{default,normal,race}.command.json` records exact commands, environment, wall times, package results, raw hashes and source checks; `identity.json` retains platform/toolchain details. Raw compressed Go JSON and extracted records retain their original order. Pass counts are test/subtest events, not independent properties. ASYNC marker counts vary with concurrently completed work; deterministic research counts are 15 QUALIFICATION, 20 COMPOSITION, 32 SUPERVISION and six CONFORMANCE; each mode retained 119 DURABLE records. Integration and race each retained 120 EVIDENCE records.
+
+For all three modes, comparison with the published Phase 1E final records preserves exact ordered payloads for all 15 QUALIFICATION, 20 COMPOSITION and 32 SUPERVISION records. The six conformance fixtures preserve ordered public projections and model streams; raw snapshots include ephemeral namespace, endpoint and process data and are not asserted equal. Historical Phase 1D.1 comparisons independently pass using the unchanged Phase 1E comparator: exact finite semantics, the documented validated namespace bridge/provenance change in composition/supervision, and the declared conformance projection. See `published-current-comparison.json` and `historical-comparison.json`.
+
+`causal-audit.json` verifies six held/crash cases per mode: `endpoint-held → peer-committed → peer-delivered → held-live`, followed by release/settlement for the settle cases. Each has one application and total 5; idempotent recovery has two contacts under the retained identity and non-idempotent recovery one. Each mode retained 85 durable subprocess records and 20 SIGKILL signal records. All race-marked evidence agrees with its mode; race EVIDENCE build commands actually contain `-race` and retain binary hashes. Full raw records provide the snapshots and original boundary identities.
+
+The full runs explicitly include the Phase 1C interruption correlation and false-order witness tests, async false-order/identity oracle controls, dequeue cancellation accounting, actual CLI cancellation, wildcard epoch/sequence substitution controls, final review output-status regressions, credential/protocol/Inspect review cases, and real extra-dispatch replay negative control. The retained original substitution cases pass, epoch/sequence mutations are rejected, and the faulty replay creates one extra provider contact which the unchanged monitor rejects. Named pass events are in `selected-controls.json` and `review-and-phase1c-controls.json`. No source mutation experiment was rerun beyond the existing selected regression/negative-control tests.
+
+The first collector invocation completed its default Go run but failed while formatting an output path outside the frozen root. Its raw JSON, wrapper and traceback remain under `initial-collector-path-error-*`. The new wrapper changes only the collector output directory and absolute RawLog metadata; frozen qualification-tool bytes remain unchanged. A complete source-matched default/integration/race execution then passed. A subsequent reporting audit initially expected integration-tagged cancellation tests in default mode; source build tags established the correct selections. `audit-correction.md` records that correction, and the unchanged successful raw runs were re-audited without rerunning Go suites. The current runner includes both wrapper corrections; its original selection version is retained.
+
+`old-artifacts-before.json` and `old-artifacts-after.json` match for all 396 prior phase files. `identity.json` confirms the 133-input source before/after checks. No product source, historical evidence, commit or live gate was changed. This is finite controlled reproduction, not a claim of unbounded correctness or production readiness. Live provider gate: **NOT RUN**.

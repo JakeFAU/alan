@@ -1,0 +1,35 @@
+{
+  "kind": "phase1f-pre-heldout-implementation-freeze/v1",
+  "frozen_utc": "2026-10-26T16:02:34.549965+00:00",
+  "source_sha256": "35f21d7f4624358717176b805195a0ebfab03fd53400e92a93a4fc33d617c3f1",
+  "source_manifest": "evidence/retrieval-extension/after-source-manifest.json",
+  "source_manifest_sha256": "3bc0497edb37053ae6f97244e08f5bc03f4e114a9d0e9cd959298251ba1dcae4",
+  "binary_sha256": "62e830b4ba79a6e4542d03ccf461a4a24afe2f18ad0b5ccc61f6af8d9c262e50",
+  "independent_implementation_review": "evidence/retrieval-extension/review.md",
+  "review_sha256": "f5f635d45b031980e7887f4895eabdd2f5495e6c4096560237fbd80bd1e23901",
+  "configuration": {
+    "model": "gpt-6.1-sol",
+    "max_output_tokens": 4096,
+    "max_response_bytes": 65536,
+    "request_timeout": "120s",
+    "max_revisions": 1,
+    "topology": "nested",
+    "baseline": "simple evidence.Provision with shared reviewed helper prompt",
+    "corpus_freeze": "afee3bc1b40c8f51bebf16ede379183f736136e43656bf90334d02690e6ce024",
+    "run_plan_sha256": "c161d060c2c9bb93e3e678c0112ace71149aac1c2dab05340318081f0946df6c"
+  },
+  "heldout_execution_policy": "Exactly four committed input questions, once per baseline/investigation; file order; odd cases baseline first, even cases investigation first. No outcome-dependent repeat. Existing shared10USD ledger. No product, prompt, ranking, corpus or rubric change after this freeze. Publication of already committed heldout data changes the complete data-manifest identity only; all frozen source files must remain byte-identical.",
+  "development_v3_total": {
+    "runs": 8,
+    "model_requests": 54,
+    "lookup_requests": 18,
+    "known_input_tokens": 24500,
+    "known_output_tokens": 9059,
+    "estimated_token_cost_usd": 0.158997,
+    "unknown_attempts": 0,
+    "replay_passes": 8,
+    "note": "No quality score inferred from model review. Diagnostic candidate never substitutes for public answer; unknowns remain explicit. Latency includes controller barriers."
+  },
+  "heldout_contents_read_by_parent_or_implementer": false,
+  "upstream_note": "main advanced to4bd58ce with branding/README/.envrc/CODEOWNERS only; executable source unchanged. Preserve those non-executable changes before publication."
+}

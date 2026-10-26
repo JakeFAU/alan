@@ -1,0 +1,96 @@
+{
+  "schema": "phase1f-task2c-source/v1",
+  "files": [
+    {
+      "path": "adapters/lookup/lookup.go",
+      "sha256": "64f2023ab7962a16fcf1290d4d82f1b7b97dba4e9f5cf38da4fef27f1fac4d7d",
+      "bytes": 6540
+    },
+    {
+      "path": "adapters/lookup/excluding_test.go",
+      "sha256": "22487336a88bc61b3a5baf837752a9a202dc8be454c22533fd17a44356125789",
+      "bytes": 11444
+    },
+    {
+      "path": "adapters/lookup/testdata/repeated-span.json",
+      "sha256": "96f996b61e983dbd664168ac9e1bc6e669e83a89ea00fb5c3b1e0de48aaeaa9d",
+      "bytes": 15464
+    },
+    {
+      "path": "examples/evidence/evidence.go",
+      "sha256": "406230c17bcb9372492e589e8e3e38cbcd413e1abad151af4a73fcda2959fcd5",
+      "bytes": 12434
+    },
+    {
+      "path": "examples/evidence/excluding_test.go",
+      "sha256": "1adb0c1c4700f32804b225d09fb8d033213c96abe18f2e392f693aa2ae022cb2",
+      "bytes": 2272
+    },
+    {
+      "path": "examples/evidence/testdata/excluding_consumer.go",
+      "sha256": "f69c8857b131811f0ad3961a2800ec7b8261d1023b7cfa11a09bc8a59c4d6c9d",
+      "bytes": 4157
+    },
+    {
+      "path": "examples/investigation/investigation.go",
+      "sha256": "8ac171e3a6ca1258843f60118c6b9d545cdab892426656eb4ad053e05e6a6fca",
+      "bytes": 20629
+    },
+    {
+      "path": "examples/investigation/excluding_test.go",
+      "sha256": "8e78ddf6dd9699d5d8d1b58a50726d434983b40527886ceec5c9e9c5600c66e0",
+      "bytes": 7290
+    }
+  ],
+  "files_sha256": "ae62993b623060a6185097c81fa183c657e1e8bafd58d91b3878ac21a2c61f14",
+  "support_files": [
+    {
+      "path": "docs/foundational/phase1f/retrieval-exclusion-contract.md",
+      "sha256": "f59eb1afe1ffeaa1086bd5f9138ce02648b2db1613a12f69d515c00fb1ebbecf",
+      "bytes": 10000
+    },
+    {
+      "path": "docs/foundational/phase1f/authoring-obstacles.md",
+      "sha256": "47474513c9fbb456635eb89fe66f44862f1923229dba4985a4a4c65dc2d3f33e",
+      "bytes": 9268
+    },
+    {
+      "path": "docs/foundational/phase1f/evidence/retrieval-extension/original-repeated-span.json",
+      "sha256": "96f996b61e983dbd664168ac9e1bc6e669e83a89ea00fb5c3b1e0de48aaeaa9d",
+      "bytes": 15464
+    },
+    {
+      "path": "docs/foundational/phase1f/evidence/retrieval-extension/ignored-exclusions-mutant.json",
+      "sha256": "50c457c390e9a5a3b5c14117c066ebb08eb3778d2ec577167b7f45bfde3c9574",
+      "bytes": 12116
+    },
+    {
+      "path": "docs/foundational/phase1f/evidence/retrieval-extension/ordinary-revision-records.json",
+      "sha256": "91d5fe2d199a353fcb76e19cacc46ce30fd2b3243937f2392e7d3672ce86bf8c",
+      "bytes": 35506
+    },
+    {
+      "path": "docs/foundational/phase1f/evidence/retrieval-extension/red-results.json",
+      "sha256": "c6fe148a872ddf042b1b4f8c3a07990493916aecc9d83edc9e611271c0d05172",
+      "bytes": 3144
+    },
+    {
+      "path": "docs/foundational/phase1f/evidence/retrieval-extension/focused.go-test.jsonl.gz",
+      "sha256": "b052b9abe5fdb2652275dc64e9a771fb821fbc6b62da9286804a6fb14d0a64aa",
+      "bytes": 655577
+    },
+    {
+      "path": "docs/foundational/phase1f/evidence/retrieval-extension/implementation-report.md",
+      "sha256": "e2a844153300971581a7e9875384ad9ce17c07e77ee009e60f026e5ba2432f3f",
+      "bytes": 13250
+    }
+  ],
+  "verification": {
+    "focused_command": "go test -count=1 -tags integration -json ./adapters/lookup ./examples/evidence ./examples/investigation ./cmd/alan-evidence ./cmd/alan-investigate ./internal/investigationtest",
+    "exit_code": 0,
+    "passed_packages": 6,
+    "failed_tests": 0,
+    "raw_log_sha256": "01cecbe5190e948c0d7666e87a1f24fbceb6f8e66a4c079b208abc9b62ef4d98",
+    "red_results": "docs/foundational/phase1f/evidence/retrieval-extension/red-results.json"
+  }
+}
