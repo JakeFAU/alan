@@ -1,0 +1,542 @@
+[
+  {
+    "case_id": "dev-01",
+    "system": "baseline",
+    "execution_outcome": "public-result",
+    "initial": {
+      "disposition": "invalid_result",
+      "answer": "",
+      "citations": []
+    },
+    "final": {
+      "disposition": "invalid_result",
+      "answer": "",
+      "citations": []
+    },
+    "diagnostic_final_candidate": null,
+    "revision_count": 0,
+    "application_review": null,
+    "elapsed_seconds": 9.332,
+    "usage": {
+      "InputTokens": 207,
+      "OutputTokens": 183,
+      "TotalTokens": 390,
+      "known_results": 1,
+      "missing_usage_results": 0,
+      "model_allowed_attempts": 1,
+      "unknown_model_attempts": 0,
+      "unknown_attempts": 0
+    },
+    "model_requests": 1,
+    "lookup_requests": 1,
+    "estimated_token_cost_usd": 0.002244,
+    "unknown_cost_reservations_usd": 0,
+    "unknown_ids": [],
+    "run_identity": {
+      "directory": "docs/foundational/phase1f/evidence/live-development/dev-01-baseline",
+      "source": "4cb9fb09dacf4ca303a7d1e8d2dffe518fc114ea3d375b1727e607134346826a",
+      "store_sha256": "ec4261dee9d55b1efe55790cc711fdb2c6d06d078234a80d1e5e42aaa025e0a2"
+    },
+    "replay_pass": true
+  },
+  {
+    "case_id": "dev-01",
+    "system": "investigation",
+    "execution_outcome": "public-result",
+    "initial": {
+      "disposition": null,
+      "answer": "For Cedar agent 3.2 on the production Linux fleet in window C17, kernel 6.1 is supported; kernel 5.15 is unsupported. The supplied evidence does not establish exactly when to roll back or which agent version to roll back to, so exact rollback instructions cannot be determined.",
+      "citations": [
+        {
+          "document": "phase1f-cedar",
+          "version": "9ef0dfbfc7ce878bb033ac002be584b378193054dd56609af2d4494e4b296749",
+          "start": 104,
+          "end": 243,
+          "snippet": "Cedar agent 3.2 production Linux compatibility: hosts running kernel 6.1 or newer are supported; hosts running kernel 5.15 are unsupported."
+        },
+        {
+          "document": "phase1f-cedar",
+          "version": "9ef0dfbfc7ce878bb033ac002be584b378193054dd56609af2d4494e4b296749",
+          "start": 104,
+          "end": 243,
+          "snippet": "Cedar agent 3.2 production Linux compatibility: hosts running kernel 6.1 or newer are supported; hosts running kernel 5.15 are unsupported."
+        }
+      ]
+    },
+    "final": {
+      "disposition": "answer",
+      "answer": "For Cedar agent 3.2 on the production Linux fleet in change window C17, kernel 6.1 is supported; kernel 5.15 is unsupported. The supplied evidence does not specify a rollback trigger, exact timing, or target agent version, so exact rollback instructions cannot be determined. Kernel incompatibility alone does not establish a rollback policy.",
+      "citations": [
+        {
+          "document": "phase1f-cedar",
+          "version": "9ef0dfbfc7ce878bb033ac002be584b378193054dd56609af2d4494e4b296749",
+          "start": 104,
+          "end": 243,
+          "snippet": "Cedar agent 3.2 production Linux compatibility: hosts running kernel 6.1 or newer are supported; hosts running kernel 5.15 are unsupported."
+        },
+        {
+          "document": "phase1f-cedar",
+          "version": "9ef0dfbfc7ce878bb033ac002be584b378193054dd56609af2d4494e4b296749",
+          "start": 104,
+          "end": 243,
+          "snippet": "Cedar agent 3.2 production Linux compatibility: hosts running kernel 6.1 or newer are supported; hosts running kernel 5.15 are unsupported."
+        },
+        {
+          "document": "phase1f-cedar",
+          "version": "9ef0dfbfc7ce878bb033ac002be584b378193054dd56609af2d4494e4b296749",
+          "start": 0,
+          "end": 103,
+          "snippet": "Cedar agent 3.2 rollout record, revision 1, applies to the production Linux fleet in change window C17."
+        },
+        {
+          "document": "phase1f-cedar",
+          "version": "9ef0dfbfc7ce878bb033ac002be584b378193054dd56609af2d4494e4b296749",
+          "start": 0,
+          "end": 103,
+          "snippet": "Cedar agent 3.2 rollout record, revision 1, applies to the production Linux fleet in change window C17."
+        }
+      ]
+    },
+    "diagnostic_final_candidate": "For Cedar agent 3.2 on the production Linux fleet in change window C17, kernel 6.1 is supported; kernel 5.15 is unsupported. The supplied evidence does not specify a rollback trigger, exact timing, or target agent version, so exact rollback instructions cannot be determined. Kernel incompatibility alone does not establish a rollback policy.",
+    "revision_count": 1,
+    "application_review": {
+      "initial_review_decision": "revise",
+      "initial_review_reason": "The kernel compatibility claims are supported, and the candidate honestly identifies the evidence limitation. However, rollback timing and target version remain unanswered; the supplied evidence is only a compatibility statement. Two focused retrievals could fill these concrete gaps.",
+      "review_decision": "accept",
+      "review_reason": "The compatibility claims are directly supported, and the rollout record establishes the production Linux and C17 scope. No supplied evidence specifies a rollback trigger, timing, or target version, so the candidate appropriately acknowledges those limits rather than inferring a rollback policy from kernel incompatibility.",
+      "report_outcome": "publish"
+    },
+    "elapsed_seconds": 57.713,
+    "usage": {
+      "InputTokens": 5420,
+      "OutputTokens": 2181,
+      "TotalTokens": 7601,
+      "known_results": 13,
+      "missing_usage_results": 0,
+      "model_allowed_attempts": 13,
+      "unknown_model_attempts": 0,
+      "unknown_attempts": 0
+    },
+    "model_requests": 13,
+    "lookup_requests": 4,
+    "estimated_token_cost_usd": 0.03265,
+    "unknown_cost_reservations_usd": 0,
+    "unknown_ids": [],
+    "run_identity": {
+      "directory": "docs/foundational/phase1f/evidence/live-development/dev-01-investigation",
+      "source": "4cb9fb09dacf4ca303a7d1e8d2dffe518fc114ea3d375b1727e607134346826a",
+      "store_sha256": "59b4833c59acd0b83a83b5083a013fbd673ae1228608f7cf1c431425b869e9ba"
+    },
+    "replay_pass": true
+  },
+  {
+    "case_id": "dev-02",
+    "system": "investigation",
+    "execution_outcome": "public-result",
+    "initial": {
+      "disposition": null,
+      "answer": "Which region are you configuring? Quartz gateway 8\u2019s production concurrency limit is 120 concurrent requests per instance in east or 80 in west; the region is required to select one limit.\n\nRollback rule: if p95 latency exceeds 300 milliseconds for ten consecutive minutes, restore gateway 7 in both east and west regions.",
+      "citations": [
+        {
+          "document": "phase1f-quartz",
+          "version": "faa8adec67482975e84d81a2eec808f32a7bdb9aa89333a1aed7d74d912f299b",
+          "start": 121,
+          "end": 336,
+          "snippet": "Quartz gateway 8 production concurrency limit: the east region allows 120 concurrent requests per instance; the west region allows 80 concurrent requests per instance. A region must be specified to select one limit."
+        },
+        {
+          "document": "phase1f-quartz",
+          "version": "faa8adec67482975e84d81a2eec808f32a7bdb9aa89333a1aed7d74d912f299b",
+          "start": 337,
+          "end": 492,
+          "snippet": "Quartz gateway 8 production rollback: in both east and west regions, restore gateway 7 if p95 latency exceeds 300 milliseconds for ten consecutive minutes."
+        }
+      ]
+    },
+    "final": {
+      "disposition": "clarification",
+      "answer": "Which region are you configuring? Quartz gateway 8\u2019s production concurrency limit is 120 concurrent requests per instance in east or 80 in west; the region is required to select one limit.\n\nRollback rule: if p95 latency exceeds 300 milliseconds for ten consecutive minutes, restore gateway 7 in both east and west regions.",
+      "citations": [
+        {
+          "document": "phase1f-quartz",
+          "version": "faa8adec67482975e84d81a2eec808f32a7bdb9aa89333a1aed7d74d912f299b",
+          "start": 121,
+          "end": 336,
+          "snippet": "Quartz gateway 8 production concurrency limit: the east region allows 120 concurrent requests per instance; the west region allows 80 concurrent requests per instance. A region must be specified to select one limit."
+        },
+        {
+          "document": "phase1f-quartz",
+          "version": "faa8adec67482975e84d81a2eec808f32a7bdb9aa89333a1aed7d74d912f299b",
+          "start": 337,
+          "end": 492,
+          "snippet": "Quartz gateway 8 production rollback: in both east and west regions, restore gateway 7 if p95 latency exceeds 300 milliseconds for ten consecutive minutes."
+        }
+      ]
+    },
+    "diagnostic_final_candidate": "Which region are you configuring? Quartz gateway 8\u2019s production concurrency limit is 120 concurrent requests per instance in east or 80 in west; the region is required to select one limit.\n\nRollback rule: if p95 latency exceeds 300 milliseconds for ten consecutive minutes, restore gateway 7 in both east and west regions.",
+    "revision_count": 0,
+    "application_review": {
+      "initial_review_decision": "",
+      "initial_review_reason": "",
+      "review_decision": "",
+      "review_reason": "",
+      "report_outcome": "needs_attention"
+    },
+    "elapsed_seconds": 22.747,
+    "usage": {
+      "InputTokens": 1781,
+      "OutputTokens": 967,
+      "TotalTokens": 2748,
+      "known_results": 6,
+      "missing_usage_results": 0,
+      "model_allowed_attempts": 6,
+      "unknown_model_attempts": 0,
+      "unknown_attempts": 0
+    },
+    "model_requests": 6,
+    "lookup_requests": 2,
+    "estimated_token_cost_usd": 0.013232,
+    "unknown_cost_reservations_usd": 0,
+    "unknown_ids": [],
+    "run_identity": {
+      "directory": "docs/foundational/phase1f/evidence/live-development/dev-02-investigation",
+      "source": "4cb9fb09dacf4ca303a7d1e8d2dffe518fc114ea3d375b1727e607134346826a",
+      "store_sha256": "ee7daf8eb2e2a426b9648c3e30087abb3a05e99930f8573859dabcb839b10235"
+    },
+    "replay_pass": true
+  },
+  {
+    "case_id": "dev-02",
+    "system": "baseline",
+    "execution_outcome": "public-result",
+    "initial": {
+      "disposition": "answer",
+      "answer": "For Quartz gateway 8 in production, configure 120 concurrent requests per instance in the east region or 80 in the west region. Specify the region to select the correct limit. The supplied evidence does not state when to roll back or which version to roll back to.",
+      "citations": [
+        {
+          "document": "phase1f-quartz",
+          "version": "faa8adec67482975e84d81a2eec808f32a7bdb9aa89333a1aed7d74d912f299b",
+          "start": 121,
+          "end": 336,
+          "snippet": "Quartz gateway 8 production concurrency limit: the east region allows 120 concurrent requests per instance; the west region allows 80 concurrent requests per instance. A region must be specified to select one limit."
+        }
+      ]
+    },
+    "final": {
+      "disposition": "answer",
+      "answer": "For Quartz gateway 8 in production, configure 120 concurrent requests per instance in the east region or 80 in the west region. Specify the region to select the correct limit. The supplied evidence does not state when to roll back or which version to roll back to.",
+      "citations": [
+        {
+          "document": "phase1f-quartz",
+          "version": "faa8adec67482975e84d81a2eec808f32a7bdb9aa89333a1aed7d74d912f299b",
+          "start": 121,
+          "end": 336,
+          "snippet": "Quartz gateway 8 production concurrency limit: the east region allows 120 concurrent requests per instance; the west region allows 80 concurrent requests per instance. A region must be specified to select one limit."
+        }
+      ]
+    },
+    "diagnostic_final_candidate": null,
+    "revision_count": 0,
+    "application_review": null,
+    "elapsed_seconds": 9.466,
+    "usage": {
+      "InputTokens": 474,
+      "OutputTokens": 316,
+      "TotalTokens": 790,
+      "known_results": 2,
+      "missing_usage_results": 0,
+      "model_allowed_attempts": 2,
+      "unknown_model_attempts": 0,
+      "unknown_attempts": 0
+    },
+    "model_requests": 2,
+    "lookup_requests": 1,
+    "estimated_token_cost_usd": 0.004108,
+    "unknown_cost_reservations_usd": 0,
+    "unknown_ids": [],
+    "run_identity": {
+      "directory": "docs/foundational/phase1f/evidence/live-development/dev-02-baseline",
+      "source": "4cb9fb09dacf4ca303a7d1e8d2dffe518fc114ea3d375b1727e607134346826a",
+      "store_sha256": "dad0c23c2fa60f217f9ce34929ebfda52cfa27d49b90cb35f923e3bafbfb92d9"
+    },
+    "replay_pass": true
+  },
+  {
+    "case_id": "dev-03",
+    "system": "baseline",
+    "execution_outcome": "public-result",
+    "initial": {
+      "disposition": "answer",
+      "answer": "Security approval is not established by this packet: no signed approval or rejection is recorded. The supplied evidence specifies neither a rollback time nor a target version, so neither can be determined.",
+      "citations": [
+        {
+          "document": "phase1f-larch",
+          "version": "87693660b05a354b3b2ddbe205928ce1be5ca18d27045696c6be7b3e33202fc1",
+          "start": 143,
+          "end": 334,
+          "snippet": "Larch index 5 production window L24 security approval: no signed security approval or rejection is recorded in this packet. The packet does not establish whether security approved the change."
+        }
+      ]
+    },
+    "final": {
+      "disposition": "answer",
+      "answer": "Security approval is not established by this packet: no signed approval or rejection is recorded. The supplied evidence specifies neither a rollback time nor a target version, so neither can be determined.",
+      "citations": [
+        {
+          "document": "phase1f-larch",
+          "version": "87693660b05a354b3b2ddbe205928ce1be5ca18d27045696c6be7b3e33202fc1",
+          "start": 143,
+          "end": 334,
+          "snippet": "Larch index 5 production window L24 security approval: no signed security approval or rejection is recorded in this packet. The packet does not establish whether security approved the change."
+        }
+      ]
+    },
+    "diagnostic_final_candidate": null,
+    "revision_count": 0,
+    "application_review": null,
+    "elapsed_seconds": 12.333,
+    "usage": {
+      "InputTokens": 479,
+      "OutputTokens": 390,
+      "TotalTokens": 869,
+      "known_results": 2,
+      "missing_usage_results": 0,
+      "model_allowed_attempts": 2,
+      "unknown_model_attempts": 0,
+      "unknown_attempts": 0
+    },
+    "model_requests": 2,
+    "lookup_requests": 1,
+    "estimated_token_cost_usd": 0.004858,
+    "unknown_cost_reservations_usd": 0,
+    "unknown_ids": [],
+    "run_identity": {
+      "directory": "docs/foundational/phase1f/evidence/live-development/dev-03-baseline",
+      "source": "4cb9fb09dacf4ca303a7d1e8d2dffe518fc114ea3d375b1727e607134346826a",
+      "store_sha256": "eb1c91a7a5de1a482619aab3106fd641d1eb37159be80bf46fc4fd4a839dce9b"
+    },
+    "replay_pass": true
+  },
+  {
+    "case_id": "dev-03",
+    "system": "investigation",
+    "execution_outcome": "public-result",
+    "initial": {
+      "disposition": null,
+      "answer": "Security approval is not established by this packet: it records neither a signed security approval nor a rejection. The supplied evidence also does not specify an exact rollback time or target version. Although revision 1 contains a compatibility check and rollback procedure for production window L24, it does not establish when or to which version to roll back.",
+      "citations": [
+        {
+          "document": "phase1f-larch",
+          "version": "87693660b05a354b3b2ddbe205928ce1be5ca18d27045696c6be7b3e33202fc1",
+          "start": 143,
+          "end": 334,
+          "snippet": "Larch index 5 production window L24 security approval: no signed security approval or rejection is recorded in this packet. The packet does not establish whether security approved the change."
+        },
+        {
+          "document": "phase1f-larch",
+          "version": "87693660b05a354b3b2ddbe205928ce1be5ca18d27045696c6be7b3e33202fc1",
+          "start": 0,
+          "end": 142,
+          "snippet": "Larch index 5 readiness packet, revision 1, applies to production window L24 and contains the compatibility check and rollback procedure only."
+        }
+      ]
+    },
+    "final": {
+      "disposition": "answer",
+      "answer": "Security approval is not established by this packet: it records neither a signed security approval nor a rejection. The supplied evidence also does not specify an exact rollback time or target version. Although revision 1 contains a compatibility check and rollback procedure for production window L24, it does not establish when or to which version to roll back.",
+      "citations": [
+        {
+          "document": "phase1f-larch",
+          "version": "87693660b05a354b3b2ddbe205928ce1be5ca18d27045696c6be7b3e33202fc1",
+          "start": 143,
+          "end": 334,
+          "snippet": "Larch index 5 production window L24 security approval: no signed security approval or rejection is recorded in this packet. The packet does not establish whether security approved the change."
+        },
+        {
+          "document": "phase1f-larch",
+          "version": "87693660b05a354b3b2ddbe205928ce1be5ca18d27045696c6be7b3e33202fc1",
+          "start": 0,
+          "end": 142,
+          "snippet": "Larch index 5 readiness packet, revision 1, applies to production window L24 and contains the compatibility check and rollback procedure only."
+        }
+      ]
+    },
+    "diagnostic_final_candidate": "Security approval is not established by this packet: it records neither a signed security approval nor a rejection. The supplied evidence also does not specify an exact rollback time or target version. Although revision 1 contains a compatibility check and rollback procedure for production window L24, it does not establish when or to which version to roll back.",
+    "revision_count": 0,
+    "application_review": {
+      "initial_review_decision": "accept",
+      "initial_review_reason": "The evidence explicitly says the packet establishes neither signed security approval nor rejection. The supplied rollback evidence identifies a procedure but provides no exact rollback time or target version, so the candidate appropriately leaves those details unresolved rather than inventing them.",
+      "review_decision": "accept",
+      "review_reason": "The evidence explicitly says the packet establishes neither signed security approval nor rejection. The supplied rollback evidence identifies a procedure but provides no exact rollback time or target version, so the candidate appropriately leaves those details unresolved rather than inventing them.",
+      "report_outcome": "publish"
+    },
+    "elapsed_seconds": 32.234,
+    "usage": {
+      "InputTokens": 2531,
+      "OutputTokens": 1183,
+      "TotalTokens": 3714,
+      "known_results": 7,
+      "missing_usage_results": 0,
+      "model_allowed_attempts": 7,
+      "unknown_model_attempts": 0,
+      "unknown_attempts": 0
+    },
+    "model_requests": 7,
+    "lookup_requests": 2,
+    "estimated_token_cost_usd": 0.016892,
+    "unknown_cost_reservations_usd": 0,
+    "unknown_ids": [],
+    "run_identity": {
+      "directory": "docs/foundational/phase1f/evidence/live-development/dev-03-investigation",
+      "source": "4cb9fb09dacf4ca303a7d1e8d2dffe518fc114ea3d375b1727e607134346826a",
+      "store_sha256": "85fc3bec344d3c1487d61c1ac91fadf9feb74b79bbc659de21476a930c3b2d63"
+    },
+    "replay_pass": true
+  },
+  {
+    "case_id": "dev-04",
+    "system": "investigation",
+    "execution_outcome": "public-result",
+    "initial": {
+      "disposition": null,
+      "answer": "The final reports do not establish that migration is ready for Marlin database 6 in production window M31. Two final readiness reports cover the same production cluster, both revision 1 and equally authoritative; neither supersedes the other, and no resolution is recorded. The supplied evidence also specifies neither an exact rollback time or trigger nor a target version, so no exact rollback instruction can be supported.",
+      "citations": [
+        {
+          "document": "phase1f-marlin",
+          "version": "12cfacc413b898194288a42054075218408911d001e1f41c42abd6a83e2bbf62",
+          "start": 0,
+          "end": 199,
+          "snippet": "Marlin database 6 window M31 has two final readiness reports with equal authority, both revision 1 and both about the same production cluster. Neither supersedes the other; no resolution is recorded."
+        },
+        {
+          "document": "phase1f-marlin",
+          "version": "12cfacc413b898194288a42054075218408911d001e1f41c42abd6a83e2bbf62",
+          "start": 0,
+          "end": 199,
+          "snippet": "Marlin database 6 window M31 has two final readiness reports with equal authority, both revision 1 and both about the same production cluster. Neither supersedes the other; no resolution is recorded."
+        }
+      ]
+    },
+    "final": {
+      "disposition": "insufficient_evidence",
+      "answer": "The supplied evidence is insufficient to determine whether the final reports establish migration readiness for Marlin database 6 in production window M31, or exactly when and to what version to roll back. It establishes only that two final readiness reports concern the same production cluster, are both revision 1 and equally authoritative, and neither supersedes the other; no resolution is recorded. Their readiness findings are not provided, so we cannot determine whether they agree or conflict. No rollback timing, trigger, or target version is supplied. The reports\u2019 actual findings and rollback instructions are needed to answer substantively.",
+      "citations": [
+        {
+          "document": "phase1f-marlin",
+          "version": "12cfacc413b898194288a42054075218408911d001e1f41c42abd6a83e2bbf62",
+          "start": 0,
+          "end": 199,
+          "snippet": "Marlin database 6 window M31 has two final readiness reports with equal authority, both revision 1 and both about the same production cluster. Neither supersedes the other; no resolution is recorded."
+        },
+        {
+          "document": "phase1f-marlin",
+          "version": "12cfacc413b898194288a42054075218408911d001e1f41c42abd6a83e2bbf62",
+          "start": 0,
+          "end": 199,
+          "snippet": "Marlin database 6 window M31 has two final readiness reports with equal authority, both revision 1 and both about the same production cluster. Neither supersedes the other; no resolution is recorded."
+        },
+        {
+          "document": "phase1f-marlin",
+          "version": "12cfacc413b898194288a42054075218408911d001e1f41c42abd6a83e2bbf62",
+          "start": 0,
+          "end": 199,
+          "snippet": "Marlin database 6 window M31 has two final readiness reports with equal authority, both revision 1 and both about the same production cluster. Neither supersedes the other; no resolution is recorded."
+        },
+        {
+          "document": "phase1f-marlin",
+          "version": "12cfacc413b898194288a42054075218408911d001e1f41c42abd6a83e2bbf62",
+          "start": 0,
+          "end": 199,
+          "snippet": "Marlin database 6 window M31 has two final readiness reports with equal authority, both revision 1 and both about the same production cluster. Neither supersedes the other; no resolution is recorded."
+        }
+      ]
+    },
+    "diagnostic_final_candidate": "The supplied evidence is insufficient to determine whether the final reports establish migration readiness for Marlin database 6 in production window M31, or exactly when and to what version to roll back. It establishes only that two final readiness reports concern the same production cluster, are both revision 1 and equally authoritative, and neither supersedes the other; no resolution is recorded. Their readiness findings are not provided, so we cannot determine whether they agree or conflict. No rollback timing, trigger, or target version is supplied. The reports\u2019 actual findings and rollback instructions are needed to answer substantively.",
+    "revision_count": 1,
+    "application_review": {
+      "initial_review_decision": "revise",
+      "initial_review_reason": "The evidence establishes equal authority and no supersession or recorded resolution, but it does not state either report\u2019s readiness finding. Two equally authoritative reports could agree, so their existence alone does not establish that readiness is unresolved. The supplied snippet contains no rollback instructions, but the reports\u2019 actual findings and instructions are needed to answer the question substantively.",
+      "review_decision": "revise",
+      "review_reason": "The evidence establishes equal authority and no supersession or recorded resolution, but it does not state either report\u2019s readiness finding. Two equally authoritative reports could agree, so their existence alone does not establish that readiness is unresolved. The supplied snippet contains no rollback instructions, but the reports\u2019 actual findings and instructions are needed to answer the question substantively.",
+      "report_outcome": "needs_attention"
+    },
+    "elapsed_seconds": 55.312,
+    "usage": {
+      "InputTokens": 4698,
+      "OutputTokens": 2174,
+      "TotalTokens": 6872,
+      "known_results": 12,
+      "missing_usage_results": 0,
+      "model_allowed_attempts": 12,
+      "unknown_model_attempts": 0,
+      "unknown_attempts": 0
+    },
+    "model_requests": 12,
+    "lookup_requests": 4,
+    "estimated_token_cost_usd": 0.034394,
+    "unknown_cost_reservations_usd": 0,
+    "unknown_ids": [],
+    "run_identity": {
+      "directory": "docs/foundational/phase1f/evidence/live-development/dev-04-investigation",
+      "source": "4cb9fb09dacf4ca303a7d1e8d2dffe518fc114ea3d375b1727e607134346826a",
+      "store_sha256": "62a067e5cd8575a6e1eba5bde22e78c50694d496caaae7bcb69d70845616c502"
+    },
+    "replay_pass": true
+  },
+  {
+    "case_id": "dev-04",
+    "system": "baseline",
+    "execution_outcome": "public-result",
+    "initial": {
+      "disposition": "answer",
+      "answer": "The supplied evidence does not establish that migration is ready for Marlin database 6 in production window M31. It identifies two equally authoritative final readiness reports, both revision 1, with neither superseding the other and no recorded resolution. It provides no rollback time or target version, so exactly when and to what version to roll back cannot be determined.",
+      "citations": [
+        {
+          "document": "phase1f-marlin",
+          "version": "12cfacc413b898194288a42054075218408911d001e1f41c42abd6a83e2bbf62",
+          "start": 0,
+          "end": 199,
+          "snippet": "Marlin database 6 window M31 has two final readiness reports with equal authority, both revision 1 and both about the same production cluster. Neither supersedes the other; no resolution is recorded."
+        }
+      ]
+    },
+    "final": {
+      "disposition": "answer",
+      "answer": "The supplied evidence does not establish that migration is ready for Marlin database 6 in production window M31. It identifies two equally authoritative final readiness reports, both revision 1, with neither superseding the other and no recorded resolution. It provides no rollback time or target version, so exactly when and to what version to roll back cannot be determined.",
+      "citations": [
+        {
+          "document": "phase1f-marlin",
+          "version": "12cfacc413b898194288a42054075218408911d001e1f41c42abd6a83e2bbf62",
+          "start": 0,
+          "end": 199,
+          "snippet": "Marlin database 6 window M31 has two final readiness reports with equal authority, both revision 1 and both about the same production cluster. Neither supersedes the other; no resolution is recorded."
+        }
+      ]
+    },
+    "diagnostic_final_candidate": null,
+    "revision_count": 0,
+    "application_review": null,
+    "elapsed_seconds": 10.163,
+    "usage": {
+      "InputTokens": 484,
+      "OutputTokens": 305,
+      "TotalTokens": 789,
+      "known_results": 2,
+      "missing_usage_results": 0,
+      "model_allowed_attempts": 2,
+      "unknown_model_attempts": 0,
+      "unknown_attempts": 0
+    },
+    "model_requests": 2,
+    "lookup_requests": 1,
+    "estimated_token_cost_usd": 0.004018,
+    "unknown_cost_reservations_usd": 0,
+    "unknown_ids": [],
+    "run_identity": {
+      "directory": "docs/foundational/phase1f/evidence/live-development/dev-04-baseline",
+      "source": "4cb9fb09dacf4ca303a7d1e8d2dffe518fc114ea3d375b1727e607134346826a",
+      "store_sha256": "b92be370937896b76b1d62263619ccc94e244b7b3cce0f3e5b8a57247267c35f"
+    },
+    "replay_pass": true
+  }
+]

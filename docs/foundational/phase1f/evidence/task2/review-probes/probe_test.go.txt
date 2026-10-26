@@ -1,0 +1,56 @@
+package reviewprobe
+
+import (
+ "context"
+ "path/filepath"
+ "testing"
+ "github.com/JakeFAU/alan/adapters/lookup"
+ "github.com/JakeFAU/alan/effects"
+ "github.com/JakeFAU/alan/examples/investigation"
+ "github.com/JakeFAU/alan/runtime"
+ "github.com/JakeFAU/alan/schema"
+)
+
+type transitionProbe struct { controlled; scenario string }
+func (p *transitionProbe) Execute(ctx context.Context, r effects.Prepared) effects.Candidate {
+ c := p.controlled.Execute(ctx,r)
+ switch p.scenario {
+ case "initial-clarification":
+  if r.Request.Effect == "compose" { c.Payload["decision"] = schema.Text("clarification"); c.Payload["candidate"] = schema.Text("Which deployment?") }
+ case "revision-abstention":
+  if r.Request.Effect == "compose" && r.Request.Payload["e3_disposition"].Text == "answer" { c.Payload["decision"] = schema.Text("insufficient_evidence"); c.Payload["candidate"] = schema.Text("The revision cannot establish readiness.") }
+ case "second-review-invalid":
+  if r.Request.Effect == "review" && r.Request.Payload["e3_disposition"].Text == "answer" { c.Payload["decision"] = schema.Text("execute") }
+ }
+ return c
+}
+
+func TestNewTransitionCounterexamples(t *testing.T) {
+ for _, tc := range []struct{ name, disposition string; models, lookups int; revisions int64 }{
+  {"initial-clarification","clarification",6,2,0},
+  {"revision-abstention","insufficient_evidence",12,4,1},
+  {"second-review-invalid","invalid_result",13,4,1},
+ } {
+  t.Run(tc.name,func(t *testing.T){
+   cfg:=investigation.DefaultConfig(); cfg.Model="controlled"; cfg.Nested=true
+   asset,err:=effects.NewAsset("packet","fixture",[]byte("alpha release supports Linux.\nbeta rollback requires version 2.\ngamma approval is recorded.\ndelta window is seven minutes.\n")); if err!=nil {t.Fatal(err)}
+   provision,err:=investigation.Provision("What is supported and when do we roll back?",cfg,[]effects.Asset{asset}); if err!=nil {t.Fatal(err)}
+   path:=filepath.Join(t.TempDir(),"run.sqlite")
+   store,err:=runtime.Create(t.Context(),path,provision,runtime.DefaultLimits()); if err!=nil {t.Fatal(err)}
+   provider:=&transitionProbe{controlled:controlled{mode:"revise"},scenario:tc.name}
+   _,err=store.Run(t.Context(),runtime.RunOptions{MaxSteps:10000,MaxDispatch:10000,MaxInFlight:2,Adapters:map[string]effects.Adapter{investigation.ModelCapability:provider,investigation.LookupCapability:lookup.New()}}); if err!=nil {t.Fatal(err)}
+   if err=store.Close();err!=nil {t.Fatal(err)}
+   view,err:=investigation.Inspect(t.Context(),path);if err!=nil {t.Fatal(err)}
+   result:=view.Result
+   if result["disposition"].Text!=tc.disposition || result["revision_count"].Number!=tc.revisions || view.ModelRequests!=tc.models || view.LookupRequests!=tc.lookups || result["report_outcome"].Text!="needs_attention" {t.Fatalf("wrong termination: disposition=%s revisions=%d model=%d lookup=%d report=%s",result["disposition"].Text,result["revision_count"].Number,view.ModelRequests,view.LookupRequests,result["report_outcome"].Text)}
+   if tc.revisions==1 && (result["initial_review_decision"].Text!="revise" || result["initial_candidate"].Text!="Linux supported; rollback version 2.") {t.Fatal("initial round overwritten")}
+   switch tc.name {
+   case "initial-clarification": if result["answer"].Text!="Which deployment?" || result["review_decision"].Text!="" {t.Fatal("clarification incorrectly reviewed or lost")}
+   case "revision-abstention": if result["answer"].Text!="The revision cannot establish readiness." || result["review_decision"].Text!="revise" {t.Fatal("revision abstention mislabeled")}
+   case "second-review-invalid": if result["answer"].Text!="" || result["review_decision"].Text!="invalid_result" {t.Fatal("invalid review accepted or initial review leaked")}
+   }
+   if _,err=runtime.Replay(t.Context(),path,runtime.DefaultLimits());err!=nil {t.Fatal(err)}
+   t.Logf("scenario=%s disposition=%s models=%d lookups=%d revisions=%d initial_review=%q final_review=%q outer=%s",tc.name,result["disposition"].Text,view.ModelRequests,view.LookupRequests,result["revision_count"].Number,result["initial_review_decision"].Text,result["review_decision"].Text,result["report_outcome"].Text)
+  })
+ }
+}

@@ -1,0 +1,55 @@
+{
+  "Kind": "archive_reproduction",
+  "SourceID": "2dacb402e50ee938d6184c14b40ba469fdcb8d91d9c30eac178b0dcb2a0fd3f8",
+  "ArchiveSHA256": "95407d737dc6002e3a43d4317e7390280a3f5b7dc983ab8f4c247e0fa139dcc6",
+  "VerifiedMembers": 355,
+  "VerifiedSourceFiles": 189,
+  "ScriptSHA256": "e3bcf84de20519f3d17a796fc0db57e80b1183136248ddc3946bcd9f17c91cc1",
+  "Environment": {
+    "GOTOOLCHAIN": "local",
+    "GOFLAGS": "-mod=readonly",
+    "GOCACHE": "/tmp/alan-phase1f-go-build",
+    "GOMODCACHE": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1f-archive-reproduction-dgg40afo/module-cache",
+    "GOPROXY": "file:///var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1f-archive-reproduction-dgg40afo/dependencies",
+    "GOSUMDB": "off"
+  },
+  "CredentialPresent": false,
+  "Commands": [
+    {
+      "Command": [
+        "go",
+        "mod",
+        "download"
+      ],
+      "Directory": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1f-archive-reproduction-dgg40afo",
+      "StartedUTC": "2026-10-26T16:19:09.784032+00:00",
+      "ElapsedSeconds": 0.11,
+      "ExitCode": 0,
+      "Stderr": "",
+      "Stdout": "docs/foundational/phase1f/evidence/archive-modules.stdout.gz",
+      "RawSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "Command": [
+        "go",
+        "test",
+        "-json",
+        "-count=1",
+        "-timeout",
+        "20m",
+        "./..."
+      ],
+      "Directory": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1f-archive-reproduction-dgg40afo",
+      "StartedUTC": "2026-10-26T16:19:09.893942+00:00",
+      "ElapsedSeconds": 50.679,
+      "ExitCode": 0,
+      "Stderr": "",
+      "Stdout": "docs/foundational/phase1f/evidence/archive-default.stdout.gz",
+      "RawSHA256": "2a0745335f94427ba340211ef6f706c982af4b7640d77caff70c1fc59920a995",
+      "PassingEvents": 550,
+      "Failures": []
+    }
+  ],
+  "SourceDirectory": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1f-archive-reproduction-dgg40afo",
+  "Scope": "Isolated archive source with initially empty module cache and file-only pinned dependency proxy. Controlled tests may use loopback; no provider credential."
+}

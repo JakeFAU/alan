@@ -1,0 +1,26 @@
+{
+  "schema": "phase1f-evaluation-correction/v1",
+  "correction_revision": 2,
+  "finding": "effects.Asset.Version must be lowercase hexadecimal SHA-256 of exact Content bytes; revision 1 used editorial version 1 as the runtime/citation version. Assets constructed literally from that manifest would fail validation.",
+  "contract_source": "effects/effects.go:23-35; NewAsset and Asset.Check",
+  "original_freeze_identity": "eb5546bf2495869dabfc70242af523d2a5fc1005ccb674cc729c12f6df741de9",
+  "original_sealed_commitment": "11476bb1cce2cdd2c56873779df2a8e16f93602702aa10d84218c41bb161a4d8",
+  "original_public_archive": {
+    "path": "history/v1-public.tar.gz",
+    "sha256": "804ea80dee24f4889dd1243b4a235a1c528c0cef0147e1d23adb9aa6f6a8a2f7",
+    "bytes": 11706
+  },
+  "change_scope": [
+    "corpus manifest runtime version fields become content SHA-256; editorial_revision remains 1",
+    "development and sealed gold reference version fields become matching content SHA-256",
+    "protocol, rubric and verifier clarify/enforce runtime version contract",
+    "new public/sealed freeze manifests commit corrected bytes and original history"
+  ],
+  "preserved": [
+    "all corpus bytes",
+    "all question bytes",
+    "all semantic gold, source IDs, lines, offsets and snippets",
+    "all categories and stopping rules"
+  ],
+  "contamination_assessment": "Interface-only correction identified by independent review before application implementation/output. No application outputs were inspected and heldout content was not disclosed. The corrected set has a new freeze identity; the first freeze remains preserved, not relabeled."
+}

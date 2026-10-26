@@ -1,0 +1,2363 @@
+{
+  "schema": "phase1f-independent-blind-grades/v3",
+  "grader": {
+    "identity": "independently scoped Codex evaluator /root/phase1f_v3_grader",
+    "date": "2026-10-26",
+    "independence": "Only the grading brief, public frozen protocol/rubric/development inputs+gold, corpus manifest+exact corpus bytes and revision3 blind packets were read. No implementation, application review verdicts, system mapping, older grades, raw provider data, heldout inputs/gold, credentials, network, or subagents. Application policy remains frozen.",
+    "practical_blinding_limit": "Opaque IDs hide labels; answer/citation structure and empty delivered answers may reveal a system family. No label is inferred or reported."
+  },
+  "source_hashes": {
+    "docs/foundational/phase1f/evaluation/protocol.md": "bcc8d0373e0c336517596957f53053c14171f77782919e5873f5f3411aa875c9",
+    "docs/foundational/phase1f/evaluation/rubric.json": "295a4bccfa3d25929007caca5a5601867a6d90444d62504045f944d304f56a0b",
+    "docs/foundational/phase1f/evaluation/development-inputs.json": "0f149a4c10f2b1ee64a58bfdf1039bb1e4445c93d80510e0b503b0b9f8b810c3",
+    "docs/foundational/phase1f/evaluation/development-gold.json": "092d1569170da2fa91e23850ddde856bd3587f1881959e59c9d0467b1da6fa21",
+    "docs/foundational/phase1f/evaluation/corpus/manifest.json": "0c1d4763cd254f29c131be1bdcf9666c6bba4aaa8ab3d1978f66e84b6275bac8",
+    "docs/foundational/phase1f/evidence/live-development-v3/blind-packets.json": "2513ce0b468f95d5397099c6ad8c3b446dadb5f18410f89ae2f7cf988bbb935c",
+    ".superpowers/sdd/00-plan/development-v3-grading-brief.md": "2a48bd9ba7c64e7af886ee0e580f339aad3dae2f9ad987a19e768e0213c502f3",
+    "docs/foundational/phase1f/evaluation/corpus/cedar.txt": "9ef0dfbfc7ce878bb033ac002be584b378193054dd56609af2d4494e4b296749",
+    "docs/foundational/phase1f/evaluation/corpus/quartz.txt": "faa8adec67482975e84d81a2eec808f32a7bdb9aa89333a1aed7d74d912f299b",
+    "docs/foundational/phase1f/evaluation/corpus/larch.txt": "87693660b05a354b3b2ddbe205928ce1be5ca18d27045696c6be7b3e33202fc1",
+    "docs/foundational/phase1f/evaluation/corpus/marlin.txt": "12cfacc413b898194288a42054075218408911d001e1f41c42abd6a83e2bbf62",
+    "docs/foundational/phase1f/evaluation/corpus/maple.txt": "0b06f717436d38d5f1ec799e8ead043d0919afc2f62374bfec91b732bdf7a152",
+    "docs/foundational/phase1f/evaluation/corpus/saffron.txt": "ab8f3839444a672c5f640aaa78e442022231ec10c0e86e28125cec9a120cdbd1",
+    "docs/foundational/phase1f/evaluation/corpus/birch.txt": "f5648bd18afd4f1efb7e5d85281ce2d0104e6ea8863903f35a2c43f545073027",
+    "docs/foundational/phase1f/evaluation/corpus/heron.txt": "2d59e72f0f48b99895e2d7497a69672d6313c6a84fd432b1e7696808b8b511a0"
+  },
+  "methodology": {
+    "gold_group_scoring": "Required facts are the frozen groups, not uniformly atomic propositions. Full group supported only if every required semantic element is present; partial groups are missing with explicit partial-coverage reason. Do not pool group recall as uniformly weighted atomic recall.",
+    "claim_precision": "Substantive assertions are enumerated separately from gold groups. A numerical precision is emitted only where every enumerated assertion has a faithful support classification; scoped supplied-context absence cannot be fully verified from emitted citations, so precision remains null there rather than inventing a supported numerator. Pure retrieval requests and duplicate paraphrases are not counted again; operational corpus rules remain substantive assertions.",
+    "scope": "A claim explicitly limited to supplied excerpts may correctly describe retrieval even when the corpus contains omitted facts. Such scoped claims are not automatically unsupported corpus-absence claims. Missing required known facts still lose completeness.",
+    "citation": "Every emitted citation is checked against UTF-8 bytes and content SHA. Repeated citations add no coverage. Diagnostic strings have no explicit citation association; diagnostic coverage/validity remain unavailable.",
+    "operational_delivery": "Empty final answer stays empty. Emitted citations do not substitute for delivered claims. invalid_result/revision_limit and similar stops do not imply correct epistemic abstention.",
+    "revision": "Required revision_candidate_change compares initial with delivered final. Unaccepted diagnostic semantic improvements are reported separately; no actual revision count is inferred from answer equality."
+  },
+  "normalization_issues": [],
+  "adjudication_items": [
+    {
+      "id": "response-01",
+      "issue": "Strict conflict-unresolved group credit",
+      "decision": "Missing as a full group: the answer recognizes conflict/no unified readiness but omits equal authority, common-cluster and non-supersession context. Those omitted elements also lack a citation."
+    },
+    {
+      "id": "response-01",
+      "issue": "Strict stopping rule includes authoritative reconciliation request",
+      "decision": "False because no reconciliation is requested, despite correct practical withholding/rollback. A second reviewer should explicitly adjudicate strict versus core-semantic stopping interpretation."
+    },
+    {
+      "id": "response-02",
+      "issue": "Unaccepted diagnostic exact-version/build caveat",
+      "decision": "Required index 4 target is explicitly present and supported. Additional exact-build absence is ambiguous; precision null. Do not erase the target credit or silently count the ambiguous caveat supported."
+    },
+    {
+      "ids": [
+        "response-01",
+        "response-02",
+        "response-03",
+        "response-04",
+        "response-05",
+        "response-06",
+        "response-07"
+      ],
+      "issue": "Supplied-evidence absence scope",
+      "decision": "The packet does not prove the entire supplied excerpt set. Preserve scoped interpretation, flag uncertain precision support, and distinguish corpus completeness loss."
+    }
+  ],
+  "results": [
+    {
+      "id": "response-01",
+      "case_id": "dev-04",
+      "execution_outcome": "public-result",
+      "initial": {
+        "answer": "The operations final report states that migration validation passed and Marlin database 6 is ready for production window M31. The supplied excerpts do not include the other final reports’ readiness findings, so they do not establish agreement across the final reports.\n\nFor rollback, both teams agree to restore the database 5 snapshot if replication lag exceeds 45 seconds for five consecutive minutes.",
+        "semantic_mode": "partial_answer_with_abstention",
+        "required_facts": [
+          {
+            "id": "ops-pass",
+            "status": "supported",
+            "answer_excerpt": "The operations final report states that migration validation passed and Marlin database 6 is ready for production window M31.",
+            "reason": "All required semantics of this fact group are explicitly present.",
+            "citation_covered": true
+          },
+          {
+            "id": "db-fail",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "This required fact is absent; a scoped limitation about supplied excerpts does not answer the known fact in the full corpus.",
+            "citation_covered": false
+          },
+          {
+            "id": "conflict-unresolved",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "This required fact is absent; a scoped limitation about supplied excerpts does not answer the known fact in the full corpus.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-target",
+            "status": "supported",
+            "answer_excerpt": "both teams agree to restore the database 5 snapshot",
+            "reason": "All required semantics of this fact group are explicitly present.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "supported",
+            "answer_excerpt": "if replication lag exceeds 45 seconds for five consecutive minutes.",
+            "reason": "All required semantics of this fact group are explicitly present.",
+            "citation_covered": true
+          }
+        ],
+        "excluded_required_facts": [],
+        "substantive_claims": [
+          {
+            "claim": "The operations report says validation passed.",
+            "answer_excerpt": "migration validation passed",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "The operations report says Marlin is ready for M31.",
+            "answer_excerpt": "Marlin database 6 is ready for production window M31.",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "Other final report readiness findings are absent from supplied excerpts.",
+            "answer_excerpt": "The supplied excerpts do not include the other final reports’ readiness findings",
+            "support_status": "unverifiable_from_packet",
+            "reason": "The citations show operations and rollback, but the packet does not identify every excerpt actually supplied. The entire corpus contains the database failure report."
+          },
+          {
+            "claim": "The supplied excerpts do not establish agreement across final reports.",
+            "answer_excerpt": "so they do not establish agreement across the final reports.",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "Both teams agree on the rollback target.",
+            "answer_excerpt": "both teams agree to restore the database 5 snapshot",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "The rollback target is the database 5 snapshot.",
+            "answer_excerpt": "restore the database 5 snapshot",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "The rollback comparison is replication lag strictly greater than 45 seconds.",
+            "answer_excerpt": "replication lag exceeds 45 seconds",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "The comparison must hold for five consecutive minutes.",
+            "answer_excerpt": "for five consecutive minutes.",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          }
+        ],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 1,
+            "valid": true,
+            "reason": "Document identity, content-SHA version, byte bounds and exact UTF-8 snippet verified."
+          },
+          {
+            "index": 2,
+            "valid": true,
+            "reason": "Document identity, content-SHA version, byte bounds and exact UTF-8 snippet verified."
+          }
+        ],
+        "citation_association": "candidate citations as emitted in blind packet",
+        "stopping_correct": false,
+        "stopping_reason": "It withholds agreement and preserves rollback, but neither identifies the database failure nor reports the actual unresolved equal-authority conflict; authoritative reconciliation is not requested.",
+        "counts": {
+          "applicable_required_facts": 5,
+          "supported": 3,
+          "contradicted": 0,
+          "missing": 2,
+          "citation_covered": 3,
+          "emitted_citations": 2,
+          "valid_citations": 2,
+          "enumerated_substantive_claims": 8,
+          "supported_substantive_claims": 7,
+          "unsupported_substantive_claims": 0,
+          "unverifiable_or_ambiguous_substantive_claims": 1
+        },
+        "metrics": {
+          "required_fact_recall": 0.6,
+          "substantive_claim_precision": null,
+          "substantive_claim_precision_reason": "All identifiable substantive assertions are enumerated, but supplied-evidence scope or wording cannot be resolved from this packet; no faithful supported-claim numerator is established. Do not count the gold fact groups as a precision denominator.",
+          "valid_citation_fraction": 1.0,
+          "citation_coverage": 1.0
+        },
+        "full_support_pass": false,
+        "quality_success": false
+      },
+      "final": {
+        "answer": "No—the final reports do not collectively establish readiness for Marlin database 6 in production window M31. They conflict: the operations final report says migration validation passed and the migration is ready, while the database final report says validation failed and the migration is not ready. The supplied evidence does not resolve that conflict.\n\nBoth teams agree on rollback: restore the database 5 snapshot if replication lag exceeds 45 seconds for five consecutive minutes.",
+        "semantic_mode": "partial_answer_with_abstention",
+        "required_facts": [
+          {
+            "id": "ops-pass",
+            "status": "supported",
+            "answer_excerpt": "the operations final report says migration validation passed and the migration is ready",
+            "reason": "All required semantics of this fact group are explicitly present.",
+            "citation_covered": true
+          },
+          {
+            "id": "db-fail",
+            "status": "supported",
+            "answer_excerpt": "the database final report says validation failed and the migration is not ready.",
+            "reason": "All required semantics of this fact group are explicitly present.",
+            "citation_covered": true
+          },
+          {
+            "id": "conflict-unresolved",
+            "status": "missing",
+            "answer_excerpt": "No—the final reports do not collectively establish readiness for Marlin database 6 in production window M31. They conflict: the operations final report says migration validation passed and the migration is ready, while the database final report says validation failed and the migration is not ready. The supplied evidence does not resolve that conflict.",
+            "reason": "Partial group: identifies incompatible reports, withholds unified readiness and states unresolved conflict; does not state equal authority, common cluster, or neither superseding the other. Full grouped gold credit requires all required semantics.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-target",
+            "status": "supported",
+            "answer_excerpt": "Both teams agree on rollback: restore the database 5 snapshot",
+            "reason": "All required semantics of this fact group are explicitly present.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "supported",
+            "answer_excerpt": "if replication lag exceeds 45 seconds for five consecutive minutes.",
+            "reason": "All required semantics of this fact group are explicitly present.",
+            "citation_covered": true
+          }
+        ],
+        "excluded_required_facts": [],
+        "substantive_claims": [
+          {
+            "claim": "Final reports do not establish unified readiness.",
+            "answer_excerpt": "the final reports do not collectively establish readiness for Marlin database 6 in production window M31.",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "The final readiness reports conflict.",
+            "answer_excerpt": "They conflict:",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "Operations reports validation passed.",
+            "answer_excerpt": "migration validation passed",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "Operations reports migration is ready.",
+            "answer_excerpt": "the migration is ready",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "Database reports validation failed.",
+            "answer_excerpt": "validation failed",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "Database reports migration is not ready.",
+            "answer_excerpt": "the migration is not ready.",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "The report conflict has no supplied resolution.",
+            "answer_excerpt": "The supplied evidence does not resolve that conflict.",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "The rollback is agreed by both teams.",
+            "answer_excerpt": "Both teams agree on rollback:",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "The rollback target is database 5 snapshot.",
+            "answer_excerpt": "restore the database 5 snapshot",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "The rollback comparison is replication lag strictly greater than 45 seconds.",
+            "answer_excerpt": "replication lag exceeds 45 seconds",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "The comparison must hold for five consecutive minutes.",
+            "answer_excerpt": "for five consecutive minutes.",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          }
+        ],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 1,
+            "valid": true,
+            "reason": "Document identity, content-SHA version, byte bounds and exact UTF-8 snippet verified."
+          },
+          {
+            "index": 2,
+            "valid": true,
+            "reason": "Document identity, content-SHA version, byte bounds and exact UTF-8 snippet verified."
+          },
+          {
+            "index": 3,
+            "valid": true,
+            "reason": "Document identity, content-SHA version, byte bounds and exact UTF-8 snippet verified."
+          },
+          {
+            "index": 4,
+            "valid": true,
+            "reason": "Document identity, content-SHA version, byte bounds and exact UTF-8 snippet verified."
+          }
+        ],
+        "citation_association": "candidate citations as emitted in blind packet",
+        "stopping_correct": false,
+        "stopping_reason": "It correctly reports conflict, withholds unified readiness and gives agreed rollback. Strict stopping rule also requests authoritative reconciliation; this answer does not request it. The full required authority-context group is also incomplete. Reviewer may adjudicate whether explicitly requesting reconciliation is necessary for stopping credit.",
+        "counts": {
+          "applicable_required_facts": 5,
+          "supported": 4,
+          "contradicted": 0,
+          "missing": 1,
+          "citation_covered": 4,
+          "emitted_citations": 4,
+          "valid_citations": 4,
+          "enumerated_substantive_claims": 11,
+          "supported_substantive_claims": 11,
+          "unsupported_substantive_claims": 0,
+          "unverifiable_or_ambiguous_substantive_claims": 0
+        },
+        "metrics": {
+          "required_fact_recall": 0.8,
+          "substantive_claim_precision": 1.0,
+          "substantive_claim_precision_reason": "Explicit denominator is the enumerated distinct substantive assertions. Report-attributed pass/readiness assertions, target and trigger comparison/duration are separate; repeated paraphrases are counted once. Context restricts each assertion rather than adding fictitious standalone claims. Pure information requests/retrieval suggestions are excluded; corpus-backed configuration and rollback rules are factual recommendations.",
+          "valid_citation_fraction": 1.0,
+          "citation_coverage": 1.0
+        },
+        "full_support_pass": false,
+        "quality_success": false
+      },
+      "revision_candidate_change": {
+        "classification": "improved",
+        "reasons": [
+          "Delivered required-group recall improves from 3/5 to 4/5 by including database-fail; the conflict group remains partial.",
+          "Supported required-fact coverage remains complete (3/3 to 4/4), although the unresolved conflict claim lacks the authority-context citation.",
+          "Strict stopping remains false; no supported required fact regresses.",
+          "Initial retrieval-absence claim is no longer needed."
+        ]
+      },
+      "diagnostic_final_candidate": {
+        "status": "diagnostic_only_unaccepted_content",
+        "grade": {
+          "answer": "No—the final reports do not collectively establish readiness for Marlin database 6 in production window M31. They conflict: the operations final report says migration validation passed and the migration is ready, while the database final report says validation failed and the migration is not ready. The supplied evidence does not resolve that conflict.\n\nBoth teams agree on rollback: restore the database 5 snapshot if replication lag exceeds 45 seconds for five consecutive minutes.",
+          "semantic_mode": "partial_answer_with_abstention",
+          "required_facts": [
+            {
+              "id": "ops-pass",
+              "status": "supported",
+              "answer_excerpt": "the operations final report says migration validation passed and the migration is ready",
+              "reason": "All required semantics of this fact group are explicitly present.",
+              "citation_covered": null
+            },
+            {
+              "id": "db-fail",
+              "status": "supported",
+              "answer_excerpt": "the database final report says validation failed and the migration is not ready.",
+              "reason": "All required semantics of this fact group are explicitly present.",
+              "citation_covered": null
+            },
+            {
+              "id": "conflict-unresolved",
+              "status": "missing",
+              "answer_excerpt": "No—the final reports do not collectively establish readiness for Marlin database 6 in production window M31. They conflict: the operations final report says migration validation passed and the migration is ready, while the database final report says validation failed and the migration is not ready. The supplied evidence does not resolve that conflict.",
+              "reason": "Partial group: identifies incompatible reports, withholds unified readiness and states unresolved conflict; does not state equal authority, common cluster, or neither superseding the other. Full grouped gold credit requires all required semantics.",
+              "citation_covered": null
+            },
+            {
+              "id": "rollback-target",
+              "status": "supported",
+              "answer_excerpt": "Both teams agree on rollback: restore the database 5 snapshot",
+              "reason": "All required semantics of this fact group are explicitly present.",
+              "citation_covered": null
+            },
+            {
+              "id": "rollback-trigger",
+              "status": "supported",
+              "answer_excerpt": "if replication lag exceeds 45 seconds for five consecutive minutes.",
+              "reason": "All required semantics of this fact group are explicitly present.",
+              "citation_covered": null
+            }
+          ],
+          "excluded_required_facts": [],
+          "substantive_claims": [
+            {
+              "claim": "Final reports do not establish unified readiness.",
+              "answer_excerpt": "the final reports do not collectively establish readiness for Marlin database 6 in production window M31.",
+              "support_status": "supported",
+              "reason": "Entailed by the frozen corpus."
+            },
+            {
+              "claim": "The final readiness reports conflict.",
+              "answer_excerpt": "They conflict:",
+              "support_status": "supported",
+              "reason": "Entailed by the frozen corpus."
+            },
+            {
+              "claim": "Operations reports validation passed.",
+              "answer_excerpt": "migration validation passed",
+              "support_status": "supported",
+              "reason": "Entailed by the frozen corpus."
+            },
+            {
+              "claim": "Operations reports migration is ready.",
+              "answer_excerpt": "the migration is ready",
+              "support_status": "supported",
+              "reason": "Entailed by the frozen corpus."
+            },
+            {
+              "claim": "Database reports validation failed.",
+              "answer_excerpt": "validation failed",
+              "support_status": "supported",
+              "reason": "Entailed by the frozen corpus."
+            },
+            {
+              "claim": "Database reports migration is not ready.",
+              "answer_excerpt": "the migration is not ready.",
+              "support_status": "supported",
+              "reason": "Entailed by the frozen corpus."
+            },
+            {
+              "claim": "The report conflict has no supplied resolution.",
+              "answer_excerpt": "The supplied evidence does not resolve that conflict.",
+              "support_status": "supported",
+              "reason": "Entailed by the frozen corpus."
+            },
+            {
+              "claim": "The rollback is agreed by both teams.",
+              "answer_excerpt": "Both teams agree on rollback:",
+              "support_status": "supported",
+              "reason": "Entailed by the frozen corpus."
+            },
+            {
+              "claim": "The rollback target is database 5 snapshot.",
+              "answer_excerpt": "restore the database 5 snapshot",
+              "support_status": "supported",
+              "reason": "Entailed by the frozen corpus."
+            },
+            {
+              "claim": "The rollback comparison is replication lag strictly greater than 45 seconds.",
+              "answer_excerpt": "replication lag exceeds 45 seconds",
+              "support_status": "supported",
+              "reason": "Entailed by the frozen corpus."
+            },
+            {
+              "claim": "The comparison must hold for five consecutive minutes.",
+              "answer_excerpt": "for five consecutive minutes.",
+              "support_status": "supported",
+              "reason": "Entailed by the frozen corpus."
+            }
+          ],
+          "unsupported_extra_claims": [],
+          "citations": null,
+          "citation_association": "unavailable: diagnostic is a string; equality to delivered text does not create an explicit diagnostic citation association",
+          "stopping_correct": false,
+          "stopping_reason": "It correctly reports conflict, withholds unified readiness and gives agreed rollback. Strict stopping rule also requests authoritative reconciliation; this answer does not request it. The full required authority-context group is also incomplete. Reviewer may adjudicate whether explicitly requesting reconciliation is necessary for stopping credit.",
+          "counts": {
+            "applicable_required_facts": 5,
+            "supported": 4,
+            "contradicted": 0,
+            "missing": 1,
+            "citation_covered": null,
+            "emitted_citations": null,
+            "valid_citations": null,
+            "enumerated_substantive_claims": 11,
+            "supported_substantive_claims": 11,
+            "unsupported_substantive_claims": 0,
+            "unverifiable_or_ambiguous_substantive_claims": 0
+          },
+          "metrics": {
+            "required_fact_recall": 0.8,
+            "substantive_claim_precision": 1.0,
+            "substantive_claim_precision_reason": "Explicit denominator is the enumerated distinct substantive assertions. Report-attributed pass/readiness assertions, target and trigger comparison/duration are separate; repeated paraphrases are counted once. Context restricts each assertion rather than adding fictitious standalone claims. Pure information requests/retrieval suggestions are excluded; corpus-backed configuration and rollback rules are factual recommendations.",
+            "valid_citation_fraction": null,
+            "citation_coverage": null
+          },
+          "full_support_pass": false,
+          "quality_success": null
+        },
+        "comparison_to_initial_semantics": "Same text as delivered final; diagnostic provenance remains unavailable."
+      }
+    },
+    {
+      "id": "response-02",
+      "case_id": "dev-03",
+      "execution_outcome": "public-result",
+      "initial": {
+        "answer": "Security approval is not established by this packet: it explicitly records no signed security approval or rejection for Larch index 5 in production window L24. This does not establish that security rejected the change.\n\nThe exact rollback timing and target version cannot be determined from the supplied excerpts. They state only that revision 1 of the readiness packet applies to L24 and contains the compatibility check and rollback procedure. Retrieve the rollback procedure itself to establish exactly when to roll back and to which version; revision 1 is the packet revision, not an established rollback target.",
+        "semantic_mode": "partial_answer_with_abstention",
+        "required_facts": [
+          {
+            "id": "approval-unknown",
+            "status": "supported",
+            "answer_excerpt": "Security approval is not established by this packet: it explicitly records no signed security approval or rejection for Larch index 5 in production window L24.",
+            "reason": "All required semantics of this fact group are explicitly present.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-target",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "This required fact is absent; a scoped limitation about supplied excerpts does not answer the known fact in the full corpus.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "This required fact is absent; a scoped limitation about supplied excerpts does not answer the known fact in the full corpus.",
+            "citation_covered": false
+          }
+        ],
+        "excluded_required_facts": [],
+        "substantive_claims": [
+          {
+            "claim": "Security approval is not established.",
+            "answer_excerpt": "Security approval is not established by this packet",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "No signed security approval is recorded.",
+            "answer_excerpt": "no signed security approval or rejection",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "No signed security rejection is recorded.",
+            "answer_excerpt": "no signed security approval or rejection",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "The packet does not establish security rejection.",
+            "answer_excerpt": "This does not establish that security rejected the change.",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "Rollback timing cannot be determined from supplied excerpts.",
+            "answer_excerpt": "The exact rollback timing and target version cannot be determined from the supplied excerpts.",
+            "support_status": "unverifiable_from_packet",
+            "reason": "This explicitly scopes the absence to supplied evidence/excerpts, not to the full corpus. The cited subset lacks this information, but citations do not prove the complete supplied-context set. Treat it as potentially true about retrieval, not as a contradicted assertion that the corpus lacks rollback. The full corpus does contain the requested rollback."
+          },
+          {
+            "claim": "Rollback target cannot be determined from supplied excerpts.",
+            "answer_excerpt": "The exact rollback timing and target version cannot be determined from the supplied excerpts.",
+            "support_status": "unverifiable_from_packet",
+            "reason": "This explicitly scopes the absence to supplied evidence/excerpts, not to the full corpus. The cited subset lacks this information, but citations do not prove the complete supplied-context set. Treat it as potentially true about retrieval, not as a contradicted assertion that the corpus lacks rollback. The full corpus does contain the requested rollback."
+          },
+          {
+            "claim": "The packet is revision 1 and applies to L24.",
+            "answer_excerpt": "revision 1 of the readiness packet applies to L24",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "The packet contains a compatibility check.",
+            "answer_excerpt": "contains the compatibility check and rollback procedure.",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "The packet contains a rollback procedure.",
+            "answer_excerpt": "contains the compatibility check and rollback procedure.",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "Revision 1 identifies the packet rather than the rollback target.",
+            "answer_excerpt": "revision 1 is the packet revision, not an established rollback target.",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          }
+        ],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 1,
+            "valid": true,
+            "reason": "Document identity, content-SHA version, byte bounds and exact UTF-8 snippet verified."
+          },
+          {
+            "index": 2,
+            "valid": true,
+            "reason": "Document identity, content-SHA version, byte bounds and exact UTF-8 snippet verified."
+          }
+        ],
+        "citation_association": "candidate citations as emitted in blind packet",
+        "stopping_correct": false,
+        "stopping_reason": "Correctly withholds approval, but omits known index 4 rollback and strict failure threshold/duration. Requests retrieval rather than delivering the known rollback.",
+        "counts": {
+          "applicable_required_facts": 3,
+          "supported": 1,
+          "contradicted": 0,
+          "missing": 2,
+          "citation_covered": 1,
+          "emitted_citations": 2,
+          "valid_citations": 2,
+          "enumerated_substantive_claims": 10,
+          "supported_substantive_claims": 8,
+          "unsupported_substantive_claims": 0,
+          "unverifiable_or_ambiguous_substantive_claims": 2
+        },
+        "metrics": {
+          "required_fact_recall": 0.3333333333333333,
+          "substantive_claim_precision": null,
+          "substantive_claim_precision_reason": "All identifiable substantive assertions are enumerated, but supplied-evidence scope or wording cannot be resolved from this packet; no faithful supported-claim numerator is established. Do not count the gold fact groups as a precision denominator.",
+          "valid_citation_fraction": 1.0,
+          "citation_coverage": 1.0
+        },
+        "full_support_pass": false,
+        "quality_success": false
+      },
+      "final": {
+        "answer": "",
+        "semantic_mode": "empty_operational_result",
+        "required_facts": [
+          {
+            "id": "approval-unknown",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "The delivered answer is empty.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-target",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "The delivered answer is empty.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "The delivered answer is empty.",
+            "citation_covered": false
+          }
+        ],
+        "excluded_required_facts": [],
+        "substantive_claims": [],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 1,
+            "valid": true,
+            "reason": "Document identity, content-SHA version, byte bounds and exact UTF-8 snippet verified."
+          },
+          {
+            "index": 2,
+            "valid": true,
+            "reason": "Document identity, content-SHA version, byte bounds and exact UTF-8 snippet verified."
+          },
+          {
+            "index": 3,
+            "valid": true,
+            "reason": "Document identity, content-SHA version, byte bounds and exact UTF-8 snippet verified."
+          },
+          {
+            "index": 4,
+            "valid": true,
+            "reason": "Document identity, content-SHA version, byte bounds and exact UTF-8 snippet verified."
+          }
+        ],
+        "citation_association": "candidate citations as emitted in blind packet",
+        "stopping_correct": false,
+        "stopping_reason": "An empty delivered final at revision_limit is an operational stop, not a substantive partial answer or correct epistemic abstention. All three required fact groups are missing.",
+        "counts": {
+          "applicable_required_facts": 3,
+          "supported": 0,
+          "contradicted": 0,
+          "missing": 3,
+          "citation_covered": 0,
+          "emitted_citations": 4,
+          "valid_citations": 4,
+          "enumerated_substantive_claims": 0,
+          "supported_substantive_claims": 0,
+          "unsupported_substantive_claims": 0,
+          "unverifiable_or_ambiguous_substantive_claims": 0
+        },
+        "metrics": {
+          "required_fact_recall": 0.0,
+          "substantive_claim_precision": null,
+          "substantive_claim_precision_reason": "No substantive claims: the delivered answer is empty.",
+          "valid_citation_fraction": 1.0,
+          "citation_coverage": null
+        },
+        "full_support_pass": false,
+        "quality_success": false
+      },
+      "revision_candidate_change": {
+        "classification": "regressed",
+        "reasons": [
+          "Delivered answer loses approval-unknown (1/3 to 0/3).",
+          "Initial supported-fact citation coverage is 1/1; delivered empty final has no supported fact denominator.",
+          "Both stop grades fail; no delivered quality dimension improves. Diagnostic content is separate and cannot substitute for delivery."
+        ]
+      },
+      "diagnostic_final_candidate": {
+        "status": "diagnostic_only_unaccepted_content",
+        "grade": {
+          "answer": "Security approval is not established by this packet. It explicitly records no signed security approval or rejection for Larch index 5 in production window L24; this does not establish that security rejected the change.\n\nRoll back if query failures exceed 1% for three consecutive minutes, restoring the index 4 snapshot. The supplied rollback excerpt specifies no separate clock-time deadline or exact version/build identifier for that snapshot. If an exact version/build is required, focused retrieval of the snapshot identifier is still needed; revision 1 refers to the readiness packet, not the rollback target.",
+          "semantic_mode": "partial_answer_with_abstention",
+          "required_facts": [
+            {
+              "id": "approval-unknown",
+              "status": "supported",
+              "answer_excerpt": "Security approval is not established by this packet. It explicitly records no signed security approval or rejection for Larch index 5 in production window L24; this does not establish that security rejected the change.",
+              "reason": "All required semantics of this fact group are explicitly present.",
+              "citation_covered": null
+            },
+            {
+              "id": "rollback-target",
+              "status": "supported",
+              "answer_excerpt": "restoring the index 4 snapshot.",
+              "reason": "All required semantics of this fact group are explicitly present.",
+              "citation_covered": null
+            },
+            {
+              "id": "rollback-trigger",
+              "status": "supported",
+              "answer_excerpt": "Roll back if query failures exceed 1% for three consecutive minutes",
+              "reason": "All required semantics of this fact group are explicitly present.",
+              "citation_covered": null
+            }
+          ],
+          "excluded_required_facts": [],
+          "substantive_claims": [
+            {
+              "claim": "Security approval is not established.",
+              "answer_excerpt": "Security approval is not established by this packet.",
+              "support_status": "supported",
+              "reason": "Entailed by the frozen corpus."
+            },
+            {
+              "claim": "No signed security approval is recorded.",
+              "answer_excerpt": "no signed security approval or rejection",
+              "support_status": "supported",
+              "reason": "Entailed by the frozen corpus."
+            },
+            {
+              "claim": "No signed security rejection is recorded.",
+              "answer_excerpt": "no signed security approval or rejection",
+              "support_status": "supported",
+              "reason": "Entailed by the frozen corpus."
+            },
+            {
+              "claim": "Security rejection is not established.",
+              "answer_excerpt": "this does not establish that security rejected the change.",
+              "support_status": "supported",
+              "reason": "Entailed by the frozen corpus."
+            },
+            {
+              "claim": "Rollback target is index 4 snapshot.",
+              "answer_excerpt": "restoring the index 4 snapshot.",
+              "support_status": "supported",
+              "reason": "Entailed by the frozen corpus."
+            },
+            {
+              "claim": "Rollback comparison is query failures strictly greater than 1 percent.",
+              "answer_excerpt": "query failures exceed 1%",
+              "support_status": "supported",
+              "reason": "Entailed by the frozen corpus."
+            },
+            {
+              "claim": "Comparison must persist for three consecutive minutes.",
+              "answer_excerpt": "for three consecutive minutes",
+              "support_status": "supported",
+              "reason": "Entailed by the frozen corpus."
+            },
+            {
+              "claim": "No separate rollback clock-time deadline is specified.",
+              "answer_excerpt": "The supplied rollback excerpt specifies no separate clock-time deadline",
+              "support_status": "supported",
+              "reason": "Entailed by the frozen corpus."
+            },
+            {
+              "claim": "No exact version/build identifier for the index 4 snapshot is specified.",
+              "answer_excerpt": "or exact version/build identifier for that snapshot.",
+              "support_status": "ambiguous",
+              "reason": "The corpus specifies the exact required target as index 4 snapshot. If this sentence means an additional snapshot/build identifier, that extra detail is indeed absent; if it denies an exact version altogether, it conflicts with the stated index 4 target. Do not silently choose one interpretation."
+            },
+            {
+              "claim": "Revision 1 identifies readiness packet revision rather than rollback target.",
+              "answer_excerpt": "revision 1 refers to the readiness packet, not the rollback target.",
+              "support_status": "supported",
+              "reason": "Entailed by the frozen corpus."
+            }
+          ],
+          "unsupported_extra_claims": [],
+          "citations": null,
+          "citation_association": "unavailable: diagnostic is a string with no explicit citation association",
+          "stopping_correct": true,
+          "stopping_reason": "Semantically supplies the known index 4 rollback with exact strict trigger and withholds security approval. The optional extra request for a build identifier does not erase the correct required target; the ambiguous wording is flagged separately.",
+          "counts": {
+            "applicable_required_facts": 3,
+            "supported": 3,
+            "contradicted": 0,
+            "missing": 0,
+            "citation_covered": null,
+            "emitted_citations": null,
+            "valid_citations": null,
+            "enumerated_substantive_claims": 10,
+            "supported_substantive_claims": 9,
+            "unsupported_substantive_claims": 0,
+            "unverifiable_or_ambiguous_substantive_claims": 1
+          },
+          "metrics": {
+            "required_fact_recall": 1.0,
+            "substantive_claim_precision": null,
+            "substantive_claim_precision_reason": "All identifiable substantive assertions are enumerated, but supplied-evidence scope or wording cannot be resolved from this packet; no faithful supported-claim numerator is established. Do not count the gold fact groups as a precision denominator.",
+            "valid_citation_fraction": null,
+            "citation_coverage": null
+          },
+          "full_support_pass": false,
+          "quality_success": null
+        },
+        "comparison_to_initial_semantics": "Required fact groups improve from 1/3 to 3/3. Semantic stopping improves; exact-version/build caveat has an interpretive ambiguity. Provenance and delivered quality do not inherit this conditional improvement."
+      }
+    },
+    {
+      "id": "response-03",
+      "case_id": "dev-01",
+      "execution_outcome": "public-result",
+      "initial": {
+        "answer": "For Cedar agent 3.2 on the production Linux fleet in window C17, kernel 6.1 is supported; kernel 5.15 is unsupported. The supplied excerpts do not establish rollback timing, triggering conditions, or a target version. A focused retrieval of the C17 rollback instructions is needed to answer exactly when and to what version to roll back.",
+        "semantic_mode": "incomplete_answer_with_abstention",
+        "required_facts": [
+          {
+            "id": "kernel-61",
+            "status": "supported",
+            "answer_excerpt": "kernel 6.1 is supported",
+            "reason": "All required semantics of this fact group are explicitly present.",
+            "citation_covered": true
+          },
+          {
+            "id": "kernel-515",
+            "status": "supported",
+            "answer_excerpt": "kernel 5.15 is unsupported.",
+            "reason": "All required semantics of this fact group are explicitly present.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-target",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "This required fact is absent; a scoped limitation about supplied excerpts does not answer the known fact in the full corpus.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "This required fact is absent; a scoped limitation about supplied excerpts does not answer the known fact in the full corpus.",
+            "citation_covered": false
+          }
+        ],
+        "excluded_required_facts": [],
+        "substantive_claims": [
+          {
+            "claim": "Kernel 6.1 is supported.",
+            "answer_excerpt": "kernel 6.1 is supported",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "Kernel 5.15 is unsupported.",
+            "answer_excerpt": "kernel 5.15 is unsupported.",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "Supplied excerpts do not establish rollback timing.",
+            "answer_excerpt": "The supplied excerpts do not establish rollback timing, triggering conditions, or a target version.",
+            "support_status": "unverifiable_from_packet",
+            "reason": "This explicitly scopes the absence to supplied evidence/excerpts, not to the full corpus. The cited subset lacks this information, but citations do not prove the complete supplied-context set. Treat it as potentially true about retrieval, not as a contradicted assertion that the corpus lacks rollback. The full corpus does contain the requested rollback."
+          },
+          {
+            "claim": "Supplied excerpts do not establish rollback trigger conditions.",
+            "answer_excerpt": "The supplied excerpts do not establish rollback timing, triggering conditions, or a target version.",
+            "support_status": "unverifiable_from_packet",
+            "reason": "This explicitly scopes the absence to supplied evidence/excerpts, not to the full corpus. The cited subset lacks this information, but citations do not prove the complete supplied-context set. Treat it as potentially true about retrieval, not as a contradicted assertion that the corpus lacks rollback. The full corpus does contain the requested rollback."
+          },
+          {
+            "claim": "Supplied excerpts do not establish rollback target version.",
+            "answer_excerpt": "The supplied excerpts do not establish rollback timing, triggering conditions, or a target version.",
+            "support_status": "unverifiable_from_packet",
+            "reason": "This explicitly scopes the absence to supplied evidence/excerpts, not to the full corpus. The cited subset lacks this information, but citations do not prove the complete supplied-context set. Treat it as potentially true about retrieval, not as a contradicted assertion that the corpus lacks rollback. The full corpus does contain the requested rollback."
+          }
+        ],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 1,
+            "valid": true,
+            "reason": "Document identity, content-SHA version, byte bounds and exact UTF-8 snippet verified."
+          },
+          {
+            "index": 2,
+            "valid": true,
+            "reason": "Document identity, content-SHA version, byte bounds and exact UTF-8 snippet verified."
+          }
+        ],
+        "citation_association": "candidate citations as emitted in blind packet",
+        "stopping_correct": false,
+        "stopping_reason": "Answers compatibility but omits supported rollback to agent 3.1 when agent errors strictly exceed 2 percent for five consecutive minutes.",
+        "counts": {
+          "applicable_required_facts": 4,
+          "supported": 2,
+          "contradicted": 0,
+          "missing": 2,
+          "citation_covered": 2,
+          "emitted_citations": 2,
+          "valid_citations": 2,
+          "enumerated_substantive_claims": 5,
+          "supported_substantive_claims": 2,
+          "unsupported_substantive_claims": 0,
+          "unverifiable_or_ambiguous_substantive_claims": 3
+        },
+        "metrics": {
+          "required_fact_recall": 0.5,
+          "substantive_claim_precision": null,
+          "substantive_claim_precision_reason": "All identifiable substantive assertions are enumerated, but supplied-evidence scope or wording cannot be resolved from this packet; no faithful supported-claim numerator is established. Do not count the gold fact groups as a precision denominator.",
+          "valid_citation_fraction": 1.0,
+          "citation_coverage": 1.0
+        },
+        "full_support_pass": false,
+        "quality_success": false
+      },
+      "final": {
+        "answer": "",
+        "semantic_mode": "empty_operational_result",
+        "required_facts": [
+          {
+            "id": "kernel-61",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "The delivered answer is empty.",
+            "citation_covered": false
+          },
+          {
+            "id": "kernel-515",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "The delivered answer is empty.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-target",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "The delivered answer is empty.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "The delivered answer is empty.",
+            "citation_covered": false
+          }
+        ],
+        "excluded_required_facts": [],
+        "substantive_claims": [],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 1,
+            "valid": true,
+            "reason": "Document identity, content-SHA version, byte bounds and exact UTF-8 snippet verified."
+          },
+          {
+            "index": 2,
+            "valid": true,
+            "reason": "Document identity, content-SHA version, byte bounds and exact UTF-8 snippet verified."
+          },
+          {
+            "index": 3,
+            "valid": true,
+            "reason": "Document identity, content-SHA version, byte bounds and exact UTF-8 snippet verified."
+          },
+          {
+            "index": 4,
+            "valid": true,
+            "reason": "Document identity, content-SHA version, byte bounds and exact UTF-8 snippet verified."
+          }
+        ],
+        "citation_association": "candidate citations as emitted in blind packet",
+        "stopping_correct": false,
+        "stopping_reason": "Empty revision_limit final supplies neither aspect. An operational stop is not an epistemically correct abstention on this fully supported case.",
+        "counts": {
+          "applicable_required_facts": 4,
+          "supported": 0,
+          "contradicted": 0,
+          "missing": 4,
+          "citation_covered": 0,
+          "emitted_citations": 4,
+          "valid_citations": 4,
+          "enumerated_substantive_claims": 0,
+          "supported_substantive_claims": 0,
+          "unsupported_substantive_claims": 0,
+          "unverifiable_or_ambiguous_substantive_claims": 0
+        },
+        "metrics": {
+          "required_fact_recall": 0.0,
+          "substantive_claim_precision": null,
+          "substantive_claim_precision_reason": "No substantive claims: the delivered answer is empty.",
+          "valid_citation_fraction": 1.0,
+          "citation_coverage": null
+        },
+        "full_support_pass": false,
+        "quality_success": false
+      },
+      "revision_candidate_change": {
+        "classification": "regressed",
+        "reasons": [
+          "Delivered required-fact recall falls from 2/4 to 0/4.",
+          "No delivered supported fact remains; final valid citations cannot answer on behalf of an empty response.",
+          "Both stop grades fail; diagnostic improvements are separately labeled and do not alter delivered regression."
+        ]
+      },
+      "diagnostic_final_candidate": {
+        "status": "diagnostic_only_unaccepted_content",
+        "grade": {
+          "answer": "For Cedar agent 3.2 on the production Linux fleet in change window C17:\n- Kernel 6.1 is supported; kernel 5.15 is unsupported.\n- Retain agent 3.1 and restore it if the agent error rate exceeds 2% for five consecutive minutes.\n\nThe five-minute condition is the documented rollback trigger. The supplied excerpts do not specify a separate deadline for completing rollback or kernel-specific rollback instructions.",
+          "semantic_mode": "supported_answer",
+          "required_facts": [
+            {
+              "id": "kernel-61",
+              "status": "supported",
+              "answer_excerpt": "Kernel 6.1 is supported",
+              "reason": "All required semantics of this fact group are explicitly present.",
+              "citation_covered": null
+            },
+            {
+              "id": "kernel-515",
+              "status": "supported",
+              "answer_excerpt": "kernel 5.15 is unsupported.",
+              "reason": "All required semantics of this fact group are explicitly present.",
+              "citation_covered": null
+            },
+            {
+              "id": "rollback-target",
+              "status": "supported",
+              "answer_excerpt": "Retain agent 3.1 and restore it",
+              "reason": "All required semantics of this fact group are explicitly present.",
+              "citation_covered": null
+            },
+            {
+              "id": "rollback-trigger",
+              "status": "supported",
+              "answer_excerpt": "if the agent error rate exceeds 2% for five consecutive minutes.",
+              "reason": "All required semantics of this fact group are explicitly present.",
+              "citation_covered": null
+            }
+          ],
+          "excluded_required_facts": [],
+          "substantive_claims": [
+            {
+              "claim": "Kernel 6.1 is supported.",
+              "answer_excerpt": "Kernel 6.1 is supported",
+              "support_status": "supported",
+              "reason": "Entailed by the frozen corpus."
+            },
+            {
+              "claim": "Kernel 5.15 is unsupported.",
+              "answer_excerpt": "kernel 5.15 is unsupported.",
+              "support_status": "supported",
+              "reason": "Entailed by the frozen corpus."
+            },
+            {
+              "claim": "Retain agent 3.1 for rollback.",
+              "answer_excerpt": "Retain agent 3.1",
+              "support_status": "supported",
+              "reason": "Entailed by the frozen corpus."
+            },
+            {
+              "claim": "Restore retained agent 3.1 on the specified condition.",
+              "answer_excerpt": "and restore it",
+              "support_status": "supported",
+              "reason": "Entailed by the frozen corpus."
+            },
+            {
+              "claim": "Rollback comparison is agent error rate strictly greater than 2 percent.",
+              "answer_excerpt": "the agent error rate exceeds 2%",
+              "support_status": "supported",
+              "reason": "Entailed by the frozen corpus."
+            },
+            {
+              "claim": "Comparison must persist for five consecutive minutes.",
+              "answer_excerpt": "for five consecutive minutes.",
+              "support_status": "supported",
+              "reason": "Entailed by the frozen corpus."
+            },
+            {
+              "claim": "No separate completion deadline is specified.",
+              "answer_excerpt": "The supplied excerpts do not specify a separate deadline for completing rollback",
+              "support_status": "supported",
+              "reason": "Entailed by the frozen corpus."
+            },
+            {
+              "claim": "No distinct kernel-specific rollback procedure is specified.",
+              "answer_excerpt": "or kernel-specific rollback instructions.",
+              "support_status": "supported",
+              "reason": "Entailed by the frozen corpus."
+            }
+          ],
+          "unsupported_extra_claims": [],
+          "citations": null,
+          "citation_association": "unavailable: diagnostic is a string with no explicit citation association",
+          "stopping_correct": true,
+          "stopping_reason": "Fully answers compatibility and exact strict rollback condition/target. Correctly distinguishes the trigger from an unspecified separate completion deadline.",
+          "counts": {
+            "applicable_required_facts": 4,
+            "supported": 4,
+            "contradicted": 0,
+            "missing": 0,
+            "citation_covered": null,
+            "emitted_citations": null,
+            "valid_citations": null,
+            "enumerated_substantive_claims": 8,
+            "supported_substantive_claims": 8,
+            "unsupported_substantive_claims": 0,
+            "unverifiable_or_ambiguous_substantive_claims": 0
+          },
+          "metrics": {
+            "required_fact_recall": 1.0,
+            "substantive_claim_precision": 1.0,
+            "substantive_claim_precision_reason": "Explicit denominator is the enumerated distinct substantive assertions. Report-attributed pass/readiness assertions, target and trigger comparison/duration are separate; repeated paraphrases are counted once. Context restricts each assertion rather than adding fictitious standalone claims. Pure information requests/retrieval suggestions are excluded; corpus-backed configuration and rollback rules are factual recommendations.",
+            "valid_citation_fraction": null,
+            "citation_coverage": null
+          },
+          "full_support_pass": true,
+          "quality_success": null
+        },
+        "comparison_to_initial_semantics": "Required fact groups improve from 2/4 to 4/4 and semantic stopping becomes correct. Citation association is unavailable; this unaccepted text cannot replace the empty delivered answer."
+      }
+    },
+    {
+      "id": "response-04",
+      "case_id": "dev-04",
+      "execution_outcome": "public-result",
+      "final": {
+        "answer": "The supplied operations final report states that migration validation passed and Marlin database 6 is ready for migration in production window M31. It does not specify when to roll back or which version to roll back to, so neither can be determined from this evidence.",
+        "semantic_mode": "report_attribution_with_incomplete_answer",
+        "required_facts": [
+          {
+            "id": "ops-pass",
+            "status": "supported",
+            "answer_excerpt": "The supplied operations final report states that migration validation passed and Marlin database 6 is ready for migration in production window M31.",
+            "reason": "All required semantics of this fact group are explicitly present.",
+            "citation_covered": true
+          },
+          {
+            "id": "db-fail",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "This required fact is absent; a scoped limitation about supplied excerpts does not answer the known fact in the full corpus.",
+            "citation_covered": false
+          },
+          {
+            "id": "conflict-unresolved",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "This required fact is absent; a scoped limitation about supplied excerpts does not answer the known fact in the full corpus.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-target",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "This required fact is absent; a scoped limitation about supplied excerpts does not answer the known fact in the full corpus.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "This required fact is absent; a scoped limitation about supplied excerpts does not answer the known fact in the full corpus.",
+            "citation_covered": false
+          }
+        ],
+        "excluded_required_facts": [],
+        "substantive_claims": [
+          {
+            "claim": "Operations final report says validation passed.",
+            "answer_excerpt": "migration validation passed",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "Operations final report says migration ready in M31.",
+            "answer_excerpt": "Marlin database 6 is ready for migration in production window M31.",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "The supplied operations report does not determine rollback timing.",
+            "answer_excerpt": "It does not specify when to roll back or which version to roll back to, so neither can be determined from this evidence.",
+            "support_status": "unverifiable_from_packet",
+            "reason": "This explicitly scopes the absence to supplied evidence/excerpts, not to the full corpus. The cited subset lacks this information, but citations do not prove the complete supplied-context set. Treat it as potentially true about retrieval, not as a contradicted assertion that the corpus lacks rollback. The full corpus does contain the requested rollback."
+          },
+          {
+            "claim": "The supplied operations report does not determine rollback target.",
+            "answer_excerpt": "It does not specify when to roll back or which version to roll back to, so neither can be determined from this evidence.",
+            "support_status": "unverifiable_from_packet",
+            "reason": "This explicitly scopes the absence to supplied evidence/excerpts, not to the full corpus. The cited subset lacks this information, but citations do not prove the complete supplied-context set. Treat it as potentially true about retrieval, not as a contradicted assertion that the corpus lacks rollback. The full corpus does contain the requested rollback."
+          }
+        ],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 1,
+            "valid": true,
+            "reason": "Document identity, content-SHA version, byte bounds and exact UTF-8 snippet verified."
+          }
+        ],
+        "citation_association": "candidate citations as emitted in blind packet",
+        "stopping_correct": false,
+        "stopping_reason": "Faithfully attributes operations readiness rather than asserting consensus, but omits the database failure, unresolved authority conflict, and known agreed rollback. Does not satisfy the contradiction stopping rule.",
+        "counts": {
+          "applicable_required_facts": 5,
+          "supported": 1,
+          "contradicted": 0,
+          "missing": 4,
+          "citation_covered": 1,
+          "emitted_citations": 1,
+          "valid_citations": 1,
+          "enumerated_substantive_claims": 4,
+          "supported_substantive_claims": 2,
+          "unsupported_substantive_claims": 0,
+          "unverifiable_or_ambiguous_substantive_claims": 2
+        },
+        "metrics": {
+          "required_fact_recall": 0.2,
+          "substantive_claim_precision": null,
+          "substantive_claim_precision_reason": "All identifiable substantive assertions are enumerated, but supplied-evidence scope or wording cannot be resolved from this packet; no faithful supported-claim numerator is established. Do not count the gold fact groups as a precision denominator.",
+          "valid_citation_fraction": 1.0,
+          "citation_coverage": 1.0
+        },
+        "full_support_pass": false,
+        "quality_success": false
+      },
+      "initial": {
+        "answer": "The supplied operations final report states that migration validation passed and Marlin database 6 is ready for migration in production window M31. It does not specify when to roll back or which version to roll back to, so neither can be determined from this evidence.",
+        "semantic_mode": "report_attribution_with_incomplete_answer",
+        "required_facts": [
+          {
+            "id": "ops-pass",
+            "status": "supported",
+            "answer_excerpt": "The supplied operations final report states that migration validation passed and Marlin database 6 is ready for migration in production window M31.",
+            "reason": "All required semantics of this fact group are explicitly present.",
+            "citation_covered": true
+          },
+          {
+            "id": "db-fail",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "This required fact is absent; a scoped limitation about supplied excerpts does not answer the known fact in the full corpus.",
+            "citation_covered": false
+          },
+          {
+            "id": "conflict-unresolved",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "This required fact is absent; a scoped limitation about supplied excerpts does not answer the known fact in the full corpus.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-target",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "This required fact is absent; a scoped limitation about supplied excerpts does not answer the known fact in the full corpus.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "This required fact is absent; a scoped limitation about supplied excerpts does not answer the known fact in the full corpus.",
+            "citation_covered": false
+          }
+        ],
+        "excluded_required_facts": [],
+        "substantive_claims": [
+          {
+            "claim": "Operations final report says validation passed.",
+            "answer_excerpt": "migration validation passed",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "Operations final report says migration ready in M31.",
+            "answer_excerpt": "Marlin database 6 is ready for migration in production window M31.",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "The supplied operations report does not determine rollback timing.",
+            "answer_excerpt": "It does not specify when to roll back or which version to roll back to, so neither can be determined from this evidence.",
+            "support_status": "unverifiable_from_packet",
+            "reason": "This explicitly scopes the absence to supplied evidence/excerpts, not to the full corpus. The cited subset lacks this information, but citations do not prove the complete supplied-context set. Treat it as potentially true about retrieval, not as a contradicted assertion that the corpus lacks rollback. The full corpus does contain the requested rollback."
+          },
+          {
+            "claim": "The supplied operations report does not determine rollback target.",
+            "answer_excerpt": "It does not specify when to roll back or which version to roll back to, so neither can be determined from this evidence.",
+            "support_status": "unverifiable_from_packet",
+            "reason": "This explicitly scopes the absence to supplied evidence/excerpts, not to the full corpus. The cited subset lacks this information, but citations do not prove the complete supplied-context set. Treat it as potentially true about retrieval, not as a contradicted assertion that the corpus lacks rollback. The full corpus does contain the requested rollback."
+          }
+        ],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 1,
+            "valid": true,
+            "reason": "Document identity, content-SHA version, byte bounds and exact UTF-8 snippet verified."
+          }
+        ],
+        "citation_association": "candidate citations as emitted in blind packet",
+        "stopping_correct": false,
+        "stopping_reason": "Faithfully attributes operations readiness rather than asserting consensus, but omits the database failure, unresolved authority conflict, and known agreed rollback. Does not satisfy the contradiction stopping rule.",
+        "counts": {
+          "applicable_required_facts": 5,
+          "supported": 1,
+          "contradicted": 0,
+          "missing": 4,
+          "citation_covered": 1,
+          "emitted_citations": 1,
+          "valid_citations": 1,
+          "enumerated_substantive_claims": 4,
+          "supported_substantive_claims": 2,
+          "unsupported_substantive_claims": 0,
+          "unverifiable_or_ambiguous_substantive_claims": 2
+        },
+        "metrics": {
+          "required_fact_recall": 0.2,
+          "substantive_claim_precision": null,
+          "substantive_claim_precision_reason": "All identifiable substantive assertions are enumerated, but supplied-evidence scope or wording cannot be resolved from this packet; no faithful supported-claim numerator is established. Do not count the gold fact groups as a precision denominator.",
+          "valid_citation_fraction": 1.0,
+          "citation_coverage": 1.0
+        },
+        "full_support_pass": false,
+        "quality_success": false
+      },
+      "revision_candidate_change": {
+        "classification": "unchanged",
+        "reasons": [
+          "Exact initial and delivered answer/citations are identical; all independent quality dimensions are unchanged. The packet alone does not establish whether a revision was attempted."
+        ]
+      },
+      "diagnostic_final_candidate": null
+    },
+    {
+      "id": "response-05",
+      "case_id": "dev-01",
+      "execution_outcome": "public-result",
+      "final": {
+        "answer": "For Cedar agent 3.2 on production Linux, kernel 6.1 is supported; kernel 5.15 is unsupported. The supplied evidence does not specify a rollback time or target version for window C17, so neither can be determined.",
+        "semantic_mode": "incomplete_answer_with_abstention",
+        "required_facts": [
+          {
+            "id": "kernel-61",
+            "status": "supported",
+            "answer_excerpt": "kernel 6.1 is supported",
+            "reason": "All required semantics of this fact group are explicitly present.",
+            "citation_covered": true
+          },
+          {
+            "id": "kernel-515",
+            "status": "supported",
+            "answer_excerpt": "kernel 5.15 is unsupported.",
+            "reason": "All required semantics of this fact group are explicitly present.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-target",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "This required fact is absent; a scoped limitation about supplied excerpts does not answer the known fact in the full corpus.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "This required fact is absent; a scoped limitation about supplied excerpts does not answer the known fact in the full corpus.",
+            "citation_covered": false
+          }
+        ],
+        "excluded_required_facts": [],
+        "substantive_claims": [
+          {
+            "claim": "Kernel 6.1 is supported.",
+            "answer_excerpt": "kernel 6.1 is supported",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "Kernel 5.15 is unsupported.",
+            "answer_excerpt": "kernel 5.15 is unsupported.",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "Supplied evidence does not establish rollback timing in C17.",
+            "answer_excerpt": "The supplied evidence does not specify a rollback time or target version for window C17, so neither can be determined.",
+            "support_status": "unverifiable_from_packet",
+            "reason": "This explicitly scopes the absence to supplied evidence/excerpts, not to the full corpus. The cited subset lacks this information, but citations do not prove the complete supplied-context set. Treat it as potentially true about retrieval, not as a contradicted assertion that the corpus lacks rollback. The full corpus does contain the requested rollback."
+          },
+          {
+            "claim": "Supplied evidence does not establish rollback target in C17.",
+            "answer_excerpt": "The supplied evidence does not specify a rollback time or target version for window C17, so neither can be determined.",
+            "support_status": "unverifiable_from_packet",
+            "reason": "This explicitly scopes the absence to supplied evidence/excerpts, not to the full corpus. The cited subset lacks this information, but citations do not prove the complete supplied-context set. Treat it as potentially true about retrieval, not as a contradicted assertion that the corpus lacks rollback. The full corpus does contain the requested rollback."
+          }
+        ],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 1,
+            "valid": true,
+            "reason": "Document identity, content-SHA version, byte bounds and exact UTF-8 snippet verified."
+          }
+        ],
+        "citation_association": "candidate citations as emitted in blind packet",
+        "stopping_correct": false,
+        "stopping_reason": "Provides supported kernel compatibility but omits available rollback condition and exact agent 3.1 target on a fully supported case.",
+        "counts": {
+          "applicable_required_facts": 4,
+          "supported": 2,
+          "contradicted": 0,
+          "missing": 2,
+          "citation_covered": 2,
+          "emitted_citations": 1,
+          "valid_citations": 1,
+          "enumerated_substantive_claims": 4,
+          "supported_substantive_claims": 2,
+          "unsupported_substantive_claims": 0,
+          "unverifiable_or_ambiguous_substantive_claims": 2
+        },
+        "metrics": {
+          "required_fact_recall": 0.5,
+          "substantive_claim_precision": null,
+          "substantive_claim_precision_reason": "All identifiable substantive assertions are enumerated, but supplied-evidence scope or wording cannot be resolved from this packet; no faithful supported-claim numerator is established. Do not count the gold fact groups as a precision denominator.",
+          "valid_citation_fraction": 1.0,
+          "citation_coverage": 1.0
+        },
+        "full_support_pass": false,
+        "quality_success": false
+      },
+      "initial": {
+        "answer": "For Cedar agent 3.2 on production Linux, kernel 6.1 is supported; kernel 5.15 is unsupported. The supplied evidence does not specify a rollback time or target version for window C17, so neither can be determined.",
+        "semantic_mode": "incomplete_answer_with_abstention",
+        "required_facts": [
+          {
+            "id": "kernel-61",
+            "status": "supported",
+            "answer_excerpt": "kernel 6.1 is supported",
+            "reason": "All required semantics of this fact group are explicitly present.",
+            "citation_covered": true
+          },
+          {
+            "id": "kernel-515",
+            "status": "supported",
+            "answer_excerpt": "kernel 5.15 is unsupported.",
+            "reason": "All required semantics of this fact group are explicitly present.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-target",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "This required fact is absent; a scoped limitation about supplied excerpts does not answer the known fact in the full corpus.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "This required fact is absent; a scoped limitation about supplied excerpts does not answer the known fact in the full corpus.",
+            "citation_covered": false
+          }
+        ],
+        "excluded_required_facts": [],
+        "substantive_claims": [
+          {
+            "claim": "Kernel 6.1 is supported.",
+            "answer_excerpt": "kernel 6.1 is supported",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "Kernel 5.15 is unsupported.",
+            "answer_excerpt": "kernel 5.15 is unsupported.",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "Supplied evidence does not establish rollback timing in C17.",
+            "answer_excerpt": "The supplied evidence does not specify a rollback time or target version for window C17, so neither can be determined.",
+            "support_status": "unverifiable_from_packet",
+            "reason": "This explicitly scopes the absence to supplied evidence/excerpts, not to the full corpus. The cited subset lacks this information, but citations do not prove the complete supplied-context set. Treat it as potentially true about retrieval, not as a contradicted assertion that the corpus lacks rollback. The full corpus does contain the requested rollback."
+          },
+          {
+            "claim": "Supplied evidence does not establish rollback target in C17.",
+            "answer_excerpt": "The supplied evidence does not specify a rollback time or target version for window C17, so neither can be determined.",
+            "support_status": "unverifiable_from_packet",
+            "reason": "This explicitly scopes the absence to supplied evidence/excerpts, not to the full corpus. The cited subset lacks this information, but citations do not prove the complete supplied-context set. Treat it as potentially true about retrieval, not as a contradicted assertion that the corpus lacks rollback. The full corpus does contain the requested rollback."
+          }
+        ],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 1,
+            "valid": true,
+            "reason": "Document identity, content-SHA version, byte bounds and exact UTF-8 snippet verified."
+          }
+        ],
+        "citation_association": "candidate citations as emitted in blind packet",
+        "stopping_correct": false,
+        "stopping_reason": "Provides supported kernel compatibility but omits available rollback condition and exact agent 3.1 target on a fully supported case.",
+        "counts": {
+          "applicable_required_facts": 4,
+          "supported": 2,
+          "contradicted": 0,
+          "missing": 2,
+          "citation_covered": 2,
+          "emitted_citations": 1,
+          "valid_citations": 1,
+          "enumerated_substantive_claims": 4,
+          "supported_substantive_claims": 2,
+          "unsupported_substantive_claims": 0,
+          "unverifiable_or_ambiguous_substantive_claims": 2
+        },
+        "metrics": {
+          "required_fact_recall": 0.5,
+          "substantive_claim_precision": null,
+          "substantive_claim_precision_reason": "All identifiable substantive assertions are enumerated, but supplied-evidence scope or wording cannot be resolved from this packet; no faithful supported-claim numerator is established. Do not count the gold fact groups as a precision denominator.",
+          "valid_citation_fraction": 1.0,
+          "citation_coverage": 1.0
+        },
+        "full_support_pass": false,
+        "quality_success": false
+      },
+      "revision_candidate_change": {
+        "classification": "unchanged",
+        "reasons": [
+          "Exact initial and delivered answer/citations are identical; all independent quality dimensions are unchanged."
+        ]
+      },
+      "diagnostic_final_candidate": null
+    },
+    {
+      "id": "response-06",
+      "case_id": "dev-03",
+      "execution_outcome": "public-result",
+      "final": {
+        "answer": "No. This packet does not establish security approval for Larch index 5 in production window L24; it records neither signed approval nor rejection. The supplied evidence does not specify when to roll back or which version to restore, so neither can be determined.",
+        "semantic_mode": "partial_answer_with_abstention",
+        "required_facts": [
+          {
+            "id": "approval-unknown",
+            "status": "supported",
+            "answer_excerpt": "This packet does not establish security approval for Larch index 5 in production window L24; it records neither signed approval nor rejection.",
+            "reason": "All required semantics of this fact group are explicitly present.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-target",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "This required fact is absent; a scoped limitation about supplied excerpts does not answer the known fact in the full corpus.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "This required fact is absent; a scoped limitation about supplied excerpts does not answer the known fact in the full corpus.",
+            "citation_covered": false
+          }
+        ],
+        "excluded_required_facts": [],
+        "substantive_claims": [
+          {
+            "claim": "Security approval is not established.",
+            "answer_excerpt": "This packet does not establish security approval for Larch index 5 in production window L24",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "No signed security approval is recorded.",
+            "answer_excerpt": "it records neither signed approval nor rejection.",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "No signed security rejection is recorded.",
+            "answer_excerpt": "it records neither signed approval nor rejection.",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "Supplied evidence does not establish rollback timing.",
+            "answer_excerpt": "The supplied evidence does not specify when to roll back or which version to restore, so neither can be determined.",
+            "support_status": "unverifiable_from_packet",
+            "reason": "This explicitly scopes the absence to supplied evidence/excerpts, not to the full corpus. The cited subset lacks this information, but citations do not prove the complete supplied-context set. Treat it as potentially true about retrieval, not as a contradicted assertion that the corpus lacks rollback. The full corpus does contain the requested rollback."
+          },
+          {
+            "claim": "Supplied evidence does not establish rollback version.",
+            "answer_excerpt": "The supplied evidence does not specify when to roll back or which version to restore, so neither can be determined.",
+            "support_status": "unverifiable_from_packet",
+            "reason": "This explicitly scopes the absence to supplied evidence/excerpts, not to the full corpus. The cited subset lacks this information, but citations do not prove the complete supplied-context set. Treat it as potentially true about retrieval, not as a contradicted assertion that the corpus lacks rollback. The full corpus does contain the requested rollback."
+          }
+        ],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 1,
+            "valid": true,
+            "reason": "Document identity, content-SHA version, byte bounds and exact UTF-8 snippet verified."
+          }
+        ],
+        "citation_association": "candidate citations as emitted in blind packet",
+        "stopping_correct": false,
+        "stopping_reason": "Correctly withholds security approval/rejection, but fails the missing-evidence stopping rule by omitting known rollback trigger and index 4 snapshot target.",
+        "counts": {
+          "applicable_required_facts": 3,
+          "supported": 1,
+          "contradicted": 0,
+          "missing": 2,
+          "citation_covered": 1,
+          "emitted_citations": 1,
+          "valid_citations": 1,
+          "enumerated_substantive_claims": 5,
+          "supported_substantive_claims": 3,
+          "unsupported_substantive_claims": 0,
+          "unverifiable_or_ambiguous_substantive_claims": 2
+        },
+        "metrics": {
+          "required_fact_recall": 0.3333333333333333,
+          "substantive_claim_precision": null,
+          "substantive_claim_precision_reason": "All identifiable substantive assertions are enumerated, but supplied-evidence scope or wording cannot be resolved from this packet; no faithful supported-claim numerator is established. Do not count the gold fact groups as a precision denominator.",
+          "valid_citation_fraction": 1.0,
+          "citation_coverage": 1.0
+        },
+        "full_support_pass": false,
+        "quality_success": false
+      },
+      "initial": {
+        "answer": "No. This packet does not establish security approval for Larch index 5 in production window L24; it records neither signed approval nor rejection. The supplied evidence does not specify when to roll back or which version to restore, so neither can be determined.",
+        "semantic_mode": "partial_answer_with_abstention",
+        "required_facts": [
+          {
+            "id": "approval-unknown",
+            "status": "supported",
+            "answer_excerpt": "This packet does not establish security approval for Larch index 5 in production window L24; it records neither signed approval nor rejection.",
+            "reason": "All required semantics of this fact group are explicitly present.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-target",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "This required fact is absent; a scoped limitation about supplied excerpts does not answer the known fact in the full corpus.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "This required fact is absent; a scoped limitation about supplied excerpts does not answer the known fact in the full corpus.",
+            "citation_covered": false
+          }
+        ],
+        "excluded_required_facts": [],
+        "substantive_claims": [
+          {
+            "claim": "Security approval is not established.",
+            "answer_excerpt": "This packet does not establish security approval for Larch index 5 in production window L24",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "No signed security approval is recorded.",
+            "answer_excerpt": "it records neither signed approval nor rejection.",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "No signed security rejection is recorded.",
+            "answer_excerpt": "it records neither signed approval nor rejection.",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "Supplied evidence does not establish rollback timing.",
+            "answer_excerpt": "The supplied evidence does not specify when to roll back or which version to restore, so neither can be determined.",
+            "support_status": "unverifiable_from_packet",
+            "reason": "This explicitly scopes the absence to supplied evidence/excerpts, not to the full corpus. The cited subset lacks this information, but citations do not prove the complete supplied-context set. Treat it as potentially true about retrieval, not as a contradicted assertion that the corpus lacks rollback. The full corpus does contain the requested rollback."
+          },
+          {
+            "claim": "Supplied evidence does not establish rollback version.",
+            "answer_excerpt": "The supplied evidence does not specify when to roll back or which version to restore, so neither can be determined.",
+            "support_status": "unverifiable_from_packet",
+            "reason": "This explicitly scopes the absence to supplied evidence/excerpts, not to the full corpus. The cited subset lacks this information, but citations do not prove the complete supplied-context set. Treat it as potentially true about retrieval, not as a contradicted assertion that the corpus lacks rollback. The full corpus does contain the requested rollback."
+          }
+        ],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 1,
+            "valid": true,
+            "reason": "Document identity, content-SHA version, byte bounds and exact UTF-8 snippet verified."
+          }
+        ],
+        "citation_association": "candidate citations as emitted in blind packet",
+        "stopping_correct": false,
+        "stopping_reason": "Correctly withholds security approval/rejection, but fails the missing-evidence stopping rule by omitting known rollback trigger and index 4 snapshot target.",
+        "counts": {
+          "applicable_required_facts": 3,
+          "supported": 1,
+          "contradicted": 0,
+          "missing": 2,
+          "citation_covered": 1,
+          "emitted_citations": 1,
+          "valid_citations": 1,
+          "enumerated_substantive_claims": 5,
+          "supported_substantive_claims": 3,
+          "unsupported_substantive_claims": 0,
+          "unverifiable_or_ambiguous_substantive_claims": 2
+        },
+        "metrics": {
+          "required_fact_recall": 0.3333333333333333,
+          "substantive_claim_precision": null,
+          "substantive_claim_precision_reason": "All identifiable substantive assertions are enumerated, but supplied-evidence scope or wording cannot be resolved from this packet; no faithful supported-claim numerator is established. Do not count the gold fact groups as a precision denominator.",
+          "valid_citation_fraction": 1.0,
+          "citation_coverage": 1.0
+        },
+        "full_support_pass": false,
+        "quality_success": false
+      },
+      "revision_candidate_change": {
+        "classification": "unchanged",
+        "reasons": [
+          "Exact initial and delivered answer/citations are identical; all independent quality dimensions are unchanged."
+        ]
+      },
+      "diagnostic_final_candidate": null
+    },
+    {
+      "id": "response-07",
+      "case_id": "dev-02",
+      "execution_outcome": "public-result",
+      "final": {
+        "answer": "Configure 120 concurrent requests per instance in the east region or 80 in the west region. You must specify the region to choose one limit. The supplied evidence does not specify when to roll back or which version to roll back to.",
+        "semantic_mode": "conditional_answer",
+        "required_facts": [
+          {
+            "id": "missing-region",
+            "status": "supported",
+            "answer_excerpt": "You must specify the region to choose one limit.",
+            "reason": "The need to specify a region and conditional east/west branches clearly avoid choosing one unconditional limit. The cited concurrency line entails this; the question supplies the omitted-region context.",
+            "citation_covered": true
+          },
+          {
+            "id": "east-limit",
+            "status": "supported",
+            "answer_excerpt": "120 concurrent requests per instance in the east region",
+            "reason": "All required semantics of this fact group are explicitly present.",
+            "citation_covered": true
+          },
+          {
+            "id": "west-limit",
+            "status": "supported",
+            "answer_excerpt": "or 80 in the west region.",
+            "reason": "The shared phrase concurrent requests per instance applies to both branches.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-target",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "This required fact is absent; a scoped limitation about supplied excerpts does not answer the known fact in the full corpus.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "This required fact is absent; a scoped limitation about supplied excerpts does not answer the known fact in the full corpus.",
+            "citation_covered": false
+          }
+        ],
+        "excluded_required_facts": [],
+        "substantive_claims": [
+          {
+            "claim": "East permits 120 concurrent requests per instance.",
+            "answer_excerpt": "120 concurrent requests per instance in the east region",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "West permits 80 concurrent requests per instance.",
+            "answer_excerpt": "or 80 in the west region.",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "A region is necessary to select one limit.",
+            "answer_excerpt": "You must specify the region to choose one limit.",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "Supplied evidence does not specify rollback timing.",
+            "answer_excerpt": "The supplied evidence does not specify when to roll back or which version to roll back to.",
+            "support_status": "unverifiable_from_packet",
+            "reason": "This explicitly scopes the absence to supplied evidence/excerpts, not to the full corpus. The cited subset lacks this information, but citations do not prove the complete supplied-context set. Treat it as potentially true about retrieval, not as a contradicted assertion that the corpus lacks rollback. The full corpus does contain the requested rollback."
+          },
+          {
+            "claim": "Supplied evidence does not specify rollback version.",
+            "answer_excerpt": "The supplied evidence does not specify when to roll back or which version to roll back to.",
+            "support_status": "unverifiable_from_packet",
+            "reason": "This explicitly scopes the absence to supplied evidence/excerpts, not to the full corpus. The cited subset lacks this information, but citations do not prove the complete supplied-context set. Treat it as potentially true about retrieval, not as a contradicted assertion that the corpus lacks rollback. The full corpus does contain the requested rollback."
+          }
+        ],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 1,
+            "valid": true,
+            "reason": "Document identity, content-SHA version, byte bounds and exact UTF-8 snippet verified."
+          }
+        ],
+        "citation_association": "candidate citations as emitted in blind packet",
+        "stopping_correct": false,
+        "stopping_reason": "This elects to give both conditional limits; it is not a targeted clarification alone. The conditional-answer mode also requires the common gateway 7 rollback and exact latency trigger/duration, which are missing.",
+        "counts": {
+          "applicable_required_facts": 5,
+          "supported": 3,
+          "contradicted": 0,
+          "missing": 2,
+          "citation_covered": 3,
+          "emitted_citations": 1,
+          "valid_citations": 1,
+          "enumerated_substantive_claims": 5,
+          "supported_substantive_claims": 3,
+          "unsupported_substantive_claims": 0,
+          "unverifiable_or_ambiguous_substantive_claims": 2
+        },
+        "metrics": {
+          "required_fact_recall": 0.6,
+          "substantive_claim_precision": null,
+          "substantive_claim_precision_reason": "All identifiable substantive assertions are enumerated, but supplied-evidence scope or wording cannot be resolved from this packet; no faithful supported-claim numerator is established. Do not count the gold fact groups as a precision denominator.",
+          "valid_citation_fraction": 1.0,
+          "citation_coverage": 1.0
+        },
+        "full_support_pass": false,
+        "quality_success": false
+      },
+      "initial": {
+        "answer": "Configure 120 concurrent requests per instance in the east region or 80 in the west region. You must specify the region to choose one limit. The supplied evidence does not specify when to roll back or which version to roll back to.",
+        "semantic_mode": "conditional_answer",
+        "required_facts": [
+          {
+            "id": "missing-region",
+            "status": "supported",
+            "answer_excerpt": "You must specify the region to choose one limit.",
+            "reason": "The need to specify a region and conditional east/west branches clearly avoid choosing one unconditional limit. The cited concurrency line entails this; the question supplies the omitted-region context.",
+            "citation_covered": true
+          },
+          {
+            "id": "east-limit",
+            "status": "supported",
+            "answer_excerpt": "120 concurrent requests per instance in the east region",
+            "reason": "All required semantics of this fact group are explicitly present.",
+            "citation_covered": true
+          },
+          {
+            "id": "west-limit",
+            "status": "supported",
+            "answer_excerpt": "or 80 in the west region.",
+            "reason": "The shared phrase concurrent requests per instance applies to both branches.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-target",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "This required fact is absent; a scoped limitation about supplied excerpts does not answer the known fact in the full corpus.",
+            "citation_covered": false
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "missing",
+            "answer_excerpt": null,
+            "reason": "This required fact is absent; a scoped limitation about supplied excerpts does not answer the known fact in the full corpus.",
+            "citation_covered": false
+          }
+        ],
+        "excluded_required_facts": [],
+        "substantive_claims": [
+          {
+            "claim": "East permits 120 concurrent requests per instance.",
+            "answer_excerpt": "120 concurrent requests per instance in the east region",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "West permits 80 concurrent requests per instance.",
+            "answer_excerpt": "or 80 in the west region.",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "A region is necessary to select one limit.",
+            "answer_excerpt": "You must specify the region to choose one limit.",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "Supplied evidence does not specify rollback timing.",
+            "answer_excerpt": "The supplied evidence does not specify when to roll back or which version to roll back to.",
+            "support_status": "unverifiable_from_packet",
+            "reason": "This explicitly scopes the absence to supplied evidence/excerpts, not to the full corpus. The cited subset lacks this information, but citations do not prove the complete supplied-context set. Treat it as potentially true about retrieval, not as a contradicted assertion that the corpus lacks rollback. The full corpus does contain the requested rollback."
+          },
+          {
+            "claim": "Supplied evidence does not specify rollback version.",
+            "answer_excerpt": "The supplied evidence does not specify when to roll back or which version to roll back to.",
+            "support_status": "unverifiable_from_packet",
+            "reason": "This explicitly scopes the absence to supplied evidence/excerpts, not to the full corpus. The cited subset lacks this information, but citations do not prove the complete supplied-context set. Treat it as potentially true about retrieval, not as a contradicted assertion that the corpus lacks rollback. The full corpus does contain the requested rollback."
+          }
+        ],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 1,
+            "valid": true,
+            "reason": "Document identity, content-SHA version, byte bounds and exact UTF-8 snippet verified."
+          }
+        ],
+        "citation_association": "candidate citations as emitted in blind packet",
+        "stopping_correct": false,
+        "stopping_reason": "This elects to give both conditional limits; it is not a targeted clarification alone. The conditional-answer mode also requires the common gateway 7 rollback and exact latency trigger/duration, which are missing.",
+        "counts": {
+          "applicable_required_facts": 5,
+          "supported": 3,
+          "contradicted": 0,
+          "missing": 2,
+          "citation_covered": 3,
+          "emitted_citations": 1,
+          "valid_citations": 1,
+          "enumerated_substantive_claims": 5,
+          "supported_substantive_claims": 3,
+          "unsupported_substantive_claims": 0,
+          "unverifiable_or_ambiguous_substantive_claims": 2
+        },
+        "metrics": {
+          "required_fact_recall": 0.6,
+          "substantive_claim_precision": null,
+          "substantive_claim_precision_reason": "All identifiable substantive assertions are enumerated, but supplied-evidence scope or wording cannot be resolved from this packet; no faithful supported-claim numerator is established. Do not count the gold fact groups as a precision denominator.",
+          "valid_citation_fraction": 1.0,
+          "citation_coverage": 1.0
+        },
+        "full_support_pass": false,
+        "quality_success": false
+      },
+      "revision_candidate_change": {
+        "classification": "unchanged",
+        "reasons": [
+          "Exact initial and delivered answer/citations are identical; all independent quality dimensions are unchanged."
+        ]
+      },
+      "diagnostic_final_candidate": null
+    },
+    {
+      "id": "response-08",
+      "case_id": "dev-02",
+      "execution_outcome": "public-result",
+      "final": {
+        "answer": "For Quartz gateway 8 in production, configure the concurrency limit by region: east allows 120 concurrent requests per instance; west allows 80. Specify the region to select the applicable limit.\n\nIn both regions, roll back to gateway 7 if p95 latency exceeds 300 milliseconds for ten consecutive minutes.",
+        "semantic_mode": "conditional_answer",
+        "required_facts": [
+          {
+            "id": "missing-region",
+            "status": "supported",
+            "answer_excerpt": "Specify the region to select the applicable limit.",
+            "reason": "The instruction plus both conditional regional limits conveys that the question lacks necessary region context. The cited concurrency line entails the requirement.",
+            "citation_covered": true
+          },
+          {
+            "id": "east-limit",
+            "status": "supported",
+            "answer_excerpt": "east allows 120 concurrent requests per instance",
+            "reason": "All required semantics of this fact group are explicitly present.",
+            "citation_covered": true
+          },
+          {
+            "id": "west-limit",
+            "status": "supported",
+            "answer_excerpt": "west allows 80.",
+            "reason": "Shared per-instance concurrency unit is clear from the preceding branch.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-target",
+            "status": "supported",
+            "answer_excerpt": "In both regions, roll back to gateway 7",
+            "reason": "All required semantics of this fact group are explicitly present.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "supported",
+            "answer_excerpt": "In both regions, roll back to gateway 7 if p95 latency exceeds 300 milliseconds for ten consecutive minutes.",
+            "reason": "All required semantics of this fact group are explicitly present.",
+            "citation_covered": true
+          }
+        ],
+        "excluded_required_facts": [],
+        "substantive_claims": [
+          {
+            "claim": "East permits 120 concurrent requests per instance.",
+            "answer_excerpt": "east allows 120 concurrent requests per instance",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "West permits 80 concurrent requests per instance.",
+            "answer_excerpt": "west allows 80.",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "Selecting one concurrency limit requires region context.",
+            "answer_excerpt": "Specify the region to select the applicable limit.",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "The rollback target in both regions is gateway 7.",
+            "answer_excerpt": "In both regions, roll back to gateway 7",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "The rollback comparison in both regions is p95 latency strictly greater than 300 milliseconds.",
+            "answer_excerpt": "p95 latency exceeds 300 milliseconds",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "The latency comparison must persist for ten consecutive minutes in both regions.",
+            "answer_excerpt": "for ten consecutive minutes.",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          }
+        ],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 1,
+            "valid": true,
+            "reason": "Document identity, content-SHA version, byte bounds and exact UTF-8 snippet verified."
+          },
+          {
+            "index": 2,
+            "valid": true,
+            "reason": "Document identity, content-SHA version, byte bounds and exact UTF-8 snippet verified."
+          }
+        ],
+        "citation_association": "candidate citations as emitted in blind packet",
+        "stopping_correct": true,
+        "stopping_reason": "Provides both conditional regional limits and the common exact rollback condition/target; chooses no default region. Both cited lines entail the facts; no revision is needed.",
+        "counts": {
+          "applicable_required_facts": 5,
+          "supported": 5,
+          "contradicted": 0,
+          "missing": 0,
+          "citation_covered": 5,
+          "emitted_citations": 2,
+          "valid_citations": 2,
+          "enumerated_substantive_claims": 6,
+          "supported_substantive_claims": 6,
+          "unsupported_substantive_claims": 0,
+          "unverifiable_or_ambiguous_substantive_claims": 0
+        },
+        "metrics": {
+          "required_fact_recall": 1.0,
+          "substantive_claim_precision": 1.0,
+          "substantive_claim_precision_reason": "Explicit denominator is the enumerated distinct substantive assertions. Report-attributed pass/readiness assertions, target and trigger comparison/duration are separate; repeated paraphrases are counted once. Context restricts each assertion rather than adding fictitious standalone claims. Pure information requests/retrieval suggestions are excluded; corpus-backed configuration and rollback rules are factual recommendations.",
+          "valid_citation_fraction": 1.0,
+          "citation_coverage": 1.0
+        },
+        "full_support_pass": true,
+        "quality_success": true
+      },
+      "initial": {
+        "answer": "For Quartz gateway 8 in production, configure the concurrency limit by region: east allows 120 concurrent requests per instance; west allows 80. Specify the region to select the applicable limit.\n\nIn both regions, roll back to gateway 7 if p95 latency exceeds 300 milliseconds for ten consecutive minutes.",
+        "semantic_mode": "conditional_answer",
+        "required_facts": [
+          {
+            "id": "missing-region",
+            "status": "supported",
+            "answer_excerpt": "Specify the region to select the applicable limit.",
+            "reason": "The instruction plus both conditional regional limits conveys that the question lacks necessary region context. The cited concurrency line entails the requirement.",
+            "citation_covered": true
+          },
+          {
+            "id": "east-limit",
+            "status": "supported",
+            "answer_excerpt": "east allows 120 concurrent requests per instance",
+            "reason": "All required semantics of this fact group are explicitly present.",
+            "citation_covered": true
+          },
+          {
+            "id": "west-limit",
+            "status": "supported",
+            "answer_excerpt": "west allows 80.",
+            "reason": "Shared per-instance concurrency unit is clear from the preceding branch.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-target",
+            "status": "supported",
+            "answer_excerpt": "In both regions, roll back to gateway 7",
+            "reason": "All required semantics of this fact group are explicitly present.",
+            "citation_covered": true
+          },
+          {
+            "id": "rollback-trigger",
+            "status": "supported",
+            "answer_excerpt": "In both regions, roll back to gateway 7 if p95 latency exceeds 300 milliseconds for ten consecutive minutes.",
+            "reason": "All required semantics of this fact group are explicitly present.",
+            "citation_covered": true
+          }
+        ],
+        "excluded_required_facts": [],
+        "substantive_claims": [
+          {
+            "claim": "East permits 120 concurrent requests per instance.",
+            "answer_excerpt": "east allows 120 concurrent requests per instance",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "West permits 80 concurrent requests per instance.",
+            "answer_excerpt": "west allows 80.",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "Selecting one concurrency limit requires region context.",
+            "answer_excerpt": "Specify the region to select the applicable limit.",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "The rollback target in both regions is gateway 7.",
+            "answer_excerpt": "In both regions, roll back to gateway 7",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "The rollback comparison in both regions is p95 latency strictly greater than 300 milliseconds.",
+            "answer_excerpt": "p95 latency exceeds 300 milliseconds",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          },
+          {
+            "claim": "The latency comparison must persist for ten consecutive minutes in both regions.",
+            "answer_excerpt": "for ten consecutive minutes.",
+            "support_status": "supported",
+            "reason": "Entailed by the frozen corpus."
+          }
+        ],
+        "unsupported_extra_claims": [],
+        "citations": [
+          {
+            "index": 1,
+            "valid": true,
+            "reason": "Document identity, content-SHA version, byte bounds and exact UTF-8 snippet verified."
+          },
+          {
+            "index": 2,
+            "valid": true,
+            "reason": "Document identity, content-SHA version, byte bounds and exact UTF-8 snippet verified."
+          }
+        ],
+        "citation_association": "candidate citations as emitted in blind packet",
+        "stopping_correct": true,
+        "stopping_reason": "Provides both conditional regional limits and the common exact rollback condition/target; chooses no default region. Both cited lines entail the facts; no revision is needed.",
+        "counts": {
+          "applicable_required_facts": 5,
+          "supported": 5,
+          "contradicted": 0,
+          "missing": 0,
+          "citation_covered": 5,
+          "emitted_citations": 2,
+          "valid_citations": 2,
+          "enumerated_substantive_claims": 6,
+          "supported_substantive_claims": 6,
+          "unsupported_substantive_claims": 0,
+          "unverifiable_or_ambiguous_substantive_claims": 0
+        },
+        "metrics": {
+          "required_fact_recall": 1.0,
+          "substantive_claim_precision": 1.0,
+          "substantive_claim_precision_reason": "Explicit denominator is the enumerated distinct substantive assertions. Report-attributed pass/readiness assertions, target and trigger comparison/duration are separate; repeated paraphrases are counted once. Context restricts each assertion rather than adding fictitious standalone claims. Pure information requests/retrieval suggestions are excluded; corpus-backed configuration and rollback rules are factual recommendations.",
+          "valid_citation_fraction": 1.0,
+          "citation_coverage": 1.0
+        },
+        "full_support_pass": true,
+        "quality_success": true
+      },
+      "revision_candidate_change": {
+        "classification": "unchanged",
+        "reasons": [
+          "Initial and delivered candidate are identical and complete; no revision is required."
+        ]
+      },
+      "diagnostic_final_candidate": {
+        "status": "diagnostic_only_unaccepted_content",
+        "grade": {
+          "answer": "For Quartz gateway 8 in production, configure the concurrency limit by region: east allows 120 concurrent requests per instance; west allows 80. Specify the region to select the applicable limit.\n\nIn both regions, roll back to gateway 7 if p95 latency exceeds 300 milliseconds for ten consecutive minutes.",
+          "semantic_mode": "conditional_answer",
+          "required_facts": [
+            {
+              "id": "missing-region",
+              "status": "supported",
+              "answer_excerpt": "Specify the region to select the applicable limit.",
+              "reason": "The instruction plus both conditional regional limits conveys that the question lacks necessary region context. The cited concurrency line entails the requirement.",
+              "citation_covered": null
+            },
+            {
+              "id": "east-limit",
+              "status": "supported",
+              "answer_excerpt": "east allows 120 concurrent requests per instance",
+              "reason": "All required semantics of this fact group are explicitly present.",
+              "citation_covered": null
+            },
+            {
+              "id": "west-limit",
+              "status": "supported",
+              "answer_excerpt": "west allows 80.",
+              "reason": "Shared per-instance concurrency unit is clear from the preceding branch.",
+              "citation_covered": null
+            },
+            {
+              "id": "rollback-target",
+              "status": "supported",
+              "answer_excerpt": "In both regions, roll back to gateway 7",
+              "reason": "All required semantics of this fact group are explicitly present.",
+              "citation_covered": null
+            },
+            {
+              "id": "rollback-trigger",
+              "status": "supported",
+              "answer_excerpt": "In both regions, roll back to gateway 7 if p95 latency exceeds 300 milliseconds for ten consecutive minutes.",
+              "reason": "All required semantics of this fact group are explicitly present.",
+              "citation_covered": null
+            }
+          ],
+          "excluded_required_facts": [],
+          "substantive_claims": [
+            {
+              "claim": "East permits 120 concurrent requests per instance.",
+              "answer_excerpt": "east allows 120 concurrent requests per instance",
+              "support_status": "supported",
+              "reason": "Entailed by the frozen corpus."
+            },
+            {
+              "claim": "West permits 80 concurrent requests per instance.",
+              "answer_excerpt": "west allows 80.",
+              "support_status": "supported",
+              "reason": "Entailed by the frozen corpus."
+            },
+            {
+              "claim": "Selecting one concurrency limit requires region context.",
+              "answer_excerpt": "Specify the region to select the applicable limit.",
+              "support_status": "supported",
+              "reason": "Entailed by the frozen corpus."
+            },
+            {
+              "claim": "The rollback target in both regions is gateway 7.",
+              "answer_excerpt": "In both regions, roll back to gateway 7",
+              "support_status": "supported",
+              "reason": "Entailed by the frozen corpus."
+            },
+            {
+              "claim": "The rollback comparison in both regions is p95 latency strictly greater than 300 milliseconds.",
+              "answer_excerpt": "p95 latency exceeds 300 milliseconds",
+              "support_status": "supported",
+              "reason": "Entailed by the frozen corpus."
+            },
+            {
+              "claim": "The latency comparison must persist for ten consecutive minutes in both regions.",
+              "answer_excerpt": "for ten consecutive minutes.",
+              "support_status": "supported",
+              "reason": "Entailed by the frozen corpus."
+            }
+          ],
+          "unsupported_extra_claims": [],
+          "citations": null,
+          "citation_association": "unavailable: diagnostic is a string; equality to delivered text does not create an explicit diagnostic citation association",
+          "stopping_correct": true,
+          "stopping_reason": "Provides both conditional regional limits and the common exact rollback condition/target; chooses no default region. Both cited lines entail the facts; no revision is needed.",
+          "counts": {
+            "applicable_required_facts": 5,
+            "supported": 5,
+            "contradicted": 0,
+            "missing": 0,
+            "citation_covered": null,
+            "emitted_citations": null,
+            "valid_citations": null,
+            "enumerated_substantive_claims": 6,
+            "supported_substantive_claims": 6,
+            "unsupported_substantive_claims": 0,
+            "unverifiable_or_ambiguous_substantive_claims": 0
+          },
+          "metrics": {
+            "required_fact_recall": 1.0,
+            "substantive_claim_precision": 1.0,
+            "substantive_claim_precision_reason": "Explicit denominator is the enumerated distinct substantive assertions. Report-attributed pass/readiness assertions, target and trigger comparison/duration are separate; repeated paraphrases are counted once. Context restricts each assertion rather than adding fictitious standalone claims. Pure information requests/retrieval suggestions are excluded; corpus-backed configuration and rollback rules are factual recommendations.",
+            "valid_citation_fraction": null,
+            "citation_coverage": null
+          },
+          "full_support_pass": true,
+          "quality_success": null
+        },
+        "comparison_to_initial_semantics": "Same text as delivered final; diagnostic provenance remains unavailable."
+      }
+    }
+  ]
+}

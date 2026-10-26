@@ -1,0 +1,82 @@
+{
+  "schema": "phase1f-heldout-unseal/v1",
+  "publication_authorized_after_implementation_freeze": true,
+  "publication_started_utc": "2026-10-26 16:05:31 UTC",
+  "clock_source": "clock.curr_time",
+  "implementation_freeze_utc": "2026-10-26T16:02:34.549965+00:00",
+  "implementation_source_sha256": "35f21d7f4624358717176b805195a0ebfab03fd53400e92a93a4fc33d617c3f1",
+  "source_files_checked": 185,
+  "pre_heldout_freeze_sha256": "16aff76356dbb4049bb5151d8edb574f8cafe333ac6262667e7a3029274c6d4e",
+  "source_manifest": "evidence/retrieval-extension/after-source-manifest.json",
+  "source_manifest_sha256": "3bc0497edb37053ae6f97244e08f5bc03f4e114a9d0e9cd959298251ba1dcae4",
+  "review": "evidence/retrieval-extension/review.md",
+  "review_sha256": "f5f635d45b031980e7887f4895eabdd2f5495e6c4096560237fbd80bd1e23901",
+  "configuration": {
+    "model": "gpt-6.1-sol",
+    "max_output_tokens": 4096,
+    "max_response_bytes": 65536,
+    "request_timeout": "120s",
+    "max_revisions": 1,
+    "topology": "nested",
+    "baseline": "simple evidence.Provision with shared reviewed helper prompt",
+    "corpus_freeze": "afee3bc1b40c8f51bebf16ede379183f736136e43656bf90334d02690e6ce024",
+    "run_plan_sha256": "c161d060c2c9bb93e3e678c0112ace71149aac1c2dab05340318081f0946df6c"
+  },
+  "configuration_file": "evidence/live-development-v3/configuration.json",
+  "configuration_file_sha256": "96058c4e0fac9e05057f955cf0e0b5efecedaa4fa608523ffd29e1a7e8e2101e",
+  "configuration_canonical_sha256": "8b161574a84f4f177f4b08cd2b9390165c70f6cad44e998fd0b97767e4db0f5b",
+  "build_record_sha256": "04e61032b46fc9111d4cca9be230ea9cc6b9822ab5fbcb53f591d4dfe9ec6b61",
+  "binary_verified_path": "/tmp/alan-phase1f-investigate-v3",
+  "binary_sha256": "62e830b4ba79a6e4542d03ccf461a4a24afe2f18ad0b5ccc61f6af8d9c262e50",
+  "corrected_public_freeze_sha256": "afee3bc1b40c8f51bebf16ede379183f736136e43656bf90334d02690e6ce024",
+  "current_sealed_commitment_sha256": "600b2804b5e14ee8c7d5bf255408a612a68c71519237e0567ad30337a853fa33",
+  "original_sealed_commitment_sha256": "11476bb1cce2cdd2c56873779df2a8e16f93602702aa10d84218c41bb161a4d8",
+  "published_files": {
+    "heldout-inputs.json": {
+      "sha256": "57641425198d3a3b02c3d6e685701e51ea2b581fc78541bceccc752a69148dcb",
+      "bytes": 935
+    },
+    "heldout-gold.json": {
+      "sha256": "5ddce62c4bc796c000f93548f50ac46e93198127c498605ad6e7a82fafe7a437",
+      "bytes": 15187
+    },
+    "heldout-manifest.json": {
+      "sha256": "600b2804b5e14ee8c7d5bf255408a612a68c71519237e0567ad30337a853fa33",
+      "bytes": 583
+    },
+    "history/v1-sealed.tar.gz": {
+      "sha256": "9773824d60dc103ec25e48fa7f944d96c77fe2ddd0181a0e0cff28ee34ec4f1d",
+      "bytes": 2548
+    }
+  },
+  "no_field_change_attestation": "All three heldout publications are exact byte-for-byte copies of current sealed inputs/gold/manifest. The original-v1 archive preserves all three original bytes, including the defective editorial citation version. No previously frozen file or semantic field was edited; all 185 frozen files were reverified after publication.",
+  "timing_correction": "The original evaluation freeze preceded application implementation. The version correction occurred during implementation but before any evaluation output. Earlier correction artifacts claiming the correction preceded implementation were too strong; they remain unedited historical records, superseded on timing by this statement.",
+  "limits": "No output grading or inference occurred. Sealing was a workflow boundary, not cryptographic confidentiality. Published gold must stay out of application model inputs.",
+  "verification_commands": {
+    "source_and_configuration": "python3 - <<'PY'\nfrom pathlib import Path\nimport hashlib,json,struct\nroot=Path.cwd(); doc=root/'docs/foundational/phase1f'\nsha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()\nread=lambda p:json.loads(p.read_text())\nf=read(doc/'pre-heldout-freeze.json')\nassert sha(doc/'pre-heldout-freeze.json')=='16aff76356dbb4049bb5151d8edb574f8cafe333ac6262667e7a3029274c6d4e'\nassert sha(doc/f['source_manifest'])==f['source_manifest_sha256']=='3bc0497edb37053ae6f97244e08f5bc03f4e114a9d0e9cd959298251ba1dcae4'\nassert sha(doc/f['independent_implementation_review'])==f['review_sha256']=='f5f635d45b031980e7887f4895eabdd2f5495e6c4096560237fbd80bd1e23901'\nassert sha(doc/'evaluation-run-plan.md')==f['configuration']['run_plan_sha256']=='c161d060c2c9bb93e3e678c0112ace71149aac1c2dab05340318081f0946df6c'\nconfig=read(doc/'evidence/live-development-v3/configuration.json')\nassert sha(doc/'evidence/live-development-v3/configuration.json')=='96058c4e0fac9e05057f955cf0e0b5efecedaa4fa608523ffd29e1a7e8e2101e'\nfor key,value in f['configuration'].items(): assert config[key]==value\nassert config['application_source_sha256']==f['source_sha256']\nassert config['binary_sha256']==f['binary_sha256']\nassert sha(doc/'evaluation/freeze-manifest.json')==f['configuration']['corpus_freeze']=='afee3bc1b40c8f51bebf16ede379183f736136e43656bf90334d02690e6ce024'\nmanifest=read(doc/f['source_manifest'])\nassert len(manifest['files'])==len(set(x['path'] for x in manifest['files']))==185\n# freeze.py sorts pathlib.Path values (path components), not raw strings.\nassert [Path(x['path']) for x in manifest['files']]==sorted(Path(x['path']) for x in manifest['files'])\nh=hashlib.sha256()\nfor item in manifest['files']:\n    path=Path(item['path']); assert not path.is_absolute() and '..' not in path.parts\n    raw=(root/path).read_bytes(); assert len(raw)==item['bytes']\n    assert hashlib.sha256(raw).hexdigest()==item['sha256'],item['path']\n    name=item['path'].encode()\n    h.update(struct.pack('>Q',len(name))+name+struct.pack('>Q',len(raw))+raw)\nassert h.hexdigest()==manifest['source_sha256']==f['source_sha256']=='35f21d7f4624358717176b805195a0ebfab03fd53400e92a93a4fc33d617c3f1'\nprint(json.dumps({'ok':True,'source_files':185,'source_sha256':h.hexdigest(),'review_and_configuration_verified':True},sort_keys=True))\nPY",
+    "portable_published_fixtures": "python3 - <<'PY'\nfrom pathlib import Path\nimport hashlib,json,shutil,subprocess,sys,tarfile,tempfile\npublic=Path('docs/foundational/phase1f/evaluation').resolve()\nexpected={'heldout-inputs.json': {'sha256': '57641425198d3a3b02c3d6e685701e51ea2b581fc78541bceccc752a69148dcb', 'bytes': 935}, 'heldout-gold.json': {'sha256': '5ddce62c4bc796c000f93548f50ac46e93198127c498605ad6e7a82fafe7a437', 'bytes': 15187}, 'heldout-manifest.json': {'sha256': '600b2804b5e14ee8c7d5bf255408a612a68c71519237e0567ad30337a853fa33', 'bytes': 583}, 'history/v1-sealed.tar.gz': {'sha256': '9773824d60dc103ec25e48fa7f944d96c77fe2ddd0181a0e0cff28ee34ec4f1d', 'bytes': 2548}}\nfor name,record in expected.items():\n    raw=(public/name).read_bytes()\n    assert len(raw)==record['bytes']\n    assert hashlib.sha256(raw).hexdigest()==record['sha256']\nwith tempfile.TemporaryDirectory(prefix='phase1f-unseal-') as folder:\n    root=Path(folder)\n    copied=root/'docs/foundational/phase1f/evaluation'\n    shutil.copytree(public,copied)\n    sealed=root/'.superpowers/sdd/00-plan/sealed-evaluation'\n    sealed.mkdir(parents=True)\n    for name in ('inputs','gold','manifest'):\n        shutil.copyfile(copied/f'heldout-{name}.json',sealed/f'{name}.json')\n    original=root/'.superpowers/sdd/00-plan/evaluation-freeze-v1/sealed-evaluation'\n    original.mkdir(parents=True)\n    with tarfile.open(copied/'history/v1-sealed.tar.gz','r:gz') as archive:\n        members=archive.getmembers()\n        assert sorted(item.name for item in members)==['gold.json','inputs.json','manifest.json']\n        for item in members:\n            path=Path(item.name)\n            assert item.isfile() and not path.is_absolute() and '..' not in path.parts\n            assert len(path.parts)==1\n            (original/path).write_bytes(archive.extractfile(item).read())\n    result=subprocess.run([sys.executable,str(copied/'verify.py'),'--sealed'],cwd=root,text=True,capture_output=True)\n    print(result.stdout,end='')\n    print(result.stderr,end='',file=sys.stderr)\n    print(json.dumps({'portable_verifier_exit_code':result.returncode,'published_files_checked':len(expected),'original_archive_members':3},sort_keys=True))\n    assert result.returncode==0\nPY",
+    "retained_binary": "shasum -a 256 /tmp/alan-phase1f-investigate-v3"
+  },
+  "verification_results": {
+    "source_and_configuration": {
+      "exit_code": 0,
+      "stdout": "{\"ok\": true, \"review_and_configuration_verified\": true, \"source_files\": 185, \"source_sha256\": \"35f21d7f4624358717176b805195a0ebfab03fd53400e92a93a4fc33d617c3f1\"}\n",
+      "stderr": ""
+    },
+    "portable_published_fixtures": {
+      "exit_code": 0,
+      "stdout": "{\"checked_cases\": 8, \"documents\": 8, \"freeze_identity\": \"afee3bc1b40c8f51bebf16ede379183f736136e43656bf90334d02690e6ce024\", \"lexically_reachable_lines\": 25, \"lines\": 25, \"ok\": true, \"sealed_checked\": true}\n{\"original_archive_members\": 3, \"portable_verifier_exit_code\": 0, \"published_files_checked\": 4}\n",
+      "stderr": ""
+    },
+    "retained_binary": {
+      "matched": true,
+      "sha256": "62e830b4ba79a6e4542d03ccf461a4a24afe2f18ad0b5ccc61f6af8d9c262e50"
+    }
+  },
+  "verification_note": "An initial ad hoc check assumed raw-string ordering and stopped on ordering only. The retained freeze tool sorts pathlib.Path components. The commands recorded here reproduce its actual order and pass; no fixture/source change was made to accommodate verification.",
+  "publication_and_portable_verification_completed_utc": "2026-10-26 16:07:21 UTC",
+  "recorded_commands_reexecuted": {
+    "exit_code": 0,
+    "both_stdout_exactly_reproduced": true
+  }
+}

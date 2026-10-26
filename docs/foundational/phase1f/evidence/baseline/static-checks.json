@@ -1,0 +1,78 @@
+[
+  {
+    "Command": [
+      "/opt/homebrew/opt/python@3.15/bin/python3.15",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "docs/foundational/phase1e/tools",
+      "-p",
+      "test_comparison.py",
+      "-v"
+    ],
+    "Directory": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1f-baseline-source-c7i4u7dw",
+    "ExitCode": 0,
+    "ElapsedSeconds": 0.687,
+    "Stdout": "",
+    "Stderr": "test_reject_behavior_mutations (test_comparison.ComparisonControls.test_reject_behavior_mutations) ... ok\ntest_reject_missing_go_pass_event (test_comparison.ComparisonControls.test_reject_missing_go_pass_event) ... ok\ntest_reject_model_stream_and_missing_projection_field (test_comparison.ComparisonControls.test_reject_model_stream_and_missing_projection_field) ... ok\ntest_reject_public_projection_even_if_actual_and_expected_both_changed (test_comparison.ComparisonControls.test_reject_public_projection_even_if_actual_and_expected_both_changed) ... ok\ntest_reject_reordering_and_missing_record (test_comparison.ComparisonControls.test_reject_reordering_and_missing_record) ... ok\ntest_reject_source_identity_and_manifest_inconsistency (test_comparison.ComparisonControls.test_reject_source_identity_and_manifest_inconsistency) ... ok\ntest_retained_normal_and_race_accept_documented_provenance (test_comparison.ComparisonControls.test_retained_normal_and_race_accept_documented_provenance) ... ok\n\n----------------------------------------------------------------------\nRan 7 tests in 0.618s\n\nOK\n"
+  },
+  {
+    "Command": [
+      "go",
+      "vet",
+      "./..."
+    ],
+    "Directory": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1f-baseline-source-c7i4u7dw",
+    "ExitCode": 0,
+    "ElapsedSeconds": 1.024,
+    "Stdout": "",
+    "Stderr": ""
+  },
+  {
+    "Command": [
+      "go",
+      "vet",
+      "-tags",
+      "integration",
+      "./..."
+    ],
+    "Directory": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1f-baseline-source-c7i4u7dw",
+    "ExitCode": 0,
+    "ElapsedSeconds": 1.016,
+    "Stdout": "",
+    "Stderr": ""
+  },
+  {
+    "Command": [
+      "gofmt",
+      "-l",
+      "author",
+      "schema",
+      "runtime",
+      "effects",
+      "adapters",
+      "cmd",
+      "internal",
+      "research",
+      "examples"
+    ],
+    "Directory": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1f-baseline-source-c7i4u7dw",
+    "ExitCode": 0,
+    "ElapsedSeconds": 0.031,
+    "Stdout": "",
+    "Stderr": ""
+  },
+  {
+    "Command": [
+      "go",
+      "mod",
+      "verify"
+    ],
+    "Directory": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1f-baseline-source-c7i4u7dw",
+    "ExitCode": 0,
+    "ElapsedSeconds": 0.063,
+    "Stdout": "all modules verified\n",
+    "Stderr": ""
+  }
+]

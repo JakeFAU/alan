@@ -1,0 +1,356 @@
+[
+  {
+    "id": "response-01",
+    "case_id": "held-03",
+    "execution_outcome": "public-result",
+    "initial": {
+      "disposition": null,
+      "answer": "Retention approval is not established by this packet for Birch exporter 7 in production window B09: it explicitly records neither a signed data-retention approval nor a rejection. This does not establish that approval was denied.\n\nThe supplied excerpt identifies the readiness packet as revision 1 and says it contains the transport check and rollback procedure, but it does not provide an exact rollback time or trigger, or a target version. The rollback procedure itself needs focused retrieval to determine those details; revision 1 is the packet revision, not an established rollback target.",
+      "citations": [
+        {
+          "document": "phase1f-birch",
+          "version": "f5648bd18afd4f1efb7e5d85281ce2d0104e6ea8863903f35a2c43f545073027",
+          "start": 142,
+          "end": 337,
+          "snippet": "Birch exporter 7 production window B09 retention approval: no signed data-retention approval or rejection is recorded in this packet. The packet does not establish whether retention was approved."
+        },
+        {
+          "document": "phase1f-birch",
+          "version": "f5648bd18afd4f1efb7e5d85281ce2d0104e6ea8863903f35a2c43f545073027",
+          "start": 0,
+          "end": 141,
+          "snippet": "Birch exporter 7 readiness packet, revision 1, applies to production window B09 and contains the transport check and rollback procedure only."
+        }
+      ]
+    },
+    "final": {
+      "disposition": "answer",
+      "answer": "Retention approval is not established by this packet for Birch exporter 7 in production window B09. It explicitly records neither a signed data-retention approval nor a rejection; this does not mean approval was denied.\n\nRoll back by restoring exporter 6 if delivery failures exceed 2 percent for eight consecutive minutes. That is the specified trigger and target; no specific clock time or deadline is stated in the supplied evidence. Revision 1 identifies the readiness packet, not the rollback target.",
+      "citations": [
+        {
+          "document": "phase1f-birch",
+          "version": "f5648bd18afd4f1efb7e5d85281ce2d0104e6ea8863903f35a2c43f545073027",
+          "start": 142,
+          "end": 337,
+          "snippet": "Birch exporter 7 production window B09 retention approval: no signed data-retention approval or rejection is recorded in this packet. The packet does not establish whether retention was approved."
+        },
+        {
+          "document": "phase1f-birch",
+          "version": "f5648bd18afd4f1efb7e5d85281ce2d0104e6ea8863903f35a2c43f545073027",
+          "start": 0,
+          "end": 141,
+          "snippet": "Birch exporter 7 readiness packet, revision 1, applies to production window B09 and contains the transport check and rollback procedure only."
+        },
+        {
+          "document": "phase1f-birch",
+          "version": "f5648bd18afd4f1efb7e5d85281ce2d0104e6ea8863903f35a2c43f545073027",
+          "start": 338,
+          "end": 474,
+          "snippet": "Birch exporter 7 production window B09 rollback: restore exporter 6 if delivery failures exceed 2 percent for eight consecutive minutes."
+        },
+        {
+          "document": "phase1f-birch",
+          "version": "f5648bd18afd4f1efb7e5d85281ce2d0104e6ea8863903f35a2c43f545073027",
+          "start": 338,
+          "end": 474,
+          "snippet": "Birch exporter 7 production window B09 rollback: restore exporter 6 if delivery failures exceed 2 percent for eight consecutive minutes."
+        }
+      ]
+    },
+    "diagnostic_final_candidate": "Retention approval is not established by this packet for Birch exporter 7 in production window B09. It explicitly records neither a signed data-retention approval nor a rejection; this does not mean approval was denied.\n\nRoll back by restoring exporter 6 if delivery failures exceed 2 percent for eight consecutive minutes. That is the specified trigger and target; no specific clock time or deadline is stated in the supplied evidence. Revision 1 identifies the readiness packet, not the rollback target."
+  },
+  {
+    "id": "response-02",
+    "case_id": "held-03",
+    "execution_outcome": "public-result",
+    "initial": {
+      "disposition": "answer",
+      "answer": "No. This packet does not establish retention approval for Birch exporter 7 in production window B09; neither signed approval nor rejection is recorded. The supplied evidence gives no rollback timing or target version, so neither can be determined.",
+      "citations": [
+        {
+          "document": "phase1f-birch",
+          "version": "f5648bd18afd4f1efb7e5d85281ce2d0104e6ea8863903f35a2c43f545073027",
+          "start": 142,
+          "end": 337,
+          "snippet": "Birch exporter 7 production window B09 retention approval: no signed data-retention approval or rejection is recorded in this packet. The packet does not establish whether retention was approved."
+        }
+      ]
+    },
+    "final": {
+      "disposition": "answer",
+      "answer": "No. This packet does not establish retention approval for Birch exporter 7 in production window B09; neither signed approval nor rejection is recorded. The supplied evidence gives no rollback timing or target version, so neither can be determined.",
+      "citations": [
+        {
+          "document": "phase1f-birch",
+          "version": "f5648bd18afd4f1efb7e5d85281ce2d0104e6ea8863903f35a2c43f545073027",
+          "start": 142,
+          "end": 337,
+          "snippet": "Birch exporter 7 production window B09 retention approval: no signed data-retention approval or rejection is recorded in this packet. The packet does not establish whether retention was approved."
+        }
+      ]
+    },
+    "diagnostic_final_candidate": null
+  },
+  {
+    "id": "response-03",
+    "case_id": "held-04",
+    "execution_outcome": "public-result",
+    "initial": {
+      "disposition": "answer",
+      "answer": "The supplied service final report states that the H18 canary passed and expansion is ready. It does not specify rollback timing or a rollback version, so neither can be determined from this evidence.",
+      "citations": [
+        {
+          "document": "phase1f-heron",
+          "version": "2d59e72f0f48b99895e2d7497a69672d6313c6a84fd432b1e7696808b8b511a0",
+          "start": 190,
+          "end": 307,
+          "snippet": "Heron cache 4 production window H18 canary readiness, service final report: the canary passed and expansion is ready."
+        }
+      ]
+    },
+    "final": {
+      "disposition": "answer",
+      "answer": "The supplied service final report states that the H18 canary passed and expansion is ready. It does not specify rollback timing or a rollback version, so neither can be determined from this evidence.",
+      "citations": [
+        {
+          "document": "phase1f-heron",
+          "version": "2d59e72f0f48b99895e2d7497a69672d6313c6a84fd432b1e7696808b8b511a0",
+          "start": 190,
+          "end": 307,
+          "snippet": "Heron cache 4 production window H18 canary readiness, service final report: the canary passed and expansion is ready."
+        }
+      ]
+    },
+    "diagnostic_final_candidate": null
+  },
+  {
+    "id": "response-04",
+    "case_id": "held-02",
+    "execution_outcome": "public-result",
+    "initial": {
+      "disposition": "answer",
+      "answer": "For Saffron worker 9 in production, configure a queue limit of 400 jobs for the fast profile or 900 jobs for the bulk profile. You must specify the profile to select one limit. The supplied evidence does not state when to roll back or which version to roll back to.",
+      "citations": [
+        {
+          "document": "phase1f-saffron",
+          "version": "ab8f3839444a672c5f640aaa78e442022231ec10c0e86e28125cec9a120cdbd1",
+          "start": 122,
+          "end": 293,
+          "snippet": "Saffron worker 9 production queue limit: the fast profile allows 400 queued jobs; the bulk profile allows 900 queued jobs. A profile must be specified to select one limit."
+        }
+      ]
+    },
+    "final": {
+      "disposition": "answer",
+      "answer": "For Saffron worker 9 in production, configure a queue limit of 400 jobs for the fast profile or 900 jobs for the bulk profile. You must specify the profile to select one limit. The supplied evidence does not state when to roll back or which version to roll back to.",
+      "citations": [
+        {
+          "document": "phase1f-saffron",
+          "version": "ab8f3839444a672c5f640aaa78e442022231ec10c0e86e28125cec9a120cdbd1",
+          "start": 122,
+          "end": 293,
+          "snippet": "Saffron worker 9 production queue limit: the fast profile allows 400 queued jobs; the bulk profile allows 900 queued jobs. A profile must be specified to select one limit."
+        }
+      ]
+    },
+    "diagnostic_final_candidate": null
+  },
+  {
+    "id": "response-05",
+    "case_id": "held-01",
+    "execution_outcome": "public-result",
+    "initial": {
+      "disposition": "answer",
+      "answer": "For Maple ingestion 2.4 with the production standard profile in P12, schema version 4 is supported; schema version 3 is unsupported. Roll back to ingestion 2.3 if rejected records exceed 3% for four consecutive minutes.",
+      "citations": [
+        {
+          "document": "phase1f-maple",
+          "version": "0b06f717436d38d5f1ec799e8ead043d0919afc2f62374bfec91b732bdf7a152",
+          "start": 108,
+          "end": 339,
+          "snippet": "Maple ingestion 2.4 production standard profile compatibility and rollback: schema version 4 is supported and schema version 3 is unsupported; restore ingestion 2.3 if rejected records exceed 3 percent for four consecutive minutes."
+        }
+      ]
+    },
+    "final": {
+      "disposition": "answer",
+      "answer": "For Maple ingestion 2.4 with the production standard profile in P12, schema version 4 is supported; schema version 3 is unsupported. Roll back to ingestion 2.3 if rejected records exceed 3% for four consecutive minutes.",
+      "citations": [
+        {
+          "document": "phase1f-maple",
+          "version": "0b06f717436d38d5f1ec799e8ead043d0919afc2f62374bfec91b732bdf7a152",
+          "start": 108,
+          "end": 339,
+          "snippet": "Maple ingestion 2.4 production standard profile compatibility and rollback: schema version 4 is supported and schema version 3 is unsupported; restore ingestion 2.3 if rejected records exceed 3 percent for four consecutive minutes."
+        }
+      ]
+    },
+    "diagnostic_final_candidate": null
+  },
+  {
+    "id": "response-06",
+    "case_id": "held-01",
+    "execution_outcome": "public-result",
+    "initial": {
+      "disposition": null,
+      "answer": "For Maple ingestion 2.4 using the production standard profile, schema version 4 is supported and schema version 3 is unsupported. Roll back to ingestion 2.3 if rejected records exceed 3% for four consecutive minutes. The supplied excerpt does not establish whether these rules apply specifically in window P12; a P12-specific source is needed to confirm that scope.",
+      "citations": [
+        {
+          "document": "phase1f-maple",
+          "version": "0b06f717436d38d5f1ec799e8ead043d0919afc2f62374bfec91b732bdf7a152",
+          "start": 108,
+          "end": 339,
+          "snippet": "Maple ingestion 2.4 production standard profile compatibility and rollback: schema version 4 is supported and schema version 3 is unsupported; restore ingestion 2.3 if rejected records exceed 3 percent for four consecutive minutes."
+        },
+        {
+          "document": "phase1f-maple",
+          "version": "0b06f717436d38d5f1ec799e8ead043d0919afc2f62374bfec91b732bdf7a152",
+          "start": 108,
+          "end": 339,
+          "snippet": "Maple ingestion 2.4 production standard profile compatibility and rollback: schema version 4 is supported and schema version 3 is unsupported; restore ingestion 2.3 if rejected records exceed 3 percent for four consecutive minutes."
+        }
+      ]
+    },
+    "final": {
+      "disposition": "answer",
+      "answer": "For Maple ingestion 2.4 using the production standard profile in window P12, readiness record revision 1 specifies:\n- Schema version 4 is supported; schema version 3 is unsupported.\n- Roll back to ingestion 2.3 if rejected records exceed 3% for four consecutive minutes.",
+      "citations": [
+        {
+          "document": "phase1f-maple",
+          "version": "0b06f717436d38d5f1ec799e8ead043d0919afc2f62374bfec91b732bdf7a152",
+          "start": 108,
+          "end": 339,
+          "snippet": "Maple ingestion 2.4 production standard profile compatibility and rollback: schema version 4 is supported and schema version 3 is unsupported; restore ingestion 2.3 if rejected records exceed 3 percent for four consecutive minutes."
+        },
+        {
+          "document": "phase1f-maple",
+          "version": "0b06f717436d38d5f1ec799e8ead043d0919afc2f62374bfec91b732bdf7a152",
+          "start": 108,
+          "end": 339,
+          "snippet": "Maple ingestion 2.4 production standard profile compatibility and rollback: schema version 4 is supported and schema version 3 is unsupported; restore ingestion 2.3 if rejected records exceed 3 percent for four consecutive minutes."
+        },
+        {
+          "document": "phase1f-maple",
+          "version": "0b06f717436d38d5f1ec799e8ead043d0919afc2f62374bfec91b732bdf7a152",
+          "start": 0,
+          "end": 107,
+          "snippet": "Maple ingestion 2.4 readiness record, revision 1, applies to the production standard profile in window P12."
+        },
+        {
+          "document": "phase1f-birch",
+          "version": "f5648bd18afd4f1efb7e5d85281ce2d0104e6ea8863903f35a2c43f545073027",
+          "start": 338,
+          "end": 474,
+          "snippet": "Birch exporter 7 production window B09 rollback: restore exporter 6 if delivery failures exceed 2 percent for eight consecutive minutes."
+        }
+      ]
+    },
+    "diagnostic_final_candidate": "For Maple ingestion 2.4 using the production standard profile in window P12, readiness record revision 1 specifies:\n- Schema version 4 is supported; schema version 3 is unsupported.\n- Roll back to ingestion 2.3 if rejected records exceed 3% for four consecutive minutes."
+  },
+  {
+    "id": "response-07",
+    "case_id": "held-04",
+    "execution_outcome": "public-result",
+    "initial": {
+      "disposition": null,
+      "answer": "The service final report states that the canary passed and Heron cache 4 is ready for expansion in production window H18. However, the evidence identifies two equally authoritative final reports, neither superseding the other, with no recorded resolution. The second report\u2019s findings are not supplied, so we cannot establish whether the final reports agree on readiness or conflict. The supplied excerpts also do not specify an exact rollback time or target version. Focused retrieval of the second report and the H18 rollback instructions is needed to resolve these gaps.",
+      "citations": [
+        {
+          "document": "phase1f-heron",
+          "version": "2d59e72f0f48b99895e2d7497a69672d6313c6a84fd432b1e7696808b8b511a0",
+          "start": 190,
+          "end": 307,
+          "snippet": "Heron cache 4 production window H18 canary readiness, service final report: the canary passed and expansion is ready."
+        },
+        {
+          "document": "phase1f-heron",
+          "version": "2d59e72f0f48b99895e2d7497a69672d6313c6a84fd432b1e7696808b8b511a0",
+          "start": 0,
+          "end": 189,
+          "snippet": "Heron cache 4 window H18 has two final canary reports with equal authority, both revision 1 and both about the same production pool. Neither supersedes the other; no resolution is recorded."
+        }
+      ]
+    },
+    "final": {
+      "disposition": "revision_limit",
+      "answer": "",
+      "citations": [
+        {
+          "document": "phase1f-heron",
+          "version": "2d59e72f0f48b99895e2d7497a69672d6313c6a84fd432b1e7696808b8b511a0",
+          "start": 190,
+          "end": 307,
+          "snippet": "Heron cache 4 production window H18 canary readiness, service final report: the canary passed and expansion is ready."
+        },
+        {
+          "document": "phase1f-heron",
+          "version": "2d59e72f0f48b99895e2d7497a69672d6313c6a84fd432b1e7696808b8b511a0",
+          "start": 0,
+          "end": 189,
+          "snippet": "Heron cache 4 window H18 has two final canary reports with equal authority, both revision 1 and both about the same production pool. Neither supersedes the other; no resolution is recorded."
+        },
+        {
+          "document": "phase1f-heron",
+          "version": "2d59e72f0f48b99895e2d7497a69672d6313c6a84fd432b1e7696808b8b511a0",
+          "start": 308,
+          "end": 433,
+          "snippet": "Heron cache 4 production window H18 canary readiness, reliability final report: the canary failed and expansion is not ready."
+        },
+        {
+          "document": "phase1f-heron",
+          "version": "2d59e72f0f48b99895e2d7497a69672d6313c6a84fd432b1e7696808b8b511a0",
+          "start": 434,
+          "end": 577,
+          "snippet": "Heron cache 4 production window H18 rollback: both teams agree to restore cache 3 if cache errors exceed 5 percent for two consecutive minutes."
+        }
+      ]
+    },
+    "diagnostic_final_candidate": "The final reports do not establish a single readiness verdict for Heron cache 4 in H18: the service final report says the canary passed and expansion is ready, while the reliability final report says it failed and expansion is not ready. Both reports have equal authority, neither supersedes the other, and no resolution is recorded.\n\nBoth teams agree to roll back to cache 3 if cache errors exceed 5 percent for two consecutive minutes. This is a condition-based trigger; the supplied excerpts do not specify an exact clock time. If a clock time is required, focused retrieval of the H18 rollback schedule or instructions is still needed."
+  },
+  {
+    "id": "response-08",
+    "case_id": "held-02",
+    "execution_outcome": "public-result",
+    "initial": {
+      "disposition": null,
+      "answer": "Which production profile are you using: fast or bulk? Configure a queue limit of 400 queued jobs for fast or 900 for bulk. For either profile, roll back from Saffron worker 9 to worker 8 if job failures exceed 4% for six consecutive minutes.",
+      "citations": [
+        {
+          "document": "phase1f-saffron",
+          "version": "ab8f3839444a672c5f640aaa78e442022231ec10c0e86e28125cec9a120cdbd1",
+          "start": 122,
+          "end": 293,
+          "snippet": "Saffron worker 9 production queue limit: the fast profile allows 400 queued jobs; the bulk profile allows 900 queued jobs. A profile must be specified to select one limit."
+        },
+        {
+          "document": "phase1f-saffron",
+          "version": "ab8f3839444a672c5f640aaa78e442022231ec10c0e86e28125cec9a120cdbd1",
+          "start": 294,
+          "end": 435,
+          "snippet": "Saffron worker 9 production rollback: for either fast or bulk, restore worker 8 if job failures exceed 4 percent for six consecutive minutes."
+        }
+      ]
+    },
+    "final": {
+      "disposition": "clarification",
+      "answer": "Which production profile are you using: fast or bulk? Configure a queue limit of 400 queued jobs for fast or 900 for bulk. For either profile, roll back from Saffron worker 9 to worker 8 if job failures exceed 4% for six consecutive minutes.",
+      "citations": [
+        {
+          "document": "phase1f-saffron",
+          "version": "ab8f3839444a672c5f640aaa78e442022231ec10c0e86e28125cec9a120cdbd1",
+          "start": 122,
+          "end": 293,
+          "snippet": "Saffron worker 9 production queue limit: the fast profile allows 400 queued jobs; the bulk profile allows 900 queued jobs. A profile must be specified to select one limit."
+        },
+        {
+          "document": "phase1f-saffron",
+          "version": "ab8f3839444a672c5f640aaa78e442022231ec10c0e86e28125cec9a120cdbd1",
+          "start": 294,
+          "end": 435,
+          "snippet": "Saffron worker 9 production rollback: for either fast or bulk, restore worker 8 if job failures exceed 4 percent for six consecutive minutes."
+        }
+      ]
+    },
+    "diagnostic_final_candidate": "Which production profile are you using: fast or bulk? Configure a queue limit of 400 queued jobs for fast or 900 for bulk. For either profile, roll back from Saffron worker 9 to worker 8 if job failures exceed 4% for six consecutive minutes."
+  }
+]

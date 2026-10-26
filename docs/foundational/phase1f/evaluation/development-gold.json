@@ -1,0 +1,370 @@
+{
+  "schema": "phase1f-evaluation/v1",
+  "split": "development",
+  "cases": [
+    {
+      "id": "dev-01",
+      "category": "supported",
+      "aspects": [
+        "kernel compatibility",
+        "rollback condition and target"
+      ],
+      "acceptable_semantic_modes": [
+        "supported_answer"
+      ],
+      "required_facts": [
+        {
+          "id": "kernel-61",
+          "claim": "Kernel 6.1 is supported.",
+          "evidence": [
+            {
+              "document": "phase1f-cedar",
+              "version": "9ef0dfbfc7ce878bb033ac002be584b378193054dd56609af2d4494e4b296749",
+              "line": 2,
+              "start": 104,
+              "end": 243,
+              "snippet": "Cedar agent 3.2 production Linux compatibility: hosts running kernel 6.1 or newer are supported; hosts running kernel 5.15 are unsupported."
+            }
+          ]
+        },
+        {
+          "id": "kernel-515",
+          "claim": "Kernel 5.15 is unsupported.",
+          "evidence": [
+            {
+              "document": "phase1f-cedar",
+              "version": "9ef0dfbfc7ce878bb033ac002be584b378193054dd56609af2d4494e4b296749",
+              "line": 2,
+              "start": 104,
+              "end": 243,
+              "snippet": "Cedar agent 3.2 production Linux compatibility: hosts running kernel 6.1 or newer are supported; hosts running kernel 5.15 are unsupported."
+            }
+          ]
+        },
+        {
+          "id": "rollback-target",
+          "claim": "Restore agent 3.1.",
+          "evidence": [
+            {
+              "document": "phase1f-cedar",
+              "version": "9ef0dfbfc7ce878bb033ac002be584b378193054dd56609af2d4494e4b296749",
+              "line": 3,
+              "start": 244,
+              "end": 390,
+              "snippet": "Cedar agent 3.2 production Linux rollback: retain agent 3.1 and restore it if the agent error rate exceeds 2 percent for five consecutive minutes."
+            }
+          ]
+        },
+        {
+          "id": "rollback-trigger",
+          "claim": "Roll back if agent error rate exceeds 2 percent for five consecutive minutes.",
+          "evidence": [
+            {
+              "document": "phase1f-cedar",
+              "version": "9ef0dfbfc7ce878bb033ac002be584b378193054dd56609af2d4494e4b296749",
+              "line": 3,
+              "start": 244,
+              "end": 390,
+              "snippet": "Cedar agent 3.2 production Linux rollback: retain agent 3.1 and restore it if the agent error rate exceeds 2 percent for five consecutive minutes."
+            }
+          ]
+        }
+      ],
+      "optional_facts": [],
+      "forbidden_claims": [
+        "Kernel 5.15 is supported.",
+        "The threshold is at least 2 percent rather than exceeds 2 percent.",
+        "A different duration or rollback version."
+      ],
+      "stopping_rule": "Answer both aspects once supported; no revision is needed solely to increase rounds."
+    },
+    {
+      "id": "dev-02",
+      "category": "ambiguity",
+      "aspects": [
+        "region-specific concurrency",
+        "rollback condition and target"
+      ],
+      "acceptable_semantic_modes": [
+        "clarification",
+        "conditional_answer"
+      ],
+      "required_facts": [
+        {
+          "id": "missing-region",
+          "claim": "The request does not specify east or west; one unconditional concurrency limit cannot be selected.",
+          "evidence": [
+            {
+              "document": "phase1f-quartz",
+              "version": "faa8adec67482975e84d81a2eec808f32a7bdb9aa89333a1aed7d74d912f299b",
+              "line": 1,
+              "start": 0,
+              "end": 120,
+              "snippet": "Quartz gateway 8 rollout record, revision 1, covers the east and west production regions; neither region is the default."
+            },
+            {
+              "document": "phase1f-quartz",
+              "version": "faa8adec67482975e84d81a2eec808f32a7bdb9aa89333a1aed7d74d912f299b",
+              "line": 2,
+              "start": 121,
+              "end": 336,
+              "snippet": "Quartz gateway 8 production concurrency limit: the east region allows 120 concurrent requests per instance; the west region allows 80 concurrent requests per instance. A region must be specified to select one limit."
+            }
+          ]
+        },
+        {
+          "id": "east-limit",
+          "claim": "East permits 120 concurrent requests per instance.",
+          "evidence": [
+            {
+              "document": "phase1f-quartz",
+              "version": "faa8adec67482975e84d81a2eec808f32a7bdb9aa89333a1aed7d74d912f299b",
+              "line": 2,
+              "start": 121,
+              "end": 336,
+              "snippet": "Quartz gateway 8 production concurrency limit: the east region allows 120 concurrent requests per instance; the west region allows 80 concurrent requests per instance. A region must be specified to select one limit."
+            }
+          ],
+          "required_for_modes": [
+            "conditional_answer"
+          ]
+        },
+        {
+          "id": "west-limit",
+          "claim": "West permits 80 concurrent requests per instance.",
+          "evidence": [
+            {
+              "document": "phase1f-quartz",
+              "version": "faa8adec67482975e84d81a2eec808f32a7bdb9aa89333a1aed7d74d912f299b",
+              "line": 2,
+              "start": 121,
+              "end": 336,
+              "snippet": "Quartz gateway 8 production concurrency limit: the east region allows 120 concurrent requests per instance; the west region allows 80 concurrent requests per instance. A region must be specified to select one limit."
+            }
+          ],
+          "required_for_modes": [
+            "conditional_answer"
+          ]
+        },
+        {
+          "id": "rollback-target",
+          "claim": "Restore gateway 7.",
+          "evidence": [
+            {
+              "document": "phase1f-quartz",
+              "version": "faa8adec67482975e84d81a2eec808f32a7bdb9aa89333a1aed7d74d912f299b",
+              "line": 3,
+              "start": 337,
+              "end": 492,
+              "snippet": "Quartz gateway 8 production rollback: in both east and west regions, restore gateway 7 if p95 latency exceeds 300 milliseconds for ten consecutive minutes."
+            }
+          ],
+          "required_for_modes": [
+            "conditional_answer"
+          ]
+        },
+        {
+          "id": "rollback-trigger",
+          "claim": "Roll back if p95 latency exceeds 300 milliseconds for ten consecutive minutes in either region.",
+          "evidence": [
+            {
+              "document": "phase1f-quartz",
+              "version": "faa8adec67482975e84d81a2eec808f32a7bdb9aa89333a1aed7d74d912f299b",
+              "line": 3,
+              "start": 337,
+              "end": 492,
+              "snippet": "Quartz gateway 8 production rollback: in both east and west regions, restore gateway 7 if p95 latency exceeds 300 milliseconds for ten consecutive minutes."
+            }
+          ],
+          "required_for_modes": [
+            "conditional_answer"
+          ]
+        }
+      ],
+      "optional_facts": [],
+      "forbidden_claims": [
+        "120 or 80 is the unconditional production limit.",
+        "An invented default region.",
+        "Rollback differs by region."
+      ],
+      "stopping_rule": "Ask which region, or state both regional limits conditionally and the common rollback. Do not choose a region. A targeted clarification alone is acceptable; an answer supplying one limit without the condition is not."
+    },
+    {
+      "id": "dev-03",
+      "category": "missing_evidence",
+      "aspects": [
+        "security approval status",
+        "rollback condition and target"
+      ],
+      "acceptable_semantic_modes": [
+        "partial_answer_with_abstention"
+      ],
+      "required_facts": [
+        {
+          "id": "approval-unknown",
+          "claim": "The packet does not establish security approval; no signed approval or rejection is recorded.",
+          "evidence": [
+            {
+              "document": "phase1f-larch",
+              "version": "87693660b05a354b3b2ddbe205928ce1be5ca18d27045696c6be7b3e33202fc1",
+              "line": 1,
+              "start": 0,
+              "end": 142,
+              "snippet": "Larch index 5 readiness packet, revision 1, applies to production window L24 and contains the compatibility check and rollback procedure only."
+            },
+            {
+              "document": "phase1f-larch",
+              "version": "87693660b05a354b3b2ddbe205928ce1be5ca18d27045696c6be7b3e33202fc1",
+              "line": 2,
+              "start": 143,
+              "end": 334,
+              "snippet": "Larch index 5 production window L24 security approval: no signed security approval or rejection is recorded in this packet. The packet does not establish whether security approved the change."
+            }
+          ]
+        },
+        {
+          "id": "rollback-target",
+          "claim": "Restore the index 4 snapshot.",
+          "evidence": [
+            {
+              "document": "phase1f-larch",
+              "version": "87693660b05a354b3b2ddbe205928ce1be5ca18d27045696c6be7b3e33202fc1",
+              "line": 3,
+              "start": 335,
+              "end": 475,
+              "snippet": "Larch index 5 production window L24 rollback: restore the index 4 snapshot if query failures exceed 1 percent for three consecutive minutes."
+            }
+          ]
+        },
+        {
+          "id": "rollback-trigger",
+          "claim": "Roll back if query failures exceed 1 percent for three consecutive minutes.",
+          "evidence": [
+            {
+              "document": "phase1f-larch",
+              "version": "87693660b05a354b3b2ddbe205928ce1be5ca18d27045696c6be7b3e33202fc1",
+              "line": 3,
+              "start": 335,
+              "end": 475,
+              "snippet": "Larch index 5 production window L24 rollback: restore the index 4 snapshot if query failures exceed 1 percent for three consecutive minutes."
+            }
+          ]
+        }
+      ],
+      "optional_facts": [],
+      "forbidden_claims": [
+        "Security approved the change.",
+        "Security rejected the change.",
+        "No approval exists anywhere."
+      ],
+      "stopping_rule": "Give the known rollback and explicitly withhold an approval verdict; obtaining the missing signed decision is the stopping condition. Corpus silence is not a rejection."
+    },
+    {
+      "id": "dev-04",
+      "category": "contradiction",
+      "aspects": [
+        "migration readiness conflict",
+        "agreed rollback condition and target"
+      ],
+      "acceptable_semantic_modes": [
+        "partial_answer_with_abstention"
+      ],
+      "required_facts": [
+        {
+          "id": "ops-pass",
+          "claim": "The operations final report says validation passed and migration is ready.",
+          "evidence": [
+            {
+              "document": "phase1f-marlin",
+              "version": "12cfacc413b898194288a42054075218408911d001e1f41c42abd6a83e2bbf62",
+              "line": 2,
+              "start": 200,
+              "end": 341,
+              "snippet": "Marlin database 6 production window M31 migration readiness, operations final report: migration validation passed and the migration is ready."
+            }
+          ]
+        },
+        {
+          "id": "db-fail",
+          "claim": "The database final report says validation failed and migration is not ready.",
+          "evidence": [
+            {
+              "document": "phase1f-marlin",
+              "version": "12cfacc413b898194288a42054075218408911d001e1f41c42abd6a83e2bbf62",
+              "line": 3,
+              "start": 342,
+              "end": 485,
+              "snippet": "Marlin database 6 production window M31 migration readiness, database final report: migration validation failed and the migration is not ready."
+            }
+          ]
+        },
+        {
+          "id": "conflict-unresolved",
+          "claim": "The same-window, same-cluster reports have equal authority; neither supersedes the other and no resolution is recorded, so readiness cannot be established.",
+          "evidence": [
+            {
+              "document": "phase1f-marlin",
+              "version": "12cfacc413b898194288a42054075218408911d001e1f41c42abd6a83e2bbf62",
+              "line": 1,
+              "start": 0,
+              "end": 199,
+              "snippet": "Marlin database 6 window M31 has two final readiness reports with equal authority, both revision 1 and both about the same production cluster. Neither supersedes the other; no resolution is recorded."
+            },
+            {
+              "document": "phase1f-marlin",
+              "version": "12cfacc413b898194288a42054075218408911d001e1f41c42abd6a83e2bbf62",
+              "line": 2,
+              "start": 200,
+              "end": 341,
+              "snippet": "Marlin database 6 production window M31 migration readiness, operations final report: migration validation passed and the migration is ready."
+            },
+            {
+              "document": "phase1f-marlin",
+              "version": "12cfacc413b898194288a42054075218408911d001e1f41c42abd6a83e2bbf62",
+              "line": 3,
+              "start": 342,
+              "end": 485,
+              "snippet": "Marlin database 6 production window M31 migration readiness, database final report: migration validation failed and the migration is not ready."
+            }
+          ]
+        },
+        {
+          "id": "rollback-target",
+          "claim": "Both teams agree to restore the database 5 snapshot.",
+          "evidence": [
+            {
+              "document": "phase1f-marlin",
+              "version": "12cfacc413b898194288a42054075218408911d001e1f41c42abd6a83e2bbf62",
+              "line": 4,
+              "start": 486,
+              "end": 655,
+              "snippet": "Marlin database 6 production window M31 rollback: both teams agree to restore the database 5 snapshot if replication lag exceeds 45 seconds for five consecutive minutes."
+            }
+          ]
+        },
+        {
+          "id": "rollback-trigger",
+          "claim": "Roll back if replication lag exceeds 45 seconds for five consecutive minutes.",
+          "evidence": [
+            {
+              "document": "phase1f-marlin",
+              "version": "12cfacc413b898194288a42054075218408911d001e1f41c42abd6a83e2bbf62",
+              "line": 4,
+              "start": 486,
+              "end": 655,
+              "snippet": "Marlin database 6 production window M31 rollback: both teams agree to restore the database 5 snapshot if replication lag exceeds 45 seconds for five consecutive minutes."
+            }
+          ]
+        }
+      ],
+      "optional_facts": [],
+      "forbidden_claims": [
+        "The reports establish readiness.",
+        "The reports establish an uncontested failure verdict.",
+        "One report is newer or more authoritative.",
+        "Rollback is disputed."
+      ],
+      "stopping_rule": "Report the unresolved conflict, withhold a unified readiness verdict, and give the agreed rollback; request authoritative reconciliation. Do not average reports or pick one."
+    }
+  ]
+}

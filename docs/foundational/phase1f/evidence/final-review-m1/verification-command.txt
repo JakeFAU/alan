@@ -1,0 +1,39 @@
+python3 - <<'PY'
+from pathlib import Path
+import json, hashlib, difflib
+root=Path.cwd()
+p=root/'docs/foundational/phase1f'
+e=p/'evidence/final-review-m1'
+h=lambda b:hashlib.sha256(b).hexdigest()
+record=json.loads((e/'finding-inputs.json').read_text())
+for path,digest in record['inputs'].items():
+ assert h((root/path).read_bytes())==digest,path
+r={v['id']:v for v in json.loads((p/'evidence/live-heldout/grades-adjudicated.json').read_text())['results']}
+checks=[]
+for rid,case,expected,stopping in [('response-06','held-01',[(4,4),(4,4)],[False,True]),('response-01','held-03',[(1,3),(3,3)],[False,False])]:
+ assert r[rid]['case_id']==case
+ result={'response':rid,'case':case}
+ for stage,count,stop in zip(['initial','final'],expected,stopping):
+  v=r[rid][stage];actual=(v['counts']['supported'],v['counts']['applicable_required_facts'])
+  assert actual==count and v['stopping_correct'] is stop
+  assert sum(f['status']=='supported' for f in v['required_facts'])==count[0]
+  result[stage]={'supported_groups':str(actual[0])+'/'+str(actual[1]),'stopping_correct':stop}
+ checks.append(result)
+manifest=json.loads((p/'source-manifest.json').read_text())
+assert len(manifest['files'])==189
+for f in manifest['files']:
+ b=(root/f['path']).read_bytes()
+ assert h(b)==f['sha256'] and len(b)==f['bytes'],f['path']
+diffs=[]
+for name,item in record['originals'].items():
+ original=(e/item['preserved_as']).read_bytes();assert h(original)==item['sha256']
+ current=(p/name).read_text()
+ assert 'held-01 investigation improved stopping/applicability from false to true with required-fact support unchanged at 4/4' in current
+ assert 'held-03 investigation improved supported required groups from 1/3 to 3/3 while strict stopping remained false' in current
+ a=original.decode().splitlines(True);b=current.splitlines(True)
+ changes=[op for op in difflib.SequenceMatcher(None,a,b).get_opcodes() if op[0]!='equal']
+ assert len(changes)==1 and changes[0][0]=='replace' and changes[0][2]-changes[0][1]==1 and changes[0][4]-changes[0][3]==1
+ diffs.extend(difflib.unified_diff(a,b,fromfile='a/docs/foundational/phase1f/'+name,tofile='b/docs/foundational/phase1f/'+name))
+assert (e/'correction.diff').read_text()==''.join(diffs)
+print(json.dumps({'status':'PASS','adjudicated_values':checks,'source_files_checked':189,'source_hash_mismatches':0,'preserved_original_hashes':'PASS','unchanged_input_hashes':'PASS','corrected_wording':'PASS','exact_two_single_line_replacements':'PASS','retained_diff':'PASS'},indent=2))
+PY

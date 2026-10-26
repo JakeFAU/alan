@@ -13,7 +13,7 @@ ALAN makes each stage of the work explicit:
 - **Record:** retain observations, intents and lifecycle outcomes in SQLite.
 - **Replay:** verify historical computation without dispatching effects.
 
-This is an early implementation with a provisional API. It is not production-ready. The evidence assistant exercises a real OpenAI Responses HTTP adapter with controlled responses; its opt-in live model gate has not been run.
+This is an early implementation with a provisional API. It is not production-ready. The evidence assistant uses a direct OpenAI Responses adapter. Its [live gate passed](docs/foundational/phase1f/evidence/live-phase1e/report.md) with recorded usage, citations and offline replay. A bounded investigation application composes evidence helpers, synthesis and ordinary review; answer quality is evaluated separately from durability.
 
 ## Quick start
 
@@ -84,6 +84,28 @@ Controlled HTTP and subprocess tests do not spend money:
 GOTOOLCHAIN=local go test -count=1 -tags integration ./examples/evidence ./cmd/alan-evidence
 ```
 
+## Bounded investigation
+
+[`examples/investigation`](examples/investigation) is a public-API consumer: it plans two evidence subquestions, sends both to ordinary evidence helpers, synthesizes their results, and asks a separate ordinary reviewer whether to accept, revise or stop. One explicitly authorized revision can gather two more results while retaining earlier evidence. The same component runs directly or inside an ordinary report application that chooses `publish` or `needs_attention` from its public result.
+
+```sh
+go build -buildvcs=false -o "$alan_demo_dir/alan-investigate" ./cmd/alan-investigate
+"$alan_demo_dir/alan-investigate" init --db "$alan_demo_dir/investigation.sqlite" \
+  --question 'For Cedar agent 3.2 in C17, which kernels are supported and what triggers rollback?' \
+  --corpus-manifest docs/foundational/phase1f/evaluation/corpus/manifest.json \
+  --model "$MODEL" --nested --max-revisions 1 \
+  --max-output-tokens 4096 --max-response-bytes 65536 --request-timeout 120s
+# Opt-in paid work: configure OPENAI_API_KEY and authorize the spending limit first.
+"$alan_demo_dir/alan-investigate" run --db "$alan_demo_dir/investigation.sqlite"
+"$alan_demo_dir/alan-investigate" inspect --db "$alan_demo_dir/investigation.sqlite"
+"$alan_demo_dir/alan-investigate" recover --db "$alan_demo_dir/investigation.sqlite"
+"$alan_demo_dir/alan-investigate" replay --db "$alan_demo_dir/investigation.sqlite"
+```
+
+The ceiling is 13 model requests and four lookups with one revision; `--max-revisions 0` permits at most seven and two. `--baseline` uses the simple one-question evidence helper with the shared query-prompt correction with the same corpus. Revision helpers can exclude exact initial citation spans through an optional public request; this does not guarantee complete evidence. Unknown provider outcomes keep their original identities and can block completion; restart does not turn them into new revision requests. Unused statically provisioned helpers may remain waiting. The [runbook](docs/foundational/phase1f/04-runbook.md) includes a spending-controlled qualification command, public component contracts, and inspection guidance.
+
+The [development findings](docs/foundational/phase1f/development-findings.md) retain failed queries and missed evidence. Mechanically valid citations and a reviewer's approval do not establish answer completeness. The [measured evaluation](docs/foundational/phase1f/evaluation-results.md) found 2/4 strict heldout quality successes for investigation versus 1/4 for the simple helper, at higher cost and latency; four synthetic cases do not establish general superiority. All 33 live replay checks passed, with $0.59 estimated token charges across the complete live study. The [Phase1F qualification](docs/foundational/phase1f/02-qualification.md) retains source snapshots, independent reviews and failures.
+
 ## External resource example
 
 The fake counter resource is a separate executable with its own durable SQLite store. Start it in a second terminal, using the same `alan_demo_dir` path:
@@ -142,10 +164,11 @@ The integration tag includes the external-consumer, application, provider and pr
 | `author`, `schema`, `runtime` | Provisional compiler, scalar schemas and public executor facade |
 | `effects`, `adapters/openai`, `adapters/lookup` | Retained effect protocol, Responses provider and corpus lookup |
 | `examples/evidence`, `cmd/alan-evidence` | Ordinary reusable evidence composition and CLI |
+| `examples/investigation`, `cmd/alan-investigate` | Bounded investigation, ordinary review/revision and nested report |
 | `cmd/alan` | Executor CLI |
 | `internal/executor` | Finite interpreter, SQLite authority, scheduler, messaging, lifecycle, external protocol, inspection and replay |
 | `cmd/alan-resource`, `internal/fixture` | Separate durable counter endpoint |
-| `internal/durabletest`, `internal/boundary` | Process controller, independent record checks and observation-only test barriers |
+| `internal/durabletest`, `internal/investigationtest`, `internal/boundary` | Process controller, independent record checks and observation-only test barriers |
 | `research/semantics` | Test-only bounded model, searches, negative controls and selected runtime comparisons |
 | `docs/foundational` | Architecture decisions, contracts, qualification records, review findings and source snapshots |
 

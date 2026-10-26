@@ -1,0 +1,56 @@
+{
+  "Steps": 27,
+  "Dispatches": 2,
+  "Quiescent": true,
+  "OpenRuns": [
+    {
+      "Subject": "assistant",
+      "Generation": 1
+    },
+    {
+      "Subject": "assistant/retrieval",
+      "Generation": 1
+    },
+    {
+      "Subject": "caller",
+      "Generation": 1
+    }
+  ],
+  "UnresolvedIntents": [
+    {
+      "ID": "[\"assistant\",1,15,0]",
+      "Run": {
+        "Subject": "assistant",
+        "Generation": 1
+      },
+      "Sequence": 15,
+      "Ordinal": 0,
+      "Kind": "adapter",
+      "Target": "evidence-model",
+      "Generation": 1,
+      "Obligation": "plan",
+      "Payload": {
+        "instructions": {
+          "Kind": "string",
+          "Number": 0,
+          "Text": "Choose lookup, clarification, or insufficient_evidence. For lookup set tool to exactly \"lookup\" and supply a nonempty query of at most 512 UTF-8 bytes. Never propose another tool or endpoint. Use message for clarification or insufficient evidence. Return all schema fields; unused fields are empty strings.",
+          "Flag": false
+        },
+        "question": {
+          "Kind": "string",
+          "Number": 0,
+          "Text": "What does the source say?",
+          "Flag": false
+        }
+      }
+    }
+  ],
+  "PendingDeliveries": [
+    "[\"adapter-delivery\",\"[\\\"assistant\\\",1,15,0]\"]"
+  ],
+  "UnknownExternal": [],
+  "UnknownAdapters": [
+    "[\"assistant\",1,15,0]"
+  ],
+  "RejectedAdmissions": 0
+}
