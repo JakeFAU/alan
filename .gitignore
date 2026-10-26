@@ -1,33 +1,63 @@
-# If you prefer the allow list template instead of the deny list, see community template:
-# https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
-#
-# Binaries for programs and plugins
+# Local Go builds (keep source directories and qualification evidence visible)
+/bin/
+/dist/
+/alan
+/alan-resource
+/alan-evidence
+/alan-investigate
 *.exe
 *.exe~
 *.dll
 *.so
 *.dylib
-
-# Test binary, built with `go test -c`
 *.test
 
-# Code coverage profiles and other test artifacts
-*.out
-coverage.*
-!coverage.go
+# Local test coverage and profiling output
+/coverage/
+/coverage.out
+/coverage.html
+/coverage.*.out
 *.coverprofile
 profile.cov
+*.prof
+*.pprof
 
-# Dependency directories (remove the comment below to include it)
-# vendor/
-
-# Go workspace file
+# Local Go workspace overrides
 go.work
 go.work.sum
 
-# env file
-.env
+# Runtime SQLite stores and their journal, WAL, shared-memory and lock files
+*.sqlite
+*.sqlite-*
+*.sqlite.lock
+*.sqlite3
+*.sqlite3-*
+*.sqlite3.lock
+*.db
+*.db-*
+*.db.lock
 
-# Editor/IDE
-# .idea/
-# .vscode/
+# Retained qualification evidence belongs in version control
+!docs/foundational/**/*.sqlite
+!docs/foundational/**/*.sqlite3
+!docs/foundational/**/*.db
+
+# Local credentials and environment overrides; keep example configs available
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+.direnv/
+
+# Local editor and operating-system files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+._*
+
+# Local repository notes
+/repo.md
