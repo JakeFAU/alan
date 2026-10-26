@@ -293,6 +293,9 @@ func validateField(f Field, v Value, depth int) error {
 
 // Append validates the entire new list before returning it. The original is untouched on failure.
 func (f Field) Append(v Value, row map[string]Value) (Value, error) {
+	if f.Kind != "list" || v.Kind != "list" || v.List == nil {
+		return Value{}, fmt.Errorf("append requires list field and value")
+	}
 	if err := f.Validate(v); err != nil {
 		return Value{}, err
 	}

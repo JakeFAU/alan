@@ -1,0 +1,16 @@
+package main
+
+import (
+    "fmt"
+    "github.com/JakeFAU/alan/schema"
+)
+
+func main() {
+    defer func() {
+        if v := recover(); v != nil {
+            fmt.Printf("Field.Append scalar input PANIC: %v\n", v)
+        }
+    }()
+    _, err := (schema.Field{Kind: "int"}).Append(schema.Int(1), map[string]schema.Value{})
+    fmt.Printf("Field.Append scalar input returned: %v\n", err)
+}

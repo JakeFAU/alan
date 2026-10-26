@@ -71,3 +71,18 @@ Executor: `internal/executor/program.go`, `internal/executor/author_metadata.go`
 Adjacent boundaries: `effects/effects.go`, `effects/collections_test.go`, `adapters/openai/openai.go`, `adapters/openai/collections_test.go`.
 
 Evidence lives only in this new `evidence/task1` directory. Parent-owned contract snapshots/fixture plans remain unstaged by this task. Task 2 and later phases still need invocation semantics, schema 4, root-envelope accounting, reusable composition and acceptance fixtures; none are claimed complete here. Independent scoped review remains a parent responsibility.
+
+
+## Independent review fix round 1
+
+The sole Important review finding is retained verbatim below; the original review is preserved as `review.md`.
+
+> 1. **Reject scalar receivers before dereferencing list storage.** `schema/collections.go:295` first calls `f.Validate(v)`, which correctly accepts `Field{Kind: "int"}` paired with `Int(1)`. Line 299 then evaluates `v.List.records` even though `v.List` is nil. The public append method consequently crashes its caller for a representable wrong-kind operation, instead of returning its declared error result. This contradicts the task's malformed-schema/value safety requirement and is inconsistent with the other list accessors, which reject wrong kinds explicitly. Add a `f.Kind == "list"` / list-value guard before dereferencing storage; cover int, bool and string receivers, malformed list values, and valid append in a focused regression. The existing reducer only calls this through list declarations, so the demonstrated exposure is the public schema API, not a demonstrated durable-store corruption path.
+
+Verified root cause: `Field.Validate` accepts matching scalar field/value pairs, so it cannot establish the list storage precondition that Append needs. The fix adds an explicit `f.Kind != "list" || v.Kind != "list" || v.List == nil` rejection before validation or dereference. All subsequent schema, count, byte, identity and copy checks are unchanged.
+
+`TestAppendRejectsWrongKindsAndMalformedLists` covers matched int/bool/string receivers, scalar-schema/list-value mismatch, list-schema/scalar-value mismatch, missing list storage, mixed scalar/list payloads, wrong tags, and a malformed list schema. Each case must return an error without panicking. `TestAppendValidListStillCopies` verifies a valid append still returns the correct row, copies caller data, and leaves the source empty.
+
+Original probe source and output are retained byte-for-byte at `review-probe/main.go.txt` and `review-probe/original-output.log`. The `.txt` suffix prevents evidence source from creating another Go package. `26-append-kind-red.log` records the original int/bool/string panics; `27-append-kind-green.log` records targeted success after the guard. `28-schema-fix-round1.log` records `GOPROXY=off GOSUMDB=off GOCACHE=/tmp/alan-phase1f-go-build GOTOOLCHAIN=local go test ./schema -count=1` passing. `29-review-probe-green.log` reruns the unchanged original probe and records `Field.Append scalar input returned: append requires list field and value`.
+
+This production guard is the only source change after the earlier final default suite. Per the requested one-method repair scope, the full suite was not repeated; the complete schema package was run freshly. Changed files: `schema/collections.go` (three-line guard), `schema/collections_test.go` (focused regressions), and Task1 evidence/report files. No invocation, executor, author, provider, historical evidence, or parent-owned qualification/fixture/contract files were changed. Scoped rereview remains pending.

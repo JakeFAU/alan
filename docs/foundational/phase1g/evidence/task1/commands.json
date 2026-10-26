@@ -155,6 +155,37 @@
       "command": "go test ./author -run TestCollectionAppendOverflowLeavesInputUnchanged -count=1",
       "exit_code": 0,
       "interpretation": "Supplementary reducer regression passed; test-only addition after final full-suite binary compiled, no production changes afterward."
+    },
+    {
+      "log": "review-probe/original-output.log",
+      "source": "review-probe/main.go.txt",
+      "command": "GOTOOLCHAIN=local go run /tmp/alan-phase1g-task1-review-probe/main.go",
+      "exit_code": 0,
+      "interpretation": "Original independent-review probe output, retained byte-for-byte; process intentionally recovered its nil dereference panic. Source was not modified."
+    },
+    {
+      "log": "26-append-kind-red.log",
+      "command": "GOTOOLCHAIN=local go test ./schema -run 'TestAppendRejectsWrongKindsAndMalformedLists|TestAppendValidListStillCopies' -count=1",
+      "exit_code": 1,
+      "interpretation": "Expected behavioral RED: matched int/bool/string receivers panic instead of returning error."
+    },
+    {
+      "log": "27-append-kind-green.log",
+      "command": "GOTOOLCHAIN=local go test ./schema -run 'TestAppendRejectsWrongKindsAndMalformedLists|TestAppendValidListStillCopies' -count=1",
+      "exit_code": 0,
+      "interpretation": "GREEN: explicit schema/value/storage guard; malformed lists reject and valid append copies."
+    },
+    {
+      "log": "28-schema-fix-round1.log",
+      "command": "GOTOOLCHAIN=local go test ./schema -count=1",
+      "exit_code": 0,
+      "interpretation": "Complete schema package passed for the one-method review repair; no full-suite rerun required or claimed."
+    },
+    {
+      "log": "29-review-probe-green.log",
+      "command": "GOTOOLCHAIN=local go run /tmp/alan-phase1g-task1-review-probe/main.go",
+      "exit_code": 0,
+      "interpretation": "Unchanged review probe returns an explicit error and does not panic."
     }
   ]
 }

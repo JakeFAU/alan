@@ -197,3 +197,53 @@ func TestListNestingAndEmptyRecordSchemaRoundTrip(t *testing.T) {
 		t.Fatal("aliased schema exceeds total field bound")
 	}
 }
+
+func TestAppendRejectsWrongKindsAndMalformedLists(t *testing.T) {
+	list := Field{Kind: "list", MaxItems: 2, MaxBytes: 512, Element: Record{"x": {Kind: "int"}}}
+	tests := []struct {
+		name  string
+		field Field
+		value Value
+	}{
+		{"int receiver", Field{Kind: "int"}, Int(1)},
+		{"bool receiver", Field{Kind: "bool"}, Bool(true)},
+		{"string receiver", Field{Kind: "string", MaxBytes: 8}, Text("one")},
+		{"scalar schema list value", Field{Kind: "int"}, List()},
+		{"list schema scalar value", list, Int(1)},
+		{"nil list storage", list, Value{Kind: "list"}},
+		{"mixed scalar list payload", list, Value{Kind: "list", Number: 1, List: &ListData{}}},
+		{"wrong tagged list storage", list, Value{Kind: "int", List: &ListData{}}},
+		{"malformed list schema", Field{Kind: "list"}, List()},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			defer func() {
+				if panicValue := recover(); panicValue != nil {
+					t.Errorf("Append panicked instead of returning an error: %v", panicValue)
+				}
+			}()
+			if _, err := test.field.Append(test.value, map[string]Value{"x": Int(1)}); err == nil {
+				t.Fatal("invalid append accepted")
+			}
+		})
+	}
+}
+
+func TestAppendValidListStillCopies(t *testing.T) {
+	field := Field{Kind: "list", MaxItems: 2, MaxBytes: 512, Element: Record{"x": {Kind: "int"}}}
+	source := List()
+	row := map[string]Value{"x": Int(1)}
+	result, err := field.Append(source, row)
+	if err != nil {
+		t.Fatal(err)
+	}
+	row["x"] = Int(99)
+	got, err := result.At(0)
+	if err != nil || got["x"] != Int(1) {
+		t.Fatalf("valid append or copy failed: %+v %v", got, err)
+	}
+	count, err := source.Len()
+	if err != nil || count != 0 {
+		t.Fatalf("append mutated source: count=%d err=%v", count, err)
+	}
+}
