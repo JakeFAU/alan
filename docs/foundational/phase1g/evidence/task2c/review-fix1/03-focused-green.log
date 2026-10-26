@@ -1,0 +1,44 @@
+=== RUN   TestCompositionMessageAuthorizationPrefix
+=== RUN   TestCompositionMessageAuthorizationPrefix/scoped
+    composition_consumption_test.go:65: causal rejection: corrupt durable state: observation consumed before source authorization
+=== RUN   TestCompositionMessageAuthorizationPrefix/unrepresented
+--- PASS: TestCompositionMessageAuthorizationPrefix (0.03s)
+    --- PASS: TestCompositionMessageAuthorizationPrefix/scoped (0.02s)
+    --- PASS: TestCompositionMessageAuthorizationPrefix/unrepresented (0.01s)
+=== RUN   TestCompositionSourceDeniedLifecycleAuthorizationPrefix
+    composition_consumption_test.go:114: existing causal rejection: corrupt durable state: authorization before source prefix
+--- PASS: TestCompositionSourceDeniedLifecycleAuthorizationPrefix (0.01s)
+=== RUN   TestCompositionSelectedObservationCausalOrder
+=== RUN   TestCompositionSelectedObservationCausalOrder/message
+    composition_facts_test.go:233: valid baseline facts: [{Version:alan/composition-fact/v1 ID:861e1ae2b0302fd34522a4a329550a4d2c23684b678c95acbedbe265231df039 Kind:execution Order:1 RootIDs:[02b26a306d352dbcfb8c2ae500a298117e6d5da579b34cee4dfaf02982e98eab] Run:{Subject:sender Generation:1} Sequence:1 OperationID: RecordDigest:abbd7e9a97a19c08bdd8efecec1df40c034656e29f231b7ed037c8ff7f70ae34} {Version:alan/composition-fact/v1 ID:c2d6f265b044bad891546fb88b12497d134e40a5f761058e04163ca288463d74 Kind:execution Order:2 RootIDs:[02b26a306d352dbcfb8c2ae500a298117e6d5da579b34cee4dfaf02982e98eab] Run:{Subject:receiver Generation:1} Sequence:1 OperationID: RecordDigest:30b0614f6c6565645fcc62f3096529672b946e7009b6e795355a51bc86dbc10f}]
+    composition_facts_test.go:233: causal rejection: corrupt durable state: selected observation consumed before scoped source fact 861e1ae2b0302fd34522a4a329550a4d2c23684b678c95acbedbe265231df039
+=== RUN   TestCompositionSelectedObservationCausalOrder/terminal_execution
+    composition_facts_test.go:233: valid baseline facts: [{Version:alan/composition-fact/v1 ID:861e1ae2b0302fd34522a4a329550a4d2c23684b678c95acbedbe265231df039 Kind:execution Order:1 RootIDs:[7f811885e9a4562eefea95a9c0babe98d865c11d463bb69dcfff9f502cbb8a24] Run:{Subject:sender Generation:1} Sequence:1 OperationID: RecordDigest:734e9e796cbd8a8865cc136213b1582f32e7b7fbbb997548536e8516c479de84} {Version:alan/composition-fact/v1 ID:c2d6f265b044bad891546fb88b12497d134e40a5f761058e04163ca288463d74 Kind:execution Order:2 RootIDs:[7f811885e9a4562eefea95a9c0babe98d865c11d463bb69dcfff9f502cbb8a24] Run:{Subject:receiver Generation:1} Sequence:1 OperationID: RecordDigest:717f5d3cfcde83074fa4ef9bb2b5e2796a0315c62ef7589994bf4d31c5f1f8f4}]
+    composition_facts_test.go:233: causal rejection: corrupt durable state: selected observation consumed before scoped source fact 861e1ae2b0302fd34522a4a329550a4d2c23684b678c95acbedbe265231df039
+=== RUN   TestCompositionSelectedObservationCausalOrder/terminal_lifecycle_zero
+    composition_facts_test.go:233: valid baseline facts: [{Version:alan/composition-fact/v1 ID:4ceea0b155e0023440d1da6ca0e45b180a01eef97eeeafe85f3cb0a114f049f2 Kind:lifecycle Order:1 RootIDs:[3f0b46fde8eacbbfbfb0df6dbf9a28ed810ab835a10882dfebdd4e7f2444b3cd] Run:{Subject:sender Generation:1} Sequence:0 OperationID:["controller",1,1,0] RecordDigest:f23b4503db6dc50b4008d1b751af045f0b14525f1396985711205f12e80c6761} {Version:alan/composition-fact/v1 ID:c2d6f265b044bad891546fb88b12497d134e40a5f761058e04163ca288463d74 Kind:execution Order:2 RootIDs:[3f0b46fde8eacbbfbfb0df6dbf9a28ed810ab835a10882dfebdd4e7f2444b3cd] Run:{Subject:receiver Generation:1} Sequence:1 OperationID: RecordDigest:68907b2671c9ca787ab10f8ba63aaf2ec9896970e998b4d68bd3419811b129d0}]
+    composition_facts_test.go:233: causal rejection: corrupt durable state: selected observation consumed before scoped source fact 4ceea0b155e0023440d1da6ca0e45b180a01eef97eeeafe85f3cb0a114f049f2
+=== RUN   TestCompositionSelectedObservationCausalOrder/terminal_lifecycle_after_step
+    composition_facts_test.go:233: valid baseline facts: [{Version:alan/composition-fact/v1 ID:861e1ae2b0302fd34522a4a329550a4d2c23684b678c95acbedbe265231df039 Kind:execution Order:1 RootIDs:[7d3d34778eb9e2988b9b0d607fd53b00bc2901f7f328096c313fc65551b6ee72] Run:{Subject:sender Generation:1} Sequence:1 OperationID: RecordDigest:ec5f516693f2a189a871243176e9fb6b75b2140fedb3736b1a365ffdc26a0cdf} {Version:alan/composition-fact/v1 ID:4ceea0b155e0023440d1da6ca0e45b180a01eef97eeeafe85f3cb0a114f049f2 Kind:lifecycle Order:2 RootIDs:[7d3d34778eb9e2988b9b0d607fd53b00bc2901f7f328096c313fc65551b6ee72] Run:{Subject:sender Generation:1} Sequence:1 OperationID:["controller",1,1,0] RecordDigest:fec952b62e8a46969871954e4290b8a98c59dab9b12b9eaf4fb3f3e82290cfbb} {Version:alan/composition-fact/v1 ID:c2d6f265b044bad891546fb88b12497d134e40a5f761058e04163ca288463d74 Kind:execution Order:3 RootIDs:[7d3d34778eb9e2988b9b0d607fd53b00bc2901f7f328096c313fc65551b6ee72] Run:{Subject:receiver Generation:1} Sequence:1 OperationID: RecordDigest:b47d5b3615c3ec903d74a3f26d0a1a6915dbaa2a75f8c7da3f5b3ffeb42bebd2}]
+    composition_facts_test.go:233: causal rejection: corrupt durable state: selected observation consumed before scoped source fact 4ceea0b155e0023440d1da6ca0e45b180a01eef97eeeafe85f3cb0a114f049f2
+=== RUN   TestCompositionSelectedObservationCausalOrder/lifecycle_result
+    composition_facts_test.go:233: valid baseline facts: [{Version:alan/composition-fact/v1 ID:c2d6f265b044bad891546fb88b12497d134e40a5f761058e04163ca288463d74 Kind:execution Order:1 RootIDs:[fba70f3f77ddf451a91c9ca4976609c4558c0eae95ffb808381dd600b81338ed] Run:{Subject:receiver Generation:1} Sequence:1 OperationID: RecordDigest:599ebbcb24356d1e9106b6602dcd0a553f9db125b25078b53b617450b15c8325} {Version:alan/composition-fact/v1 ID:8ed9bf8c4aba2a3226b71b2f5d3671e5ea5261fcdaf9c2311ba3ca58c2829545 Kind:lifecycle Order:2 RootIDs:[fba70f3f77ddf451a91c9ca4976609c4558c0eae95ffb808381dd600b81338ed] Run:{Subject:worker Generation:1} Sequence:0 OperationID:["receiver",1,1,0] RecordDigest:c2663014527f46de8c4f28ddd3f3280f0d74269e542d2223e118cea9c88e0952} {Version:alan/composition-fact/v1 ID:7782c7eec4dd70c350c00f4165cf2774eeb5e755577e0c76dc754dd8e2a5b04d Kind:execution Order:3 RootIDs:[fba70f3f77ddf451a91c9ca4976609c4558c0eae95ffb808381dd600b81338ed] Run:{Subject:receiver Generation:1} Sequence:2 OperationID: RecordDigest:04a84f3b1009ac6d91d7078306aedce0b6fa6c2132315a59697ac071a7f0b4b5}]
+    composition_facts_test.go:233: causal rejection: corrupt durable state: selected observation consumed before scoped source fact 8ed9bf8c4aba2a3226b71b2f5d3671e5ea5261fcdaf9c2311ba3ca58c2829545
+--- PASS: TestCompositionSelectedObservationCausalOrder (0.04s)
+    --- PASS: TestCompositionSelectedObservationCausalOrder/message (0.01s)
+    --- PASS: TestCompositionSelectedObservationCausalOrder/terminal_execution (0.01s)
+    --- PASS: TestCompositionSelectedObservationCausalOrder/terminal_lifecycle_zero (0.01s)
+    --- PASS: TestCompositionSelectedObservationCausalOrder/terminal_lifecycle_after_step (0.01s)
+    --- PASS: TestCompositionSelectedObservationCausalOrder/lifecycle_result (0.01s)
+=== RUN   TestCompositionSelectedObservationWithoutScopedPredecessor
+=== RUN   TestCompositionSelectedObservationWithoutScopedPredecessor/message
+=== RUN   TestCompositionSelectedObservationWithoutScopedPredecessor/terminal_execution
+=== RUN   TestCompositionSelectedObservationWithoutScopedPredecessor/terminal_lifecycle_zero
+=== RUN   TestCompositionSelectedObservationWithoutScopedPredecessor/local_input
+--- PASS: TestCompositionSelectedObservationWithoutScopedPredecessor (0.02s)
+    --- PASS: TestCompositionSelectedObservationWithoutScopedPredecessor/message (0.00s)
+    --- PASS: TestCompositionSelectedObservationWithoutScopedPredecessor/terminal_execution (0.00s)
+    --- PASS: TestCompositionSelectedObservationWithoutScopedPredecessor/terminal_lifecycle_zero (0.01s)
+    --- PASS: TestCompositionSelectedObservationWithoutScopedPredecessor/local_input (0.00s)
+PASS
+ok  	github.com/JakeFAU/alan/internal/executor	0.290s

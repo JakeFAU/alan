@@ -302,6 +302,26 @@ func (x *compositionPrefix) validateConsumption(ctx context.Context, q queryer, 
 		if p.ID != "" && !seen[p.ID] {
 			return corrupt("observation consumed before source fact")
 		}
+		if o.Provenance == "ordinary-message" || o.Provenance == "runtime-lifecycle" {
+			// Complete-profile sources retain authorization separately from their
+			// execution or target decision. Source-denied lifecycle settlements
+			// have this predecessor even though they have no target decision.
+			var admissionID string
+			if err := q.QueryRowContext(ctx, "SELECT id FROM admissions WHERE observation_id=? ORDER BY id LIMIT 1", selected.String).Scan(&admissionID); err != nil {
+				return err
+			}
+			d, _, err := loadAdmissionKey(ctx, q, admissionID)
+			if err != nil {
+				return err
+			}
+			a, err := compositionSourceEvidence(ctx, q, compositionAuthorizationFact, d.IntentID)
+			if err != nil {
+				return err
+			}
+			if a.ID != "" && !seen[a.ID] {
+				return corrupt("observation consumed before source authorization")
+			}
+		}
 	}
 	return nil
 }

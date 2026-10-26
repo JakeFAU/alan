@@ -1,0 +1,31 @@
+package executor
+
+import (
+ "testing"
+)
+
+func TestIndependentCompositionMessageAuthorizationPrefix(t *testing.T) {
+ p := Provision{}
+ send := Instruction{Op:"emit", Effect:&Effect{Kind:"message",Target:Lit(Text("receiver")),Generation:Lit(Int(1)),Obligation:Lit(Text("work")),Payload:map[string]Operand{"number":Lit(Int(17))}}}
+ receive := Instruction{Op:"receive",Match:&Match{Kind:"message",Provenance:"ordinary-message",Source:Lit(Text("sender")),Generation:Lit(Int(1)),Obligation:Lit(Text("work")),Operation:Lit(Text(""))},Bind:map[string]string{"number":"number"}}
+ addProgram(t,&p,"sender",[]Instruction{send,{Op:"end",Outcome:"succeeded"}},map[string]Value{})
+ addProgram(t,&p,"receiver",[]Instruction{receive,{Op:"end",Outcome:"succeeded"}},map[string]Value{})
+ p.Permissions=[]Permission{{Kind:"message",Source:"sender",Target:"receiver",Operation:"message",Revision:1}}
+ p.Composition=&compositionProvision{Version:compositionProtocolVersion,Roots:[]compositionRoot{{Run:RunID{"receiver",1},Members:[]RunID{{"receiver",1},{"sender",1}},Limits:compositionLimits{MaxInFlight:1}}}}
+ path:=t.TempDir()+"/message.sqlite"
+ s,err:=Create(t.Context(),path,p,DefaultLimits());if err!=nil{t.Fatal(err)};defer s.Close()
+ if _,err=s.Commit(t.Context(),current(t,s,"sender").Authority(),"");err!=nil{t.Fatal(err)}
+ admitted,err:=s.DeliverMessage(t.Context(),identity("sender",int64(1),int64(1),0),"original-transport");if err!=nil||!admitted.Accepted{t.Fatal(admitted,err)}
+ if _,err=s.Commit(t.Context(),current(t,s,"receiver").Authority(),admitted.ObservationID);err!=nil{t.Fatal(err)}
+ if _,err=Replay(t.Context(),path,DefaultLimits());err!=nil{t.Fatal("valid baseline",err)}
+ facts,err:=readCompositionFacts(t.Context(),s.conn);if err!=nil{t.Fatal(err)}
+ if len(facts)!=3||facts[1].Kind!=compositionAuthorizationFact||facts[2].Run.Subject!="receiver"{t.Fatal("unexpected fixture",facts)}
+ t.Logf("original fact order: %s/%s, %s/%s, %s/%s",facts[0].Kind,facts[0].Run.Subject,facts[1].Kind,facts[1].Run.Subject,facts[2].Kind,facts[2].Run.Subject)
+ facts[1],facts[2]=facts[2],facts[1]
+ if _,err=s.conn.ExecContext(t.Context(),"DELETE FROM composition_facts");err!=nil{t.Fatal(err)}
+ for n,f:=range facts{f.Order=int64(n+1);if _,err=s.conn.ExecContext(t.Context(),"INSERT INTO composition_facts VALUES(?,?,?,?)",f.Order,f.ID,f.Kind,compositionJSON(f));err!=nil{t.Fatal(err)}}
+ fk,err:=s.conn.QueryContext(t.Context(),"PRAGMA foreign_key_check");if err!=nil{t.Fatal(err)};bad:=fk.Next();fk.Close();if bad{t.Fatal("FK violation")}
+ _,err=Replay(t.Context(),path,DefaultLimits())
+ t.Logf("reordered sender execution -> receiver consumption -> sender authorization; Replay error = %v",err)
+ if err==nil{t.Fatal("Replay accepted ordinary-message consumption before its source authorization")}
+}

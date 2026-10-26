@@ -1,0 +1,47 @@
+{
+  "base": "168f4d74b51a970def5996d23f01e9d01865ae07",
+  "overlay_input_sha256": "577a4fc817fcedad612d6092d2f1f144248db2e2000bc04befaed81413e4997c",
+  "overlay_input_equal_original": true,
+  "overlay_map_equal_original": true,
+  "original_review_artifacts": {
+    "review-command.json": "2f76b31db0a486dfa660d1a8c73cfccfb152638553eeef119dd2127b9cede616",
+    "review-message-authorization-input.go.txt": "577a4fc817fcedad612d6092d2f1f144248db2e2000bc04befaed81413e4997c",
+    "review-message-authorization-overlay.json": "35ce46188bbb9720c4fcd97cd8603a5977fde5629f31d3d46c701d5bbefab449",
+    "review-message-authorization.log": "09f142cd9ffd924a8629f2b2e333eb66bf31ef59be55d570619705bf1e6bd122",
+    "review-source.json": "1a8cddae3dbb713d1ddd6a0a1671965f75a8fe2178d5a10bed4d8dc9a87dcfd1",
+    "review.md": "0841306a7092a52cf143c886d72f18d7cb464ea50b5de4fdd029ef1a47f63066"
+  },
+  "format_checks": [
+    {
+      "argv": [
+        "gofmt",
+        "-l",
+        "internal/executor/composition_prefix.go",
+        "internal/executor/composition_consumption_test.go"
+      ],
+      "exit_code": 0,
+      "output": ""
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--check",
+        "--",
+        "internal/executor/composition_prefix.go"
+      ],
+      "exit_code": 0,
+      "output": ""
+    }
+  ],
+  "staged_whitespace_check": {
+    "argv": [
+      "git",
+      "diff",
+      "--cached",
+      "--check"
+    ],
+    "exit_code": 0,
+    "output": ""
+  }
+}
