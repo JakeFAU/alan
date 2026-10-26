@@ -1,0 +1,23 @@
+package executor
+
+import (
+ "encoding/json"
+ "testing"
+)
+
+func TestReviewCompositionMessageCausalPrefix(t *testing.T) {
+ p := Provision{}
+ addProgram(t, &p, "sender", []Instruction{{Op:"emit",Effect:&Effect{Kind:"message",Target:Lit(Text("receiver")),Generation:Lit(Int(1)),Obligation:Lit(Text("work")),Payload:map[string]Operand{"number":Lit(Int(17))}}},{Op:"end",Outcome:"succeeded"}}, map[string]Value{})
+ addProgram(t, &p, "receiver", []Instruction{{Op:"receive",Match:&Match{Kind:"message",Provenance:"ordinary-message",Source:Lit(Text("sender")),Generation:Lit(Int(1)),Obligation:Lit(Text("work")),Operation:Lit(Text(""))},Bind:map[string]string{"number":"number"}},{Op:"end",Outcome:"succeeded"}}, map[string]Value{})
+ p.Permissions=[]Permission{{Kind:"message",Source:"sender",Target:"receiver",Operation:"message",Revision:1}}
+ c:=compositionProvision{Roots:[]compositionRoot{{Run:RunID{"sender",1},Members:[]RunID{{"sender",1},{"receiver",1}},Limits:compositionLimits{MaxInFlight:1}}}}
+ s,err:=createCompositionStore(t.Context(),t.TempDir()+"/causal.sqlite",p,c,DefaultLimits());if err!=nil{t.Fatal(err)};defer s.Close()
+ if _,err=s.Commit(t.Context(),current(t,s,"sender").Authority(),"");err!=nil{t.Fatal(err)}
+ admitted,err:=s.DeliverMessage(t.Context(),identity("sender",int64(1),int64(1),0),"review-delivery");if err!=nil||!admitted.Accepted{t.Fatal(admitted,err)}
+ if _,err=s.Commit(t.Context(),current(t,s,"receiver").Authority(),admitted.ObservationID);err!=nil{t.Fatal(err)}
+ if _,err=validateCompositionStore(t.Context(),s.conn,DefaultLimits());err!=nil{t.Fatalf("baseline invalid: %v",err)}
+ facts,err:=readCompositionFacts(t.Context(),s.conn);if err!=nil{t.Fatal(err)};if len(facts)!=2{t.Fatal(facts)}
+ if _,err=s.conn.ExecContext(t.Context(),"DELETE FROM composition_facts");err!=nil{t.Fatal(err)}
+ for i:=range facts { f:=facts[1-i];f.Order=int64(i+1);raw,err:=json.Marshal(f);if err!=nil{t.Fatal(err)};if _,err=s.conn.ExecContext(t.Context(),"INSERT INTO composition_facts VALUES(?,?,?,?)",f.Order,f.ID,f.Kind,raw);err!=nil{t.Fatal(err)} }
+ if _,err=validateCompositionStore(t.Context(),s.conn,DefaultLimits());err==nil{t.Fatal("validator accepted receiver consumption ordered before its source message commit")}
+}

@@ -67,3 +67,24 @@ Original failures are preserved, not relabeled as success:
 Keep the public gate until admission/outcome/closure/budget/replay integration is complete. Add actual protocol source-row validation to the reserved fact branches, in each operation's existing owner transaction. Dynamic origin validation must be explicit in both directions. R2's failure freeze must attach to the failing execution/lifecycle transaction; callbacks cannot choose its candidate set. Successful publication must wait for committed-but-unadmitted Invoke obligations and unknown descendants/external obligations. Extend the pure binding environment without mutating retained artifacts or user strings. Persist reason/status/response-presence for ordinary AwaitInvocation through an explicit outcome-bindings struct as directed by the controller.
 
 No whole-protocol success, external conservation, per-root physical capacity, live recovery dispatch, or public compatibility with schema4 is established by this foundation. Those remain the next agreed slices; the gate makes their absence explicit.
+
+
+## Independent review fix round 1 — I1 causal observation predecessors
+
+The original report above records the baseline implementation and its verification. This subsequent patch addresses Important I1 from the retained, unchanged `review.md`; Minor M1 remains deferred as directed. Review base is `23d6ee4fa1fa03fa05bcdae16f998ea73788e91d`.
+
+> Execution-prefix validation permits consuming a future scoped message.
+
+The unchanged independent overlay probe reproduced the defect before any production fix (`review-fix1/01-original-probe-red.log`, exit1). The original source and overlay are retained byte-for-byte as `original-probe.go.txt` and `original-overlay.json`. The reviewer report remains unchanged (SHA-256 `26d2d4aa31b317401e4ab4225111fa573e29ba22fc408dd2fa450b48d642b422`).
+
+`compositionObservationPredecessor` now resolves each selected ordinary-message/runtime-terminal/runtime-lifecycle observation through its immutable admission binding and original source ledger. It returns the exact represented execution/lifecycle fact. The global fact validator requires that identity in the already-validated prefix before accepting the consuming execution:
+
+- Ordinary messages require their original scoped source intent's execution commit.
+- Ordinary terminal evidence requires the source terminal execution. If `terminal_obligations.operation_id` identifies a lifecycle closure, it instead requires that lifecycle decision; the same terminal sequence's earlier ordinary execution is insufficient, including closure at sequence0.
+- Runtime lifecycle results require the retained target-decision fact when represented. Merely seeing the source request execution is insufficient. Source-denied settlements have no target decision to invent.
+
+The resolver verifies the selected admission's original target/run, canonical observation, and source descriptor. Local inputs and genuinely unrepresented source transactions have no invented predecessor. Adapter/receipt and future invocation facts remain deferred; public schema4 gates and all protocol scope limits remain unchanged.
+
+New tests use actual Commit/DeliverMessage/DeliverTerminal/DecideLifecycle/SettleLifecycle paths and first pass full foundation validation. They preserve every ordinary inspection table and every fact identity/source digest while changing only decision_order and the descriptor Order. Five cases failed before the fix (`02-causal-variants-red.log`) and now reach the specific selected-observation prefix rejection (`03-causal-variants-green.log`): ordinary message, ordinary terminal, lifecycle terminal at sequence0, lifecycle terminal after an ordinary source step, and lifecycle-result consumption after its source request but before its target decision. Four positive controls cover unscoped message/terminal/closure sources and local input.
+
+Verification: unchanged independent probe GREEN in `04-original-probe-green.log`; the complete executor default package passed `GOPROXY=off GOSUMDB=off GOCACHE=/tmp/alan-phase1f-go-build GOTOOLCHAIN=local go test ./internal/executor -count=1` in `05-executor-suite.log`. All exact argv/environment/output/exit statuses are appended to `commands.json`. Only composition_facts.go and its focused test file changed in production/test source. They are gofmt'd and whitespace-clean. No new full-repository, race or integration-tagged run is claimed for this scoped fix. No providers, credentials, dependencies or subagents were used. Ready for independent scoped rereview.

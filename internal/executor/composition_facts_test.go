@@ -5,6 +5,7 @@ import (
 	"errors"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -216,5 +217,192 @@ func TestCompositionStaleLifecycleStillRecordsScopedBeforeState(t *testing.T) {
 	}
 	if _, err := validateCompositionStore(t.Context(), s.conn, DefaultLimits()); err != nil {
 		t.Fatal(err)
+	}
+}
+
+// The fixtures use normal delivery/settlement and Commit paths. Only fact order
+// changes after a complete successful baseline validation.
+func TestCompositionSelectedObservationCausalOrder(t *testing.T) {
+	for _, kind := range []string{"message", "terminal_execution", "terminal_lifecycle_zero", "terminal_lifecycle_after_step", "lifecycle_result"} {
+		t.Run(kind, func(t *testing.T) {
+			s := compositionCausalStore(t, kind, true)
+			order := []int{1, 0}
+			if kind == "terminal_lifecycle_after_step" || kind == "lifecycle_result" {
+				order = []int{0, 2, 1}
+			}
+			assertCompositionOrderOnlyCorruption(t, s, order)
+		})
+	}
+}
+func TestCompositionSelectedObservationWithoutScopedPredecessor(t *testing.T) {
+	for _, kind := range []string{"message", "terminal_execution", "terminal_lifecycle_zero", "local_input"} {
+		t.Run(kind, func(t *testing.T) {
+			s := compositionCausalStore(t, kind, false)
+			facts, err := readCompositionFacts(t.Context(), s.conn)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(facts) != 1 || facts[0].Run.Subject != "receiver" {
+				t.Fatalf("fixture needs only scoped consumption: %+v", facts)
+			}
+			if _, err := validateCompositionStore(t.Context(), s.conn, DefaultLimits()); err != nil {
+				t.Fatalf("unrepresented predecessor rejected: %v", err)
+			}
+		})
+	}
+}
+func compositionCausalStore(t *testing.T, kind string, scopedSource bool) *Store {
+	t.Helper()
+	p := Provision{}
+	receive := Instruction{Op: "receive", Match: &Match{Kind: "message", Provenance: "ordinary-message", Source: Lit(Text("sender")), Generation: Lit(Int(1)), Obligation: Lit(Text("work")), Operation: Lit(Text(""))}, Bind: map[string]string{"number": "number"}}
+	source := []Instruction{{Op: "emit", Effect: &Effect{Kind: "message", Target: Lit(Text("receiver")), Generation: Lit(Int(1)), Obligation: Lit(Text("work")), Payload: map[string]Operand{"number": Lit(Int(17))}}}, {Op: "end", Outcome: "succeeded"}}
+	if kind == "lifecycle_result" {
+		source[0].Dst = "pending"
+		source[0].Effect = &Effect{Kind: "lifecycle", Target: Lit(Text("worker")), Generation: Lit(Int(1)), Obligation: Lit(Text("work")), Payload: map[string]Operand{"operation": Lit(Text("CancelRun")), "revision": Lit(Int(1))}}
+		receive.Match = &Match{Kind: "lifecycle", Provenance: "runtime-lifecycle", Source: Lit(Text("worker")), Generation: Lit(Int(1)), Obligation: Lit(Text("work")), Operation: Ref("pending")}
+		receive.Bind = map[string]string{"reason": "reason"}
+		addProgram(t, &p, "receiver", []Instruction{source[0], receive, {Op: "end", Outcome: "succeeded"}}, map[string]Value{})
+		addProgram(t, &p, "worker", []Instruction{{Op: "end", Outcome: "failed"}}, map[string]Value{})
+		p.Permissions = []Permission{{Kind: "lifecycle", Source: "receiver", Target: "worker", Operation: "CancelRun", Revision: 1}}
+	} else {
+		switch kind {
+		case "terminal_execution", "terminal_lifecycle_zero", "terminal_lifecycle_after_step":
+			source = []Instruction{{Op: "end", Outcome: "failed"}}
+			if kind == "terminal_lifecycle_after_step" {
+				source = append([]Instruction{{Op: "set", Dst: "seed", A: Lit(Int(1))}}, source...)
+			}
+			receive.Match.Kind = "terminal"
+			receive.Match.Provenance = "runtime-terminal"
+			receive.Bind = map[string]string{"outcome": "outcome"}
+			p.Permissions = []Permission{{Kind: "observation", Source: "sender", Target: "receiver", Operation: "terminal", Revision: 1, Obligation: "work"}}
+		case "local_input":
+			receive.Match.Kind = "input"
+			receive.Match.Provenance = "local-input"
+			receive.Match.Source = Lit(Text("local"))
+			p.Permissions = []Permission{{Kind: "input", Source: "local", Target: "receiver", Operation: "input", Obligation: "work"}}
+		default:
+			p.Permissions = []Permission{{Kind: "message", Source: "sender", Target: "receiver", Operation: "message", Revision: 1}}
+		}
+		addProgram(t, &p, "sender", source, map[string]Value{})
+		addProgram(t, &p, "receiver", []Instruction{receive, {Op: "end", Outcome: "succeeded"}}, map[string]Value{})
+		if kind == "terminal_lifecycle_zero" || kind == "terminal_lifecycle_after_step" {
+			addProgram(t, &p, "controller", []Instruction{{Op: "emit", Dst: "pending", Effect: &Effect{Kind: "lifecycle", Target: Lit(Text("sender")), Generation: Lit(Int(1)), Obligation: Lit(Text("close")), Payload: map[string]Operand{"operation": Lit(Text("CancelRun")), "revision": Lit(Int(1))}}}, {Op: "end", Outcome: "succeeded"}}, map[string]Value{})
+			p.Permissions = append(p.Permissions, Permission{Kind: "lifecycle", Source: "controller", Target: "sender", Operation: "CancelRun", Revision: 1})
+		}
+	}
+	members := []RunID{{"receiver", 1}}
+	if scopedSource && kind != "lifecycle_result" {
+		members = append(members, RunID{"sender", 1})
+	}
+	c := compositionProvision{Roots: []compositionRoot{{Run: RunID{"receiver", 1}, Members: members, Limits: compositionLimits{MaxInFlight: 1}}}}
+	s, err := createCompositionStore(t.Context(), t.TempDir()+"/causality.sqlite", p, c, DefaultLimits())
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		if err := s.Close(); err != nil {
+			t.Error(err)
+		}
+	})
+	var admitted AdmissionResult
+	switch kind {
+	case "message":
+		if _, err = s.Commit(t.Context(), current(t, s, "sender").Authority(), ""); err != nil {
+			t.Fatal(err)
+		}
+		admitted, err = s.DeliverMessage(t.Context(), identity("sender", int64(1), int64(1), 0), "causal-message")
+	case "terminal_execution":
+		if _, err = s.Commit(t.Context(), current(t, s, "sender").Authority(), ""); err != nil {
+			t.Fatal(err)
+		}
+		admitted, err = s.DeliverTerminal(t.Context(), RunID{"sender", 1}, TerminalDestination{"receiver", "work"}, "causal-terminal")
+	case "terminal_lifecycle_zero", "terminal_lifecycle_after_step":
+		if kind == "terminal_lifecycle_after_step" {
+			if _, err = s.Commit(t.Context(), current(t, s, "sender").Authority(), ""); err != nil {
+				t.Fatal(err)
+			}
+		}
+		result := authorizedDecision(t, s, committedRequest(t, s, "controller"))
+		if !result.Accepted || result.Reason != "closed" {
+			t.Fatal(result)
+		}
+		admitted, err = s.DeliverTerminal(t.Context(), RunID{"sender", 1}, TerminalDestination{"receiver", "work"}, "causal-terminal")
+	case "lifecycle_result":
+		request := committedRequest(t, s, "receiver")
+		result := authorizedDecision(t, s, request)
+		if !result.Accepted {
+			t.Fatal(result)
+		}
+		admitted, err = s.SettleLifecycle(t.Context(), request.Intent.ID, "causal-result")
+	case "local_input":
+		admitted, err = s.AdmitInput(t.Context(), Input{TransportID: "causal-input", LogicalID: "input", Target: "receiver", Obligation: "work", Payload: map[string]Value{"number": Int(17)}})
+	}
+	if err != nil || !admitted.Accepted {
+		t.Fatalf("fixture admission: %+v %v", admitted, err)
+	}
+	if _, err = s.Commit(t.Context(), current(t, s, "receiver").Authority(), admitted.ObservationID); err != nil {
+		t.Fatal(err)
+	}
+	return s
+}
+func assertCompositionOrderOnlyCorruption(t *testing.T, s *Store, order []int) {
+	t.Helper()
+	if _, err := validateCompositionStore(t.Context(), s.conn, DefaultLimits()); err != nil {
+		t.Fatalf("baseline invalid: %v", err)
+	}
+	facts, err := readCompositionFacts(t.Context(), s.conn)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(facts) != len(order) {
+		t.Fatalf("unexpected baseline facts: %+v", facts)
+	}
+	before := map[string][]map[string]any{}
+	for _, table := range inspectionTables {
+		rows, err := inspectTable(t.Context(), s.conn, table)
+		if err != nil {
+			t.Fatal(err)
+		}
+		before[table] = rows
+	}
+	t.Logf("valid baseline facts: %+v", facts)
+	if _, err := s.conn.ExecContext(t.Context(), "DELETE FROM composition_facts"); err != nil {
+		t.Fatal(err)
+	}
+	for i, index := range order {
+		f := facts[index]
+		f.Order = int64(i + 1)
+		raw, err := json.Marshal(f)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err = s.conn.ExecContext(t.Context(), "INSERT INTO composition_facts VALUES(?,?,?,?)", f.Order, f.ID, f.Kind, raw); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, table := range inspectionTables {
+		rows, err := inspectTable(t.Context(), s.conn, table)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(rows, before[table]) {
+			t.Fatalf("mutation changed ordinary table %s", table)
+		}
+	}
+	after, err := readCompositionFacts(t.Context(), s.conn)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for i, index := range order {
+		want := facts[index]
+		want.Order = int64(i + 1)
+		if !reflect.DeepEqual(after[i], want) {
+			t.Fatal("mutation changed source identity/digest")
+		}
+	}
+	if _, err := validateCompositionStore(t.Context(), s.conn, DefaultLimits()); !errors.Is(err, ErrCorrupt) || !strings.Contains(err.Error(), "selected observation consumed before scoped source fact") {
+		t.Fatalf("expected selected-observation prefix rejection: %v", err)
+	} else {
+		t.Logf("causal rejection: %v", err)
 	}
 }

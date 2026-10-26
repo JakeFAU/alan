@@ -215,6 +215,80 @@
       ],
       "output": "17-full-row-counterexample.log",
       "observed": "passed; test-only stronger row-equality assertions after final default suite"
+    },
+    {
+      "argv": [
+        "go",
+        "test",
+        "-overlay=/tmp/alan-task2a-review-probe/overlay.json",
+        "./internal/executor",
+        "-run",
+        "^TestReviewCompositionMessageCausalPrefix$",
+        "-count=1",
+        "-v"
+      ],
+      "output": "review-fix1/01-original-probe-red.log",
+      "exit_status": 1,
+      "observed": "failed at original impossible-order rejection after valid baseline",
+      "scope": "Task2a review fix round1"
+    },
+    {
+      "argv": [
+        "go",
+        "test",
+        "./internal/executor",
+        "-run",
+        "^TestCompositionSelectedObservation",
+        "-count=1",
+        "-v"
+      ],
+      "output": "review-fix1/02-causal-variants-red.log",
+      "exit_status": 1,
+      "observed": "all five valid-baseline order-only corruptions were accepted; four positive controls passed",
+      "scope": "Task2a review fix round1"
+    },
+    {
+      "argv": [
+        "go",
+        "test",
+        "./internal/executor",
+        "-run",
+        "^TestCompositionSelectedObservation",
+        "-count=1",
+        "-v"
+      ],
+      "output": "review-fix1/03-causal-variants-green.log",
+      "exit_status": 0,
+      "observed": "all five mutations rejected by selected-observation predecessor check; four positive controls passed",
+      "scope": "Task2a review fix round1"
+    },
+    {
+      "argv": [
+        "go",
+        "test",
+        "-overlay=/tmp/alan-task2a-review-probe/overlay.json",
+        "./internal/executor",
+        "-run",
+        "^TestReviewCompositionMessageCausalPrefix$",
+        "-count=1",
+        "-v"
+      ],
+      "output": "review-fix1/04-original-probe-green.log",
+      "exit_status": 0,
+      "observed": "unchanged original independent probe passed",
+      "scope": "Task2a review fix round1"
+    },
+    {
+      "argv": [
+        "go",
+        "test",
+        "./internal/executor",
+        "-count=1"
+      ],
+      "output": "review-fix1/05-executor-suite.log",
+      "exit_status": 0,
+      "observed": "complete executor default suite passed",
+      "scope": "Task2a review fix round1"
     }
   ]
 }

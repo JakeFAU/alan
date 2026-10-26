@@ -275,6 +275,7 @@ func validateCompositionFacts(ctx context.Context, q queryer) error {
 	sequences := map[RunID]int64{}
 	closed := map[RunID]bool{}
 	lastLifecycle := int64(0)
+	seen := map[string]bool{}
 	for i, f := range facts {
 		want, ok := expected[f.ID]
 		if !ok || f.Order != int64(i+1) {
@@ -289,6 +290,13 @@ func validateCompositionFacts(ctx context.Context, q queryer) error {
 		case compositionExecutionFact:
 			if closed[f.Run] || f.Sequence != sequences[f.Run]+1 {
 				return corrupt("execution fact violates prefix order")
+			}
+			predecessor, err := compositionObservationPredecessor(ctx, q, f.Run, f.Sequence)
+			if err != nil {
+				return err
+			}
+			if predecessor.ID != "" && !seen[predecessor.ID] {
+				return corrupt("selected observation consumed before scoped source fact %s", predecessor.ID)
 			}
 			sequences[f.Run] = f.Sequence
 		case compositionLifecycleFact:
@@ -321,6 +329,99 @@ func validateCompositionFacts(ctx context.Context, q queryer) error {
 		default:
 			return ErrVersion
 		}
+		seen[f.ID] = true
 	}
 	return nil
+}
+
+// Resolve consumption through retained admission evidence, not the observation's
+// source name alone. An execution fact already containing a terminal sequence is
+// insufficient when a later lifecycle decision produced the terminal obligation.
+// Only predecessor classes represented by this foundation are enforced here.
+func compositionObservationPredecessor(ctx context.Context, q queryer, run RunID, sequence int64) (compositionFact, error) {
+	var empty compositionFact
+	var selected sql.NullString
+	if err := q.QueryRowContext(ctx, "SELECT selected_observation FROM history WHERE subject=? AND generation=? AND sequence=?", run.Subject, run.Generation, sequence).Scan(&selected); err != nil {
+		return empty, err
+	}
+	if !selected.Valid {
+		return empty, nil
+	}
+	var raw []byte
+	if err := q.QueryRowContext(ctx, "SELECT descriptor FROM observations WHERE id=?", selected.String).Scan(&raw); err != nil {
+		return empty, err
+	}
+	var observation Observation
+	if err := decode(raw, &observation); err != nil {
+		return empty, err
+	}
+	switch observation.Provenance {
+	case "ordinary-message", "runtime-terminal", "runtime-lifecycle":
+	default:
+		// Local input has no scoped source fact. Adapter/receipt and future invocation
+		// predecessors require the later protocol facts; they are not inferred here.
+		return empty, nil
+	}
+	var admissionID string
+	if err := q.QueryRowContext(ctx, "SELECT id FROM admissions WHERE observation_id=? ORDER BY id LIMIT 1", selected.String).Scan(&admissionID); err != nil {
+		return empty, err
+	}
+	d, result, err := loadAdmissionKey(ctx, q, admissionID)
+	if err != nil {
+		return empty, err
+	}
+	if !result.Accepted || result.Bound == nil || *result.Bound != run || result.ObservationID != selected.String || !reflect.DeepEqual(observation, observationFor(d, *result.Bound)) {
+		return empty, corrupt("selected observation lacks its admission binding")
+	}
+	switch d.Kind {
+	case "message":
+		intent, err := loadIntent(ctx, q, d.IntentID)
+		if err != nil {
+			return empty, err
+		}
+		if intent.Kind != "message" || !reflect.DeepEqual(d, messageDescriptor(intent.Intent, d.TransportID)) {
+			return empty, corrupt("selected message admission source")
+		}
+		return compositionExecutionEvidence(ctx, q, intent.Run, intent.Sequence)
+	case "terminal":
+		expected, err := terminalDescriptor(ctx, q, d.Source, TerminalDestination{d.Target, d.Obligation}, d.TransportID)
+		if err != nil {
+			return empty, err
+		}
+		if !reflect.DeepEqual(d, expected) {
+			return empty, corrupt("selected terminal admission source")
+		}
+		var operation sql.NullString
+		var terminalSequence int64
+		if err := q.QueryRowContext(ctx, "SELECT sequence,operation_id FROM terminal_obligations WHERE subject=? AND generation=?", d.Source.Subject, d.Source.Generation).Scan(&terminalSequence, &operation); err != nil {
+			return empty, err
+		}
+		if operation.Valid {
+			decision, err := loadLifecycleResult(ctx, q, operation.String)
+			if err != nil {
+				return empty, err
+			}
+			return compositionLifecycleEvidence(ctx, q, decision)
+		}
+		return compositionExecutionEvidence(ctx, q, d.Source, terminalSequence)
+	case "lifecycle":
+		outcome, err := lifecycleOutcome(ctx, q, d.IntentID)
+		if err != nil {
+			return empty, err
+		}
+		if !reflect.DeepEqual(d, lifecycleDescriptor(outcome, d.TransportID)) {
+			return empty, corrupt("selected lifecycle admission source")
+		}
+		if outcome.Disposition != "target_decision" {
+			// A source-denied settlement has no target decision/fact in this profile.
+			return empty, nil
+		}
+		decision, err := loadLifecycleResult(ctx, q, d.IntentID)
+		if err != nil {
+			return empty, err
+		}
+		return compositionLifecycleEvidence(ctx, q, decision)
+	default:
+		return empty, corrupt("selected observation admission kind")
+	}
 }
