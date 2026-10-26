@@ -75,11 +75,11 @@
 
 **Files/interfaces:** Consume 2a descriptors/fact transaction helpers. Add the Task2 public Template, invocation declarations, Invoke and explicit outcome bindings API; immutable closed deployment catalogue and root allowlists; committed intention, separate source authorization, atomic child admission/result and initial request binding. Integrate dynamic generation-1 origins and scope replies. Keep public schema4 activation gated until 2c completes all enforcement/validation.
 
-- [ ] Test then implement fresh child initialization from retained artifacts, all-member atomic admission, permanent accepted/rejected result deduplication, denied authority/depth/work counts, no uncommitted creation, public request correlation and source/root closure races.
-- [ ] Test authenticated reply candidate recording and the reviewed reply-lifetime exception, including evidence's Send(invalid_result) then Failure, duplicate/conflicting sends and original acknowledgment loss. No external or arbitrary-message authority inherits the reply exception.
-- [ ] Implement ordinary AwaitInvocation outcome bindings with explicit Status/Reason/ResponsePresent. Rejection with an enum-constrained output schema must be a known absent response, not invalid successful payload or store failure. No opcode contains scatter/aggregation policy.
-- [ ] Use ordered facts to capture failure/success freeze sets; expose internal pending versus ready publication without prematurely claiming completed invocation. Consume current public schema/loop APIs and preserve all older records.
-- [ ] Run focused tests/default suite, commit, document APIs and remaining 2c gate. No Task3 implementation yet.
+- [x] Test then implement fresh child initialization from retained artifacts, all-member atomic admission, permanent accepted/rejected result deduplication, denied authority/depth/work counts, no uncommitted creation, public request correlation and source/root closure races.
+- [x] Test authenticated reply candidate recording and the reviewed reply-lifetime exception, including evidence's Send(invalid_result) then Failure, duplicate/conflicting sends and original acknowledgment loss. No external or arbitrary-message authority inherits the reply exception.
+- [x] Implement ordinary AwaitInvocation outcome bindings with explicit Status/Reason/ResponsePresent. Rejection with an enum-constrained output schema must be a known absent response, not invalid successful payload or store failure. No opcode contains scatter/aggregation policy.
+- [x] Use ordered facts to capture failure/success freeze sets; expose internal pending versus ready publication without prematurely claiming completed invocation. Consume current public schema/loop APIs and preserve all older records.
+- [x] Run focused tests/default suite, commit, document APIs and remaining 2c gate. No Task3 implementation yet.
 
 ### Task 2c: Shared limits, completion, runner integration and full schema4 replay
 
