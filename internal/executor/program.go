@@ -454,6 +454,13 @@ func Reduce(p Program, s Projection, o *Observation, id RunID, seq int64, l Limi
 			if err != nil {
 				return Reduction{}, err
 			}
+			if p.Author != nil {
+				if col, ok := p.Author.Collections[k]; ok {
+					if err := col.Validate(x); err != nil {
+						return Reduction{}, err
+					}
+				}
+			}
 			next.Data[k] = x
 		}
 		if in.Dst != "" {

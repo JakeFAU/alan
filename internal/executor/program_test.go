@@ -205,3 +205,83 @@ func TestLegacySemanticsRejectCollections(t *testing.T) {
 		t.Fatal("legacy program admitted collection")
 	}
 }
+
+func TestUnambiguousSendContractsAndAuthorIntentValidation(t *testing.T) {
+	empty, err := (recordschema.Record{}).Retain()
+	if err != nil {
+		t.Fatal(err)
+	}
+	strictRec, err := (recordschema.Record{
+		"mode": {Kind: "string", MaxBytes: 4, Enum: []string{"fast", "slow"}},
+	}).Retain()
+	if err != nil {
+		t.Fatal(err)
+	}
+	wideRec, err := (recordschema.Record{
+		"mode": {Kind: "string", MaxBytes: 32},
+	}).Retain()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ambiguousProg := Program{
+		Semantics: AuthorSemanticVersion,
+		Author: &ProgramMetadata{
+			Compiler: AuthorCompilerVersion,
+			Inputs:   wideRec,
+			Outputs:  empty,
+			Ports: map[string]PortDeclaration{
+				"strict_out": {Peer: "receiver", Obligation: "work", SendUsed: true, Receive: empty, Send: strictRec},
+				"wide_out":   {Peer: "receiver", Obligation: "work", SendUsed: true, Receive: empty, Send: wideRec},
+			},
+			Positions: []string{"emit", "end"},
+		},
+		Code: []Instruction{
+			{
+				Op: "emit",
+				Effect: &Effect{
+					Kind:       "message",
+					Target:     Lit(Text("receiver")),
+					Generation: Lit(Int(1)),
+					Obligation: Lit(Text("work")),
+					Payload:    map[string]Operand{"mode": Ref("mode")},
+				},
+			},
+			{Op: "end", Outcome: "succeeded"},
+		},
+	}
+
+	if _, _, err := EncodeProgram(ambiguousProg); err == nil || !strings.Contains(err.Error(), "ambiguous send contract") {
+		t.Fatalf("expected EncodeProgram to reject ambiguous SendUsed contract, got: %v", err)
+	}
+	if _, err := Reduce(ambiguousProg, Projection{Status: "open", Data: map[string]Value{"mode": Text("VIOLATES_STRICT_SCHEMA")}}, nil, RunID{"sender", 1}, 1, DefaultLimits()); err == nil || !strings.Contains(err.Error(), "ambiguous send contract") {
+		t.Fatalf("expected Reduce to reject ambiguous SendUsed contract, got: %v", err)
+	}
+
+	localSendProg := ambiguousProg
+	localMeta := *ambiguousProg.Author
+	localMeta.Ports = map[string]PortDeclaration{
+		"local_out": {Local: true, Peer: "local", Obligation: "work", SendUsed: true, Receive: empty, Send: strictRec},
+	}
+	localSendProg.Author = &localMeta
+	if _, _, err := EncodeProgram(localSendProg); err == nil || !strings.Contains(err.Error(), "local port cannot send") {
+		t.Fatalf("expected EncodeProgram to reject local port with SendUsed, got: %v", err)
+	}
+
+	aliasProg := ambiguousProg
+	aliasMeta := *ambiguousProg.Author
+	aliasMeta.Ports = map[string]PortDeclaration{
+		"out_a": {Peer: "receiver", Obligation: "work", SendUsed: true, Receive: empty, Send: strictRec},
+		"out_b": {Peer: "receiver", Obligation: "work", SendUsed: true, Receive: empty, Send: strictRec},
+	}
+	aliasProg.Author = &aliasMeta
+	if _, _, err := EncodeProgram(aliasProg); err != nil {
+		t.Fatalf("expected identical Send.ID alias ports to encode cleanly, got: %v", err)
+	}
+	if _, err := Reduce(aliasProg, Projection{Status: "open", Data: map[string]Value{"mode": Text("VIOLATES_STRICT_SCHEMA")}}, nil, RunID{"sender", 1}, 1, DefaultLimits()); err == nil {
+		t.Fatal("expected Reduce on alias ports to reject payload violating strict schema")
+	}
+	if _, err := Reduce(aliasProg, Projection{Status: "open", Data: map[string]Value{"mode": Text("fast")}}, nil, RunID{"sender", 1}, 1, DefaultLimits()); err != nil {
+		t.Fatalf("expected Reduce on alias ports with valid payload to succeed, got: %v", err)
+	}
+}

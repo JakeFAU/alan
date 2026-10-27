@@ -372,19 +372,114 @@ func (c *compiler) validate() error {
 	}
 	incoming := make([]map[string]string, len(c.program.Code))
 	incoming[0] = map[string]string{}
+	consts := make([]map[string]schema.Value, len(c.program.Code))
+	consts[0] = map[string]schema.Value{}
+	declFields := make([]map[string]schema.Field, len(c.program.Code))
+	declFields[0] = map[string]schema.Field{}
 	types := map[string]string{}
 	for name, f := range c.program.Author.Inputs.Record {
 		incoming[0][name] = c.kind(f)
 		types[name] = c.kind(f)
+		if f.Kind == "string" {
+			declFields[0][name] = f
+		}
 	}
-	reaching := c.reachingStates()
 	for pc, in := range c.program.Code {
 		state := incoming[pc]
 		if state == nil {
 			continue
 		}
-		rstate := reaching[pc]
+		cstate := consts[pc]
+		fstate := declFields[pc]
 		next := maps.Clone(state)
+		nextConst := maps.Clone(cstate)
+		nextField := maps.Clone(fstate)
+		evalConst := func(m map[string]schema.Value, o executor.Operand) (schema.Value, bool) {
+			if (o.Ref == "") == (o.Literal == nil) {
+				return schema.Value{}, false
+			}
+			var v schema.Value
+			if o.Literal != nil {
+				if !o.Literal.Valid() {
+					return schema.Value{}, false
+				}
+				v = o.Literal.Clone()
+			} else {
+				var ok bool
+				v, ok = m[o.Ref]
+				if !ok {
+					return schema.Value{}, false
+				}
+				v = v.Clone()
+			}
+			if o.Offset != nil {
+				if v.Kind != "int" {
+					return schema.Value{}, false
+				}
+				b := *o.Offset
+				a := v.Number
+				if (b > 0 && a+b < a) || (b < 0 && a+b > a) {
+					return schema.Value{}, false
+				}
+				v.Number += b
+			}
+			return v, true
+		}
+		checkOperand := func(mConst map[string]schema.Value, mField map[string]schema.Field, o executor.Operand, want schema.Field) error {
+			if v, ok := evalConst(mConst, o); ok {
+				if err := want.Validate(v); err != nil {
+					return err
+				}
+			}
+			if o.Ref != "" && o.Literal == nil && o.Offset == nil && want.Kind == "string" {
+				if src, ok := mField[o.Ref]; ok && src.Kind == "string" {
+					candidates := src.Enum
+					if len(candidates) == 0 {
+						candidates = want.Enum
+					}
+					if len(candidates) > 0 {
+						compatible := false
+						var lastErr error
+						for _, candidate := range candidates {
+							val := schema.Text(candidate)
+							if err := src.Validate(val); err != nil {
+								lastErr = err
+								continue
+							}
+							if err := want.Validate(val); err == nil {
+								compatible = true
+								break
+							} else {
+								lastErr = err
+							}
+						}
+						if !compatible {
+							if lastErr != nil {
+								return lastErr
+							}
+							return fmt.Errorf("incompatible string schema")
+						}
+					}
+				}
+			}
+			return nil
+		}
+		assignMeta := func(dst string, o executor.Operand) {
+			if v, ok := evalConst(cstate, o); ok {
+				nextConst[dst] = v
+			} else {
+				delete(nextConst, dst)
+			}
+			if o.Ref != "" && o.Literal == nil && o.Offset == nil {
+				if f, ok := fstate[o.Ref]; ok {
+					nextField[dst] = f
+				} else {
+					delete(nextField, dst)
+				}
+			} else {
+				delete(nextField, dst)
+			}
+		}
 		read := func(o executor.Operand) (string, error) {
 			if (o.Ref == "") == (o.Literal == nil) {
 				return "", c.err(pc, "invalid expression")
@@ -469,21 +564,24 @@ func (c *compiler) validate() error {
 				if kind != "int" || other != "int" {
 					return c.err(pc, "add requires int")
 				}
-			}
-			if f, ok := c.program.Author.Collections[in.Dst]; ok && kind != c.kind(f) {
-				return c.err(pc, "collection assignment schema mismatch")
-			}
-			if in.Op == "set" {
+				a, okA := evalConst(cstate, in.A)
+				b, okB := evalConst(cstate, in.B)
+				if okA && okB && a.Kind == "int" && b.Kind == "int" && !((b.Number > 0 && a.Number+b.Number < a.Number) || (b.Number < 0 && a.Number+b.Number > a.Number)) {
+					nextConst[in.Dst] = schema.Int(a.Number + b.Number)
+				} else {
+					delete(nextConst, in.Dst)
+				}
+				delete(nextField, in.Dst)
+			} else {
 				if f, ok := c.program.Author.Collections[in.Dst]; ok {
-					if err := validateOperandValues(rstate, in.A, f); err != nil {
+					if err := checkOperand(cstate, fstate, in.A, f); err != nil {
 						return c.err(pc, "collection %q: %v", in.Dst, err)
 					}
 				}
-				if outField, ok := c.program.Author.Outputs.Record[in.Dst]; ok && !strings.HasPrefix(c.program.Author.Positions[pc], "value:") {
-					if err := validateOperandValues(rstate, in.A, outField); err != nil {
-						return c.err(pc, "output %q: %v", in.Dst, err)
-					}
-				}
+				assignMeta(in.Dst, in.A)
+			}
+			if f, ok := c.program.Author.Collections[in.Dst]; ok && kind != c.kind(f) {
+				return c.err(pc, "collection assignment schema mismatch")
 			}
 			if f, ok := c.fields[kind]; ok {
 				field := f
@@ -503,6 +601,23 @@ func (c *compiler) validate() error {
 			}
 			field := f
 			c.program.Code[pc].Collection = &field
+			for i := pc + 1; i < in.Otherwise && i < len(c.program.Code); i++ {
+				bodyIn := c.program.Code[i]
+				if bodyIn.Dst != "" {
+					delete(nextConst, bodyIn.Dst)
+					delete(nextField, bodyIn.Dst)
+				}
+				for _, dst := range bodyIn.Bind {
+					delete(nextConst, dst)
+					delete(nextField, dst)
+				}
+				if bodyIn.Op == "emit" {
+					for dst := range bodyIn.Updates {
+						delete(nextConst, dst)
+						delete(nextField, dst)
+					}
+				}
+			}
 		case "next":
 			f := c.program.Code[in.Target].Collection
 			if f == nil {
@@ -516,6 +631,12 @@ func (c *compiler) validate() error {
 					return c.err(pc, "unknown or duplicate loop binding")
 				}
 				seen[name] = true
+				delete(nextConst, name)
+				if bound.Kind == "string" {
+					nextField[name] = bound
+				} else {
+					delete(nextField, name)
+				}
 				if err := write(name, c.kind(bound)); err != nil {
 					return err
 				}
@@ -544,15 +665,11 @@ func (c *compiler) validate() error {
 				if got != c.kind(want) {
 					return c.err(pc, "append field type mismatch")
 				}
-				if o.Literal != nil {
-					if err := want.Validate(*o.Literal); err != nil {
-						return c.err(pc, "append field: %v", err)
-					}
-				}
-				if err := validateOperandValues(rstate, o, want); err != nil {
+				if err := checkOperand(cstate, fstate, o, want); err != nil {
 					return c.err(pc, "append field: %v", err)
 				}
 			}
+			delete(nextConst, in.Dst)
 		case "loop":
 			continue
 		case "branch":
@@ -586,12 +703,7 @@ func (c *compiler) validate() error {
 				if kind != c.kind(f) {
 					return c.err(pc, "payload %q expects %s", name, f.Kind)
 				}
-				if o.Literal != nil {
-					if err = f.Validate(*o.Literal); err != nil {
-						return c.err(pc, "payload %q: %v", name, err)
-					}
-				}
-				if err = validateOperandValues(rstate, o, f); err != nil {
+				if err = checkOperand(cstate, fstate, o, f); err != nil {
 					return c.err(pc, "payload %q: %v", name, err)
 				}
 			}
@@ -607,20 +719,18 @@ func (c *compiler) validate() error {
 					return c.err(pc, "collection update schema mismatch")
 				}
 				if f, ok := c.program.Author.Collections[name]; ok {
-					if err := validateOperandValues(rstate, in.Updates[name], f); err != nil {
+					if err := checkOperand(cstate, fstate, in.Updates[name], f); err != nil {
 						return c.err(pc, "update %q: %v", name, err)
 					}
 				}
-				if outField, ok := c.program.Author.Outputs.Record[name]; ok {
-					if err := validateOperandValues(rstate, in.Updates[name], outField); err != nil {
-						return c.err(pc, "output %q: %v", name, err)
-					}
-				}
+				assignMeta(name, in.Updates[name])
 				if err = write(name, kind); err != nil {
 					return err
 				}
 			}
 			if in.Dst != "" {
+				delete(nextConst, in.Dst)
+				delete(nextField, in.Dst)
 				if err := write(in.Dst, "request:"+c.requests[pc]); err != nil {
 					return err
 				}
@@ -646,6 +756,12 @@ func (c *compiler) validate() error {
 					return c.err(pc, "duplicate binding %q", name)
 				}
 				seen[name] = true
+				delete(nextConst, name)
+				if f.Kind == "string" {
+					nextField[name] = f
+				} else {
+					delete(nextField, name)
+				}
 				if err := write(name, c.kind(f)); err != nil {
 					return err
 				}
@@ -657,7 +773,7 @@ func (c *compiler) validate() error {
 					if next[name] != c.kind(want) {
 						return c.err(pc, "output %q missing or wrong type", name)
 					}
-					if err := validateOperandValues(rstate, executor.Ref(name), want); err != nil {
+					if err := checkOperand(nextConst, nextField, executor.Ref(name), want); err != nil {
 						return c.err(pc, "output %q: %v", name, err)
 					}
 				}
@@ -680,10 +796,22 @@ func (c *compiler) validate() error {
 			}
 			if incoming[target] == nil {
 				incoming[target] = maps.Clone(next)
+				consts[target] = maps.Clone(nextConst)
+				declFields[target] = maps.Clone(nextField)
 			} else {
 				for name, kind := range incoming[target] {
 					if next[name] != kind {
 						delete(incoming[target], name)
+					}
+				}
+				for name, val := range consts[target] {
+					if nv, ok := nextConst[name]; !ok || !val.Equal(nv) {
+						delete(consts[target], name)
+					}
+				}
+				for name, f := range declFields[target] {
+					if nf, ok := nextField[name]; !ok || f.Kind != nf.Kind || f.MaxBytes != nf.MaxBytes || !slices.Equal(f.Enum, nf.Enum) {
+						delete(declFields[target], name)
 					}
 				}
 			}
@@ -783,673 +911,4 @@ func definitionHasCollections(d Definition) (bool, error) {
 		return false, nil
 	}
 	return walk(d.Steps, 0)
-}
-
-const maxTrackedIntConstants = 64
-
-type reachingState struct {
-	consts      map[string][]schema.Value
-	dynamic     map[string]bool
-	elemConsts  map[string]map[string][]schema.Value
-	elemDynamic map[string]bool
-	fields      map[string][]schema.Field
-}
-
-func newReachingState() *reachingState {
-	return &reachingState{
-		consts:      map[string][]schema.Value{},
-		dynamic:     map[string]bool{},
-		elemConsts:  map[string]map[string][]schema.Value{},
-		elemDynamic: map[string]bool{},
-		fields:      map[string][]schema.Field{},
-	}
-}
-
-func cloneValues(vals []schema.Value) []schema.Value {
-	if len(vals) == 0 {
-		return nil
-	}
-	out := make([]schema.Value, len(vals))
-	for i, v := range vals {
-		out[i] = v.Clone()
-	}
-	return out
-}
-
-func cloneField(f schema.Field) schema.Field {
-	f.Enum = slices.Clone(f.Enum)
-	if f.Element != nil {
-		el := make(schema.Record, len(f.Element))
-		for k, v := range f.Element {
-			el[k] = cloneField(v)
-		}
-		f.Element = el
-	}
-	return f
-}
-
-func equalField(a, b schema.Field) bool {
-	if a.Kind != b.Kind || a.MaxBytes != b.MaxBytes || a.MaxItems != b.MaxItems || a.UniqueKey != b.UniqueKey || !slices.Equal(a.Enum, b.Enum) || len(a.Element) != len(b.Element) {
-		return false
-	}
-	for k, av := range a.Element {
-		bv, ok := b.Element[k]
-		if !ok || !equalField(av, bv) {
-			return false
-		}
-	}
-	return true
-}
-
-func addField(list []schema.Field, f schema.Field) ([]schema.Field, bool) {
-	for _, existing := range list {
-		if equalField(existing, f) {
-			return list, false
-		}
-	}
-	return append(list, cloneField(f)), true
-}
-
-func (s *reachingState) clone() *reachingState {
-	out := newReachingState()
-	for k, vals := range s.consts {
-		out.consts[k] = cloneValues(vals)
-	}
-	for k, d := range s.dynamic {
-		if d {
-			out.dynamic[k] = true
-		}
-	}
-	for k, m := range s.elemConsts {
-		cp := make(map[string][]schema.Value, len(m))
-		for f, vals := range m {
-			cp[f] = cloneValues(vals)
-		}
-		out.elemConsts[k] = cp
-	}
-	for k, d := range s.elemDynamic {
-		if d {
-			out.elemDynamic[k] = true
-		}
-	}
-	for k, flist := range s.fields {
-		cp := make([]schema.Field, len(flist))
-		for i, f := range flist {
-			cp[i] = cloneField(f)
-		}
-		out.fields[k] = cp
-	}
-	return out
-}
-
-func addConstant(list []schema.Value, v schema.Value) ([]schema.Value, bool) {
-	for _, existing := range list {
-		if existing.Equal(v) {
-			return list, false
-		}
-	}
-	if v.Kind == "int" && len(list) >= maxTrackedIntConstants {
-		return list, false
-	}
-	if len(list) >= MaxInstructions {
-		return list, false
-	}
-	return append(list, v.Clone()), true
-}
-
-func checkedAddInt64(a, b int64) (int64, bool) {
-	c := a + b
-	if (b > 0 && c < a) || (b < 0 && c > a) {
-		return 0, false
-	}
-	return c, true
-}
-
-func evalConsts(s *reachingState, o executor.Operand) []schema.Value {
-	if s == nil || (o.Ref == "") == (o.Literal == nil) {
-		return nil
-	}
-	if o.Literal != nil {
-		if !o.Literal.Valid() || o.Offset != nil {
-			return nil
-		}
-		return []schema.Value{o.Literal.Clone()}
-	}
-	src := s.consts[o.Ref]
-	if len(src) == 0 {
-		return nil
-	}
-	if o.Offset == nil {
-		return cloneValues(src)
-	}
-	var out []schema.Value
-	for _, v := range src {
-		if v.Kind != "int" {
-			return nil
-		}
-		sum, ok := checkedAddInt64(v.Number, *o.Offset)
-		if !ok {
-			return nil
-		}
-		out, _ = addConstant(out, schema.Int(sum))
-	}
-	return out
-}
-
-func evalDynamic(s *reachingState, o executor.Operand) bool {
-	if s == nil {
-		return true
-	}
-	if o.Literal != nil {
-		return false
-	}
-	if o.Ref == "" {
-		return true
-	}
-	if s.dynamic[o.Ref] {
-		return true
-	}
-	if o.Offset != nil {
-		for _, v := range s.consts[o.Ref] {
-			if v.Kind != "int" {
-				return true
-			}
-			if _, ok := checkedAddInt64(v.Number, *o.Offset); !ok {
-				return true
-			}
-		}
-	}
-	return len(s.consts[o.Ref]) == 0
-}
-
-func extractListElemConsts(v schema.Value) map[string][]schema.Value {
-	rows, err := v.Records()
-	if err != nil || len(rows) == 0 {
-		return nil
-	}
-	out := map[string][]schema.Value{}
-	for _, row := range rows {
-		for k, val := range row {
-			out[k], _ = addConstant(out[k], val)
-		}
-	}
-	return out
-}
-
-func validateOperandValues(s *reachingState, o executor.Operand, want schema.Field) error {
-	for _, v := range evalConsts(s, o) {
-		if err := want.Validate(v); err != nil {
-			return err
-		}
-	}
-	if s != nil && o.Ref != "" && o.Literal == nil && o.Offset == nil && want.Kind == "string" {
-		for _, srcField := range s.fields[o.Ref] {
-			if srcField.Kind != "string" || len(srcField.Enum) == 0 {
-				continue
-			}
-			compatible := false
-			var lastErr error
-			for _, candidate := range srcField.Enum {
-				val := schema.Text(candidate)
-				if srcField.Validate(val) != nil {
-					continue
-				}
-				if err := want.Validate(val); err == nil {
-					compatible = true
-					break
-				} else {
-					lastErr = err
-				}
-			}
-			if !compatible {
-				if lastErr != nil {
-					return lastErr
-				}
-				return fmt.Errorf("enum domain is incompatible with target field")
-			}
-		}
-	}
-	return nil
-}
-
-func refineBranchState(thenState, elseState *reachingState, left, right executor.Operand) {
-	if left.Ref == "" || left.Literal != nil || left.Offset != nil || right.Literal == nil || right.Ref != "" || right.Offset != nil {
-		return
-	}
-	lit := *right.Literal
-	if !lit.Valid() {
-		return
-	}
-	name := left.Ref
-	vals := elseState.consts[name]
-	dyn := elseState.dynamic[name]
-
-	// Refine elseState (where left != lit).
-	if len(vals) > 0 {
-		var kept []schema.Value
-		for _, v := range vals {
-			if !v.Equal(lit) {
-				kept = append(kept, v.Clone())
-			}
-		}
-		if len(kept) > 0 {
-			elseState.consts[name] = kept
-		} else if dyn {
-			delete(elseState.consts, name)
-		} else {
-			// Contradicted else branch: preserve purely static constants so dead
-			// branches cannot launder invalid constants into nil.
-			elseState.consts[name] = cloneValues(vals)
-		}
-	}
-	if lit.Kind == "string" {
-		if flist := elseState.fields[name]; len(flist) > 0 {
-			var updated []schema.Field
-			for _, f := range flist {
-				if f.Kind == "string" && len(f.Enum) > 0 {
-					var keptEnum []string
-					for _, e := range f.Enum {
-						if e != lit.Text {
-							keptEnum = append(keptEnum, e)
-						}
-					}
-					if len(keptEnum) > 0 {
-						f.Enum = keptEnum
-					}
-				}
-				updated = append(updated, f)
-			}
-			elseState.fields[name] = updated
-		}
-	}
-
-	// Refine thenState (where left == lit).
-	inVals := false
-	for _, v := range thenState.consts[name] {
-		if v.Equal(lit) {
-			inVals = true
-			break
-		}
-	}
-	if inVals || thenState.dynamic[name] {
-		thenState.consts[name] = []schema.Value{lit.Clone()}
-		thenState.dynamic[name] = false
-		var incompatible []schema.Field
-		for _, f := range thenState.fields[name] {
-			if f.Validate(lit) != nil {
-				incompatible = append(incompatible, f)
-			}
-		}
-		if len(incompatible) > 0 {
-			thenState.fields[name] = incompatible
-		} else {
-			delete(thenState.fields, name)
-		}
-	} else {
-		// Contradicted then branch: keep existing static constants and add lit
-		// so neither a prior invalid constant nor an invalid branch literal escapes.
-		list := cloneValues(thenState.consts[name])
-		list, _ = addConstant(list, lit)
-		thenState.consts[name] = list
-	}
-}
-
-func (c *compiler) reachingStates() []*reachingState {
-	n := len(c.program.Code)
-	incoming := make([]*reachingState, n)
-	if n == 0 {
-		return incoming
-	}
-	initState := newReachingState()
-	for name, f := range c.program.Author.Inputs.Record {
-		initState.dynamic[name] = true
-		if f.Kind == "list" {
-			initState.elemDynamic[name] = true
-			initState.fields[name] = []schema.Field{cloneField(f)}
-		} else if f.Kind == "string" && len(f.Enum) > 0 {
-			initState.fields[name] = []schema.Field{cloneField(f)}
-		}
-	}
-	for name, f := range c.program.Author.Collections {
-		initState.fields[name] = []schema.Field{cloneField(f)}
-	}
-	incoming[0] = initState
-	queue := []int{0}
-	queued := make([]bool, n)
-	queued[0] = true
-
-	mergeInto := func(target int, state *reachingState) {
-		if target < 0 || target >= n {
-			return
-		}
-		dest := incoming[target]
-		changed := false
-		if dest == nil {
-			incoming[target] = state.clone()
-			changed = true
-		} else {
-			for name, vals := range state.consts {
-				list := dest.consts[name]
-				for _, v := range vals {
-					var added bool
-					list, added = addConstant(list, v)
-					if added {
-						changed = true
-					}
-				}
-				if len(list) > 0 {
-					dest.consts[name] = list
-				}
-			}
-			for name, d := range state.dynamic {
-				if d && !dest.dynamic[name] {
-					dest.dynamic[name] = true
-					changed = true
-				}
-			}
-			for name, m := range state.elemConsts {
-				destMap := dest.elemConsts[name]
-				if destMap == nil && len(m) > 0 {
-					destMap = map[string][]schema.Value{}
-					dest.elemConsts[name] = destMap
-				}
-				for f, vals := range m {
-					list := destMap[f]
-					for _, v := range vals {
-						var added bool
-						list, added = addConstant(list, v)
-						if added {
-							changed = true
-						}
-					}
-					if len(list) > 0 {
-						destMap[f] = list
-					}
-				}
-			}
-			for name, d := range state.elemDynamic {
-				if d && !dest.elemDynamic[name] {
-					dest.elemDynamic[name] = true
-					changed = true
-				}
-			}
-			for name, flist := range state.fields {
-				list := dest.fields[name]
-				for _, f := range flist {
-					var added bool
-					list, added = addField(list, f)
-					if added {
-						changed = true
-					}
-				}
-				if len(list) > 0 {
-					dest.fields[name] = list
-				}
-			}
-		}
-		if changed && !queued[target] {
-			queued[target] = true
-			queue = append(queue, target)
-		}
-	}
-
-	assign := func(next, state *reachingState, dst string, o executor.Operand) {
-		vals := evalConsts(state, o)
-		if len(vals) > 0 {
-			next.consts[dst] = vals
-		} else {
-			delete(next.consts, dst)
-		}
-		if evalDynamic(state, o) {
-			next.dynamic[dst] = true
-		} else {
-			delete(next.dynamic, dst)
-		}
-		if f, ok := c.program.Author.Collections[dst]; ok {
-			next.fields[dst] = []schema.Field{cloneField(f)}
-		} else if o.Ref != "" && o.Literal == nil && o.Offset == nil && len(state.fields[o.Ref]) > 0 {
-			cp := make([]schema.Field, len(state.fields[o.Ref]))
-			for i, f := range state.fields[o.Ref] {
-				cp[i] = cloneField(f)
-			}
-			next.fields[dst] = cp
-		} else {
-			delete(next.fields, dst)
-		}
-		if o.Literal != nil && o.Literal.Kind == "list" {
-			if m := extractListElemConsts(*o.Literal); len(m) > 0 {
-				next.elemConsts[dst] = m
-			} else {
-				delete(next.elemConsts, dst)
-			}
-			delete(next.elemDynamic, dst)
-		} else if o.Ref != "" && o.Literal == nil && o.Offset == nil {
-			if m := state.elemConsts[o.Ref]; len(m) > 0 {
-				cp := make(map[string][]schema.Value, len(m))
-				for f, v := range m {
-					cp[f] = cloneValues(v)
-				}
-				next.elemConsts[dst] = cp
-			} else {
-				delete(next.elemConsts, dst)
-			}
-			if state.elemDynamic[o.Ref] {
-				next.elemDynamic[dst] = true
-			} else {
-				delete(next.elemDynamic, dst)
-			}
-		} else {
-			delete(next.elemConsts, dst)
-			delete(next.elemDynamic, dst)
-		}
-	}
-
-	for len(queue) > 0 {
-		pc := queue[0]
-		queue = queue[1:]
-		queued[pc] = false
-		state := incoming[pc]
-		if state == nil {
-			continue
-		}
-		next := state.clone()
-		in := c.program.Code[pc]
-		switch in.Op {
-		case "set":
-			assign(next, state, in.Dst, in.A)
-		case "add":
-			aVals := evalConsts(state, in.A)
-			bVals := evalConsts(state, in.B)
-			aDyn := evalDynamic(state, in.A)
-			bDyn := evalDynamic(state, in.B)
-			var sums []schema.Value
-			overflow := false
-			if len(aVals) > 0 && len(bVals) > 0 {
-				for _, a := range aVals {
-					for _, b := range bVals {
-						if a.Kind != "int" || b.Kind != "int" {
-							overflow = true
-							break
-						}
-						s, ok := checkedAddInt64(a.Number, b.Number)
-						if !ok {
-							overflow = true
-							break
-						}
-						sums, _ = addConstant(sums, schema.Int(s))
-					}
-				}
-			}
-			if !overflow && len(sums) > 0 {
-				next.consts[in.Dst] = sums
-			} else {
-				delete(next.consts, in.Dst)
-			}
-			if aDyn || bDyn || overflow || len(sums) == 0 {
-				next.dynamic[in.Dst] = true
-			} else {
-				delete(next.dynamic, in.Dst)
-			}
-			delete(next.fields, in.Dst)
-			delete(next.elemConsts, in.Dst)
-			delete(next.elemDynamic, in.Dst)
-		case "next":
-			var elemMap map[string][]schema.Value
-			listDyn := true
-			var listFields []schema.Field
-			if in.Target >= 0 && in.Target < n {
-				forIn := c.program.Code[in.Target]
-				if forIn.A.Literal != nil && forIn.A.Literal.Kind == "list" {
-					elemMap = extractListElemConsts(*forIn.A.Literal)
-					listDyn = false
-				} else if forIn.A.Ref != "" {
-					elemMap = state.elemConsts[forIn.A.Ref]
-					listDyn = state.elemDynamic[forIn.A.Ref]
-					for _, f := range state.fields[forIn.A.Ref] {
-						if f.Kind == "list" {
-							listFields = append(listFields, f)
-						}
-					}
-					if len(listFields) == 0 {
-						if f, ok := c.program.Author.Collections[forIn.A.Ref]; ok {
-							listFields = []schema.Field{f}
-						} else if f, ok := c.program.Author.Inputs.Record[forIn.A.Ref]; ok && f.Kind == "list" {
-							listFields = []schema.Field{f}
-						}
-					}
-				}
-			}
-			for _, field := range keys(in.Bind) {
-				name := in.Bind[field]
-				var scalarVals []schema.Value
-				var nestedElem map[string][]schema.Value
-				for _, v := range elemMap[field] {
-					if v.Kind == "list" {
-						for k, kvals := range extractListElemConsts(v) {
-							if nestedElem == nil {
-								nestedElem = map[string][]schema.Value{}
-							}
-							list := nestedElem[k]
-							for _, kv := range kvals {
-								list, _ = addConstant(list, kv)
-							}
-							if len(list) > 0 {
-								nestedElem[k] = list
-							}
-						}
-					} else {
-						scalarVals = append(scalarVals, v.Clone())
-					}
-				}
-				if len(scalarVals) > 0 {
-					next.consts[name] = scalarVals
-				} else {
-					delete(next.consts, name)
-				}
-				if listDyn || len(scalarVals) == 0 {
-					next.dynamic[name] = true
-				} else {
-					delete(next.dynamic, name)
-				}
-				delete(next.fields, name)
-				for _, lf := range listFields {
-					if bound, ok := lf.Element[field]; ok {
-						if bound.Kind == "list" || (bound.Kind == "string" && len(bound.Enum) > 0) {
-							next.fields[name], _ = addField(next.fields[name], bound)
-						}
-					}
-				}
-				if len(nestedElem) > 0 {
-					next.elemConsts[name] = nestedElem
-				} else {
-					delete(next.elemConsts, name)
-				}
-				if listDyn || len(nestedElem) == 0 {
-					next.elemDynamic[name] = true
-				} else {
-					delete(next.elemDynamic, name)
-				}
-			}
-		case "append":
-			delete(next.consts, in.Dst)
-			destMap := next.elemConsts[in.Dst]
-			if destMap == nil {
-				destMap = map[string][]schema.Value{}
-				next.elemConsts[in.Dst] = destMap
-			}
-			for field, o := range in.Updates {
-				list := destMap[field]
-				for _, v := range evalConsts(state, o) {
-					list, _ = addConstant(list, v)
-				}
-				if o.Ref != "" && o.Literal == nil && o.Offset == nil {
-					for k, kvals := range state.elemConsts[o.Ref] {
-						for _, kv := range kvals {
-							list, _ = addConstant(list, schema.List(map[string]schema.Value{k: kv.Clone()}))
-						}
-					}
-					if state.elemDynamic[o.Ref] {
-						next.elemDynamic[in.Dst] = true
-					}
-				}
-				if len(list) > 0 {
-					destMap[field] = list
-				}
-				if evalDynamic(state, o) {
-					next.elemDynamic[in.Dst] = true
-				}
-			}
-		case "emit":
-			for _, name := range keys(in.Updates) {
-				assign(next, state, name, in.Updates[name])
-			}
-			if in.Dst != "" {
-				delete(next.consts, in.Dst)
-				next.dynamic[in.Dst] = true
-				delete(next.fields, in.Dst)
-				delete(next.elemConsts, in.Dst)
-				delete(next.elemDynamic, in.Dst)
-			}
-		case "receive":
-			rec := c.records[pc]
-			for _, field := range keys(in.Bind) {
-				name := in.Bind[field]
-				delete(next.consts, name)
-				next.dynamic[name] = true
-				delete(next.fields, name)
-				delete(next.elemConsts, name)
-				delete(next.elemDynamic, name)
-				if f, ok := rec[field]; ok {
-					if f.Kind == "list" {
-						next.elemDynamic[name] = true
-						next.fields[name] = []schema.Field{cloneField(f)}
-					} else if f.Kind == "string" && len(f.Enum) > 0 {
-						next.fields[name] = []schema.Field{cloneField(f)}
-					}
-				}
-			}
-		case "loop":
-			mergeInto(in.Target, next)
-			continue
-		case "end":
-			continue
-		case "branch":
-			thenState := next.clone()
-			elseState := next.clone()
-			refineBranchState(thenState, elseState, in.A, in.B)
-			refineBranchState(thenState, elseState, in.B, in.A)
-			mergeInto(in.Target, thenState)
-			mergeInto(in.Otherwise, elseState)
-			continue
-		}
-		if in.Op == "jump" {
-			mergeInto(in.Target, next)
-			continue
-		}
-		mergeInto(pc+1, next)
-		if in.Op == "foreach" {
-			mergeInto(in.Otherwise, next)
-		}
-	}
-	return incoming
 }
