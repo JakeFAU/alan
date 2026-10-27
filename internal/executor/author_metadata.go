@@ -182,6 +182,47 @@ func validateAuthorOutput(p Program, data map[string]Value) error {
 	}
 	return p.Author.Outputs.Record.Validate(output)
 }
+func validateAuthorIntent(p Program, intent Intent) error {
+	if p.Author == nil {
+		return nil
+	}
+	switch intent.Kind {
+	case "adapter":
+		effect, ok := p.Author.Effects[intent.Obligation]
+		if !ok || effect.Capability != intent.Target || intent.Generation != 1 {
+			return fmt.Errorf("undeclared adapter capability")
+		}
+		if err := effect.Input.Record.Validate(intent.Payload); err != nil {
+			return fmt.Errorf("adapter input schema: %w", err)
+		}
+	case "invocation":
+		inv, ok := p.Author.Invocations[intent.Obligation]
+		if !ok || inv.TemplateID != intent.Target || intent.Generation != 1 {
+			return fmt.Errorf("undeclared invocation template")
+		}
+		if err := inv.Input.Record.Validate(intent.Payload); err != nil {
+			return fmt.Errorf("invocation input schema: %w", err)
+		}
+	case "message":
+		matched := false
+		var lastErr error
+		for _, port := range p.Author.Ports {
+			if port.SendUsed && !port.Local && port.Peer == intent.Target && port.Obligation == intent.Obligation && intent.Generation == 1 {
+				matched = true
+				if err := port.Send.Record.Validate(intent.Payload); err == nil {
+					return nil
+				} else {
+					lastErr = err
+				}
+			}
+		}
+		if !matched {
+			return fmt.Errorf("undeclared message port")
+		}
+		return fmt.Errorf("message send schema: %w", lastErr)
+	}
+	return nil
+}
 func authorAdmissionValid(p Program, d AdmissionDescriptor) bool {
 	if p.Semantics != CollectionSemanticVersion {
 		for _, v := range d.Payload {

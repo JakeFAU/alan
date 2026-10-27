@@ -35,7 +35,7 @@ func TestRunnerAutomaticallyDispatchesMessages(t *testing.T) {
 	receiver[0].Match.Provenance = "ordinary-message"
 	receiver[0].Match.Source = Lit(Text("sender"))
 	addProgram(t, &p, "receiver", receiver, map[string]Value{})
-	p.Permissions = []Permission{{Kind: "message", Source: "sender", Target: "receiver", Operation: "message", Revision: 1}}
+	p.Permissions = []Permission{{Kind: "message", Source: "sender", Target: "receiver", Operation: "message", Revision: 1, Obligation: "work"}}
 	s, _ := messageStore(t, p)
 	report, err := s.Run(t.Context(), RunOptions{MaxSteps: 20, MaxDispatch: 20})
 	if err != nil {
@@ -72,7 +72,7 @@ func TestRunnerDispatchBudgetRetainsUnfinishedWork(t *testing.T) {
 	effect := &Effect{Kind: "message", Target: Lit(Text("receiver")), Generation: Lit(Int(1)), Obligation: Lit(Text("work")), Payload: map[string]Operand{"number": Lit(Int(1))}}
 	addProgram(t, &p, "sender", []Instruction{{Op: "emit", Effect: effect}, {Op: "emit", Effect: effect}, {Op: "end", Outcome: "succeeded"}}, map[string]Value{})
 	addProgram(t, &p, "receiver", inputProgram(), map[string]Value{})
-	p.Permissions = []Permission{{Kind: "message", Source: "sender", Target: "receiver", Operation: "message", Revision: 1}}
+	p.Permissions = []Permission{{Kind: "message", Source: "sender", Target: "receiver", Operation: "message", Revision: 1, Obligation: "work"}}
 	s, _ := messageStore(t, p)
 	report, err := s.Run(t.Context(), RunOptions{MaxSteps: 10, MaxDispatch: 1})
 	if !errors.Is(err, ErrLimit) || report.Quiescent || report.Dispatches != 1 || len(report.PendingDeliveries) != 1 || len(report.UnresolvedIntents) != 1 {

@@ -9,9 +9,22 @@ import (
 	"testing"
 
 	"github.com/JakeFAU/alan/author"
+	"github.com/JakeFAU/alan/effects"
 	"github.com/JakeFAU/alan/runtime"
 	"github.com/JakeFAU/alan/schema"
 )
+
+type schemaTestAdapter struct {
+	fn func(effects.Request) map[string]schema.Value
+}
+
+func (a schemaTestAdapter) Prepare(r effects.Request) (effects.Prepared, error) {
+	return effects.Prepared{Request: r, Protocol: "test/v1", MaxResponseBytes: 4096}, nil
+}
+
+func (a schemaTestAdapter) Execute(_ context.Context, p effects.Prepared) effects.Candidate {
+	return effects.Candidate{ID: p.Request.ID, Key: p.Request.Key, Disposition: "validated", Payload: a.fn(p.Request)}
+}
 
 func TestRuntimeRejectsInvalidAuthorIngress(t *testing.T) {
 	ctx := context.Background()
@@ -248,4 +261,277 @@ func TestRuntimePreservesDistinctUnicodeIdentifiers(t *testing.T) {
 	if a.Metadata().Effects["推論"].Capability != "模型" || a.Metadata().Templates["説明"] != "保存する内容" {
 		t.Fatal("Unicode metadata changed")
 	}
+}
+
+func TestRuntimeEnforcesAuthoredSchemasBeforeCommit(t *testing.T) {
+	enumField := schema.Field{Kind: "string", MaxBytes: 10, Enum: []string{"fast", "slow"}}
+	shortField := schema.Field{Kind: "string", MaxBytes: 4}
+
+	t.Run("rejects schema-invalid adapter request before durable commit", func(t *testing.T) {
+		worker, err := author.Compile(author.Definition{
+			Values:  map[string]schema.Value{"marker": schema.Text("initial")},
+			Ports:   map[string]author.Port{"in": {Peer: "local", Local: true, Obligation: "trigger", Receive: schema.Record{"raw": {Kind: "string", MaxBytes: 30}}}},
+			Effects: map[string]author.Effect{"tool": {Capability: "model", Input: schema.Record{"mode": enumField}, Output: schema.Record{"res": shortField}}},
+			Steps: []author.Step{
+				author.Receive("in", map[string]string{"raw": "raw"}),
+				author.Request("req", "tool", map[string]author.Expr{"mode": author.Var("raw")}, map[string]author.Expr{"marker": author.String("mutated")}),
+				author.Success(),
+			},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		p, err := (author.Application{"worker": {Artifact: worker}}).Provision()
+		if err != nil {
+			t.Fatal(err)
+		}
+		ctx := context.Background()
+		path := filepath.Join(t.TempDir(), "invalid-adapter.db")
+		s, err := runtime.Create(ctx, path, p, runtime.DefaultLimits())
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer s.Close()
+		admitted, err := s.AdmitInput(ctx, runtime.Input{
+			TransportID: "t1", LogicalID: "l1", Target: "worker", Obligation: "trigger",
+			Payload: map[string]schema.Value{"raw": schema.Text("NOT_IN_ENUM")},
+		})
+		if err != nil || !admitted.Accepted {
+			t.Fatalf("admit input: %+v %v", admitted, err)
+		}
+		_, runErr := s.Run(ctx, runtime.RunOptions{
+			MaxSteps: 10, MaxDispatch: 10,
+			Adapters: map[string]effects.Adapter{
+				"model": schemaTestAdapter{fn: func(effects.Request) map[string]schema.Value {
+					return map[string]schema.Value{"res": schema.Text("ok")}
+				}},
+			},
+		})
+		if runErr == nil {
+			t.Fatal("expected schema-invalid adapter request to be rejected")
+		}
+		snap, err := runtime.Inspect(ctx, path, runtime.DefaultLimits())
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(snap.Tables["intents"]) != 0 {
+			t.Fatalf("schema-invalid adapter intent reached durable intents table: %+v", snap.Tables["intents"])
+		}
+		if len(snap.Tables["history"]) != 2 {
+			t.Fatalf("rejected emit reduction appended to durable history: got %d rows", len(snap.Tables["history"]))
+		}
+		var proj runtime.Projection
+		if err := json.Unmarshal([]byte(snap.Tables["runs"][0]["projection"].(string)), &proj); err != nil {
+			t.Fatal(err)
+		}
+		if proj.Data["marker"].Text != "initial" || proj.PC != 2 || proj.Status != "open" {
+			t.Fatalf("rejected emit reduction was not atomic: projection=%+v", proj)
+		}
+		if _, err := runtime.Replay(ctx, path, runtime.DefaultLimits()); err != nil {
+			t.Fatalf("replay after rejected reduction failed: %v", err)
+		}
+	})
+
+	t.Run("rejects schema-invalid ordinary message before durable commit", func(t *testing.T) {
+		sender, err := author.Compile(author.Definition{
+			Values: map[string]schema.Value{"marker": schema.Text("initial")},
+			Ports: map[string]author.Port{
+				"in":  {Peer: "local", Local: true, Obligation: "trigger", Receive: schema.Record{"raw": {Kind: "string", MaxBytes: 30}}},
+				"out": {Peer: "receiver", Obligation: "work", Send: schema.Record{"mode": enumField}},
+			},
+			Steps: []author.Step{
+				author.Receive("in", map[string]string{"raw": "raw"}),
+				author.Send("out", map[string]author.Expr{"mode": author.Var("raw")}),
+				author.Success(),
+			},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		receiver, err := author.Compile(author.Definition{
+			Ports: map[string]author.Port{"in": {Peer: "sender", Obligation: "work", Receive: schema.Record{"mode": enumField}}},
+			Steps: []author.Step{author.Receive("in", map[string]string{"mode": "got"}), author.Success()},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		p, err := (author.Application{
+			"sender":   {Artifact: sender},
+			"receiver": {Artifact: receiver},
+		}).Provision()
+		if err != nil {
+			t.Fatal(err)
+		}
+		ctx := context.Background()
+		path := filepath.Join(t.TempDir(), "invalid-message.db")
+		s, err := runtime.Create(ctx, path, p, runtime.DefaultLimits())
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer s.Close()
+		admitted, err := s.AdmitInput(ctx, runtime.Input{
+			TransportID: "t1", LogicalID: "l1", Target: "sender", Obligation: "trigger",
+			Payload: map[string]schema.Value{"raw": schema.Text("NOT_IN_ENUM")},
+		})
+		if err != nil || !admitted.Accepted {
+			t.Fatalf("admit input: %+v %v", admitted, err)
+		}
+		if _, err := s.Run(ctx, runtime.RunOptions{MaxSteps: 10, MaxDispatch: 10}); err == nil {
+			t.Fatal("expected schema-invalid message send to be rejected")
+		}
+		snap, err := runtime.Inspect(ctx, path, runtime.DefaultLimits())
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(snap.Tables["intents"]) != 0 {
+			t.Fatalf("schema-invalid message intent reached durable intents table: %+v", snap.Tables["intents"])
+		}
+		if len(snap.Tables["history"]) != 2 {
+			t.Fatalf("rejected message emit appended to durable history: got %d rows", len(snap.Tables["history"]))
+		}
+		if _, err := runtime.Replay(ctx, path, runtime.DefaultLimits()); err != nil {
+			t.Fatalf("replay after rejected message emit failed: %v", err)
+		}
+	})
+
+	t.Run("rejects schema-invalid invocation before durable commit", func(t *testing.T) {
+		childArt, err := author.Compile(author.Definition{
+			Ports: map[string]author.Port{"entry": {Peer: "caller", Obligation: "task", Receive: schema.Record{"mode": enumField}, Send: schema.Record{"ok": shortField}}},
+			Steps: []author.Step{author.Receive("entry", map[string]string{"mode": "m"}), author.Send("entry", map[string]author.Expr{"ok": author.String("done")}), author.Success()},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		childTpl, err := author.NewTemplate(author.Application{"worker": {Artifact: childArt, Inputs: map[string]schema.Value{}}}, "worker", "entry")
+		if err != nil {
+			t.Fatal(err)
+		}
+		caller, err := author.Compile(author.Definition{
+			Values:      map[string]schema.Value{"marker": schema.Text("initial")},
+			Invocations: map[string]author.Template{"sub": childTpl},
+			Ports:       map[string]author.Port{"in": {Peer: "local", Local: true, Obligation: "trigger", Receive: schema.Record{"raw": {Kind: "string", MaxBytes: 30}}}},
+			Steps: []author.Step{
+				author.Receive("in", map[string]string{"raw": "raw"}),
+				author.Invoke("inv", "sub", map[string]author.Expr{"mode": author.Var("raw")}, map[string]author.Expr{"marker": author.String("mutated")}),
+				author.Success(),
+			},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		p, err := (author.Application{"caller": {Artifact: caller, Inputs: map[string]schema.Value{}}}).Provision()
+		if err != nil {
+			t.Fatal(err)
+		}
+		p.Composition.Roots = []runtime.ResourceRoot{{
+			Run:       runtime.RunID{Subject: "caller", Generation: 1},
+			Members:   []runtime.RunID{{Subject: "caller", Generation: 1}},
+			Templates: []string{childTpl.ID()},
+			Limits:    runtime.ResourceLimits{MaxInvocations: 4, MaxCreatedRuns: 8, MaxDepth: 2, MaxEffects: 8, MaxInFlight: 2},
+		}}
+		ctx := context.Background()
+		path := filepath.Join(t.TempDir(), "invalid-invoke.db")
+		s, err := runtime.Create(ctx, path, p, runtime.DefaultLimits())
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer s.Close()
+		admitted, err := s.AdmitInput(ctx, runtime.Input{
+			TransportID: "t1", LogicalID: "l1", Target: "caller", Obligation: "trigger",
+			Payload: map[string]schema.Value{"raw": schema.Text("NOT_IN_ENUM")},
+		})
+		if err != nil || !admitted.Accepted {
+			t.Fatalf("admit input: %+v %v", admitted, err)
+		}
+		if _, err := s.Run(ctx, runtime.RunOptions{MaxSteps: 10, MaxDispatch: 10}); err == nil {
+			t.Fatal("expected schema-invalid invocation to be rejected")
+		}
+		snap, err := runtime.Inspect(ctx, path, runtime.DefaultLimits())
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(snap.Tables["intents"]) != 0 {
+			t.Fatalf("schema-invalid invocation intent reached durable intents table: %+v", snap.Tables["intents"])
+		}
+		if len(snap.Tables["history"]) != 2 {
+			t.Fatalf("rejected invocation emit appended to durable history: got %d rows", len(snap.Tables["history"]))
+		}
+		if _, err := runtime.Replay(ctx, path, runtime.DefaultLimits()); err != nil {
+			t.Fatalf("replay after rejected invocation emit failed: %v", err)
+		}
+	})
+
+	t.Run("positive control valid runtime-derived values execute and replay", func(t *testing.T) {
+		sender, err := author.Compile(author.Definition{
+			Outputs: schema.Record{"final": shortField},
+			Ports: map[string]author.Port{
+				"in":  {Peer: "local", Local: true, Obligation: "trigger", Receive: schema.Record{"raw": {Kind: "string", MaxBytes: 30}}},
+				"out": {Peer: "receiver", Obligation: "work", Send: schema.Record{"mode": enumField}},
+			},
+			Effects: map[string]author.Effect{"tool": {Capability: "model", Input: schema.Record{"mode": enumField}, Output: schema.Record{"res": shortField}}},
+			Steps: []author.Step{
+				author.Receive("in", map[string]string{"raw": "raw"}),
+				author.Request("req", "tool", map[string]author.Expr{"mode": author.Var("raw")}, nil),
+				author.Await("tool", "req", map[string]string{"valid": "ok", "res": "final"}),
+				author.Send("out", map[string]author.Expr{"mode": author.Var("raw")}),
+				author.Success(),
+			},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		receiver, err := author.Compile(author.Definition{
+			Outputs: schema.Record{"got": enumField},
+			Ports:   map[string]author.Port{"in": {Peer: "sender", Obligation: "work", Receive: schema.Record{"mode": enumField}}},
+			Steps:   []author.Step{author.Receive("in", map[string]string{"mode": "got"}), author.Success()},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		p, err := (author.Application{
+			"sender":   {Artifact: sender},
+			"receiver": {Artifact: receiver},
+		}).Provision()
+		if err != nil {
+			t.Fatal(err)
+		}
+		ctx := context.Background()
+		path := filepath.Join(t.TempDir(), "valid-positive.db")
+		s, err := runtime.Create(ctx, path, p, runtime.DefaultLimits())
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer s.Close()
+		admitted, err := s.AdmitInput(ctx, runtime.Input{
+			TransportID: "t1", LogicalID: "l1", Target: "sender", Obligation: "trigger",
+			Payload: map[string]schema.Value{"raw": schema.Text("fast")},
+		})
+		if err != nil || !admitted.Accepted {
+			t.Fatalf("admit input: %+v %v", admitted, err)
+		}
+		report, err := s.Run(ctx, runtime.RunOptions{
+			MaxSteps: 20, MaxDispatch: 20,
+			Adapters: map[string]effects.Adapter{
+				"model": schemaTestAdapter{fn: func(req effects.Request) map[string]schema.Value {
+					if req.Payload["mode"].Text != "fast" {
+						t.Fatalf("unexpected adapter payload: %+v", req.Payload)
+					}
+					return map[string]schema.Value{"res": schema.Text("done")}
+				}},
+			},
+		})
+		if err != nil || !report.Quiescent || len(report.OpenRuns) != 0 {
+			t.Fatalf("valid flow failed: report=%+v err=%v", report, err)
+		}
+		if err = s.Close(); err != nil {
+			t.Fatal(err)
+		}
+		replay, err := runtime.Replay(ctx, path, runtime.DefaultLimits())
+		if err != nil {
+			t.Fatalf("replay failed: %v", err)
+		}
+		if len(replay.Runs) != 2 || replay.Runs[0].Projection.Status != "succeeded" || replay.Runs[1].Projection.Status != "succeeded" {
+			t.Fatalf("unexpected replay runs: %+v", replay.Runs)
+		}
+	})
 }

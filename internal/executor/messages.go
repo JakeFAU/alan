@@ -504,7 +504,7 @@ func admissionPermitted(ctx context.Context, q queryer, d AdmissionDescriptor) (
 		revision = intent.revision
 	}
 	var count int
-	err := q.QueryRowContext(ctx, "SELECT count(*) FROM permissions WHERE kind=? AND source=? AND target=? AND operation=? AND revision=?", d.Kind, d.Source.Subject, d.Target, d.Kind, revision).Scan(&count)
+	err := q.QueryRowContext(ctx, "SELECT count(*) FROM permissions WHERE kind=? AND source=? AND target=? AND operation=? AND revision=? AND obligation=?", d.Kind, d.Source.Subject, d.Target, d.Kind, revision, d.Obligation).Scan(&count)
 	return count > 0, err
 }
 

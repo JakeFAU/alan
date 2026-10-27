@@ -781,7 +781,7 @@ func TestRuntimeConformanceExternalGenerationsAndLateReceipt(t *testing.T) {
 	}))
 	defer server.Close()
 	p := bridgeProvision(t, false, true, bridgeExternalWorker(server.URL))
-	p.Permissions = append(p.Permissions, ex.Permission{Kind: "external", Source: "worker", Target: server.URL, Operation: "apply", Revision: 7}, ex.Permission{Kind: "input", Source: "local", Target: "worker", Operation: "input"})
+	p.Permissions = append(p.Permissions, ex.Permission{Kind: "external", Source: "worker", Target: server.URL, Operation: "apply", Revision: 7}, ex.Permission{Kind: "input", Source: "local", Target: "worker", Operation: "input", Obligation: "control"})
 	b := newBridge(t, "J_unknown_effect_recovery_late_settlement", 38, p)
 	b.seedTo(10)
 	b.commits("inner", 1, 5)

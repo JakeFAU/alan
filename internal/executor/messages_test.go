@@ -40,7 +40,7 @@ func inputFixture(t *testing.T) Provision {
 	t.Helper()
 	p := Provision{}
 	addProgram(t, &p, "receiver", inputProgram(), map[string]Value{})
-	p.Permissions = []Permission{{Kind: "input", Source: "local", Target: "receiver", Operation: "input"}}
+	p.Permissions = []Permission{{Kind: "input", Source: "local", Target: "receiver", Operation: "input", Obligation: "work"}}
 	return p
 }
 func current(t *testing.T, s *Store, subject string) RunState {
@@ -112,6 +112,7 @@ func TestRejectedAdmissionIsRetainedAndCannotForgeRuntimeOrigin(t *testing.T) {
 	request.TransportID = "ordinary"
 	request.LogicalID = "ordinary"
 	request.Target = "receiver"
+	request.Obligation = "work"
 	result, err := s.AdmitInput(t.Context(), request)
 	if err != nil || !result.Accepted {
 		t.Fatalf("ordinary input %+v %v", result, err)
@@ -137,7 +138,7 @@ func TestMessageCommitAdmissionAndLostAcknowledgment(t *testing.T) {
 	receiver[0].Match.Provenance = "ordinary-message"
 	receiver[0].Match.Source = Lit(Text("sender"))
 	addProgram(t, &p, "receiver", receiver, map[string]Value{})
-	p.Permissions = []Permission{{Kind: "message", Source: "sender", Target: "receiver", Operation: "message", Revision: 1}}
+	p.Permissions = []Permission{{Kind: "message", Source: "sender", Target: "receiver", Operation: "message", Revision: 1, Obligation: "work"}}
 	s, path := messageStore(t, p)
 	if _, err := s.DeliverMessage(t.Context(), "uncommitted", "transport"); err == nil {
 		t.Fatal("uncommitted effect dispatched")
@@ -283,7 +284,7 @@ func TestReplayRejectsAdmissionAndAuthenticatedOriginCorruption(t *testing.T) {
 	} {
 		t.Run(query, func(t *testing.T) {
 			s, path := messageStore(t, inputFixture(t))
-			if _, err := s.AdmitInput(t.Context(), Input{TransportID: "t", LogicalID: "l", Target: "receiver", Payload: map[string]Value{}}); err != nil {
+			if _, err := s.AdmitInput(t.Context(), Input{TransportID: "t", LogicalID: "l", Target: "receiver", Obligation: "work", Payload: map[string]Value{}}); err != nil {
 				t.Fatal(err)
 			}
 			if _, err := s.conn.ExecContext(t.Context(), query); err != nil {
@@ -319,4 +320,170 @@ func TestTerminalAcknowledgmentRequiresRetainedAdmission(t *testing.T) {
 	if _, err = Replay(t.Context(), path, DefaultLimits()); err == nil {
 		t.Fatal("phantom delivery acknowledgment accepted")
 	}
+}
+
+func TestAdmissionEnforcesExactPermissionObligation(t *testing.T) {
+	t.Run("input obligation enforcement and multiple grants", func(t *testing.T) {
+		p := Provision{}
+		code := []Instruction{
+			{Op: "receive", Match: &Match{Kind: "input", Provenance: "local-input", Source: Lit(Text("local")), Generation: Lit(Int(1)), Obligation: Lit(Text("public_ob")), Operation: Lit(Text(""))}, Bind: map[string]string{"value": "public_val"}},
+			{Op: "receive", Match: &Match{Kind: "input", Provenance: "local-input", Source: Lit(Text("local")), Generation: Lit(Int(1)), Obligation: Lit(Text("audit_ob")), Operation: Lit(Text(""))}, Bind: map[string]string{"value": "audit_val"}},
+			{Op: "end", Outcome: "succeeded"},
+		}
+		addProgram(t, &p, "receiver", code, map[string]Value{})
+		p.Permissions = []Permission{
+			{Kind: "input", Source: "local", Target: "receiver", Operation: "input", Obligation: "public_ob"},
+			{Kind: "input", Source: "local", Target: "receiver", Operation: "input", Obligation: "audit_ob"},
+		}
+		s, path := messageStore(t, p)
+
+		deniedReq := Input{TransportID: "t-admin", LogicalID: "l-admin", Target: "receiver", Obligation: "admin_ob", Payload: map[string]Value{"value": Text("forged-admin")}}
+		denied, err := s.AdmitInput(t.Context(), deniedReq)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if denied.Accepted || denied.Reason != "route_denied" || denied.ObservationID != "" || count(t, s, "observations") != 0 || count(t, s, "admissions") != 1 {
+			t.Fatalf("cross-obligation input bypass: got %+v, observations=%d", denied, count(t, s, "observations"))
+		}
+		deniedAgain, err := s.AdmitInput(t.Context(), deniedReq)
+		if err != nil || !reflect.DeepEqual(denied, deniedAgain) {
+			t.Fatalf("denied input decision not retained: %+v %v", deniedAgain, err)
+		}
+
+		pubReq := Input{TransportID: "t-public", LogicalID: "l-public", Target: "receiver", Obligation: "public_ob", Payload: map[string]Value{"value": Text("allowed-public")}}
+		pubRes, err := s.AdmitInput(t.Context(), pubReq)
+		if err != nil || !pubRes.Accepted || pubRes.ObservationID == "" || count(t, s, "observations") != 1 {
+			t.Fatalf("granted public_ob input rejected: %+v %v", pubRes, err)
+		}
+
+		auditReq := Input{TransportID: "t-audit", LogicalID: "l-audit", Target: "receiver", Obligation: "audit_ob", Payload: map[string]Value{"value": Text("allowed-audit")}}
+		auditRes, err := s.AdmitInput(t.Context(), auditReq)
+		if err != nil || !auditRes.Accepted || auditRes.ObservationID == "" || count(t, s, "observations") != 2 {
+			t.Fatalf("granted audit_ob input rejected: %+v %v", auditRes, err)
+		}
+
+		report, err := s.Run(t.Context(), RunOptions{MaxSteps: 10, MaxDispatch: 10})
+		if err != nil {
+			t.Fatal(err)
+		}
+		state := current(t, s, "receiver")
+		if !report.Quiescent || state.Projection.Status != "succeeded" || state.Projection.Data["public_val"] != Text("allowed-public") || state.Projection.Data["audit_val"] != Text("allowed-audit") {
+			t.Fatalf("unexpected receiver state: report=%+v projection=%+v", report, state.Projection)
+		}
+
+		if err = s.Close(); err != nil {
+			t.Fatal(err)
+		}
+		reopened, err := Open(t.Context(), path, DefaultLimits())
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer reopened.Close()
+		reopenedDenied, err := reopened.AdmitInput(t.Context(), deniedReq)
+		if err != nil || !reflect.DeepEqual(denied, reopenedDenied) {
+			t.Fatalf("reopened denied input changed: %+v %v", reopenedDenied, err)
+		}
+		reopenedPub, err := reopened.AdmitInput(t.Context(), pubReq)
+		if err != nil || !reflect.DeepEqual(pubRes, reopenedPub) {
+			t.Fatalf("reopened accepted input changed: %+v %v", reopenedPub, err)
+		}
+		if _, err = Replay(t.Context(), path, DefaultLimits()); err != nil {
+			t.Fatalf("replay failed: %v", err)
+		}
+	})
+
+	t.Run("message obligation enforcement and multiple grants", func(t *testing.T) {
+		p := Provision{}
+		senderCode := []Instruction{
+			{Op: "emit", Effect: &Effect{Kind: "message", Target: Lit(Text("receiver")), Generation: Lit(Int(1)), Obligation: Lit(Text("admin_ob")), Payload: map[string]Operand{"value": Lit(Text("forged-admin"))}}},
+			{Op: "emit", Effect: &Effect{Kind: "message", Target: Lit(Text("receiver")), Generation: Lit(Int(1)), Obligation: Lit(Text("public_ob")), Payload: map[string]Operand{"value": Lit(Text("allowed-public"))}}},
+			{Op: "emit", Effect: &Effect{Kind: "message", Target: Lit(Text("receiver")), Generation: Lit(Int(1)), Obligation: Lit(Text("audit_ob")), Payload: map[string]Operand{"value": Lit(Text("allowed-audit"))}}},
+			{Op: "end", Outcome: "succeeded"},
+		}
+		receiverCode := []Instruction{
+			{Op: "receive", Match: &Match{Kind: "message", Provenance: "ordinary-message", Source: Lit(Text("sender")), Generation: Lit(Int(1)), Obligation: Lit(Text("public_ob")), Operation: Lit(Text(""))}, Bind: map[string]string{"value": "public_val"}},
+			{Op: "receive", Match: &Match{Kind: "message", Provenance: "ordinary-message", Source: Lit(Text("sender")), Generation: Lit(Int(1)), Obligation: Lit(Text("audit_ob")), Operation: Lit(Text(""))}, Bind: map[string]string{"value": "audit_val"}},
+			{Op: "end", Outcome: "succeeded"},
+		}
+		addProgram(t, &p, "sender", senderCode, map[string]Value{})
+		addProgram(t, &p, "receiver", receiverCode, map[string]Value{})
+		p.Permissions = []Permission{
+			{Kind: "message", Source: "sender", Target: "receiver", Operation: "message", Revision: 1, Obligation: "public_ob"},
+			{Kind: "message", Source: "sender", Target: "receiver", Operation: "message", Revision: 1, Obligation: "audit_ob"},
+		}
+		s, path := messageStore(t, p)
+		for range 3 {
+			if _, err := s.Commit(t.Context(), current(t, s, "sender").Authority(), ""); err != nil {
+				t.Fatal(err)
+			}
+		}
+
+		adminIntent := `["sender",1,1,0]`
+		publicIntent := `["sender",1,2,0]`
+		auditIntent := `["sender",1,3,0]`
+
+		denied, err := s.DeliverMessage(t.Context(), adminIntent, "tx-admin")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if denied.Accepted || denied.Reason != "route_denied" || denied.ObservationID != "" || count(t, s, "observations") != 0 {
+			t.Fatalf("cross-obligation message bypass: got %+v, observations=%d", denied, count(t, s, "observations"))
+		}
+
+		pubRes, err := s.DeliverMessage(t.Context(), publicIntent, "tx-public")
+		if err != nil || !pubRes.Accepted || pubRes.ObservationID == "" || count(t, s, "observations") != 1 {
+			t.Fatalf("granted public_ob message rejected: %+v %v", pubRes, err)
+		}
+		if err = s.AcknowledgeMessage(t.Context(), publicIntent, "tx-public"); err != nil {
+			t.Fatal(err)
+		}
+
+		auditRes, err := s.DeliverMessage(t.Context(), auditIntent, "tx-audit")
+		if err != nil || !auditRes.Accepted || auditRes.ObservationID == "" || count(t, s, "observations") != 2 {
+			t.Fatalf("granted audit_ob message rejected: %+v %v", auditRes, err)
+		}
+		if err = s.AcknowledgeMessage(t.Context(), auditIntent, "tx-audit"); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := s.Commit(t.Context(), current(t, s, "sender").Authority(), ""); err != nil {
+			t.Fatal(err)
+		}
+
+		for range 3 {
+			obs := ""
+			switch current(t, s, "receiver").Projection.PC {
+			case 0:
+				obs = pubRes.ObservationID
+			case 1:
+				obs = auditRes.ObservationID
+			}
+			if _, err = s.Commit(t.Context(), current(t, s, "receiver").Authority(), obs); err != nil {
+				t.Fatal(err)
+			}
+		}
+		state := current(t, s, "receiver")
+		if state.Projection.Status != "succeeded" || state.Projection.Data["public_val"] != Text("allowed-public") || state.Projection.Data["audit_val"] != Text("allowed-audit") {
+			t.Fatalf("unexpected receiver projection: %+v", state.Projection)
+		}
+
+		if err = s.Close(); err != nil {
+			t.Fatal(err)
+		}
+		reopened, err := Open(t.Context(), path, DefaultLimits())
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer reopened.Close()
+		reopenedDenied, err := reopened.DeliverMessage(t.Context(), adminIntent, "tx-admin")
+		if err != nil || !reflect.DeepEqual(denied, reopenedDenied) {
+			t.Fatalf("reopened denied message changed: %+v %v", reopenedDenied, err)
+		}
+		reopenedPub, err := reopened.DeliverMessage(t.Context(), publicIntent, "tx-public")
+		if err != nil || !reflect.DeepEqual(pubRes, reopenedPub) {
+			t.Fatalf("reopened accepted message changed: %+v %v", reopenedPub, err)
+		}
+		if _, err = Replay(t.Context(), path, DefaultLimits()); err != nil {
+			t.Fatalf("replay failed: %v", err)
+		}
+	})
 }

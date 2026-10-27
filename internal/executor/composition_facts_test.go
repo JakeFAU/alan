@@ -281,7 +281,7 @@ func compositionCausalStore(t *testing.T, kind string, scopedSource bool) *Store
 			receive.Match.Source = Lit(Text("local"))
 			p.Permissions = []Permission{{Kind: "input", Source: "local", Target: "receiver", Operation: "input", Obligation: "work"}}
 		default:
-			p.Permissions = []Permission{{Kind: "message", Source: "sender", Target: "receiver", Operation: "message", Revision: 1}}
+			p.Permissions = []Permission{{Kind: "message", Source: "sender", Target: "receiver", Operation: "message", Revision: 1, Obligation: "work"}}
 		}
 		addProgram(t, &p, "sender", source, map[string]Value{})
 		addProgram(t, &p, "receiver", []Instruction{receive, {Op: "end", Outcome: "succeeded"}}, map[string]Value{})

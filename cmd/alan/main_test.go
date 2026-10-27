@@ -17,7 +17,7 @@ func cliProvision(t *testing.T) executor.Provision {
 	if err != nil {
 		t.Fatal(err)
 	}
-	return executor.Provision{Programs: []executor.Artifact{{ID: id, Semantics: executor.SemanticVersion, Bytes: b}}, Subjects: []executor.Subject{{ID: "worker", Generation: 1, Owner: "owner", Revision: 1}}, Runs: []executor.InitialRun{{ID: executor.RunID{Subject: "worker", Generation: 1}, ProgramID: id, Projection: executor.Projection{Status: "open", Data: map[string]executor.Value{}}}}, Permissions: []executor.Permission{{Kind: "input", Source: "local", Target: "worker", Operation: "input"}}}
+	return executor.Provision{Programs: []executor.Artifact{{ID: id, Semantics: executor.SemanticVersion, Bytes: b}}, Subjects: []executor.Subject{{ID: "worker", Generation: 1, Owner: "owner", Revision: 1}}, Runs: []executor.InitialRun{{ID: executor.RunID{Subject: "worker", Generation: 1}, ProgramID: id, Projection: executor.Projection{Status: "open", Data: map[string]executor.Value{}}}}, Permissions: []executor.Permission{{Kind: "input", Source: "local", Target: "worker", Operation: "input", Obligation: "work"}}}
 }
 func writeJSON(t *testing.T, path string, v any) {
 	t.Helper()
