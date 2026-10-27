@@ -109,9 +109,9 @@
 
 **Interfaces:** Existing owner-only observational failpoints, subprocess SIGKILL controller, independent provider contact ledger, immutable runtime inspection, credential-free Replay. Structured evidence records complete fixture, source, commands, boundary acknowledgments, invocation/item IDs, budgets and outcomes. No second qualification framework.
 
-- [ ] Add actual process death after accepted work, partial completion, and result recording before consumption; recover in a new process from retained store/artifacts. Include interruption during recovery where feasible without widening claims.
-- [ ] Add stale/duplicate result attempts while newer work is pending, admission/completion cancellation serialization, unknown provider results and held-effect/independent-progress barriers. Retain original inputs and any observed defect before fixes.
-- [ ] Add test-only faulty variants detected by unchanged independent monitors for cross-item/result binding, budget reset, premature success, uncommitted creation and replay dispatch/creation. Ensure each input reaches the relevant fault.
-- [ ] Run focused checks, full default/integration/race suites, both vet modes, gofmt, dependency verification and prior research regressions. Capture raw commands/platform/outcomes; compare historical records separately from current-source changes.
+- [x] Add actual process death after accepted work, partial completion, and result recording before consumption; recover in a new process from retained store/artifacts. Include interruption during recovery where feasible without widening claims.
+- [x] Add stale/duplicate result attempts while newer work is pending, admission/completion cancellation serialization, unknown provider results and held-effect/independent-progress barriers. Retain original inputs and any observed defect before fixes.
+- [x] Add test-only faulty variants detected by unchanged independent monitors for cross-item/result binding, budget reset, premature success, uncommitted creation and replay dispatch/creation. Ensure each input reaches the relevant fault.
+- [x] Run focused checks, full default/integration/race suites, both vet modes, gofmt, dependency verification and prior research regressions. Capture raw commands/platform/outcomes; compare historical records separately from current-source changes.
 - [ ] Retain exact source manifest/archive sufficient to reproduce, runbook, evidence-to-claim table, authoring/provisioning/record/concurrency/latency/recovery measurements and limitations. Obtain independent whole-branch review and preserve findings/fixes.
 - [ ] Commit reviewed increment, push implementation branch and open/attach draft PR against verified current main; do not merge/release.
