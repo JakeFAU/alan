@@ -1,0 +1,45 @@
+//go:build integration
+
+package adaptive_test
+
+import (
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	"github.com/JakeFAU/alan/adapters/openai"
+	"github.com/JakeFAU/alan/effects"
+	"github.com/JakeFAU/alan/examples/adaptive"
+)
+
+// Exercise the real bounded Responses adapter against an explicit local server.
+// The provider returns observations only; ordinary retained steps derive work.
+func TestControlledScalarAdaptiveTransport(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var q struct{ Input []struct{ Content string } }
+		if e := json.NewDecoder(r.Body).Decode(&q); e != nil || len(q.Input) != 1 {
+			http.Error(w, "invalid request", 400)
+			return
+		}
+		var payload struct {
+			Value int64 `json:"value"`
+		}
+		if e := json.Unmarshal([]byte(q.Input[0].Content), &payload); e != nil {
+			http.Error(w, "invalid payload", 400)
+			return
+		}
+		raw, _ := json.Marshal(map[string]int64{"observation": payload.Value})
+		json.NewEncoder(w).Encode(map[string]any{"status": "completed", "model": "controlled", "output": []any{map[string]any{"type": "message", "role": "assistant", "content": []any{map[string]any{"type": "output_text", "text": string(raw)}}}}})
+	}))
+	defer server.Close()
+	model, e := openai.New(openai.Config{APIKey: "phase1h-controlled-only", Model: "controlled", Endpoint: server.URL, MaxOutputTokens: 1024, MaxResponseBytes: 8192})
+	if e != nil {
+		t.Fatal(e)
+	}
+	x := execute(t, scalar(t, true), true, 2, request(0, 1, 2), map[string]effects.Adapter{adaptive.ScalarCapability: model})
+	assertStop(t, x, "exhausted", 7, 3, []int64{})
+	if x.report.Roots[0].Charges.Effects != 7 {
+		t.Fatal("transport reservations", x.report.Roots)
+	}
+}
