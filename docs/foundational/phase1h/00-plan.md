@@ -1,0 +1,11 @@
+# Phase 1H: bounded adaptive composition
+
+Baseline is merged main `4550e0f4ba4c57cae8e84d1afe9fbf47e16786d8`, tree `dc809d50d699baa6ef86e5023046ac97e7126349`. Phase1G PR13 merged at `a50359f`; current main also includes PR14 restoring historical source files. Work is isolated on `codex/phase1h-adaptive-composition`.
+
+The [contract](01-adaptive-contract.md) proposes one ordinary adaptive program with a complete-round barrier, retained ordered results and data-dependent next frontier. The [task plan](phase1h-plan.md) implements the [assignment](assignment.md) in three reviewed slices: baseline/contract/independent expectations; public application and direct/nested consumer; process recovery, negative controls and final qualification. No runtime extension is planned. The independent contract review is the gate before application implementation.
+
+The application uses integer seed IDs1..8 with arithmetically derived lineage, up to3 rounds and8 admitted items. It can retain16 unperformed candidates without raising runtime limits. A single root retains32 admissions/64 created runs/96 effect reservations; physical capacity1or2 and maximum invocation depth3. No live spending, merge or release is authorized.
+
+Scope decisions are the controller's implementation choices under the assignment's autonomous authorization, not separately user-selected API policy. In particular, bounded integer naming avoids a new string-concatenation primitive; it is an explicit authoring limitation of this application profile. The full unperformed frontier is reported on a bound stop, which is distinct from completed application work.
+
+Baseline default764, integration1006 and separate consumer20 test-pass events passed, with exact historical semantic comparisons. [Baseline evidence](evidence/baseline/baseline.md) separates current-source execution from historical archive integrity checks. Earlier evidence and frozen archives remain unchanged; current Phase1G guidance has historical labels and a direct CLI example, with original bytes retained.

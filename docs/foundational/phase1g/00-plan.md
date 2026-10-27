@@ -1,5 +1,7 @@
 # Phase 1G: implementation plan at a glance
 
+Historical planning record: this page describes the Phase 1G starting point and implementation sequence. Pending/future statements below belong to those checkpoints; the [completed qualification](02-qualification.md) and [review record](03-review.md) record the delivered result. Phase 1G PR #13 was subsequently merged at `a50359f`; current development guidance is in Phase 1H. Frozen archives and evidence remain unchanged.
+
 Start from merged main `80dead19846d9b034b4457a9436e43acb81da3df`. Existing default/integration tests and historical comparisons pass; [baseline evidence](evidence/baseline/baseline.md) preserves exact inputs and commands. Work is on `codex/phase1g-data-composition`; delivery is a draft PR.
 
 Implement bounded invocation of retained ordinary component templates. A fixed reusable worker pool would need reentrant state and routing across both members of the existing one-shot evidence helper, plus suspended-parent handling. Retained child executions fit the existing runner more directly. [Independent comparison](evidence/feasibility.md) and [reviewed contract](01-composition-contract.md) record the tradeoff and counterexamples.

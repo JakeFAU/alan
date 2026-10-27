@@ -1,0 +1,274 @@
+{
+  "mode": "normal",
+  "baseline_source": "8f95bda980504caec8c29cbe196297f61abafe7941d11ddc51effc19c9321caa",
+  "current_source": "ce4bbf6f9e6a0c7e94ccdfec09d97f9355b5e9bb1a6f49fcca2b17fe7256482a",
+  "comparisons": [
+    {
+      "Marker": "QUALIFICATION",
+      "Records": 15,
+      "ExactOrderedPayloads": true
+    },
+    {
+      "Marker": "COMPOSITION",
+      "Records": 20,
+      "ExactOrderedPayloads": true
+    },
+    {
+      "Marker": "SUPERVISION",
+      "Records": 32,
+      "ExactOrderedPayloads": true
+    },
+    {
+      "Marker": "CONFORMANCE",
+      "Records": 6,
+      "AssertionsPass": true,
+      "ExactPayloads": 0,
+      "Cases": [
+        {
+          "Test": "TestRuntimeConformanceAcceptedLossAndSuccessor",
+          "Fixture": "B_accepted_lost_ack_and_successor",
+          "Checkpoints": 12,
+          "PublicProjectionCheckpoints": 12,
+          "OtherCheckpoints": [],
+          "RawPayloadEqual": false
+        },
+        {
+          "Test": "TestRuntimeConformanceInterruptedCommittedRequest",
+          "Fixture": "C_committed_intent_interrupted",
+          "Checkpoints": 13,
+          "PublicProjectionCheckpoints": 12,
+          "OtherCheckpoints": [
+            {
+              "Label": "unmatched intermediate: runtime consumed result but pending not yet cleared",
+              "Fields": [
+                "label",
+                "model",
+                "relation",
+                "runtime",
+                "snapshot"
+              ]
+            }
+          ],
+          "RawPayloadEqual": false
+        },
+        {
+          "Test": "TestRuntimeConformanceRejectionSurvivesFailure",
+          "Fixture": "B_rejected_then_failed_retransmission",
+          "Checkpoints": 12,
+          "PublicProjectionCheckpoints": 10,
+          "OtherCheckpoints": [
+            {
+              "Label": "unmatched intermediate: runtime consumed result but pending not yet cleared",
+              "Fields": [
+                "label",
+                "model",
+                "relation",
+                "runtime",
+                "snapshot"
+              ]
+            },
+            {
+              "Label": "runtime extension: distinct statically declared requester accepts and successor executes",
+              "Fields": [
+                "fresh",
+                "label",
+                "original",
+                "runtime"
+              ]
+            }
+          ],
+          "RawPayloadEqual": false
+        },
+        {
+          "Test": "TestRuntimeConformanceObservationDoesNotGrantAuthority",
+          "Fixture": "I_observation_without_lifecycle_authority",
+          "Checkpoints": 11,
+          "PublicProjectionCheckpoints": 10,
+          "OtherCheckpoints": [
+            {
+              "Label": "unmatched intermediate: runtime consumed result but pending not yet cleared",
+              "Fields": [
+                "label",
+                "model",
+                "relation",
+                "runtime",
+                "snapshot"
+              ]
+            }
+          ],
+          "RawPayloadEqual": false
+        },
+        {
+          "Test": "TestRuntimeConformanceExternalGenerationsAndLateReceipt",
+          "Fixture": "J_unknown_effect_recovery_late_settlement",
+          "Checkpoints": 30,
+          "PublicProjectionCheckpoints": 17,
+          "OtherCheckpoints": [
+            {
+              "Label": "old intent committed without attempt external common projection",
+              "Fields": [
+                "external",
+                "independent_resource",
+                "label",
+                "limits"
+              ]
+            },
+            {
+              "Label": "committed external intent survives reopen without dispatch external common projection",
+              "Fields": [
+                "external",
+                "independent_resource",
+                "label",
+                "limits"
+              ]
+            },
+            {
+              "Label": "application with missing receipt external common projection",
+              "Fields": [
+                "external",
+                "independent_resource",
+                "label",
+                "limits"
+              ]
+            },
+            {
+              "Label": "unknown application survives reopen external common projection",
+              "Fields": [
+                "external",
+                "independent_resource",
+                "label",
+                "limits"
+              ]
+            },
+            {
+              "Label": "old execution fails while effect remains unknown external common projection",
+              "Fields": [
+                "external",
+                "independent_resource",
+                "label",
+                "limits"
+              ]
+            },
+            {
+              "Label": "new worker execution exists; old effect unresolved external common projection",
+              "Fields": [
+                "external",
+                "independent_resource",
+                "label",
+                "limits"
+              ]
+            },
+            {
+              "Label": "unmatched intermediate: runtime consumed result but pending not yet cleared",
+              "Fields": [
+                "label",
+                "model",
+                "relation",
+                "runtime",
+                "snapshot"
+              ]
+            },
+            {
+              "Label": "inner waits for current generation two external common projection",
+              "Fields": [
+                "external",
+                "independent_resource",
+                "label",
+                "limits"
+              ]
+            },
+            {
+              "Label": "retry and old uncertainty survive reopen external common projection",
+              "Fields": [
+                "external",
+                "independent_resource",
+                "label",
+                "limits"
+              ]
+            },
+            {
+              "Label": "actual successor emits same declared business mutation with distinct key external common projection",
+              "Fields": [
+                "external",
+                "independent_resource",
+                "label",
+                "limits"
+              ]
+            },
+            {
+              "Label": "two execution keys permit two business mutations external common projection",
+              "Fields": [
+                "external",
+                "independent_resource",
+                "label",
+                "limits"
+              ]
+            },
+            {
+              "Label": "late old receipt settles only old execution external common projection",
+              "Fields": [
+                "external",
+                "independent_resource",
+                "label",
+                "limits"
+              ]
+            },
+            {
+              "Label": "runtime-only current receipt consumption after rejection of old receipt",
+              "Fields": [
+                "label",
+                "new_receipt_observation",
+                "resource",
+                "runtime"
+              ]
+            }
+          ],
+          "RawPayloadEqual": false
+        },
+        {
+          "Test": "TestRuntimeConformanceClosureBeforeExternalAuthorization",
+          "Fixture": "J_unknown_effect_recovery_late_settlement",
+          "Checkpoints": 3,
+          "PublicProjectionCheckpoints": 2,
+          "OtherCheckpoints": [
+            {
+              "Label": "suppression mapping",
+              "Fields": [
+                "endpoint_contacts",
+                "label",
+                "model_suppressed",
+                "relation",
+                "runtime",
+                "runtime_outcome"
+              ]
+            }
+          ],
+          "RawPayloadEqual": false
+        }
+      ],
+      "PublicCheckpointProjectionEqual": true,
+      "ModelEventStreamsEqual": true,
+      "ComparedCheckpointFields": [
+        "actual",
+        "expected",
+        "assertions",
+        "label",
+        "model_event_count"
+      ],
+      "ComparedModelFields": [
+        "test",
+        "fixture",
+        "id_map",
+        "limits",
+        "mapping",
+        "model_config",
+        "model_seed",
+        "model_trace",
+        "observation_map",
+        "passed"
+      ],
+      "Scope": "Ordered declared public projections and model streams only. Other checkpoints retain labels and field shapes; their raw runtime/snapshot/independent_resource/runtime_outcome data are not equality-checked. Runtime actions/provision and raw ledgers remain preserved; Go assertions cover their local contracts. No raw-payload or whole-trace equivalence claim."
+    }
+  ],
+  "scope": "Current-source regression against published Phase1E, separate from historical frozen archive reproduction. Conformance compares declared public projections and model streams, never raw ephemeral ledgers."
+}
