@@ -1,6 +1,6 @@
 # Phase 1H bounded adaptive composition contract
 
-Status: proposed application contract for independent review before implementation. Source basis is reviewed Phase 1G commit `4550e0f4ba4c57cae8e84d1afe9fbf47e16786d8`; the controller records current main and PR dependency separately. This document makes no implementation or qualification claim. Final location: `docs/foundational/phase1h/01-adaptive-contract.md`.
+Status: independently reviewed application contract at `ef06eb2`; [initial findings](evidence/contract-review.md) and [scoped approval](evidence/contract-rereview.md) are retained. Implementation and actual state/program-size qualification remain pending. Source basis is reviewed Phase 1G commit `4550e0f4ba4c57cae8e84d1afe9fbf47e16786d8`; the controller records current main and PR dependency separately. This document makes no implementation or qualification claim. Final location: `docs/foundational/phase1h/01-adaptive-contract.md`.
 
 ## Intent and scope
 

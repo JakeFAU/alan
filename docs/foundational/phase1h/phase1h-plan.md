@@ -54,13 +54,13 @@ Qualification package `internal/adaptivetest/{oracle_test.go,process_test.go,con
 
 **Interfaces:** consumes actual reviewed Phase 1G source/APIs, qualified historical source/archive manifests, current main and PR metadata. Produces reviewed `01-adaptive-contract.md`, this plan, a hand-authored expected-work ledger and exact baseline source identity. The ledger records input/artifact identity expectations, round/item/parent/edge/payload/outcome/stop/charge expectations without calling any application builder.
 
-- [ ] Record git HEAD, main and Phase 1G PR state; retain clean/dirty baseline and actual source digest. If Phase 1G is unmerged, base on reviewed implementation and disclose dependency; never merge it to proceed.
-- [ ] Label current historical pending statements as historical and put exact supported direct CLI commands beside the existing nested example. Preserve originals in Phase 1H baseline evidence and do not change historical archives.
-- [ ] Retain the compact primary oracle: seed `(1,0),(2,1),(3,2)`; round2 `(7,0),(10,1),(11,0)`; round3 `(31,0)`; observations `0,1,2 / 0,1,0 / 0`; exhausted; seven leaves. Retain paired unchanged request/artifacts with gamma observation0: `(1,2,3)/(7)`; four leaves. Include human aliases separately from integer IDs.
-- [ ] Retain empty, all-zero, duplicate, ancestry collision, round/work limit, denial, known failure, unknown and effectful expectations. Primary scalar enclosing-inclusive direct/nested charges are invocations/runs 8/9 and effects7; paired 5/6 and effects4. Empty has no leaves/effects and enclosing calls1/2.
-- [ ] Independently review the contract against existing public code: integer naming restriction, candidate16 bound, failure/limit precedence, retained decision, nested depth and evidence two-member accounting. Retain review and any revisions before application work starts.
-- [ ] Verify baseline with required existing collectors, associate every run with actual source and retain failures. Avoid repeating an unchanged broad suite if baseline qualification already supplied the same gate.
-- [ ] Commit reviewed baseline/docs/expectations with an explicit design-only message. Freeze independent ledger before code implementation.
+- [x] Record git HEAD, main and Phase 1G PR state; retain clean/dirty baseline and actual source digest. If Phase 1G is unmerged, base on reviewed implementation and disclose dependency; never merge it to proceed.
+- [x] Label current historical pending statements as historical and put exact supported direct CLI commands beside the existing nested example. Preserve originals in Phase 1H baseline evidence and do not change historical archives.
+- [x] Retain the compact primary oracle: seed `(1,0),(2,1),(3,2)`; round2 `(7,0),(10,1),(11,0)`; round3 `(31,0)`; observations `0,1,2 / 0,1,0 / 0`; exhausted; seven leaves. Retain paired unchanged request/artifacts with gamma observation0: `(1,2,3)/(7)`; four leaves. Include human aliases separately from integer IDs.
+- [x] Retain empty, all-zero, duplicate, ancestry collision, round/work limit, denial, known failure, unknown and effectful expectations. Primary scalar enclosing-inclusive direct/nested charges are invocations/runs 8/9 and effects7; paired 5/6 and effects4. Empty has no leaves/effects and enclosing calls1/2.
+- [x] Independently review the contract against existing public code: integer naming restriction, candidate16 bound, failure/limit precedence, retained decision, nested depth and evidence two-member accounting. Retain review and any revisions before application work starts.
+- [x] Verify baseline with required existing collectors, associate every run with actual source and retain failures. Avoid repeating an unchanged broad suite if baseline qualification already supplied the same gate.
+- [x] Commit reviewed baseline/docs/expectations with an explicit design-only message. Freeze independent ledger before code implementation.
 
 ### Task 2: Ordinary adaptive component, public consumers, controlled evidence
 
