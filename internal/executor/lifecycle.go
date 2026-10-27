@@ -124,7 +124,26 @@ func targetState(ctx context.Context, q queryer, subject Subject) (TargetState, 
 func loadRoot(ctx context.Context, q queryer, subject string) (rootOrigin, []byte, error) {
 	var raw []byte
 	var root rootOrigin
-	if err := q.QueryRowContext(ctx, "SELECT descriptor FROM run_origins WHERE subject=? AND kind='root'", subject).Scan(&raw); err != nil {
+	err := q.QueryRowContext(ctx, "SELECT descriptor FROM run_origins WHERE subject=? AND kind='root'", subject).Scan(&raw)
+	if errors.Is(err, sql.ErrNoRows) {
+		enabled, e := compositionProtocol(ctx, q)
+		if e != nil {
+			return root, nil, e
+		}
+		if enabled {
+			var m compositionMemberOrigin
+			if e = q.QueryRowContext(ctx, "SELECT descriptor FROM composition_members WHERE subject=?", subject).Scan(&raw); e != nil {
+				return root, nil, e
+			}
+			if e = decode(raw, &m); e != nil {
+				return root, nil, e
+			}
+			root = rootOrigin{Subject: Subject{ID: m.Run.Subject, Generation: 1, Owner: m.Owner, Revision: 1}, ProgramID: m.ProgramID, Initial: m.Initial}
+			raw, e = json.Marshal(root)
+			return root, raw, e
+		}
+	}
+	if err != nil {
 		return root, nil, err
 	}
 	if err := decode(raw, &root); err != nil {
@@ -268,6 +287,20 @@ func (s *Store) DecideLifecycle(ctx context.Context, request LifecycleRequest) (
 		return LifecycleResult{}, err
 	}
 	result, err := decideTarget(request, order, before, root, granted)
+	if err == nil && s.invocationEnabled() && before != nil && request.Operation == "Retry" {
+		rootID, e := compositionMembershipRoot(ctx, tx, before.Run)
+		if e != nil {
+			return result, e
+		}
+		if rootID != "" {
+			after := *before
+			result.Accepted = false
+			result.Successor = 0
+			result.Reason = "invocation_retry_unsupported"
+			result.After = &after
+		}
+	}
+
 	if err != nil {
 		return result, err
 	}
@@ -323,6 +356,9 @@ func (s *Store) DecideLifecycle(ctx context.Context, request LifecycleRequest) (
 		return result, err
 	}
 	if _, err = tx.ExecContext(ctx, "INSERT INTO lifecycle_results VALUES(?,?,?,?)", request.Intent.ID, order, descriptor, raw); err != nil {
+		return result, err
+	}
+	if err = s.recordCompositionLifecycle(ctx, tx, result); err != nil {
 		return result, err
 	}
 	return result, s.lifecycleBoundary(ctx, tx, result)

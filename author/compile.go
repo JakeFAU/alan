@@ -18,18 +18,22 @@ type compiler struct {
 	requests map[int]string
 	await    map[int]string
 	visits   int
+	fields   map[string]schema.Field
 }
 
 // Compile validates and lowers a definition. Its result retains all recovery inputs.
 func Compile(d Definition) (Artifact, error) {
-	c := compiler{program: executor.Program{Semantics: SemanticVersion}, labels: map[string]int{}, jumps: map[int]string{}, records: map[int]schema.Record{}, requests: map[int]string{}, await: map[int]string{}}
+	c := compiler{program: executor.Program{Semantics: SemanticVersion}, labels: map[string]int{}, jumps: map[int]string{}, records: map[int]schema.Record{}, requests: map[int]string{}, await: map[int]string{}, fields: map[string]schema.Field{}}
 	m := &executor.ProgramMetadata{Compiler: CompilerVersion, Name: d.Name, Templates: map[string]string{}, Effects: map[string]executor.EffectDeclaration{}, Ports: map[string]executor.PortDeclaration{}, Receives: map[int]schema.Retained{}}
 	for name, value := range d.Templates {
 		m.Templates[name] = value
 	}
 	m.Labels = c.labels
 	c.program.Author = m
-	var err error
+	catalogue, err := retainInvocations(d, m)
+	if err != nil {
+		return Artifact{}, err
+	}
 	if m.Inputs, err = d.Inputs.Retain(); err != nil {
 		return Artifact{}, fmt.Errorf("inputs: %w", err)
 	}
@@ -70,6 +74,35 @@ func Compile(d Definition) (Artifact, error) {
 		}
 		m.Ports[name] = executor.PortDeclaration{Peer: p.Peer, Obligation: p.Obligation, Send: send, Receive: receive, Local: p.Local}
 	}
+	usesCollections, err := definitionHasCollections(d)
+	if err != nil {
+		return Artifact{}, err
+	}
+	if usesCollections || len(d.Invocations) > 0 {
+		c.program.Semantics = executor.CollectionSemanticVersion
+		m.Compiler = executor.CollectionCompilerVersion
+	}
+	if len(d.Collections) > 0 {
+		m.Collections = map[string]schema.Field{}
+	}
+	for _, name := range keys(d.Collections) {
+		if err := schema.CheckIdentifier(name); err != nil {
+			return Artifact{}, err
+		}
+		f, err := d.Collections[name].Retain()
+		if err != nil || f.Kind != "list" {
+			return Artifact{}, fmt.Errorf("collection %q: invalid list declaration: %v", name, err)
+		}
+		if _, ok := d.Inputs[name]; ok {
+			return Artifact{}, fmt.Errorf("collection duplicates input %q", name)
+		}
+		m.Collections[name] = f
+		if _, ok := d.Values[name]; !ok {
+			if err := c.append(executor.Instruction{Op: "set", Dst: name, A: executor.Lit(schema.List())}, "collection:"+name); err != nil {
+				return Artifact{}, err
+			}
+		}
+	}
 	for _, name := range keys(d.Values) {
 		if err := schema.CheckIdentifier(name); err != nil {
 			return Artifact{}, fmt.Errorf("value: %w", err)
@@ -107,7 +140,7 @@ func Compile(d Definition) (Artifact, error) {
 	if len(raw) > executor.DefaultLimits().MaxProgramBytes {
 		return Artifact{}, fmt.Errorf("compiled artifact byte limit")
 	}
-	return Artifact{id: id, raw: string(raw)}, nil
+	return Artifact{id: id, raw: string(raw), catalogue: catalogue}, nil
 }
 func keys[V any](m map[string]V) []string { return slices.Sorted(maps.Keys(m)) }
 func (c *compiler) err(pc int, format string, args ...any) error {
@@ -178,6 +211,21 @@ func (c *compiler) expand(steps []Step, path string, scopes []map[string]string,
 					return err
 				}
 			}
+		case "foreach":
+			start := len(c.program.Code)
+			if err := c.append(executor.Instruction{Op: "foreach", A: s.a.operand}, name); err != nil {
+				return err
+			}
+			if err := c.append(executor.Instruction{Op: "next", Target: start, Bind: maps.Clone(s.bindings)}, name+"/next"); err != nil {
+				return err
+			}
+			if err := c.expand(s.yes, name+"/body", scopes, depth+1); err != nil {
+				return err
+			}
+			if err := c.append(executor.Instruction{Op: "loop", Target: start}, name+"/loop"); err != nil {
+				return err
+			}
+			c.program.Code[start].Otherwise = len(c.program.Code)
 		case "if":
 			pc := len(c.program.Code)
 			if err := c.append(executor.Instruction{Op: "branch", A: s.a.operand, B: s.b.operand, Target: pc + 1}, name); err != nil {
@@ -220,6 +268,13 @@ func (c *compiler) step(s Step, name string) error {
 	pc := len(c.program.Code)
 	switch s.kind {
 	case "set", "add":
+	case "append":
+		f, ok := c.program.Author.Collections[s.destination]
+		if !ok {
+			return fmt.Errorf("%s: append needs declared collection %q", name, s.destination)
+		}
+		in.Updates = operands(s.values)
+		c.records[pc] = f.Element
 	case "end":
 		in.Outcome = s.name
 	case "send", "receive":
@@ -248,6 +303,30 @@ func (c *compiler) step(s Step, name string) error {
 			in.Bind = maps.Clone(s.bindings)
 			c.records[pc] = p.Receive.Record
 			c.program.Author.Receives[pc] = p.Receive
+		}
+	case "invoke", "await-invocation":
+		e, ok := c.program.Author.Invocations[s.declaration]
+		if !ok {
+			return fmt.Errorf("unknown invocation %q", s.declaration)
+		}
+		if s.kind == "invoke" {
+			in.Op = "emit"
+			in.Effect = &executor.Effect{Kind: "invocation", Target: executor.Lit(executor.Text(e.TemplateID)), Generation: executor.Lit(executor.Int(1)), Obligation: executor.Lit(executor.Text(s.declaration)), Payload: operands(s.values)}
+			in.Updates = operands(s.updates)
+			c.records[pc] = e.Input.Record
+			c.requests[pc] = "invocation:" + s.declaration
+		} else {
+			in.Op = "receive"
+			in.Match = &executor.Match{Kind: "invocation", Provenance: "runtime-invocation", Source: executor.Lit(executor.Text(e.TemplateID)), Generation: executor.Lit(executor.Int(1)), Obligation: executor.Lit(executor.Text(s.declaration)), Operation: executor.Ref(s.request)}
+			in.Bind = maps.Clone(s.bindings)
+			record := executor.InvocationOutcomeRecord(e.Output.Record)
+			retained, err := record.Retain()
+			if err != nil {
+				return err
+			}
+			c.records[pc] = record
+			c.program.Author.Receives[pc] = retained
+			c.await[pc] = "invocation:" + s.declaration
 		}
 	case "request", "await":
 		e, ok := c.program.Author.Effects[s.declaration]
@@ -295,8 +374,8 @@ func (c *compiler) validate() error {
 	incoming[0] = map[string]string{}
 	types := map[string]string{}
 	for name, f := range c.program.Author.Inputs.Record {
-		incoming[0][name] = f.Kind
-		types[name] = f.Kind
+		incoming[0][name] = c.kind(f)
+		types[name] = c.kind(f)
 	}
 	for pc, in := range c.program.Code {
 		state := incoming[pc]
@@ -319,11 +398,43 @@ func (c *compiler) validate() error {
 					return "", c.err(pc, "invalid literal")
 				}
 				kind = o.Literal.Kind
+				if kind == "list" {
+					f, ok := c.program.Author.Collections[in.Dst]
+					if !ok {
+						f, ok = c.fields[state[in.Dst]]
+					}
+					if !ok {
+						return "", c.err(pc, "list literal requires declared collection or typed destination")
+					}
+					if err := f.Validate(*o.Literal); err != nil {
+						return "", c.err(pc, "list literal: %v", err)
+					}
+					kind = c.kind(f)
+				}
 			}
 			if o.Offset != nil && kind != "int" {
 				return "", c.err(pc, "offset requires int")
 			}
 			return kind, nil
+		}
+		readAs := func(o executor.Operand, f schema.Field) (string, error) {
+			if o.Literal != nil && o.Literal.Kind == "list" && f.Kind == "list" {
+				if o.Ref != "" || o.Offset != nil {
+					return "", c.err(pc, "invalid list expression")
+				}
+				if err := f.Validate(*o.Literal); err != nil {
+					return "", c.err(pc, "list literal: %v", err)
+				}
+				return c.kind(f), nil
+			}
+			kind, err := read(o)
+			// Operation identities are runtime strings at typed payload/list
+			// boundaries. Serializing one loses its static declaration proof;
+			// AwaitInvocation authenticates the retained operation at runtime.
+			if f.Kind == "string" && strings.HasPrefix(kind, "request:") {
+				kind = "string"
+			}
+			return kind, err
 		}
 		write := func(name, kind string) error {
 			if name == "" {
@@ -357,15 +468,83 @@ func (c *compiler) validate() error {
 					return c.err(pc, "add requires int")
 				}
 			}
+			if f, ok := c.program.Author.Collections[in.Dst]; ok && kind != c.kind(f) {
+				return c.err(pc, "collection assignment schema mismatch")
+			}
+			if f, ok := c.fields[kind]; ok {
+				field := f
+				c.program.Code[pc].Collection = &field
+			}
 			if err := write(in.Dst, kind); err != nil {
 				return err
 			}
-		case "branch":
-			a, err := read(in.A)
+		case "foreach":
+			kind, err := read(in.A)
 			if err != nil {
 				return err
 			}
-			b, err := read(in.B)
+			f, ok := c.fields[kind]
+			if !ok {
+				return c.err(pc, "foreach requires typed list")
+			}
+			field := f
+			c.program.Code[pc].Collection = &field
+		case "next":
+			f := c.program.Code[in.Target].Collection
+			if f == nil {
+				return c.err(pc, "missing loop schema")
+			}
+			seen := map[string]bool{}
+			for _, field := range keys(in.Bind) {
+				name := in.Bind[field]
+				bound, ok := f.Element[field]
+				if !ok || seen[name] {
+					return c.err(pc, "unknown or duplicate loop binding")
+				}
+				seen[name] = true
+				if err := write(name, c.kind(bound)); err != nil {
+					return err
+				}
+			}
+		case "append":
+			kind, err := read(executor.Ref(in.Dst))
+			if err != nil {
+				return err
+			}
+			f := c.program.Author.Collections[in.Dst]
+			if kind != c.kind(f) {
+				return c.err(pc, "append schema mismatch")
+			}
+			if len(in.Updates) != len(f.Element) {
+				return c.err(pc, "append fields differ")
+			}
+			for field, o := range in.Updates {
+				want, ok := f.Element[field]
+				if !ok {
+					return c.err(pc, "unknown append field")
+				}
+				got, err := readAs(o, want)
+				if err != nil {
+					return err
+				}
+				if got != c.kind(want) {
+					return c.err(pc, "append field type mismatch")
+				}
+				if o.Literal != nil {
+					if err := want.Validate(*o.Literal); err != nil {
+						return c.err(pc, "append field: %v", err)
+					}
+				}
+			}
+		case "loop":
+			continue
+		case "branch":
+			expected := c.fields[state[in.B.Ref]]
+			a, err := readAs(in.A, expected)
+			if err != nil {
+				return err
+			}
+			b, err := readAs(in.B, c.fields[a])
 			if err != nil {
 				return err
 			}
@@ -383,11 +562,11 @@ func (c *compiler) validate() error {
 				if !ok {
 					return c.err(pc, "unknown payload field %q", name)
 				}
-				kind, err := read(o)
+				kind, err := readAs(o, f)
 				if err != nil {
 					return err
 				}
-				if kind != f.Kind {
+				if kind != c.kind(f) {
 					return c.err(pc, "payload %q expects %s", name, f.Kind)
 				}
 				if o.Literal != nil {
@@ -400,7 +579,7 @@ func (c *compiler) validate() error {
 				if name == in.Dst {
 					return c.err(pc, "update conflicts with request %q", name)
 				}
-				kind, err := read(in.Updates[name])
+				kind, err := readAs(in.Updates[name], c.fields[state[name]])
 				if err != nil {
 					return err
 				}
@@ -419,7 +598,7 @@ func (c *compiler) validate() error {
 				if err != nil {
 					return err
 				}
-				if kind != "request:"+effect {
+				if kind != "request:"+effect && !(kind == "string" && strings.HasPrefix(effect, "invocation:")) {
 					return c.err(pc, "await requires request for effect %q", effect)
 				}
 			}
@@ -434,14 +613,14 @@ func (c *compiler) validate() error {
 					return c.err(pc, "duplicate binding %q", name)
 				}
 				seen[name] = true
-				if err := write(name, f.Kind); err != nil {
+				if err := write(name, c.kind(f)); err != nil {
 					return err
 				}
 			}
 		case "end":
 			if in.Outcome == "succeeded" {
 				for _, name := range keys(c.program.Author.Outputs.Record) {
-					if next[name] != c.program.Author.Outputs.Record[name].Kind {
+					if next[name] != c.kind(c.program.Author.Outputs.Record[name]) {
 						return c.err(pc, "output %q missing or wrong type", name)
 					}
 				}
@@ -449,6 +628,9 @@ func (c *compiler) validate() error {
 			continue
 		}
 		successors := []int{pc + 1}
+		if in.Op == "foreach" {
+			successors = append(successors, in.Otherwise)
+		}
 		if in.Op == "jump" {
 			successors = []int{in.Target}
 		}
@@ -510,4 +692,58 @@ func (c *compiler) reachesBoundary(start, end int) bool {
 		}
 	}
 	return false
+}
+
+func (c *compiler) kind(f schema.Field) string {
+	if f.Kind != "list" {
+		return f.Kind
+	}
+	retained, _ := (schema.Record{"value": f}).Retain()
+	key := "list:" + retained.ID
+	c.fields[key] = f
+	return key
+}
+func definitionHasCollections(d Definition) (bool, error) {
+	if len(d.Collections) > 0 || d.Inputs.HasCollections() || d.Outputs.HasCollections() {
+		return true, nil
+	}
+	for _, v := range d.Values {
+		if v.Kind == "list" {
+			return true, nil
+		}
+	}
+	for _, e := range d.Effects {
+		if e.Input.HasCollections() || e.Output.HasCollections() {
+			return true, nil
+		}
+	}
+	for _, p := range d.Ports {
+		if p.Send.HasCollections() || p.Receive.HasCollections() {
+			return true, nil
+		}
+	}
+	visits := 0
+	var walk func([]Step, int) (bool, error)
+	walk = func(steps []Step, depth int) (bool, error) {
+		if depth > MaxNesting {
+			return false, fmt.Errorf("nesting limit")
+		}
+		for _, s := range steps {
+			visits++
+			if visits > MaxInstructions*10 {
+				return false, fmt.Errorf("author expansion limit")
+			}
+			if s.kind == "append" || s.kind == "foreach" || s.a.operand.Literal != nil && s.a.operand.Literal.Kind == "list" {
+				return true, nil
+			}
+			for _, body := range [][]Step{s.yes, s.no} {
+				found, err := walk(body, depth+1)
+				if err != nil || found {
+					return found, err
+				}
+			}
+		}
+		return false, nil
+	}
+	return walk(d.Steps, 0)
 }

@@ -10,6 +10,7 @@ import (
 	recordschema "github.com/JakeFAU/alan/schema"
 	"io"
 	"math"
+	"strings"
 )
 
 const SemanticVersion = "alan/1d/v1"
@@ -50,6 +51,7 @@ type Instruction struct {
 	Bind              map[string]string
 	Effect            *Effect
 	Updates           map[string]Operand
+	Collection        *recordschema.Field `json:",omitempty"`
 	Outcome           string
 }
 type Match struct {
@@ -62,9 +64,10 @@ type Effect struct {
 	Payload                        map[string]Operand
 }
 type Projection struct {
-	PC     int
-	Data   map[string]Value
-	Status string
+	PC      int
+	Data    map[string]Value
+	Status  string
+	Cursors map[int]Cursor `json:",omitempty"`
 }
 type Observation struct {
 	ID                       string
@@ -135,7 +138,18 @@ func validateProgram(p Program) error {
 		return fmt.Errorf("empty program")
 	}
 	for i, in := range p.Code {
+		invocationEffect := in.Effect != nil && in.Effect.Kind == "invocation"
+		invocationReceive := in.Match != nil && in.Match.Kind == "invocation"
+		if invocationEffect || invocationReceive {
+			if p.Semantics != CollectionSemanticVersion || p.Author == nil || len(p.Author.Invocations) == 0 {
+				return ErrVersion
+			}
+		}
 		switch in.Op {
+		case "foreach", "next", "loop", "append":
+			if p.Semantics != CollectionSemanticVersion {
+				return ErrVersion
+			}
 		case "set", "add":
 			if in.Dst == "" {
 				return fmt.Errorf("instruction %d: empty destination", i)
@@ -168,9 +182,15 @@ func validateProgram(p Program) error {
 			return fmt.Errorf("instruction %d: unknown opcode %q", i, in.Op)
 		}
 	}
-	return nil
+	return validateCollections(p)
 }
+
+// Keep the original untyped scalar reducer's acceptance and comparison rules.
+// Native list values and author schemas apply their stricter UTF-8 validation.
 func validValue(v Value) bool {
+	if v.List != nil || v.Kind == "list" {
+		return v.Valid()
+	}
 	switch v.Kind {
 	case "int":
 		return v.Text == "" && !v.Flag
@@ -209,7 +229,7 @@ func eval(o Operand, data map[string]Value) (Value, error) {
 		}
 		v.Number += b
 	}
-	return v, nil
+	return v.Clone(), nil
 }
 func stringOperand(o Operand, d map[string]Value) (string, error) {
 	v, e := eval(o, d)
@@ -257,9 +277,12 @@ func validateProjection(s Projection, p Program, l Limits) error {
 		return fmt.Errorf("missing data")
 	}
 	for k, v := range s.Data {
-		if k == "" || !validValue(v) {
+		if k == "" || !validValue(v) || p.Semantics != CollectionSemanticVersion && v.Kind == "list" || p.Semantics == CollectionSemanticVersion && !v.Valid() {
 			return fmt.Errorf("invalid data")
 		}
+	}
+	if err := validateCursors(p, s); err != nil {
+		return err
 	}
 	return checkSize(s, l.MaxDataBytes)
 }
@@ -288,14 +311,24 @@ func Reduce(p Program, s Projection, o *Observation, id RunID, seq int64, l Limi
 	}
 	next := Projection{PC: s.PC + 1, Status: s.Status, Data: make(map[string]Value, len(s.Data))}
 	for k, v := range s.Data {
-		next.Data[k] = v
+		next.Data[k] = v.Clone()
 	}
+	next.Cursors = cloneCursors(s.Cursors)
 	result := Reduction{Projection: next, Intents: []Intent{}}
 	switch in.Op {
+	case "foreach", "next", "loop", "append":
+		if err := reduceCollection(p, in, s, &next); err != nil {
+			return Reduction{}, err
+		}
 	case "set":
 		v, err := eval(in.A, s.Data)
 		if err != nil {
 			return Reduction{}, err
+		}
+		if in.Collection != nil {
+			if err := in.Collection.Validate(v); err != nil {
+				return Reduction{}, err
+			}
 		}
 		next.Data[in.Dst] = v
 	case "add":
@@ -321,7 +354,7 @@ func Reduce(p Program, s Projection, o *Observation, id RunID, seq int64, l Limi
 			return Reduction{}, err
 		}
 		next.PC = in.Otherwise
-		if a == b {
+		if a.Kind != "list" && b.Kind != "list" && a == b || a.Kind == "list" && a.Equal(b) {
 			next.PC = in.Target
 		}
 	case "jump":
@@ -356,7 +389,13 @@ func Reduce(p Program, s Projection, o *Observation, id RunID, seq int64, l Limi
 		if p.Author != nil {
 			if record, ok := p.Author.Receives[s.PC]; ok {
 				var err error
-				if in.Match.Kind == "adapter" && in.Match.Obligation.Literal != nil {
+				if in.Match.Kind == "invocation" && in.Match.Obligation.Literal != nil {
+					declaration, ok := p.Author.Invocations[in.Match.Obligation.Literal.Text]
+					if !ok {
+						return Reduction{}, ErrCorrupt
+					}
+					err = validateInvocationPayload(declaration.Output.Record, o.Payload)
+				} else if in.Match.Kind == "adapter" && in.Match.Obligation.Literal != nil {
 					effect, ok := p.Author.Effects[in.Match.Obligation.Literal.Text]
 					if !ok {
 						return Reduction{}, fmt.Errorf("unknown adapter declaration")
@@ -371,11 +410,15 @@ func Reduce(p Program, s Projection, o *Observation, id RunID, seq int64, l Limi
 			}
 		}
 		for field, dst := range in.Bind {
+			if in.Match.Kind == "invocation" && strings.HasPrefix(field, "response.") && !o.Payload["response_present"].Flag {
+				delete(next.Data, dst)
+				continue
+			}
 			v, ok := o.Payload[field]
 			if !ok || dst == "" || !validValue(v) {
 				return Reduction{}, fmt.Errorf("invalid receive binding %q", field)
 			}
-			next.Data[dst] = v
+			next.Data[dst] = v.Clone()
 		}
 	case "emit":
 		e := in.Effect
@@ -423,6 +466,7 @@ func Reduce(p Program, s Projection, o *Observation, id RunID, seq int64, l Limi
 		next.PC = s.PC
 		next.Status = in.Outcome
 	}
+	cleanCursors(p, &next)
 	if err := checkOutputSize(result.Intents, l.MaxOutputBytes); err != nil {
 		return Reduction{}, fmt.Errorf("generated intents: %w", err)
 	}

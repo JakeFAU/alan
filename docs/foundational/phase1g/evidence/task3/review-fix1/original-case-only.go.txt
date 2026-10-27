@@ -1,0 +1,21 @@
+package main
+
+import (
+ "os"
+ "path/filepath"
+ "testing"
+)
+
+func TestReviewCaseOnlyItemFields(t *testing.T) {
+ cases := []string{
+  `[{"ITEM_ID":"case-only","NUMBER":2}]`,
+ }
+ for _, input := range cases {
+  path := filepath.Join(t.TempDir(), "input.json")
+  if err := os.WriteFile(path, []byte(input), 0600); err != nil { t.Fatal(err) }
+  got, err := readItems(path)
+  rows, recordsErr := got.Records()
+  t.Logf("input=%s parsed=%+v error=%v records_error=%v", input, rows, err, recordsErr)
+  if err == nil { t.Error("noncanonical fields accepted as declared schema fields") }
+ }
+}

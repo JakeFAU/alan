@@ -1,0 +1,9 @@
+=== RUN   TestReviewCaseFoldedItemFields
+    main_test.go:19: input=[{"item_id":"original","ITEM_ID":"replacement","number":2}] parsed=[map[item_id:{Kind:string Number:0 Text:replacement Flag:false List:<nil>} number:{Kind:int Number:2 Text: Flag:false List:<nil>}]] error=<nil> records_error=<nil>
+    main_test.go:20: case-aliased duplicate semantic field accepted
+    main_test.go:19: input=[{"item_id":"item-a","number":2,"NUMBER":100}] parsed=[map[item_id:{Kind:string Number:0 Text:item-a Flag:false List:<nil>} number:{Kind:int Number:100 Text: Flag:false List:<nil>}]] error=<nil> records_error=<nil>
+    main_test.go:20: case-aliased duplicate semantic field accepted
+--- FAIL: TestReviewCaseFoldedItemFields (0.00s)
+FAIL
+FAIL	github.com/JakeFAU/alan/cmd/alan-compose	0.129s
+FAIL

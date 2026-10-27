@@ -1,0 +1,59 @@
+{
+  "base": "56d25e0ab4b614afdec791f8ff090852d65627bc",
+  "fixture_source": [
+    "protocol-tests.go.txt",
+    "author-tests.go.txt"
+  ],
+  "qualification_scope": "Manual owner-transaction unit paths, not automatic runner or recovery qualification",
+  "default_root": {
+    "subject": "root",
+    "generation": 1,
+    "members": [
+      "root"
+    ],
+    "max_invocations": 4,
+    "max_created_runs": 8,
+    "max_depth": 3,
+    "max_effects": 8,
+    "max_in_flight": 1
+  },
+  "template_members": [
+    "entry",
+    "helper"
+  ],
+  "public_peer": "caller",
+  "public_obligation": "work",
+  "request": {},
+  "response_schema": {
+    "result": {
+      "kind": "string",
+      "max_bytes": 30,
+      "enum": [
+        "ok",
+        "invalid_result"
+      ]
+    }
+  },
+  "failure_response": {
+    "result": "invalid_result"
+  },
+  "denials": {
+    "authority": "empty root template allowlist",
+    "capability": "template declares restricted, root allows none",
+    "depth": 0,
+    "max_invocations": 0,
+    "max_created_runs": 1
+  },
+  "nested_charge_fixture": {
+    "max_invocations": 2,
+    "max_created_runs": 4,
+    "outer_members": 2,
+    "inner_members": 2,
+    "static_fixed_cost": 1
+  },
+  "reply_transport_bound": {
+    "transport": "x repeated 1048576 times",
+    "expected": "ErrLimit"
+  },
+  "identity_note": "Namespace is generated per store. Operation IDs and member IDs use retained canonical domain-separated identities; fixtures assert original operation and member relationships rather than fabricated namespace constants."
+}

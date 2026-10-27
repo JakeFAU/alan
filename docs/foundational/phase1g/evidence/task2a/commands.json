@@ -1,0 +1,294 @@
+{
+  "environment": {
+    "GOPROXY": "off",
+    "GOSUMDB": "off",
+    "GOCACHE": "/tmp/alan-phase1f-go-build",
+    "GOTOOLCHAIN": "local"
+  },
+  "go_version": "go version go1.27.3 darwin/arm64",
+  "runs": [
+    {
+      "argv": [
+        "go",
+        "test",
+        "./internal/executor",
+        "-run",
+        "TestComposition",
+        "-count=1"
+      ],
+      "output": "01-foundation-red.log",
+      "observed": "failed: missing private API/types (compilation RED)"
+    },
+    {
+      "argv": [
+        "go",
+        "test",
+        "./internal/executor",
+        "-run",
+        "TestComposition",
+        "-count=1",
+        "-v"
+      ],
+      "output": "02-foundation-first.log",
+      "observed": "failed: schema import name collided with legacy schema constant"
+    },
+    {
+      "argv": [
+        "go",
+        "test",
+        "./internal/executor",
+        "-run",
+        "TestComposition",
+        "-count=1",
+        "-v"
+      ],
+      "output": "03-foundation-first.log",
+      "observed": "failed: missing-root corruption injection blocked by FK; other focused tests passed"
+    },
+    {
+      "argv": [
+        "go",
+        "test",
+        "./internal/executor",
+        "-run",
+        "TestComposition(Lifecycle|FactAppend|FactReverse)",
+        "-count=1",
+        "-v"
+      ],
+      "output": "04-facts-red.log",
+      "observed": "failed: arbitrary empty fact accepted"
+    },
+    {
+      "argv": [
+        "go",
+        "test",
+        "./internal/executor",
+        "-run",
+        "TestComposition",
+        "-count=1"
+      ],
+      "output": "05-foundation-green.log",
+      "observed": "passed"
+    },
+    {
+      "argv": [
+        "go",
+        "test",
+        "./internal/executor",
+        "-run",
+        "TestComposition(BindingTwo|TemplateRejects)",
+        "-count=1",
+        "-v"
+      ],
+      "output": "06-template-red.log",
+      "observed": "failed: undeclared code endpoint accepted in template catalogue"
+    },
+    {
+      "argv": [
+        "go",
+        "test",
+        "./internal/executor",
+        "-run",
+        "TestComposition",
+        "-count=1"
+      ],
+      "output": "07-template-green.log",
+      "observed": "passed"
+    },
+    {
+      "argv": [
+        "go",
+        "test",
+        "./...",
+        "-count=1"
+      ],
+      "output": "08-default-suite.log",
+      "observed": "passed before later self-review fixes"
+    },
+    {
+      "argv": [
+        "go",
+        "test",
+        "./internal/executor",
+        "-run",
+        "TestCompositionScopedRetry",
+        "-count=1",
+        "-v"
+      ],
+      "output": "09-scoped-retry-red.log",
+      "observed": "failed: private scoped Retry created generation2 outside static fact coverage"
+    },
+    {
+      "argv": [
+        "go",
+        "test",
+        "./internal/executor",
+        "-run",
+        "TestComposition",
+        "-count=1"
+      ],
+      "output": "10-scoped-retry-green.log",
+      "observed": "passed"
+    },
+    {
+      "argv": [
+        "go",
+        "test",
+        "./internal/executor",
+        "-run",
+        "TestComposition(FactsReject|FactReverse|ReadOnly|OrderedFailure)",
+        "-count=1",
+        "-v"
+      ],
+      "output": "11-prefix-corruption-readonly.log",
+      "observed": "passed; exact monitor errors and witness retained"
+    },
+    {
+      "argv": [
+        "go",
+        "test",
+        "./internal/executor",
+        "-run",
+        "TestComposition(StaleLifecycle|BindingRetains)",
+        "-count=1",
+        "-v"
+      ],
+      "output": "12-self-review-red.log",
+      "observed": "failed: invalid UTF-8 caller binding and missing stale lifecycle before-state fact"
+    },
+    {
+      "argv": [
+        "go",
+        "test",
+        "./internal/executor",
+        "-run",
+        "TestComposition",
+        "-count=1"
+      ],
+      "output": "13-self-review-green.log",
+      "observed": "passed"
+    },
+    {
+      "argv": [
+        "go",
+        "test",
+        "./internal/executor",
+        "-run",
+        "TestCompositionProfileRejectsInvalidEncoding",
+        "-count=1",
+        "-v"
+      ],
+      "output": "14-profile-encoding-red.log",
+      "observed": "failed: invalid root spelling normalized to another valid authority identity"
+    },
+    {
+      "argv": [
+        "go",
+        "test",
+        "./internal/executor",
+        "-run",
+        "TestComposition",
+        "-count=1"
+      ],
+      "output": "15-profile-encoding-green.log",
+      "observed": "passed"
+    },
+    {
+      "argv": [
+        "go",
+        "test",
+        "./...",
+        "-count=1"
+      ],
+      "output": "16-final-default-suite.log",
+      "observed": "passed with all production fixes"
+    },
+    {
+      "argv": [
+        "go",
+        "test",
+        "./internal/executor",
+        "-run",
+        "TestCompositionOrderedFailurePrefixes",
+        "-count=1",
+        "-v"
+      ],
+      "output": "17-full-row-counterexample.log",
+      "observed": "passed; test-only stronger row-equality assertions after final default suite"
+    },
+    {
+      "argv": [
+        "go",
+        "test",
+        "-overlay=/tmp/alan-task2a-review-probe/overlay.json",
+        "./internal/executor",
+        "-run",
+        "^TestReviewCompositionMessageCausalPrefix$",
+        "-count=1",
+        "-v"
+      ],
+      "output": "review-fix1/01-original-probe-red.log",
+      "exit_status": 1,
+      "observed": "failed at original impossible-order rejection after valid baseline",
+      "scope": "Task2a review fix round1"
+    },
+    {
+      "argv": [
+        "go",
+        "test",
+        "./internal/executor",
+        "-run",
+        "^TestCompositionSelectedObservation",
+        "-count=1",
+        "-v"
+      ],
+      "output": "review-fix1/02-causal-variants-red.log",
+      "exit_status": 1,
+      "observed": "all five valid-baseline order-only corruptions were accepted; four positive controls passed",
+      "scope": "Task2a review fix round1"
+    },
+    {
+      "argv": [
+        "go",
+        "test",
+        "./internal/executor",
+        "-run",
+        "^TestCompositionSelectedObservation",
+        "-count=1",
+        "-v"
+      ],
+      "output": "review-fix1/03-causal-variants-green.log",
+      "exit_status": 0,
+      "observed": "all five mutations rejected by selected-observation predecessor check; four positive controls passed",
+      "scope": "Task2a review fix round1"
+    },
+    {
+      "argv": [
+        "go",
+        "test",
+        "-overlay=/tmp/alan-task2a-review-probe/overlay.json",
+        "./internal/executor",
+        "-run",
+        "^TestReviewCompositionMessageCausalPrefix$",
+        "-count=1",
+        "-v"
+      ],
+      "output": "review-fix1/04-original-probe-green.log",
+      "exit_status": 0,
+      "observed": "unchanged original independent probe passed",
+      "scope": "Task2a review fix round1"
+    },
+    {
+      "argv": [
+        "go",
+        "test",
+        "./internal/executor",
+        "-count=1"
+      ],
+      "output": "review-fix1/05-executor-suite.log",
+      "exit_status": 0,
+      "observed": "complete executor default suite passed",
+      "scope": "Task2a review fix round1"
+    }
+  ]
+}

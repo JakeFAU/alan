@@ -212,9 +212,17 @@ func (s *Store) prepareAdapterWork(ctx context.Context, id string, registry map[
 	if auth.Allowed && !grant {
 		a.Reason = "grant_denied"
 	}
+	a.Allowed, a.Reason, e = compositionReservationDecision(ctx, tx, intent.Intent, a.Allowed, a.Reason)
+	if e != nil {
+		s.mu.Unlock()
+		return nil, e
+	}
 	b, e := json.Marshal(a)
 	if e == nil {
 		_, e = tx.ExecContext(ctx, "INSERT INTO adapter_attempts VALUES(?,?)", id, b)
+	}
+	if e == nil {
+		e = recordCompositionReservation(ctx, tx, intent.Intent, a.Allowed, a.Reason, a)
 	}
 	if e == nil {
 		e = s.commitOwnedTx(ctx, tx)
@@ -329,6 +337,9 @@ func (s *Store) recordAdapterResult(ctx context.Context, a AdapterAttempt, c eff
 	if _, e = tx.ExecContext(ctx, "INSERT INTO adapter_results VALUES(?,?)", a.Intent.ID, b); e != nil {
 		return r, e
 	}
+	if e = s.recordCompositionSource(ctx, tx, compositionExternalResultFact, a.Intent.ID); e != nil {
+		return r, e
+	}
 	return r, s.commitOwnedTx(ctx, tx)
 }
 func adapterDescriptor(a AdapterAttempt, r AdapterResult) AdmissionDescriptor {
@@ -405,7 +416,11 @@ func validateAdapterAttempt(ctx context.Context, q queryer, a AdapterAttempt, na
 	if auth.Allowed && !grant {
 		reason = "grant_denied"
 	}
-	if !reflect.DeepEqual(r, a.Prepared.Request) || !reflect.DeepEqual(i.Intent, a.Intent) || a.AuthorizationID != auth.ID || a.Allowed != (auth.Allowed && grant) || a.Reason != reason || a.Prepared.Digest == "" || effects.CheckPrepared(a.Prepared) != nil || a.Prepared.MaxResponseBytes > l.MaxObservationBytes/8 {
+	allowed, reason, e := retainedCompositionReservation(ctx, q, i.Intent, auth.Allowed && grant, reason)
+	if e != nil {
+		return e
+	}
+	if !reflect.DeepEqual(r, a.Prepared.Request) || !reflect.DeepEqual(i.Intent, a.Intent) || a.AuthorizationID != auth.ID || a.Allowed != allowed || a.Reason != reason || a.Prepared.Digest == "" || effects.CheckPrepared(a.Prepared) != nil || a.Prepared.MaxResponseBytes > l.MaxObservationBytes/8 {
 		return corrupt("adapter attempt binding")
 	}
 	return nil

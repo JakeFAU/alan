@@ -10,12 +10,16 @@ import (
 
 const CompilerVersion = executor.AuthorCompilerVersion
 const SemanticVersion = executor.AuthorSemanticVersion
+const CollectionSemanticVersion = executor.CollectionSemanticVersion
+const CollectionCompilerVersion = executor.CollectionCompilerVersion
 const MaxInstructions = 10000
 const MaxNesting = 64
 
 type Definition struct {
 	Name            string
+	Invocations     map[string]Template
 	Inputs, Outputs schema.Record
+	Collections     map[string]schema.Field
 	Values          map[string]schema.Value
 	Templates       map[string]string
 	Effects         map[string]Effect
@@ -55,11 +59,20 @@ type Step struct {
 	count                                         int
 }
 
+// Value freezes a literal, including a bounded list used with a declared collection.
+func Value(v schema.Value) Expr { return Expr{executor.Lit(v.Clone())} }
+func Append(name string, values map[string]Expr) Step {
+	return Step{kind: "append", destination: name, values: values}
+}
+func ForEach(collection Expr, bindings map[string]string, body ...Step) Step {
+	return Step{kind: "foreach", a: collection, bindings: bindings, yes: body}
+}
+
 func Set(name string, value Expr) Step { return Step{kind: "set", destination: name, a: value} }
 func Add(name string, a, b Expr) Step  { return Step{kind: "add", destination: name, a: a, b: b} }
 func Label(name string) Step           { return Step{kind: "label", name: name} }
 
-// Goto may only target a later label. Repeat is the only author repetition construct.
+// Goto may only target a later label. Repeat and ForEach provide structured repetition.
 func Goto(label string) Step                 { return Step{kind: "goto", name: label} }
 func IfEqual(a, b Expr, yes, no []Step) Step { return Step{kind: "if", a: a, b: b, yes: yes, no: no} }
 func Repeat(count int, body ...Step) Step    { return Step{kind: "repeat", count: count, yes: body} }
@@ -82,8 +95,9 @@ func Await(effect, request string, bindings map[string]string) Step {
 
 // Artifact owns immutable encoded bytes. Accessors return independent copies.
 type Artifact struct {
-	id  string
-	raw string
+	id        string
+	raw       string
+	catalogue string
 }
 
 func (a Artifact) ID() string    { return a.id }

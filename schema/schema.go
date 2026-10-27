@@ -1,4 +1,4 @@
-// Package schema defines the closed, flat typed records shared by authoring and effects.
+// Package schema defines closed typed records shared by authoring and effects.
 package schema
 
 import (
@@ -6,39 +6,43 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"slices"
 	"unicode/utf8"
 )
 
-// Value is a tagged scalar. Exactly the field belonging to Kind may be nonzero.
+// Value is a tagged scalar or bounded record list. Use Equal for structural equality.
+// Scalar values remain comparable; list pointer identity has no semantic meaning.
 type Value struct {
 	Kind   string
 	Number int64
 	Text   string
 	Flag   bool
+	List   *ListData `json:",omitempty"`
 }
 
 func Int(n int64) Value   { return Value{Kind: "int", Number: n} }
 func Text(s string) Value { return Value{Kind: "string", Text: s} }
 func Bool(b bool) Value   { return Value{Kind: "bool", Flag: b} }
 func (v Value) Valid() bool {
-	switch v.Kind {
-	case "int":
-		return v.Text == "" && !v.Flag
-	case "string":
-		return v.Number == 0 && !v.Flag && utf8.ValidString(v.Text)
-	case "bool":
-		return v.Number == 0 && v.Text == ""
+	if v.List != nil {
+		remaining := MaxCollectionBytes + listValueOverhead
+		if boundedValueSize(v, &remaining, 0) != nil {
+			return false
+		}
 	}
-	return false
+	return validValue(v, 0)
 }
 
-// Field declares a required scalar. Strings require a finite UTF-8 byte bound.
-// Enum, when nonempty, restricts strings to those exact values.
+// Field declares a required scalar or bounded list of closed records. Strings
+// require a finite UTF-8 byte bound; Enum restricts strings to exact values.
+// Lists require Element, MaxItems and a total canonical array-byte MaxBytes.
+// UniqueKey optionally requires distinct string identities within each list.
 type Field struct {
-	Kind     string
-	MaxBytes int
-	Enum     []string
+	Kind      string
+	MaxBytes  int
+	Enum      []string
+	Element   Record `json:",omitempty"`
+	MaxItems  int    `json:",omitempty"`
+	UniqueKey string `json:",omitempty"`
 }
 type Record map[string]Field
 
@@ -52,43 +56,20 @@ const MaxFields = 128
 const MaxStringBytes = 1 << 20
 
 func (r Record) Check() error {
-	if len(r) > MaxFields {
-		return fmt.Errorf("schema field limit")
+	remaining := MaxSchemaFields
+	if err := boundedSchema(r, &remaining, 0); err != nil {
+		return err
 	}
-	for name, f := range r {
-		if err := CheckIdentifier(name); err != nil {
-			return fmt.Errorf("field: %w", err)
-		}
-		switch f.Kind {
-		case "string":
-			if f.MaxBytes <= 0 || f.MaxBytes > MaxStringBytes {
-				return fmt.Errorf("field %q: invalid string bound", name)
-			}
-			seen := map[string]bool{}
-			for _, v := range f.Enum {
-				if !utf8.ValidString(v) || len(v) > f.MaxBytes || seen[v] {
-					return fmt.Errorf("field %q: invalid enum", name)
-				}
-				seen[v] = true
-			}
-		case "int", "bool":
-			if f.MaxBytes != 0 || len(f.Enum) != 0 {
-				return fmt.Errorf("field %q: nonstring constraints", name)
-			}
-		default:
-			return fmt.Errorf("field %q: unsupported kind %q", name, f.Kind)
-		}
-	}
-	return nil
+	return checkRecord(r, 0)
 }
 func (f Field) Validate(v Value) error {
-	if !v.Valid() || f.Kind != v.Kind {
-		return fmt.Errorf("expected %s value", f.Kind)
+	if err := (Record{"value": f}).Check(); err != nil {
+		return err
 	}
-	if v.Kind == "string" && (len(v.Text) > f.MaxBytes || len(f.Enum) > 0 && !slices.Contains(f.Enum, v.Text)) {
-		return fmt.Errorf("string outside bound or enum")
+	if !v.Valid() {
+		return fmt.Errorf("invalid or oversized value")
 	}
-	return nil
+	return validateField(f, v, 0)
 }
 func (r Record) Validate(values map[string]Value) error {
 	if err := r.Check(); err != nil {
@@ -114,15 +95,7 @@ func (r Record) Retain() (Retained, error) {
 	if err := r.Check(); err != nil {
 		return Retained{}, err
 	}
-	copy := Record{}
-	for k, f := range r {
-		f.Enum = slices.Clone(f.Enum)
-		if len(f.Enum) == 0 {
-			f.Enum = nil
-		}
-		slices.Sort(f.Enum)
-		copy[k] = f
-	}
+	copy := cloneRecord(r)
 	raw, err := json.Marshal(copy)
 	if err != nil {
 		return Retained{}, err
@@ -185,7 +158,7 @@ func ValidateResult(payload Record, values map[string]Value) error {
 		if !ok {
 			return fmt.Errorf("missing result %q", name)
 		}
-		if !values[ResultValid].Flag && v != (Value{Kind: f.Kind}) {
+		if !values[ResultValid].Flag && !v.Equal(Default(f)) {
 			return fmt.Errorf("invalid result requires typed default %q", name)
 		}
 		fields[name] = v

@@ -19,6 +19,7 @@ type Inspection struct {
 	KeyVersion int
 	Settings   ConnectionSettings
 	Tables     map[string][]map[string]any
+	Roots      []RootCompletion
 }
 
 var inspectionTables = []string{"metadata", "programs", "subjects", "permissions", "runs", "history", "observations", "intents", "attempts", "admissions", "lifecycle_results", "settlements", "terminal_obligations", "message_acknowledgments", "run_origins", "external_attempts", "external_receipts", "corpus_assets", "adapter_attempts", "adapter_results"}
@@ -54,6 +55,21 @@ func Inspect(ctx context.Context, path string, limits Limits) (snapshot Inspecti
 			return snapshot, err
 		}
 	}
+	schemaVersion, err := schemaNumber(ctx, tx)
+	if err != nil {
+		return snapshot, err
+	}
+	tables := inspectionTables
+	if schemaVersion == compositionSchemaVersion {
+		report, e := validateLedger(ctx, tx, limits)
+		if e != nil {
+			return snapshot, e
+		}
+		snapshot.Roots = report.Roots
+		tables = append(append([]string{}, inspectionTables...), compositionInspectionTables...)
+	} else if schemaVersion != SchemaVersion {
+		return snapshot, ErrVersion
+	}
 	snapshot.Namespace, err = readNamespace(ctx, tx)
 	if err != nil {
 		return snapshot, err
@@ -72,7 +88,7 @@ func Inspect(ctx context.Context, path string, limits Limits) (snapshot Inspecti
 		return snapshot, err
 	}
 	snapshot.Tables = map[string][]map[string]any{}
-	for _, table := range inspectionTables {
+	for _, table := range tables {
 		records, e := inspectTable(ctx, tx, table)
 		if e != nil {
 			return snapshot, e

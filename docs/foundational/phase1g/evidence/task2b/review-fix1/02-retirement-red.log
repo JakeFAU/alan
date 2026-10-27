@@ -1,0 +1,25 @@
+=== RUN   TestRetirementDynamicSucceededMemberClosesScope
+    invocation_retirement_test.go:98: {{31a91c512c0a26b1e319bc3c1d4d80cdff40a7e007c89f209bce438a2a030e0a ["b07bca028c1f6b7567574e08401c72a2ce4293d6e2f1a6b31a7e52295d81dfb7",1,2,0] 2fd4dba5fab81e7625121931014682c5e63c586230eb52571bb01e5ea619a1c1 baa886004c184853ca01d511ef0795abf90633b3ec0454aa6443ec08dc6e5b29 fb6618a2e638a4d8de31d36aafb95bc06dccd4dbfbea1f2848cb30d4193969ae {b07bca028c1f6b7567574e08401c72a2ce4293d6e2f1a6b31a7e52295d81dfb7 1} 1 2 2 map[]} true accepted 567ee1e8047fea2602746874e430e9b25c909383fdaed813e202c83b798265cf [{96b54307ed1b7bb5d23eec01381d4f1fec1c9f36f20e999d9e1b23f647374b25 1} {09b9a383721bd1c2528e9b2848e310c9d487a3890f436a68b75ff7e40228a649 1}]} <nil>
+--- FAIL: TestRetirementDynamicSucceededMemberClosesScope (0.02s)
+=== RUN   TestRetirementAfterSuccessFreezePreventsPublication
+    invocation_retirement_test.go:148: {6518174fb285d842caad8458c6a20196e643e8f8f5025ad35712e8bce2c1640e 4f764f9887d3e6599e6718c5f725989d96a3dfef98a95d6710d19f89ab9046d6 ["root",1,1,0] 2fd4dba5fab81e7625121931014682c5e63c586230eb52571bb01e5ea619a1c1 {root 1} succeeded member_succeeded true map[result:{string 0 ok false <nil>}] 10}
+--- FAIL: TestRetirementAfterSuccessFreezePreventsPublication (0.01s)
+=== RUN   TestRetirementAfterPublishedSuccessPreservesOutcome
+--- PASS: TestRetirementAfterPublishedSuccessPreservesOutcome (0.01s)
+=== RUN   TestRetirementNoOpCancelAbandonDoNotCloseScope
+=== RUN   TestRetirementNoOpCancelAbandonDoNotCloseScope/CancelRun
+=== RUN   TestRetirementNoOpCancelAbandonDoNotCloseScope/AbandonRun
+--- PASS: TestRetirementNoOpCancelAbandonDoNotCloseScope (0.02s)
+    --- PASS: TestRetirementNoOpCancelAbandonDoNotCloseScope/CancelRun (0.01s)
+    --- PASS: TestRetirementNoOpCancelAbandonDoNotCloseScope/AbandonRun (0.01s)
+=== RUN   TestRetirementFirstCauseSurvivesDrainingFailure
+    invocation_retirement_test.go:210: no such table: composition_closures
+--- FAIL: TestRetirementFirstCauseSurvivesDrainingFailure (0.01s)
+=== RUN   TestRetirementPreservesEarlierFailureDiagnostic
+--- PASS: TestRetirementPreservesEarlierFailureDiagnostic (0.01s)
+=== RUN   TestRetirementAndClosureRollbackTogether
+    invocation_retirement_test.go:258: no such table: main.composition_closures
+--- FAIL: TestRetirementAndClosureRollbackTogether (0.01s)
+FAIL
+FAIL	github.com/JakeFAU/alan/internal/executor	0.332s
+FAIL

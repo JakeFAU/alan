@@ -1,0 +1,202 @@
+[
+  {
+    "argv": [
+      "go",
+      "test",
+      "-overlay=/tmp/alan-task2b-review-retire/overlay.json",
+      "./internal/executor",
+      "-run",
+      "^TestReviewRetiredSucceededMemberClosesScope$",
+      "-count=1",
+      "-v"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 1,
+    "output": "01-original-probe-red.log",
+    "source_commit": "a648ea739d21f04e011be3214f7819130a5f3f2a"
+  },
+  {
+    "argv": [
+      "go",
+      "test",
+      "./internal/executor",
+      "-run",
+      "^TestRetirement",
+      "-count=1",
+      "-v"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 1,
+    "output": "02-retirement-red.log",
+    "source_identity": "4bea435a47e5ae741cfce8a339f3bf1d904e3e6a5fa77db65d5e988d833e160a"
+  },
+  {
+    "argv": [
+      "go",
+      "test",
+      "./internal/executor",
+      "-run",
+      "^TestRetirementStaticAncestor",
+      "-count=1",
+      "-v"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 1,
+    "output": "03-supported-ancestor-red.log",
+    "source_identity": "82dfc45d2f1f46134de732702f9586bb438b0dd58ed526029daf244fc5dbe31a"
+  },
+  {
+    "argv": [
+      "go",
+      "test",
+      "./internal/executor",
+      "-run",
+      "^TestRetirement",
+      "-count=1",
+      "-v"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 0,
+    "output": "04-retirement-observed.log",
+    "source_identity": "2b29d5338717fc73c1708220a436b6d6672802ab5a1773ca139c239680854f3e"
+  },
+  {
+    "argv": [
+      "go",
+      "test",
+      "-overlay=/tmp/alan-task2b-review-retire/overlay.json",
+      "./internal/executor",
+      "-run",
+      "^TestReviewRetiredSucceededMemberClosesScope$",
+      "-count=1",
+      "-v"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 0,
+    "output": "05-original-probe-green.log",
+    "source_identity": "2b29d5338717fc73c1708220a436b6d6672802ab5a1773ca139c239680854f3e"
+  },
+  {
+    "argv": [
+      "go",
+      "test",
+      "./internal/executor",
+      "-run",
+      "^TestRetirementOnlyPrivateReopen",
+      "-count=1",
+      "-v"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 1,
+    "output": "06-closure-only-gate-red.log",
+    "source_identity": "dfd9af70dbc3e7a9c34d2cbda5159e58fed7f54534cdf29158b16ecf6301fba2"
+  },
+  {
+    "argv": [
+      "go",
+      "test",
+      "./internal/executor",
+      "-run",
+      "^TestRetirementCauseWins",
+      "-count=1",
+      "-v"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 1,
+    "output": "07-retirement-conflict-red.log",
+    "source_identity": "04ed61f6668c727abb692829a1f51ae6618c4d624946f1841efde5a9a5b9e8a1"
+  },
+  {
+    "argv": [
+      "go",
+      "test",
+      "./internal/executor",
+      "-run",
+      "^TestRetirement|^TestInvocation(ConflictingReplies|FailureFreeze|ReplySurvives|RootClosure|AncestorClosure)",
+      "-count=1",
+      "-v"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 0,
+    "output": "08-focused-green.log",
+    "source_identity": "a0d89f9033af453a5274b6e31fdd94336f361d77354e64a90826b2de22a38fe7"
+  },
+  {
+    "argv": [
+      "go",
+      "test",
+      "./internal/executor",
+      "-count=1"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 0,
+    "output": "09-executor-suite.log",
+    "source_identity": "d525dec36ec4542882a8ec40608976b70c323030b4a9e56e3736eab2f5eecbe1"
+  },
+  {
+    "argv": [
+      "go",
+      "test",
+      "-overlay=/tmp/alan-task2b-review-retire/overlay.json",
+      "./internal/executor",
+      "-run",
+      "^TestReviewRetiredSucceededMemberClosesScope$",
+      "-count=1",
+      "-v"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 0,
+    "output": "10-original-probe-final-green.log",
+    "source_identity": "d525dec36ec4542882a8ec40608976b70c323030b4a9e56e3736eab2f5eecbe1"
+  }
+]

@@ -45,6 +45,9 @@ func New(c Config) (*Adapter, error) {
 }
 func (a *Adapter) Prepare(r effects.Request) (effects.Prepared, error) {
 	p := effects.Prepared{Request: effects.Copy(r), Protocol: "openai/responses/v1", Endpoint: a.config.Endpoint, Model: a.config.Model, MaxOutputTokens: a.config.MaxOutputTokens, MaxResponseBytes: a.config.MaxResponseBytes}
+	if r.Input.Record.HasCollections() || r.Output.Record.HasCollections() {
+		return p, errors.New("Responses adapter supports scalar records only")
+	}
 	if e := r.Input.Check(); e != nil {
 		return p, e
 	}

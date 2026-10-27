@@ -1,0 +1,347 @@
+[
+  {
+    "Schedule": [
+      "A",
+      "B",
+      "A"
+    ],
+    "History": {
+      "A": [
+        {
+          "epoch": 1,
+          "generation": 1,
+          "intents": "[{\"ID\":\"[\\\"A\\\",1,1,0]\",\"Run\":{\"Subject\":\"A\",\"Generation\":1},\"Sequence\":1,\"Ordinal\":0,\"Kind\":\"message\",\"Target\":\"caller\",\"Generation\":1,\"Obligation\":\"reply\",\"Payload\":{\"value\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false}}}]",
+          "selected_observation": null,
+          "sequence": 1,
+          "source_revision": 1,
+          "subject": "A",
+          "successor": "{\"PC\":1,\"Data\":{},\"Status\":\"open\"}"
+        },
+        {
+          "epoch": 1,
+          "generation": 1,
+          "intents": "[{\"ID\":\"[\\\"A\\\",1,2,0]\",\"Run\":{\"Subject\":\"A\",\"Generation\":1},\"Sequence\":2,\"Ordinal\":0,\"Kind\":\"message\",\"Target\":\"caller\",\"Generation\":1,\"Obligation\":\"reply\",\"Payload\":{\"value\":{\"Kind\":\"int\",\"Number\":2,\"Text\":\"\",\"Flag\":false}}}]",
+          "selected_observation": null,
+          "sequence": 2,
+          "source_revision": 1,
+          "subject": "A",
+          "successor": "{\"PC\":2,\"Data\":{},\"Status\":\"open\"}"
+        }
+      ],
+      "B": [
+        {
+          "epoch": 1,
+          "generation": 1,
+          "intents": "[]",
+          "selected_observation": null,
+          "sequence": 1,
+          "source_revision": 1,
+          "subject": "B",
+          "successor": "{\"PC\":0,\"Data\":{},\"Status\":\"failed\"}"
+        }
+      ]
+    },
+    "Intents": {
+      "[\"A\",1,1,0]": {
+        "ID": "[\"A\",1,1,0]",
+        "Run": {
+          "Subject": "A",
+          "Generation": 1
+        },
+        "Sequence": 1,
+        "Ordinal": 0,
+        "Kind": "message",
+        "Target": "caller",
+        "Generation": 1,
+        "Obligation": "reply",
+        "Payload": {
+          "value": {
+            "Kind": "int",
+            "Number": 1,
+            "Text": "",
+            "Flag": false
+          }
+        }
+      },
+      "[\"A\",1,2,0]": {
+        "ID": "[\"A\",1,2,0]",
+        "Run": {
+          "Subject": "A",
+          "Generation": 1
+        },
+        "Sequence": 2,
+        "Ordinal": 0,
+        "Kind": "message",
+        "Target": "caller",
+        "Generation": 1,
+        "Obligation": "reply",
+        "Payload": {
+          "value": {
+            "Kind": "int",
+            "Number": 2,
+            "Text": "",
+            "Flag": false
+          }
+        }
+      }
+    },
+    "Runs": [
+      {
+        "epoch": 1,
+        "generation": 1,
+        "initial": "{\"PC\":0,\"Data\":{},\"Status\":\"open\"}",
+        "program_id": "2f2eb7c9546448f0ab940a2b3ac41ed9b72b0fc336f28df5d95c4d19b51aecf8",
+        "projection": "{\"PC\":2,\"Data\":{},\"Status\":\"open\"}",
+        "sequence": 2,
+        "subject": "A"
+      },
+      {
+        "epoch": 1,
+        "generation": 1,
+        "initial": "{\"PC\":0,\"Data\":{},\"Status\":\"open\"}",
+        "program_id": "1db5ddb84c9b950bfd3a10760c0087096bfbe971a6c7a4087a72cc96c00694aa",
+        "projection": "{\"PC\":0,\"Data\":{},\"Status\":\"failed\"}",
+        "sequence": 1,
+        "subject": "B"
+      }
+    ],
+    "Terminals": [
+      {
+        "delivery_status": "{}",
+        "destinations": "[]",
+        "generation": 1,
+        "operation_id": null,
+        "outcome": "{\"PC\":0,\"Data\":{},\"Status\":\"failed\"}",
+        "sequence": 1,
+        "source_revision": 1,
+        "subject": "B"
+      }
+    ],
+    "Facts": [
+      {
+        "Version": "alan/composition-fact/v1",
+        "ID": "6b6891a096e57ed37462368d1066f3652229b59ed019d2ca16b91a628c76a926",
+        "Kind": "execution",
+        "Order": 1,
+        "RootIDs": [
+          "2ff54fbe027e9698322384c7091ee3e0e04016b0e43e8537fd9310eaec5deddd"
+        ],
+        "Run": {
+          "Subject": "A",
+          "Generation": 1
+        },
+        "Sequence": 1,
+        "OperationID": "",
+        "RecordDigest": "39830e1505661577d4957dc951288bfaa7772e7fce4fff4c17a1cbe51fe1fdbd"
+      },
+      {
+        "Version": "alan/composition-fact/v1",
+        "ID": "97cb13f1304e733c0a4aca7a6f909c3522073c140155f3730ef9b4c44b17b982",
+        "Kind": "execution",
+        "Order": 2,
+        "RootIDs": [
+          "2ff54fbe027e9698322384c7091ee3e0e04016b0e43e8537fd9310eaec5deddd"
+        ],
+        "Run": {
+          "Subject": "B",
+          "Generation": 1
+        },
+        "Sequence": 1,
+        "OperationID": "",
+        "RecordDigest": "4349da1842512b81c5b08a44583d768ad43599d5e458433dc9b018dc38653596"
+      },
+      {
+        "Version": "alan/composition-fact/v1",
+        "ID": "db719b74d4cf02fd117bd6546edaa4554747e7b865e263576567c62223cf2f59",
+        "Kind": "execution",
+        "Order": 3,
+        "RootIDs": [
+          "2ff54fbe027e9698322384c7091ee3e0e04016b0e43e8537fd9310eaec5deddd"
+        ],
+        "Run": {
+          "Subject": "A",
+          "Generation": 1
+        },
+        "Sequence": 2,
+        "OperationID": "",
+        "RecordDigest": "28b86615e1bc6b6ac3ebfa84731a84e6ec380173ffde1b5b02afaeb9ec1e0b70"
+      }
+    ],
+    "Frozen": [
+      "[\"A\",1,1,0]"
+    ]
+  },
+  {
+    "Schedule": [
+      "A",
+      "A",
+      "B"
+    ],
+    "History": {
+      "A": [
+        {
+          "epoch": 1,
+          "generation": 1,
+          "intents": "[{\"ID\":\"[\\\"A\\\",1,1,0]\",\"Run\":{\"Subject\":\"A\",\"Generation\":1},\"Sequence\":1,\"Ordinal\":0,\"Kind\":\"message\",\"Target\":\"caller\",\"Generation\":1,\"Obligation\":\"reply\",\"Payload\":{\"value\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false}}}]",
+          "selected_observation": null,
+          "sequence": 1,
+          "source_revision": 1,
+          "subject": "A",
+          "successor": "{\"PC\":1,\"Data\":{},\"Status\":\"open\"}"
+        },
+        {
+          "epoch": 1,
+          "generation": 1,
+          "intents": "[{\"ID\":\"[\\\"A\\\",1,2,0]\",\"Run\":{\"Subject\":\"A\",\"Generation\":1},\"Sequence\":2,\"Ordinal\":0,\"Kind\":\"message\",\"Target\":\"caller\",\"Generation\":1,\"Obligation\":\"reply\",\"Payload\":{\"value\":{\"Kind\":\"int\",\"Number\":2,\"Text\":\"\",\"Flag\":false}}}]",
+          "selected_observation": null,
+          "sequence": 2,
+          "source_revision": 1,
+          "subject": "A",
+          "successor": "{\"PC\":2,\"Data\":{},\"Status\":\"open\"}"
+        }
+      ],
+      "B": [
+        {
+          "epoch": 1,
+          "generation": 1,
+          "intents": "[]",
+          "selected_observation": null,
+          "sequence": 1,
+          "source_revision": 1,
+          "subject": "B",
+          "successor": "{\"PC\":0,\"Data\":{},\"Status\":\"failed\"}"
+        }
+      ]
+    },
+    "Intents": {
+      "[\"A\",1,1,0]": {
+        "ID": "[\"A\",1,1,0]",
+        "Run": {
+          "Subject": "A",
+          "Generation": 1
+        },
+        "Sequence": 1,
+        "Ordinal": 0,
+        "Kind": "message",
+        "Target": "caller",
+        "Generation": 1,
+        "Obligation": "reply",
+        "Payload": {
+          "value": {
+            "Kind": "int",
+            "Number": 1,
+            "Text": "",
+            "Flag": false
+          }
+        }
+      },
+      "[\"A\",1,2,0]": {
+        "ID": "[\"A\",1,2,0]",
+        "Run": {
+          "Subject": "A",
+          "Generation": 1
+        },
+        "Sequence": 2,
+        "Ordinal": 0,
+        "Kind": "message",
+        "Target": "caller",
+        "Generation": 1,
+        "Obligation": "reply",
+        "Payload": {
+          "value": {
+            "Kind": "int",
+            "Number": 2,
+            "Text": "",
+            "Flag": false
+          }
+        }
+      }
+    },
+    "Runs": [
+      {
+        "epoch": 1,
+        "generation": 1,
+        "initial": "{\"PC\":0,\"Data\":{},\"Status\":\"open\"}",
+        "program_id": "2f2eb7c9546448f0ab940a2b3ac41ed9b72b0fc336f28df5d95c4d19b51aecf8",
+        "projection": "{\"PC\":2,\"Data\":{},\"Status\":\"open\"}",
+        "sequence": 2,
+        "subject": "A"
+      },
+      {
+        "epoch": 1,
+        "generation": 1,
+        "initial": "{\"PC\":0,\"Data\":{},\"Status\":\"open\"}",
+        "program_id": "1db5ddb84c9b950bfd3a10760c0087096bfbe971a6c7a4087a72cc96c00694aa",
+        "projection": "{\"PC\":0,\"Data\":{},\"Status\":\"failed\"}",
+        "sequence": 1,
+        "subject": "B"
+      }
+    ],
+    "Terminals": [
+      {
+        "delivery_status": "{}",
+        "destinations": "[]",
+        "generation": 1,
+        "operation_id": null,
+        "outcome": "{\"PC\":0,\"Data\":{},\"Status\":\"failed\"}",
+        "sequence": 1,
+        "source_revision": 1,
+        "subject": "B"
+      }
+    ],
+    "Facts": [
+      {
+        "Version": "alan/composition-fact/v1",
+        "ID": "6b6891a096e57ed37462368d1066f3652229b59ed019d2ca16b91a628c76a926",
+        "Kind": "execution",
+        "Order": 1,
+        "RootIDs": [
+          "0979d17f5ea8a39a1a848b28d002c54f152b047e0c02281307b7c9eb90885d06"
+        ],
+        "Run": {
+          "Subject": "A",
+          "Generation": 1
+        },
+        "Sequence": 1,
+        "OperationID": "",
+        "RecordDigest": "39830e1505661577d4957dc951288bfaa7772e7fce4fff4c17a1cbe51fe1fdbd"
+      },
+      {
+        "Version": "alan/composition-fact/v1",
+        "ID": "db719b74d4cf02fd117bd6546edaa4554747e7b865e263576567c62223cf2f59",
+        "Kind": "execution",
+        "Order": 2,
+        "RootIDs": [
+          "0979d17f5ea8a39a1a848b28d002c54f152b047e0c02281307b7c9eb90885d06"
+        ],
+        "Run": {
+          "Subject": "A",
+          "Generation": 1
+        },
+        "Sequence": 2,
+        "OperationID": "",
+        "RecordDigest": "28b86615e1bc6b6ac3ebfa84731a84e6ec380173ffde1b5b02afaeb9ec1e0b70"
+      },
+      {
+        "Version": "alan/composition-fact/v1",
+        "ID": "97cb13f1304e733c0a4aca7a6f909c3522073c140155f3730ef9b4c44b17b982",
+        "Kind": "execution",
+        "Order": 3,
+        "RootIDs": [
+          "0979d17f5ea8a39a1a848b28d002c54f152b047e0c02281307b7c9eb90885d06"
+        ],
+        "Run": {
+          "Subject": "B",
+          "Generation": 1
+        },
+        "Sequence": 1,
+        "OperationID": "",
+        "RecordDigest": "4349da1842512b81c5b08a44583d768ad43599d5e458433dc9b018dc38653596"
+      }
+    ],
+    "Frozen": [
+      "[\"A\",1,1,0]",
+      "[\"A\",1,2,0]"
+    ]
+  }
+]

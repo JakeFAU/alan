@@ -1,0 +1,80 @@
+{
+  "SourceID": "ce4bbf6f9e6a0c7e94ccdfec09d97f9355b5e9bb1a6f49fcca2b17fe7256482a",
+  "ArchiveSHA256": "bf2c473570a08976e5a9308cbdd895eac41afec921dcb775168b09b409abba9d",
+  "VerifiedMembers": 613,
+  "VerifiedSourceFiles": 258,
+  "InitialModuleCacheEmpty": true,
+  "CredentialAbsent": true,
+  "Scope": "Metadata tooling regression and real consumer only; original full Go qualification retained separately.",
+  "Directory": "/private/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1g-metadata-offline-6uqpl04k",
+  "Environment": {
+    "GOTOOLCHAIN": "local",
+    "GOMODCACHE": "/private/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1g-metadata-offline-6uqpl04k/module-cache",
+    "GOCACHE": "/tmp/alan-phase1f-go-build",
+    "GOPROXY": "file:///private/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1g-metadata-offline-6uqpl04k/dependencies",
+    "GOSUMDB": "off",
+    "GOFLAGS": "-mod=readonly"
+  },
+  "Commands": [
+    {
+      "Command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "docs/foundational/phase1g/tools",
+        "-p",
+        "test_qualify.py",
+        "-v"
+      ],
+      "ExitCode": 0,
+      "ElapsedSeconds": 0.357,
+      "Stdout": "01.stdout.gz",
+      "Stderr": "01.stderr.gz",
+      "SourceUnchanged": true
+    },
+    {
+      "Command": [
+        "python3",
+        "docs/foundational/phase1g/tools/qualify.py",
+        "consumer"
+      ],
+      "ExitCode": 0,
+      "ElapsedSeconds": 18.246,
+      "Stdout": "02.stdout.gz",
+      "Stderr": "02.stderr.gz",
+      "SourceUnchanged": true
+    },
+    {
+      "Command": [
+        "go",
+        "-C",
+        "examples/worktree/consumer",
+        "vet",
+        "./..."
+      ],
+      "ExitCode": 0,
+      "ElapsedSeconds": 0.322,
+      "Stdout": "03.stdout.gz",
+      "Stderr": "03.stderr.gz",
+      "SourceUnchanged": true
+    },
+    {
+      "Command": [
+        "go",
+        "-C",
+        "examples/worktree/consumer",
+        "mod",
+        "verify"
+      ],
+      "ExitCode": 0,
+      "ElapsedSeconds": 0.073,
+      "Stdout": "04.stdout.gz",
+      "Stderr": "04.stderr.gz",
+      "SourceUnchanged": true
+    }
+  ],
+  "Result": "PASS",
+  "SourceUnchanged": true
+}

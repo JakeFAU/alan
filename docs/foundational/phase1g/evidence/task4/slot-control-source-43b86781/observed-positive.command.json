@@ -1,0 +1,31 @@
+{
+  "command": [
+    "go",
+    "test",
+    "-json",
+    "-overlay=/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1g-slot-jqmt82xk/overlay.json",
+    "-tags=integration",
+    "./internal/compositiontest",
+    "-run",
+    "^TestWaitingParentsOwnNoPhysicalSlots$",
+    "-count=1",
+    "-timeout=180s"
+  ],
+  "exit": 0,
+  "overlay": {
+    "Replace": {
+      "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan/internal/executor/runner.go": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1g-slot-jqmt82xk/runner.go"
+    }
+  },
+  "original_sha256": "ad9fe52c4f17adb4c528b9397fb2e90338f9f9e63c5015160946daa593c1b2f4",
+  "variant_sha256": "368d970b91ef5800ede771691daf8e29e5d7ad91cf74625f88933c867c4be558",
+  "classification": "executed runtime source overlay; unchanged physical ownership monitor",
+  "environment": {
+    "GOTOOLCHAIN": "local",
+    "GOPROXY": "off",
+    "GOSUMDB": "off",
+    "GOCACHE": "/tmp/alan-phase1f-go-build",
+    "GOFLAGS": "-mod=readonly",
+    "ALAN_SLOT_PROBE": "1"
+  }
+}

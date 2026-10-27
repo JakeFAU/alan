@@ -9,10 +9,13 @@ import (
 
 const AuthorSemanticVersion = "alan/1e/v1"
 const AuthorCompilerVersion = "alan/author/v1"
+const CollectionSemanticVersion = "alan/1g/v1"
+const CollectionCompilerVersion = "alan/author/v2"
 
 // ProgramMetadata is immutable compiler evidence retained in the program bytes.
 type ProgramMetadata struct {
 	Compiler        string
+	Invocations     map[string]InvocationDeclaration `json:",omitempty"`
 	Name            string
 	Inputs, Outputs recordschema.Retained
 	Templates       map[string]string
@@ -20,7 +23,12 @@ type ProgramMetadata struct {
 	Labels          map[string]int
 	Effects         map[string]EffectDeclaration
 	Ports           map[string]PortDeclaration
+	Collections     map[string]recordschema.Field `json:",omitempty"`
 	Receives        map[int]recordschema.Retained
+}
+type InvocationDeclaration struct {
+	TemplateID    string
+	Input, Output recordschema.Retained
 }
 type EffectDeclaration struct {
 	Capability    string
@@ -33,7 +41,9 @@ type PortDeclaration struct {
 	SendUsed, ReceiveUsed bool
 }
 
-func supportedSemantics(s string) bool { return s == SemanticVersion || s == AuthorSemanticVersion }
+func supportedSemantics(s string) bool {
+	return s == SemanticVersion || s == AuthorSemanticVersion || s == CollectionSemanticVersion
+}
 func validateMetadata(p Program) error {
 	if p.Semantics == SemanticVersion {
 		if p.Author != nil {
@@ -42,7 +52,18 @@ func validateMetadata(p Program) error {
 		return nil
 	}
 	m := p.Author
-	if m == nil || m.Compiler != AuthorCompilerVersion {
+	if m == nil || p.Semantics == AuthorSemanticVersion && m.Compiler != AuthorCompilerVersion || p.Semantics == CollectionSemanticVersion && m.Compiler != CollectionCompilerVersion {
+		return ErrVersion
+	}
+	for name, f := range m.Collections {
+		if p.Semantics != CollectionSemanticVersion || recordschema.CheckIdentifier(name) != nil || f.Kind != "list" {
+			return ErrVersion
+		}
+		if _, err := f.Retain(); err != nil {
+			return err
+		}
+	}
+	if p.Semantics != CollectionSemanticVersion && metadataHasCollections(m) {
 		return ErrVersion
 	}
 	if m.Name != "" {
@@ -63,6 +84,17 @@ func validateMetadata(p Program) error {
 	}
 	for _, s := range []recordschema.Retained{m.Inputs, m.Outputs} {
 		if err := s.Check(); err != nil {
+			return err
+		}
+	}
+	for name, e := range m.Invocations {
+		if p.Semantics != CollectionSemanticVersion || recordschema.CheckIdentifier(name) != nil || !digestIdentity(e.TemplateID) {
+			return ErrVersion
+		}
+		if err := e.Input.Check(); err != nil {
+			return err
+		}
+		if err := e.Output.Check(); err != nil {
 			return err
 		}
 	}
@@ -151,6 +183,13 @@ func validateAuthorOutput(p Program, data map[string]Value) error {
 	return p.Author.Outputs.Record.Validate(output)
 }
 func authorAdmissionValid(p Program, d AdmissionDescriptor) bool {
+	if p.Semantics != CollectionSemanticVersion {
+		for _, v := range d.Payload {
+			if v.Kind == "list" || v.List != nil {
+				return false
+			}
+		}
+	}
 	if p.Author == nil || d.Kind != "input" && d.Kind != "message" {
 		return true
 	}
@@ -159,6 +198,28 @@ func authorAdmissionValid(p Program, d AdmissionDescriptor) bool {
 	}
 	for _, port := range p.Author.Ports {
 		if port.ReceiveUsed && port.Local == (d.Kind == "input") && port.Peer == d.Source.Subject && port.Obligation == d.Obligation && port.Receive.Record.Validate(d.Payload) == nil {
+			return true
+		}
+	}
+	return false
+}
+
+func metadataHasCollections(m *ProgramMetadata) bool {
+	if len(m.Collections) > 0 || m.Inputs.Record.HasCollections() || m.Outputs.Record.HasCollections() {
+		return true
+	}
+	for _, e := range m.Effects {
+		if e.Input.Record.HasCollections() || e.Output.Record.HasCollections() {
+			return true
+		}
+	}
+	for _, p := range m.Ports {
+		if p.Send.Record.HasCollections() || p.Receive.Record.HasCollections() {
+			return true
+		}
+	}
+	for _, r := range m.Receives {
+		if r.Record.HasCollections() {
 			return true
 		}
 	}

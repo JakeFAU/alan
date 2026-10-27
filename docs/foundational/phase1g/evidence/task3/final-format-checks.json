@@ -1,0 +1,53 @@
+{
+  "checks": [
+    {
+      "argv": [
+        "gofmt",
+        "-l",
+        "author/compile.go",
+        "author/invocations.go",
+        "author/retained_handles_test.go",
+        "author/retained_handles_runtime_test.go",
+        "compose/collection.go",
+        "compose/collection_test.go",
+        "examples/worktree/worktree.go",
+        "examples/worktree/effects_integration_test.go",
+        "examples/worktree/consumer/contract_test.go",
+        "cmd/alan-compose/main.go",
+        "cmd/alan-compose/main_test.go"
+      ],
+      "exit_code": 0,
+      "output": "",
+      "clean": true
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--cached",
+        "--check",
+        "--",
+        "author",
+        "compose",
+        "examples/worktree",
+        "cmd/alan-compose"
+      ],
+      "exit_code": 0,
+      "output": "",
+      "clean": true
+    }
+  ],
+  "source_identity": "735c85c420c5cac56729afa8df1ae45252ab8ffea422e4673ed8042870085750",
+  "expected_final_source": "735c85c420c5cac56729afa8df1ae45252ab8ffea422e4673ed8042870085750",
+  "source_unchanged": true,
+  "complete_staged_whitespace": {
+    "argv": [
+      "git",
+      "diff",
+      "--cached",
+      "--check"
+    ],
+    "exit_code": 0,
+    "output": ""
+  }
+}

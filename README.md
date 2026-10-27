@@ -59,7 +59,13 @@ GOTOOLCHAIN=local go test -count=1 -tags integration \
   -run TestExternalConsumerCompileRunReopenReplay -v ./author
 ```
 
-Artifacts retain compiler/semantic versions, schemas, templates and author-facing position names. The initial data model is a closed record of strings, integers and booleans. Repetition is explicitly bounded; custom Go callbacks do not execute inside deterministic reduction. See the [authoring/effect contract](docs/foundational/phase1e/01-authoring-effects-contract.md) for scope and recovery boundaries.
+Artifacts retain compiler/semantic versions, schemas, templates and author-facing position names. The legacy schema3 data model is a closed record of strings, integers and booleans. The complete schema4 profile also supports bounded typed record lists, snapshot iteration and invocation of retained templates. Repetition is explicitly bounded; custom Go callbacks do not execute inside deterministic reduction. See the [authoring/effect contract](docs/foundational/phase1e/01-authoring-effects-contract.md) for scope and recovery boundaries.
+
+## Bounded work collections
+
+[`compose.New`](compose/collection.go) builds an ordinary reusable collection from an item template. Work arrives after initialization as an ordered typed list; each accepted item gets its own invocation and original result operation. The same collector runs directly or inside an ordinary wrapper. The [worktree example](examples/worktree/README.md) and [Phase1G runbook](docs/foundational/phase1g/04-runbook.md) show the deterministic CLI and controlled evidence leaf.
+
+The default profile bounds input to8 items, depth3,32 invocations,64 created runs,96 effect reservations and physical capacity1 or2. Recovery retains these shared charges. Unknown work stays pending and is not automatically repeated. Schema4 adds the invocation profile; schema3 and legacy artifacts remain supported without migration. Qualification uses independent item/budget checks, acknowledged process kills and fresh-process recovery; see the [report](docs/foundational/phase1g/evidence/task4/report.md) for source identities, exact schedules and review status.
 
 ## Evidence assistant
 
@@ -151,20 +157,25 @@ The store uses SQLite WAL and synchronous=FULL, verifies effective settings, and
 GOTOOLCHAIN=local go test -count=1 ./...
 GOTOOLCHAIN=local go test -count=1 -tags integration ./...
 GOTOOLCHAIN=local go test -count=1 -race -tags integration ./...
+GOTOOLCHAIN=local go -C examples/worktree/consumer test -count=1 -timeout=240s ./...
+GOTOOLCHAIN=local go -C examples/worktree/consumer test -count=1 -timeout=240s -race ./...
+GOTOOLCHAIN=local go -C examples/worktree/consumer vet ./...
+GOTOOLCHAIN=local go -C examples/worktree/consumer mod verify
 GOTOOLCHAIN=local go vet ./...
 GOTOOLCHAIN=local go vet -tags integration ./...
 go mod verify
 gofmt -l author schema runtime effects adapters cmd internal research examples
 ```
 
-The integration tag includes the external-consumer, application, provider and process qualification gates. Process tests require loopback sockets, child processes and SIGKILL permission. The race suite builds actual child executables with race instrumentation. Tests cover persistence, message correlation, ordinary supervision, replay, independent progress, retained unknown outcomes and acknowledged process-crash boundaries. Deliberately faulty variants and historical counterexamples remain part of qualification.
+The root integration tag includes the legacy author external-consumer, application, provider and process qualification gates. The Phase1G worktree consumer is a separate module; root `./...` does not cover it. Run its explicit commands above with the qualified 240s consumer watchdog. The [Phase1G runbook](docs/foundational/phase1g/04-runbook.md) gives archive reproduction and evidence details. Process tests require loopback sockets, child processes and SIGKILL permission. The race suite builds actual child executables with race instrumentation. Tests cover persistence, message correlation, ordinary supervision, replay, independent progress, retained unknown outcomes and acknowledged process-crash boundaries. Deliberately faulty variants and historical counterexamples remain part of qualification.
 
 | Location | Contents |
 | --- | --- |
-| `author`, `schema`, `runtime` | Provisional compiler, scalar schemas and public executor facade |
+| `author`, `schema`, `runtime` | Provisional compiler, scalar and bounded typed-list schemas, and public executor facade |
 | `effects`, `adapters/openai`, `adapters/lookup` | Retained effect protocol, Responses provider and corpus lookup |
 | `examples/evidence`, `cmd/alan-evidence` | Ordinary reusable evidence composition and CLI |
 | `examples/investigation`, `cmd/alan-investigate` | Bounded investigation, ordinary review/revision and nested report |
+| `compose`, `examples/worktree`, `cmd/alan-compose` | Bounded retained-template collections, separate-module consumer and CLI |
 | `cmd/alan` | Executor CLI |
 | `internal/executor` | Finite interpreter, SQLite authority, scheduler, messaging, lifecycle, external protocol, inspection and replay |
 | `cmd/alan-resource`, `internal/fixture` | Separate durable counter endpoint |
@@ -176,7 +187,7 @@ Start with the [foundations](docs/foundational/01-foundations.md), [composition]
 
 ## Current limits
 
-This profile supports one host, one active executor per store, static provisioning/grants and one program counter per run. No schema/program migration, history compaction, distributed fencing, dynamic creation, ownership transfer, general delegation, fresh-supervisor child reassociation or managed provider deployment is supplied. This development increment uses schema 3/key version 2 and rejects schema-1 and intermediate schema-2 stores before activation; their retained source archives reproduce the original behavior. Histories grow and startup/replay scan them. Local provenance and storage synchronization assumptions are explicit.
+This profile supports one host, one active executor per store, a statically retained template catalogue/grants and one program counter per run. The complete schema4 profile supports bounded data-dependent creation from those retained templates, typed lists and snapshot iteration under shared root limits; it does not support arbitrary dynamic spawning or catalogue mutation. Legacy schema3/key version2 programs remain supported without migration, alongside the complete schema4 invocation profile. Schema-1 and intermediate schema-2 stores are rejected before activation; their retained source archives reproduce the original behavior. No schema/program migration, history compaction, distributed fencing, ownership transfer, general delegation, fresh-supervisor child reassociation or managed provider deployment is supplied. Histories grow and startup/replay scan them. Local provenance and storage synchronization assumptions are explicit.
 
 Finite model searches and process-kill tests are evidence for their declared cases. They are not proofs of unbounded fairness, eventual recovery, arbitrary-depth equivalence, power-loss durability or safe repetition of arbitrary business work.
 

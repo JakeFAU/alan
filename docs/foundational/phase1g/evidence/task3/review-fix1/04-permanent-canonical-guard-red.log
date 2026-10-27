@@ -1,0 +1,33 @@
+=== RUN   TestCLIWorkFieldsRequireCanonicalNames
+=== RUN   TestCLIWorkFieldsRequireCanonicalNames/canonical-number
+=== RUN   TestCLIWorkFieldsRequireCanonicalNames/canonical-question
+=== RUN   TestCLIWorkFieldsRequireCanonicalNames/case-only-identity
+    main_test.go:126: noncanonical identity or payload accepted [{"ITEM_ID":"case-only","number":2}]
+=== RUN   TestCLIWorkFieldsRequireCanonicalNames/case-only-number
+    main_test.go:126: noncanonical identity or payload accepted [{"item_id":"item-a","NUMBER":2}]
+=== RUN   TestCLIWorkFieldsRequireCanonicalNames/case-only-question
+    main_test.go:126: noncanonical identity or payload accepted [{"item_id":"question-a","QUESTION":"WAL?"}]
+=== RUN   TestCLIWorkFieldsRequireCanonicalNames/case-only-all
+    main_test.go:126: noncanonical identity or payload accepted [{"ITEM_ID":"case-only","NUMBER":2}]
+=== RUN   TestCLIWorkFieldsRequireCanonicalNames/identity-alias
+    main_test.go:126: noncanonical identity or payload accepted [{"item_id":"original","ITEM_ID":"replacement","number":2}]
+=== RUN   TestCLIWorkFieldsRequireCanonicalNames/identity-alias-first
+    main_test.go:126: noncanonical identity or payload accepted [{"ITEM_ID":"replacement","item_id":"original","number":2}]
+=== RUN   TestCLIWorkFieldsRequireCanonicalNames/number-alias
+    main_test.go:126: noncanonical identity or payload accepted [{"item_id":"item-a","number":2,"NUMBER":100}]
+=== RUN   TestCLIWorkFieldsRequireCanonicalNames/question-alias
+    main_test.go:126: noncanonical identity or payload accepted [{"item_id":"question-a","question":"WAL?","QUESTION":"replacement"}]
+--- FAIL: TestCLIWorkFieldsRequireCanonicalNames (0.00s)
+    --- PASS: TestCLIWorkFieldsRequireCanonicalNames/canonical-number (0.00s)
+    --- PASS: TestCLIWorkFieldsRequireCanonicalNames/canonical-question (0.00s)
+    --- FAIL: TestCLIWorkFieldsRequireCanonicalNames/case-only-identity (0.00s)
+    --- FAIL: TestCLIWorkFieldsRequireCanonicalNames/case-only-number (0.00s)
+    --- FAIL: TestCLIWorkFieldsRequireCanonicalNames/case-only-question (0.00s)
+    --- FAIL: TestCLIWorkFieldsRequireCanonicalNames/case-only-all (0.00s)
+    --- FAIL: TestCLIWorkFieldsRequireCanonicalNames/identity-alias (0.00s)
+    --- FAIL: TestCLIWorkFieldsRequireCanonicalNames/identity-alias-first (0.00s)
+    --- FAIL: TestCLIWorkFieldsRequireCanonicalNames/number-alias (0.00s)
+    --- FAIL: TestCLIWorkFieldsRequireCanonicalNames/question-alias (0.00s)
+FAIL
+FAIL	github.com/JakeFAU/alan/cmd/alan-compose	0.147s
+FAIL

@@ -143,9 +143,9 @@ func Result(output schema.Record, c Candidate) (map[string]schema.Value, string)
 	v := map[string]schema.Value{}
 	for k, f := range output {
 		if valid {
-			v[k] = c.Payload[k]
+			v[k] = c.Payload[k].Clone()
 		} else {
-			v[k] = schema.Value{Kind: f.Kind}
+			v[k] = schema.Default(f)
 		}
 	}
 	v["valid"] = schema.Bool(valid)

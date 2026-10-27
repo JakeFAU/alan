@@ -1,0 +1,42 @@
+#!/usr/bin/env python3
+"""One reached waiting-parent occupancy fault using the existing Go overlay mechanism."""
+from pathlib import Path
+import gzip,hashlib,json,os,subprocess,tempfile
+ROOT=Path(__file__).resolve().parents[4];OUT=ROOT/'docs/foundational/phase1g/evidence/task4/slot-control'
+OUT.mkdir(parents=True,exist_ok=True)
+source=ROOT/'internal/executor/runner.go';original=source.read_text()
+needle='\t\t\t\t\tif root == "" || int64(activeRoots[root]) < limit {'
+assert original.count(needle)==1
+instrument='''
+                    owners := []string{}
+                    for operation, ownedRoot := range activeOperations { if ownedRoot == root { owners=append(owners,operation) } }
+                    sort.Strings(owners)
+                    if err:=boundary.Reached(ctx,boundary.Event{Boundary:"qualification.slot-state",Root:root,Intent:d.intent,Sequence:int64(activeRoots[root]),InFlight:owners});err!=nil{return report,err}
+'''
+fault='''
+                    if root!="" && len(activeOperations)==0 {
+                        binding,_,err:=loadCompositionBinding(ctx,s.conn,d.source);if err!=nil{return report,err}
+                        admitted,err:=loadCompositionAdmission(ctx,s.conn,binding.OperationID);if err!=nil{return report,err}
+                        var parentOperation string
+                        if err=s.conn.QueryRowContext(ctx,"SELECT operation_id FROM composition_invocations WHERE id=?",admitted.Invocation.ParentInvocationID).Scan(&parentOperation);err!=nil{return report,err}
+                        activeRoots[root]++
+                        activeOperations[parentOperation]=root
+                    }
+'''
+env=dict(os.environ);env.pop('OPENAI_API_KEY',None);env.update(GOTOOLCHAIN='local',GOPROXY='off',GOSUMDB='off',GOCACHE='/tmp/alan-phase1f-go-build',GOFLAGS='-mod=readonly',ALAN_SLOT_PROBE='1')
+for mode in ('observed-positive','waiting-parent-fault'):
+    raw=original.replace(needle,(fault if mode=='waiting-parent-fault' else '')+instrument+needle)
+    retained=OUT/(mode+'.go.txt');assert not retained.exists();retained.write_text(raw)
+    with tempfile.TemporaryDirectory(prefix='alan-phase1g-slot-') as tmp:
+        overlay=Path(tmp)/'overlay.json';replacement=Path(tmp)/'runner.go';replacement.write_text(raw)
+        mapping={'Replace':{str(source):str(replacement)}};overlay.write_text(json.dumps(mapping))
+        cmd=['go','test','-json','-overlay='+str(overlay),'-tags=integration','./internal/compositiontest','-run','^TestWaitingParentsOwnNoPhysicalSlots$','-count=1','-timeout=180s']
+        p=subprocess.run(cmd,cwd=ROOT,env=env,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        (OUT/(mode+'.jsonl.gz')).write_bytes(gzip.compress(p.stdout,mtime=0));(OUT/(mode+'.stderr.txt')).write_bytes(p.stderr)
+        record=dict(command=cmd,exit=p.returncode,overlay=mapping,original_sha256=hashlib.sha256(original.encode()).hexdigest(),variant_sha256=hashlib.sha256(raw.encode()).hexdigest(),classification='executed runtime source overlay; unchanged physical ownership monitor',environment={k:env[k] for k in ('GOTOOLCHAIN','GOPROXY','GOSUMDB','GOCACHE','GOFLAGS','ALAN_SLOT_PROBE')})
+        (OUT/(mode+'.command.json')).write_text(json.dumps(record,indent=2)+'\n');print(mode,p.returncode,flush=True)
+        if mode=='observed-positive':assert p.returncode==0
+        else:
+            assert p.returncode==1 and b'physical slot owned by waiting invocation:' in p.stdout
+            assert b'actual_slot_state' in p.stdout
+assert source.read_text()==original

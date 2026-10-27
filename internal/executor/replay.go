@@ -16,6 +16,7 @@ type ReplayReport struct {
 	SQLiteSourceID            string
 	HistoryCount, IntentCount int
 	Runs                      []RunState
+	Roots                     []RootCompletion
 }
 
 func Replay(ctx context.Context, path string, limits Limits) (report ReplayReport, err error) {
@@ -76,6 +77,28 @@ type historyRow struct {
 // must separately reconcile authority-caused closure and successor creation here;
 // a projection mismatch is never treated as an acceptable lifecycle shortcut.
 func validateLedger(ctx context.Context, q queryer, limits Limits) (ReplayReport, error) {
+	n, err := schemaNumber(ctx, q)
+	if err != nil {
+		return ReplayReport{}, err
+	}
+	switch n {
+	case SchemaVersion:
+		return validateOrdinaryLedger(ctx, q, limits)
+	case compositionSchemaVersion:
+		enabled, err := compositionProtocol(ctx, q)
+		if err != nil {
+			return ReplayReport{}, err
+		}
+		if !enabled {
+			return ReplayReport{}, ErrVersion
+		}
+		return validateCompositionStore(ctx, q, limits)
+	default:
+		return ReplayReport{}, ErrVersion
+	}
+}
+
+func validateOrdinaryLedger(ctx context.Context, q queryer, limits Limits) (ReplayReport, error) {
 	report := ReplayReport{Runs: []RunState{}}
 	namespace, err := readNamespace(ctx, q)
 	if err != nil {
@@ -145,6 +168,10 @@ func validateLedger(ctx context.Context, q queryer, limits Limits) (ReplayReport
 		p, ok := programs[run.ProgramID]
 		if !ok {
 			return report, corrupt("missing run artifact")
+		}
+		p, e = boundCompositionProgram(ctx, q, p, id, limits)
+		if e != nil {
+			return report, e
 		}
 		var initialRaw []byte
 		if e = q.QueryRowContext(ctx, "SELECT initial FROM runs WHERE subject=? AND generation=?", id.Subject, id.Generation).Scan(&initialRaw); e != nil {

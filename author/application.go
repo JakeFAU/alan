@@ -3,6 +3,7 @@ package author
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/JakeFAU/alan/internal/executor"
 	"github.com/JakeFAU/alan/runtime"
 	"github.com/JakeFAU/alan/schema"
 )
@@ -47,12 +48,12 @@ func (a Application) Provision() (runtime.Provision, error) {
 		instance := a[name]
 		m := metadata[name]
 		if !programs[instance.Artifact.id] {
-			p.Programs = append(p.Programs, runtime.Artifact{ID: instance.Artifact.id, Semantics: SemanticVersion, Bytes: instance.Artifact.Bytes()})
+			p.Programs = append(p.Programs, runtime.Artifact{ID: instance.Artifact.id, Semantics: artifactSemantics(instance.Artifact), Bytes: instance.Artifact.Bytes()})
 			programs[instance.Artifact.id] = true
 		}
 		data := map[string]schema.Value{}
 		for k, v := range instance.Inputs {
-			data[k] = v
+			data[k] = v.Clone()
 		}
 		p.Subjects = append(p.Subjects, runtime.Subject{ID: name, Generation: 1, Owner: "owner:" + name, Revision: 1})
 		p.Runs = append(p.Runs, runtime.InitialRun{ID: runtime.RunID{Subject: name, Generation: 1}, ProgramID: instance.Artifact.id, Projection: runtime.Projection{Status: "open", Data: data}})
@@ -90,5 +91,37 @@ func (a Application) Provision() (runtime.Provision, error) {
 	for _, key := range keys(permissions) {
 		p.Permissions = append(p.Permissions, permissions[key])
 	}
+	catalogue := templateCatalogue{}
+	templates := map[string]executor.TemplateDescriptor{}
+	for _, instance := range a {
+		if instance.Artifact.catalogue == "" {
+			continue
+		}
+		var c templateCatalogue
+		if err := json.Unmarshal([]byte(instance.Artifact.catalogue), &c); err != nil {
+			return p, err
+		}
+		for _, t := range c.Templates {
+			templates[t.ID] = t
+		}
+		for _, artifact := range c.Programs {
+			if !programs[artifact.ID] {
+				p.Programs = append(p.Programs, artifact)
+				programs[artifact.ID] = true
+			}
+		}
+	}
+	for _, id := range keys(templates) {
+		catalogue.Templates = append(catalogue.Templates, templates[id])
+	}
+	if len(templates) > 0 {
+		p.Composition = &runtime.CompositionProvision{Templates: catalogue.Templates}
+	}
 	return p, nil
+}
+
+func artifactSemantics(a Artifact) string {
+	var p executor.Program
+	_ = json.Unmarshal(a.Bytes(), &p)
+	return p.Semantics
 }

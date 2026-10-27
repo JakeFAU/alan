@@ -1,0 +1,656 @@
+package executor
+
+import (
+	"context"
+	"database/sql"
+	"errors"
+	"fmt"
+	"github.com/JakeFAU/alan/effects"
+	"github.com/JakeFAU/alan/internal/boundary"
+	"sort"
+	"sync"
+	"time"
+)
+
+const DefaultMaxInFlight = 2
+const DefaultExternalTimeout = 2 * time.Second
+const runnerCleanupTimeout = 5 * time.Second
+
+var ErrRunActive = errors.New("runner already active")
+
+type RunOptions struct {
+	Adapters              map[string]effects.Adapter
+	MaxSteps, MaxDispatch int
+	MaxInFlight           int
+	ExternalTimeout       time.Duration
+}
+type RunReport struct {
+	Steps, Dispatches  int
+	Quiescent          bool
+	OpenRuns           []RunID
+	UnresolvedIntents  []Intent
+	PendingDeliveries  []string
+	UnknownExternal    []string
+	UnknownAdapters    []string
+	Roots              []RootCompletion
+	RejectedAdmissions int
+}
+type readyRun struct {
+	authority   Authority
+	observation string
+}
+type pendingDelivery struct {
+	key, intent string
+	kind        string
+	source      RunID
+	destination TerminalDestination
+}
+
+// Run automatically schedules finite ordinary commits and committed deliveries.
+// Quiescence means no supported eligible work now, not completion or liveness.
+func (s *Store) Run(ctx context.Context, options RunOptions) (report RunReport, runErr error) {
+	if options.MaxInFlight == 0 {
+		options.MaxInFlight = DefaultMaxInFlight
+	}
+	if options.ExternalTimeout == 0 {
+		options.ExternalTimeout = DefaultExternalTimeout
+	}
+	if options.MaxSteps <= 0 || options.MaxDispatch <= 0 || options.MaxInFlight < 0 || options.ExternalTimeout < 0 {
+		return report, fmt.Errorf("runner limits must be positive: %w", ErrLimit)
+	}
+	s.ownerMu.Lock()
+	if s.closing {
+		s.ownerMu.Unlock()
+		return report, sql.ErrConnDone
+	}
+	if s.runDone != nil {
+		s.ownerMu.Unlock()
+		return report, ErrRunActive
+	}
+	ctx, cancel := context.WithCancel(ctx)
+	done := make(chan struct{})
+	wake := make(chan struct{}, 1)
+	s.runWake = wake
+	s.runDone = done
+	s.runCancel = cancel
+	s.ownerMu.Unlock()
+	completions := make(chan externalCompletion, options.MaxInFlight)
+	var workers sync.WaitGroup
+	active := 0
+	activeRoots := map[string]int{}
+	activeOperations := map[string]string{}
+	releaseSlot := func(result externalCompletion) {
+		id := result.work.attempt.Intent.ID
+		if result.adapter != nil {
+			id = result.adapter.attempt.Intent.ID
+		}
+		if root := activeOperations[id]; root != "" {
+			activeRoots[root]--
+			delete(activeOperations, id)
+		}
+	}
+	quiescent := false
+	defer func() {
+		cancel()
+		// Each claimed slot has exactly one buffered result; sends cannot block join.
+		workers.Wait()
+		cleanup, stop := context.WithTimeout(context.WithoutCancel(ctx), runnerCleanupTimeout)
+		defer stop()
+		for active > 0 {
+			result := <-completions
+			active--
+			releaseSlot(result)
+			runErr = errors.Join(runErr, s.accountExternal(cleanup, result))
+		}
+		report, runErr = s.finishRun(cleanup, report, quiescent && runErr == nil, runErr)
+		s.ownerMu.Lock()
+		s.runDone = nil
+		s.runWake = nil
+		s.runCancel = nil
+		close(done)
+		s.ownerMu.Unlock()
+	}()
+	var last *RunID
+	attempted := map[string]bool{}
+	for {
+		if err := ctx.Err(); err != nil {
+			return report, err
+		}
+		progressed := false
+		// One opportunity per category on every turn prevents delivery starvation.
+		select {
+		case result := <-completions:
+			active--
+			releaseSlot(result)
+			if err := s.accountReceived(ctx, result); err != nil {
+				return report, err
+			}
+			progressed = true
+		default:
+		}
+		pending, err := s.pendingDeliveries(ctx)
+		if err != nil {
+			return report, err
+		}
+		var internal, external *pendingDelivery
+		for i := range pending {
+			d := &pending[i]
+			if d.kind == "external" || d.kind == "adapter" {
+				if external == nil && !attempted[d.intent] {
+					root, limit, e := s.deliveryRoot(ctx, d.intent)
+					if e != nil {
+						return report, e
+					}
+
+                    owners := []string{}
+                    for operation, ownedRoot := range activeOperations { if ownedRoot == root { owners=append(owners,operation) } }
+                    sort.Strings(owners)
+                    if err:=boundary.Reached(ctx,boundary.Event{Boundary:"qualification.slot-state",Root:root,Intent:d.intent,Sequence:int64(activeRoots[root]),InFlight:owners});err!=nil{return report,err}
+					if root == "" || int64(activeRoots[root]) < limit {
+						external = d
+					}
+				}
+			} else if internal == nil {
+				internal = d
+			}
+		}
+		if internal != nil {
+			if report.Dispatches >= options.MaxDispatch {
+				return report, fmt.Errorf("dispatch budget exhausted: %w", ErrLimit)
+			}
+			report.Dispatches++
+			if err = s.deliverOrdinary(ctx, *internal); err != nil {
+				return report, err
+			}
+			progressed = true
+		}
+		if external != nil && active < options.MaxInFlight {
+			eligible, err := s.retryEligibleWork(ctx, *external)
+			if err != nil {
+				return report, err
+			}
+			if !eligible {
+				attempted[external.intent] = true
+				external = nil
+				progressed = true
+			}
+		}
+		if external != nil && active < options.MaxInFlight {
+			if report.Dispatches >= options.MaxDispatch {
+				return report, fmt.Errorf("dispatch budget exhausted: %w", ErrLimit)
+			}
+			report.Dispatches++
+			attempted[external.intent] = true
+			if external.kind == "adapter" {
+				work, err := s.prepareAdapterWork(ctx, external.intent, options.Adapters, options.ExternalTimeout)
+				if err != nil {
+					return report, err
+				}
+				if work != nil {
+					root, _, e := s.deliveryRoot(ctx, external.intent)
+					if e != nil {
+						return report, e
+					}
+					activeOperations[external.intent] = root
+					if root != "" {
+						activeRoots[root]++
+					}
+					active++
+					workers.Add(1)
+					go func(work adapterWork) {
+						defer workers.Done()
+						result := transportAdapter(ctx, work)
+						completions <- externalCompletion{adapter: &result}
+					}(*work)
+				}
+			} else {
+				work, err := s.prepareExternalWork(ctx, external.intent, options.ExternalTimeout)
+				if err != nil {
+					return report, err
+				}
+				if work != nil {
+					root, _, e := s.deliveryRoot(ctx, external.intent)
+					if e != nil {
+						return report, e
+					}
+					activeOperations[external.intent] = root
+					if root != "" {
+						activeRoots[root]++
+					}
+					active++
+					workers.Add(1)
+					go func(work externalWork) { defer workers.Done(); completions <- transportExternal(ctx, work) }(*work)
+				}
+			}
+			progressed = true
+		}
+		ready, err := s.selectReady(ctx, last)
+		if err != nil {
+			return report, err
+		}
+		if ready != nil {
+			if report.Steps >= options.MaxSteps {
+				return report, fmt.Errorf("execution budget exhausted: %w", ErrLimit)
+			}
+			next, err := s.Commit(ctx, ready.authority, ready.observation)
+			if next.ID.Subject != "" {
+				report.Steps++
+			}
+			if err != nil {
+				return report, err
+			}
+			id := next.ID
+			last = &id
+			progressed = true
+		}
+		rootProgress, err := s.settleRoots(ctx)
+		if err != nil {
+			return report, err
+		}
+		if progressed || rootProgress {
+			continue
+		}
+		if active == 0 {
+			quiescent = true
+			return report, nil
+		}
+		if err := boundary.Reached(ctx, boundary.Event{Boundary: "runner.waiting", Phase: "in-flight"}); err != nil {
+			return report, err
+		}
+		select {
+		case <-wake:
+		case <-ctx.Done():
+			return report, ctx.Err()
+		case result := <-completions:
+			active--
+			releaseSlot(result)
+			if err = s.accountReceived(ctx, result); err != nil {
+				return report, err
+			}
+		}
+	}
+}
+func (s *Store) deliverOrdinary(ctx context.Context, delivery pendingDelivery) (err error) {
+	if delivery.kind == "invocation" {
+		if _, err = s.AdmitInvocation(ctx, delivery.intent); err == nil {
+			_, err = s.SettleInvocation(ctx, delivery.intent)
+		}
+	} else if delivery.kind == "lifecycle" {
+		var auth Authorization
+		auth, err = s.AuthorizeIntent(ctx, delivery.intent)
+		if err == nil && auth.Allowed {
+			var request LifecycleRequest
+			request, err = s.LoadLifecycleRequest(ctx, delivery.intent)
+			if err == nil {
+				_, err = s.DecideLifecycle(ctx, request)
+			}
+		}
+		if err == nil {
+			_, err = s.SettleLifecycle(ctx, delivery.intent, delivery.key)
+		}
+	} else if delivery.intent != "" {
+		if _, err = s.DeliverMessage(ctx, delivery.intent, delivery.key); err == nil {
+			err = s.AcknowledgeMessage(ctx, delivery.intent, delivery.key)
+		}
+	} else {
+		if _, err = s.DeliverTerminal(ctx, delivery.source, delivery.destination, delivery.key); err == nil {
+			err = s.AcknowledgeTerminal(ctx, delivery.source, delivery.destination, delivery.key)
+		}
+	}
+	return err
+}
+func (s *Store) selectReady(ctx context.Context, last *RunID) (*readyRun, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.closed {
+		return nil, sql.ErrConnDone
+	}
+	ids, err := readRunIDs(ctx, s.conn)
+	if err != nil {
+		return nil, err
+	}
+	start := 0
+	if last != nil {
+		for i, id := range ids {
+			if id == *last {
+				start = i + 1
+				break
+			}
+		}
+	}
+	observations, err := readObservations(ctx, s.conn, s.limits)
+	if err != nil {
+		return nil, err
+	}
+	observationIDs := make([]string, 0, len(observations))
+	for id := range observations {
+		observationIDs = append(observationIDs, id)
+	}
+	sort.Strings(observationIDs)
+	for i := 0; i < len(ids); i++ {
+		id := ids[(start+i)%len(ids)]
+		run, err := loadRun(ctx, s.conn, id)
+		if err != nil {
+			return nil, err
+		}
+		var generation int64
+		var retired bool
+		if err = s.conn.QueryRowContext(ctx, "SELECT generation,retired FROM subjects WHERE id=?", id.Subject).Scan(&generation, &retired); err != nil {
+			return nil, err
+		}
+		if run.Projection.Status != "open" || retired || generation != id.Generation {
+			continue
+		}
+		p, err := loadProgram(ctx, s.conn, run.ProgramID, s.limits)
+		if err != nil {
+			return nil, err
+		}
+		p, err = boundCompositionProgram(ctx, s.conn, p, id, s.limits)
+		if err != nil {
+			return nil, err
+		}
+		if p.Code[run.Projection.PC].Op != "receive" {
+			if _, err = Reduce(p, run.Projection, nil, id, run.Sequence+1, s.limits); err != nil {
+				return nil, err
+			}
+			return &readyRun{authority: run.Authority()}, nil
+		}
+		for _, observationID := range observationIDs {
+			observation := observations[observationID]
+			if observation.Run != id || observation.consumed.Valid {
+				continue
+			}
+			_, err = Reduce(p, run.Projection, &observation.Observation, id, run.Sequence+1, s.limits)
+			if errors.Is(err, ErrIneligible) {
+				continue
+			}
+			if err != nil {
+				return nil, err
+			}
+			return &readyRun{authority: run.Authority(), observation: observationID}, nil
+		}
+	}
+	return nil, nil
+}
+func (s *Store) pendingDeliveries(ctx context.Context) ([]pendingDelivery, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.closed {
+		return nil, sql.ErrConnDone
+	}
+	return pendingDeliveries(ctx, s.conn)
+}
+func pendingDeliveries(ctx context.Context, q queryer) ([]pendingDelivery, error) {
+	pending := []pendingDelivery{}
+	intents, err := readIntents(ctx, q)
+	if err != nil {
+		return nil, err
+	}
+	for id, intent := range intents {
+		if intent.Kind == "invocation" {
+			var n int
+			if err = q.QueryRowContext(ctx, "SELECT count(*) FROM composition_outcome_deliveries WHERE operation_id=?", id).Scan(&n); err != nil {
+				return nil, err
+			}
+			if n == 0 {
+				prepared, e := prepareInvocation(ctx, q, id)
+				if e != nil && !errors.Is(e, sql.ErrNoRows) {
+					return nil, e
+				}
+				if errors.Is(e, sql.ErrNoRows) || prepared.Ready {
+					pending = append(pending, pendingDelivery{key: identity("invocation-delivery", id), intent: id, kind: "invocation"})
+				}
+			}
+			continue
+		}
+		if intent.Kind == "adapter" {
+			var count int
+			if err = q.QueryRowContext(ctx, "SELECT count(*) FROM settlements WHERE id=?", identity("adapter-outcome", id)).Scan(&count); err != nil {
+				return nil, err
+			}
+			if count == 0 {
+				pending = append(pending, pendingDelivery{key: identity("adapter-delivery", id), intent: id, kind: "adapter"})
+			}
+			continue
+		}
+		if intent.Kind == "external" {
+			var count int
+			if err = q.QueryRowContext(ctx, "SELECT count(*) FROM settlements WHERE id=?", identity("external-outcome", id)).Scan(&count); err != nil {
+				return nil, err
+			}
+			if count == 0 {
+				pending = append(pending, pendingDelivery{key: identity("external-delivery", id), intent: id, kind: "external"})
+			}
+			continue
+		}
+		if intent.Kind == "lifecycle" {
+			var count int
+			if err = q.QueryRowContext(ctx, "SELECT count(*) FROM settlements WHERE id=?", identity("lifecycle-outcome", id)).Scan(&count); err != nil {
+				return nil, err
+			}
+			if count == 0 {
+				pending = append(pending, pendingDelivery{key: identity("lifecycle-delivery", id), intent: id, kind: "lifecycle"})
+			}
+			continue
+		}
+		if intent.Kind != "message" {
+			continue
+		}
+		var count int
+		if err = q.QueryRowContext(ctx, "SELECT count(*) FROM message_acknowledgments WHERE intent_id=?", id).Scan(&count); err != nil {
+			return nil, err
+		}
+		if count == 0 {
+			pending = append(pending, pendingDelivery{key: identity("message-delivery", id), intent: id})
+		}
+	}
+	rows, err := q.QueryContext(ctx, "SELECT subject,generation,sequence,destinations,delivery_status FROM terminal_obligations ORDER BY subject,generation")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var source RunID
+		var sequence int64
+		var raw, status []byte
+		if err = rows.Scan(&source.Subject, &source.Generation, &sequence, &raw, &status); err != nil {
+			return nil, err
+		}
+		var destinations []TerminalDestination
+		var delivered map[string]bool
+		if err = decode(raw, &destinations); err != nil {
+			return nil, err
+		}
+		if err = decode(status, &delivered); err != nil {
+			return nil, err
+		}
+		for _, destination := range destinations {
+			if !delivered[destination.key()] {
+				pending = append(pending, pendingDelivery{key: identity("terminal-delivery", source.Subject, source.Generation, sequence, destination.Target, destination.Obligation), source: source, destination: destination})
+			}
+		}
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	sort.Slice(pending, func(i, j int) bool { return pending[i].key < pending[j].key })
+	return pending, nil
+}
+func (s *Store) finishRun(ctx context.Context, report RunReport, quiescent bool, runErr error) (RunReport, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	report.Quiescent = quiescent
+	report.OpenRuns = []RunID{}
+	report.UnresolvedIntents = []Intent{}
+	report.PendingDeliveries = []string{}
+	report.UnknownExternal = []string{}
+	report.UnknownAdapters = []string{}
+	if s.closed {
+		return report, errors.Join(runErr, sql.ErrConnDone)
+	}
+	roots, err := readRootCompletions(ctx, s.conn)
+	if err != nil {
+		return report, errors.Join(runErr, err)
+	}
+	report.Roots = roots
+	ids, err := readRunIDs(ctx, s.conn)
+	if err != nil {
+		return report, errors.Join(runErr, err)
+	}
+	for _, id := range ids {
+		run, err := loadRun(ctx, s.conn, id)
+		if err != nil {
+			return report, errors.Join(runErr, err)
+		}
+		if run.Projection.Status == "open" {
+			report.OpenRuns = append(report.OpenRuns, id)
+		}
+	}
+	intents, err := readIntents(ctx, s.conn)
+	if err != nil {
+		return report, errors.Join(runErr, err)
+	}
+	for id, intent := range intents {
+		var count int
+		if err = s.conn.QueryRowContext(ctx, "SELECT count(*) FROM message_acknowledgments WHERE intent_id=?", id).Scan(&count); err != nil {
+			return report, errors.Join(runErr, err)
+		}
+		if count == 0 && intent.Kind == "invocation" {
+			if err = s.conn.QueryRowContext(ctx, "SELECT count(*) FROM composition_outcome_deliveries WHERE operation_id=?", id).Scan(&count); err != nil {
+				return report, errors.Join(runErr, err)
+			}
+		}
+		if count == 0 && intent.Kind == "lifecycle" {
+			if err = s.conn.QueryRowContext(ctx, "SELECT count(*) FROM settlements WHERE id=?", identity("lifecycle-outcome", id)).Scan(&count); err != nil {
+				return report, errors.Join(runErr, err)
+			}
+		}
+		if count == 0 && intent.Kind == "external" {
+			if err = s.conn.QueryRowContext(ctx, "SELECT count(*) FROM settlements WHERE id=?", identity("external-outcome", id)).Scan(&count); err != nil {
+				return report, errors.Join(runErr, err)
+			}
+		}
+		if count == 0 && intent.Kind == "external" {
+			a, e := loadExternalAttempt(ctx, s.conn, id)
+			if e == nil && a.Allowed {
+				// A retained receipt makes the physical result known even if its
+				// separate local settlement has not committed yet.
+				_, outcomeErr := externalOutcome(ctx, s.conn, id)
+				if errors.Is(outcomeErr, sql.ErrNoRows) {
+					report.UnknownExternal = append(report.UnknownExternal, id)
+				} else if outcomeErr != nil {
+					return report, errors.Join(runErr, outcomeErr)
+				}
+			} else if e != nil && !errors.Is(e, sql.ErrNoRows) {
+				return report, errors.Join(runErr, e)
+			}
+		}
+		if count == 0 && intent.Kind == "adapter" {
+			if err = s.conn.QueryRowContext(ctx, "SELECT count(*) FROM settlements WHERE id=?", identity("adapter-outcome", id)).Scan(&count); err != nil {
+				return report, errors.Join(runErr, err)
+			}
+			if count == 0 {
+				a, e := loadAdapterAttempt(ctx, s.conn, id)
+				if e == nil && a.Allowed {
+					_, e = loadAdapterResult(ctx, s.conn, id)
+					if errors.Is(e, sql.ErrNoRows) {
+						report.UnknownAdapters = append(report.UnknownAdapters, id)
+					} else if e != nil {
+						return report, errors.Join(runErr, e)
+					}
+				} else if e != nil && !errors.Is(e, sql.ErrNoRows) {
+					return report, errors.Join(runErr, e)
+				}
+			}
+		}
+		if count == 0 {
+			report.UnresolvedIntents = append(report.UnresolvedIntents, intent.Intent)
+		}
+	}
+	sort.Slice(report.UnresolvedIntents, func(i, j int) bool { return report.UnresolvedIntents[i].ID < report.UnresolvedIntents[j].ID })
+	sort.Strings(report.UnknownExternal)
+	sort.Strings(report.UnknownAdapters)
+	pending, err := pendingDeliveries(ctx, s.conn)
+	if err != nil {
+		return report, errors.Join(runErr, err)
+	}
+	for _, d := range pending {
+		report.PendingDeliveries = append(report.PendingDeliveries, d.key)
+	}
+	rows, err := s.conn.QueryContext(ctx, "SELECT result FROM admissions")
+	if err != nil {
+		return report, errors.Join(runErr, err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var raw []byte
+		if err = rows.Scan(&raw); err != nil {
+			return report, errors.Join(runErr, err)
+		}
+		var result AdmissionResult
+		if err = decode(raw, &result); err != nil {
+			return report, errors.Join(runErr, err)
+		}
+		if !result.Accepted {
+			report.RejectedAdmissions++
+		}
+	}
+	return report, errors.Join(runErr, rows.Err())
+}
+
+func (s *Store) retryEligibleWork(ctx context.Context, d pendingDelivery) (bool, error) {
+	if d.kind != "adapter" {
+		return s.retryEligible(ctx, d.intent)
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.closed {
+		return false, sql.ErrConnDone
+	}
+	a, e := loadAdapterAttempt(ctx, s.conn, d.intent)
+	if errors.Is(e, sql.ErrNoRows) {
+		return true, nil
+	}
+	if e != nil {
+		return false, e
+	}
+	_, e = loadAdapterResult(ctx, s.conn, d.intent)
+	if errors.Is(e, sql.ErrNoRows) {
+		return !a.Allowed, nil
+	}
+	return e == nil, e
+}
+
+// accountReceived owns a result already removed from the completion queue.
+// Caller cancellation must not discard it or interrupt receipt/settlement writes.
+// Only accounting uses the bounded detached context; scheduling retains ctx.
+func (s *Store) accountReceived(ctx context.Context, result externalCompletion) error {
+	event := result.work.event
+	if result.adapter != nil {
+		event = result.adapter.event
+	}
+	event.Boundary = "runner.received"
+	event.Phase = "pre-account"
+	observed := boundary.Reached(ctx, event)
+	cleanup, stop := context.WithTimeout(context.WithoutCancel(ctx), runnerCleanupTimeout)
+	defer stop()
+	return errors.Join(observed, s.accountExternal(cleanup, result), ctx.Err())
+}
+
+func (s *Store) deliveryRoot(ctx context.Context, operation string) (string, int64, error) {
+	if !s.invocationEnabled() {
+		return "", 0, nil
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	i, err := loadIntent(ctx, s.conn, operation)
+	if err != nil {
+		return "", 0, err
+	}
+	id, err := compositionMembershipRoot(ctx, s.conn, i.Run)
+	if err != nil || id == "" {
+		return id, 0, err
+	}
+	root, err := compositionRootFor(ctx, s.conn, i.Run)
+	return id, root.Limits.MaxInFlight, err
+}

@@ -1,0 +1,113 @@
+// Package compose derives bounded collection components from ordinary public
+// author steps. Compilation retains one loop body, independently of item count.
+package compose
+
+import (
+	"fmt"
+	"sort"
+
+	"github.com/JakeFAU/alan/author"
+	"github.com/JakeFAU/alan/schema"
+)
+
+// Options bounds each accepted list and its retained results. MaxBytes is the
+// total canonical byte ceiling for each list, including nested response records.
+// Leaf inputs reserve item_id for the explicit application identity.
+type Options struct{ MaxItems, MaxBytes, MaxIDBytes int }
+
+func DefaultOptions() Options { return Options{MaxItems: 8, MaxBytes: 262144, MaxIDBytes: 128} }
+
+// New retains a component with request {items:[{item_id,...leaf input}]} and
+// response {all_succeeded:bool,results:[{item_id,operation,status,reason,responses}]}.
+// responses is a bounded zero-or-one list of the leaf's exact public response.
+// Empty input succeeds; any known non-success yields Failure after its reply.
+// Unknown work waits at its original handle. All invokes precede collection.
+func New(leaf author.Template, options Options) (author.Template, error) {
+	input, output, err := leaf.Schemas()
+	if err != nil {
+		return author.Template{}, err
+	}
+	if _, conflict := input.Record["item_id"]; conflict {
+		return author.Template{}, fmt.Errorf("leaf input reserves item_id")
+	}
+	if options.MaxItems <= 0 || options.MaxBytes <= 0 || options.MaxIDBytes <= 0 {
+		return author.Template{}, fmt.Errorf("collection bounds must be positive")
+	}
+	item := schema.Record{"item_id": {Kind: "string", MaxBytes: options.MaxIDBytes}}
+	for k, v := range input.Record {
+		item[k] = v
+	}
+	items := schema.Field{Kind: "list", MaxItems: options.MaxItems, MaxBytes: options.MaxBytes, UniqueKey: "item_id", Element: item}
+	response := schema.Field{Kind: "list", MaxItems: 1, MaxBytes: options.MaxBytes, Element: output.Record}
+	handles := schema.Field{
+		Kind: "list", MaxItems: options.MaxItems, MaxBytes: options.MaxBytes, UniqueKey: "item_id",
+		Element: schema.Record{
+			"item_id":   item["item_id"],
+			"operation": {Kind: "string", MaxBytes: 4096},
+		},
+	}
+	results := schema.Field{Kind: "list", MaxItems: options.MaxItems, MaxBytes: options.MaxBytes, UniqueKey: "item_id", Element: schema.Record{
+		"item_id":   item["item_id"],
+		"operation": {Kind: "string", MaxBytes: 4096},
+		"status":    {Kind: "string", MaxBytes: 32, Enum: []string{"succeeded", "failed", "cancelled", "abandoned", "rejected"}},
+		"reason":    {Kind: "string", MaxBytes: 4096},
+		"responses": response,
+	}}
+	request := schema.Record{"items": items}
+	reply := schema.Record{"results": results, "all_succeeded": {Kind: "bool"}}
+	if err = request.Check(); err != nil {
+		return author.Template{}, err
+	}
+	if err = reply.Check(); err != nil {
+		return author.Template{}, err
+	}
+	itemBindings := map[string]string{"item_id": "item_id"}
+	payload := map[string]author.Expr{}
+	outputBindings := map[string]string{}
+	responseValues := map[string]author.Expr{}
+	for _, k := range sorted(input.Record) {
+		itemBindings[k] = "input_" + k
+		payload[k] = author.Var("input_" + k)
+	}
+	for _, k := range sorted(output.Record) {
+		outputBindings[k] = "output_" + k
+		responseValues[k] = author.Var("output_" + k)
+	}
+	artifact, err := author.Compile(author.Definition{
+		Name: "bounded collection", Invocations: map[string]author.Template{"item": leaf},
+		Values:      map[string]schema.Value{"all_succeeded": schema.Bool(true)},
+		Collections: map[string]schema.Field{"handles": handles, "results": results, "responses": response},
+		Ports:       map[string]author.Port{"public": {Peer: "caller", Obligation: "work", Receive: request, Send: reply}},
+		Steps: []author.Step{
+			author.Receive("public", map[string]string{"items": "items"}),
+			author.ForEach(author.Var("items"), itemBindings,
+				author.Invoke("pending", "item", payload, nil),
+				author.Append("handles", map[string]author.Expr{"item_id": author.Var("item_id"), "operation": author.Var("pending")})),
+			author.ForEach(author.Var("handles"), map[string]string{"item_id": "item_id", "operation": "pending"},
+				author.AwaitInvocation("item", "pending", author.InvocationOutcomeBindings{Status: "status", Reason: "reason", ResponsePresent: "present", Response: outputBindings}),
+				author.Set("responses", author.Value(schema.List())),
+				author.IfEqual(author.Var("present"), author.Boolean(true), []author.Step{author.Append("responses", responseValues)}, nil),
+				author.Append("results", map[string]author.Expr{
+					"item_id": author.Var("item_id"), "operation": author.Var("pending"),
+					"status": author.Var("status"), "reason": author.Var("reason"),
+					"responses": author.Var("responses"),
+				}),
+				author.IfEqual(author.Var("status"), author.String("succeeded"), nil, []author.Step{author.Set("all_succeeded", author.Boolean(false))})),
+			author.Send("public", map[string]author.Expr{"results": author.Var("results"), "all_succeeded": author.Var("all_succeeded")}),
+			author.IfEqual(author.Var("all_succeeded"), author.Boolean(true), []author.Step{author.Success()}, []author.Step{author.Failure()}),
+		},
+	})
+	if err != nil {
+		return author.Template{}, err
+	}
+	return author.NewTemplate(author.Application{"entry": {Artifact: artifact, Inputs: map[string]schema.Value{}}}, "entry", "public")
+}
+
+func sorted(r schema.Record) []string {
+	keys := make([]string, 0, len(r))
+	for k := range r {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
+}

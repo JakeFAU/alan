@@ -3,6 +3,7 @@ package executor
 import (
 	"encoding/json"
 	"errors"
+	recordschema "github.com/JakeFAU/alan/schema"
 	"strings"
 	"testing"
 )
@@ -182,5 +183,25 @@ func TestGeneratedOutputHonorsExactConfiguredJSONBoundary(t *testing.T) {
 	limits.MaxOutputBytes = 0
 	if _, err = Reduce(program, initial, nil, id, 1, limits); !errors.Is(err, ErrLimit) {
 		t.Fatalf("nonpositive output limit accepted: %v", err)
+	}
+}
+
+func TestLegacySemanticsRejectCollections(t *testing.T) {
+	for _, sem := range []string{SemanticVersion, AuthorSemanticVersion} {
+		p := Program{Semantics: sem, Code: []Instruction{{Op: "set", Dst: "items", A: Lit(recordschema.List())}, {Op: "end", Outcome: "succeeded"}}}
+		if sem == AuthorSemanticVersion {
+			empty, _ := (recordschema.Record{}).Retain()
+			p.Author = &ProgramMetadata{Compiler: AuthorCompilerVersion, Inputs: empty, Outputs: empty, Positions: []string{"set", "end"}}
+		}
+		if _, _, err := EncodeProgram(p); err == nil {
+			t.Fatalf("legacy %s accepted list literal", sem)
+		}
+	}
+	p := Program{Semantics: SemanticVersion, Code: []Instruction{{Op: "end", Outcome: "succeeded"}}}
+	if _, err := Reduce(p, Projection{Status: "open", Data: map[string]Value{"items": recordschema.List()}}, nil, RunID{"old", 1}, 1, DefaultLimits()); err == nil {
+		t.Fatal("legacy projection accepted list")
+	}
+	if authorAdmissionValid(p, AdmissionDescriptor{Kind: "input", Payload: map[string]Value{"items": recordschema.List()}}) {
+		t.Fatal("legacy program admitted collection")
 	}
 }

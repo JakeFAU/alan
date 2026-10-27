@@ -1,0 +1,108 @@
+[
+  {
+    "argv": [
+      "go",
+      "test",
+      "-overlay",
+      "/tmp/alan-task2c-independent-review/overlay.json",
+      "./internal/executor",
+      "-run",
+      "^TestIndependentCompositionMessageAuthorizationPrefix$",
+      "-count=1",
+      "-v",
+      "-timeout=30s"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 1,
+    "output": "01-original-overlay-red.log",
+    "source_identity": "32a2aa026b7be64c082d9672331daf338384ee118294338afdc12a03ec709a8b"
+  },
+  {
+    "argv": [
+      "go",
+      "test",
+      "./internal/executor",
+      "-run",
+      "^TestComposition(MessageAuthorizationPrefix|SourceDeniedLifecycleAuthorizationPrefix)$",
+      "-count=1",
+      "-v",
+      "-timeout=30s"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 1,
+    "output": "02-permanent-regressions-before.log",
+    "source_identity": "2f2d00e6cf890f9fbd707fb159aff97f0773624cf86c53b171cca778b182045d"
+  },
+  {
+    "argv": [
+      "go",
+      "test",
+      "./internal/executor",
+      "-run",
+      "^TestComposition(MessageAuthorizationPrefix|SourceDeniedLifecycleAuthorizationPrefix|SelectedObservationCausalOrder|SelectedObservationWithoutScopedPredecessor)$",
+      "-count=1",
+      "-v",
+      "-timeout=30s"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 0,
+    "output": "03-focused-green.log",
+    "source_identity": "fc2b0465eea920d6b04cd3c3896c6be909ba5a6b292ed9ebf9c58ff6a1ebf282"
+  },
+  {
+    "argv": [
+      "go",
+      "test",
+      "-overlay",
+      "/tmp/alan-task2c-independent-review/overlay.json",
+      "./internal/executor",
+      "-run",
+      "^TestIndependentCompositionMessageAuthorizationPrefix$",
+      "-count=1",
+      "-v",
+      "-timeout=30s"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 0,
+    "output": "04-original-overlay-green.log",
+    "source_identity": "fc2b0465eea920d6b04cd3c3896c6be909ba5a6b292ed9ebf9c58ff6a1ebf282"
+  },
+  {
+    "argv": [
+      "go",
+      "test",
+      "./internal/executor",
+      "-count=1",
+      "-timeout=120s"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "exit_code": 0,
+    "output": "05-executor-package.log",
+    "source_identity": "fc2b0465eea920d6b04cd3c3896c6be909ba5a6b292ed9ebf9c58ff6a1ebf282"
+  }
+]
