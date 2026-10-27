@@ -7,6 +7,7 @@ import gzip
 import hashlib
 import json
 import os
+import platform
 import re
 import subprocess
 import sys
@@ -46,8 +47,13 @@ if "--parse-existing" in sys.argv:
     started, elapsed = previous["StartedUTC"], previous["ElapsedSeconds"]
     returncode, errors = previous["ExitCode"], previous["Stderr"]
     cmd, env = previous["Command"], previous["Environment"]
+    execution_platform, go_version = previous["Platform"], previous["GoVersion"]
+    directory, credential_absent = previous["Directory"], previous["CredentialAbsent"]
 else:
     assert not meta_path.exists() and not raw_path.exists(), "refuse to overwrite qualification evidence"
+    execution_platform = platform.platform()
+    go_version = subprocess.check_output(["go", "version"], cwd=ROOT, env=env, text=True).strip()
+    directory, credential_absent = str(ROOT), "OPENAI_API_KEY" not in env
     start = time.monotonic()
     started = datetime.datetime.now(datetime.timezone.utc).isoformat()
     with tempfile.TemporaryFile() as stdout, tempfile.TemporaryFile() as stderr:
@@ -91,13 +97,13 @@ for line in raw.decode().splitlines():
         packages.append({"Package": package, "Result": e["Action"], "ElapsedSeconds": e.get("Elapsed")})
 assert not any(v.strip() for v in buffers.values())
 meta = {"Kind": "verification_command", "SourceID": MANIFEST["source_sha256"], "Mode": MODE,
-        "Command": cmd, "Directory": str(ROOT), "StartedUTC": started, "ElapsedSeconds": elapsed,
+        "Command": cmd, "Directory": directory, "StartedUTC": started, "ElapsedSeconds": elapsed,
         "Environment": {k: env[k] for k in ("GOTOOLCHAIN", "GOFLAGS", "GOCACHE", "GOPROXY", "GOSUMDB")},
         "ExitCode": returncode, "Stderr": errors, "Packages": packages,
         "PassingEvents": passes, "Failures": failures,
         "Markers": dict(collections.Counter(r["Marker"] for r in records)),
         "RawLog": os.path.relpath(raw_path, ROOT), "RawSHA256": hashlib.sha256(raw).hexdigest(),
-        "GzipSHA256": hashlib.sha256(raw_path.read_bytes()).hexdigest(), "SourceUnchanged": True, "Platform": MANIFEST["platform"], "GoVersion": MANIFEST["go_version"], "CredentialAbsent": "OPENAI_API_KEY" not in env}
+        "GzipSHA256": hashlib.sha256(raw_path.read_bytes()).hexdigest(), "SourceUnchanged": True, "Platform": execution_platform, "GoVersion": go_version, "CredentialAbsent": credential_absent}
 (OUT / ("final-" + MODE + ".command.json")).write_text(json.dumps(meta, indent=2) + "\n")
 (OUT / ("final-" + MODE + ".records.jsonl.gz")).write_bytes(gzip.compress(
     "".join(json.dumps(r, separators=(",", ":")) + "\n" for r in records).encode(), mtime=0))

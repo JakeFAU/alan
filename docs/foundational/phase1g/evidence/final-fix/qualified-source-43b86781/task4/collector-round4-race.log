@@ -1,0 +1,185 @@
+{
+  "Kind": "verification_command",
+  "SourceID": "f0063efa779e140005fe3320a218fa2d879d01927e11d44fe7276420d9dcd522",
+  "Mode": "race",
+  "Command": [
+    "go",
+    "test",
+    "-json",
+    "-count=1",
+    "-timeout",
+    "20m",
+    "-race",
+    "-tags",
+    "integration",
+    "./..."
+  ],
+  "Directory": "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan",
+  "StartedUTC": "2026-10-26T23:05:02.844849+00:00",
+  "ElapsedSeconds": 1081.695,
+  "Environment": {
+    "GOTOOLCHAIN": "local",
+    "GOFLAGS": "-mod=readonly",
+    "GOCACHE": "/tmp/alan-phase1f-go-build",
+    "GOPROXY": "off",
+    "GOSUMDB": "off"
+  },
+  "ExitCode": 1,
+  "Stderr": "",
+  "Packages": [
+    {
+      "Package": "github.com/JakeFAU/alan/cmd/alan-resource",
+      "Result": "skip",
+      "ElapsedSeconds": 0
+    },
+    {
+      "Package": "github.com/JakeFAU/alan/adapters/lookup",
+      "Result": "pass",
+      "ElapsedSeconds": 1.322
+    },
+    {
+      "Package": "github.com/JakeFAU/alan/adapters/openai",
+      "Result": "pass",
+      "ElapsedSeconds": 1.506
+    },
+    {
+      "Package": "github.com/JakeFAU/alan/effects",
+      "Result": "pass",
+      "ElapsedSeconds": 1.111
+    },
+    {
+      "Package": "github.com/JakeFAU/alan/cmd/alan",
+      "Result": "pass",
+      "ElapsedSeconds": 2.086
+    },
+    {
+      "Package": "github.com/JakeFAU/alan/internal/boundary",
+      "Result": "pass",
+      "ElapsedSeconds": 1.116
+    },
+    {
+      "Package": "github.com/JakeFAU/alan/compose",
+      "Result": "pass",
+      "ElapsedSeconds": 12.047
+    },
+    {
+      "Package": "github.com/JakeFAU/alan/cmd/alan-evidence",
+      "Result": "pass",
+      "ElapsedSeconds": 14.352
+    },
+    {
+      "Package": "github.com/JakeFAU/alan/cmd/alan-compose",
+      "Result": "pass",
+      "ElapsedSeconds": 15.573
+    },
+    {
+      "Package": "github.com/JakeFAU/alan/internal/fixture",
+      "Result": "pass",
+      "ElapsedSeconds": 1.19
+    },
+    {
+      "Package": "github.com/JakeFAU/alan/author",
+      "Result": "pass",
+      "ElapsedSeconds": 25.266
+    },
+    {
+      "Package": "github.com/JakeFAU/alan/cmd/alan-investigate",
+      "Result": "pass",
+      "ElapsedSeconds": 27.729
+    },
+    {
+      "Package": "github.com/JakeFAU/alan/runtime",
+      "Result": "pass",
+      "ElapsedSeconds": 3.177
+    },
+    {
+      "Package": "github.com/JakeFAU/alan/schema",
+      "Result": "pass",
+      "ElapsedSeconds": 1.206
+    },
+    {
+      "Package": "github.com/JakeFAU/alan/internal/executor",
+      "Result": "pass",
+      "ElapsedSeconds": 43.878
+    },
+    {
+      "Package": "github.com/JakeFAU/alan/internal/evidencetest",
+      "Result": "pass",
+      "ElapsedSeconds": 56.219
+    },
+    {
+      "Package": "github.com/JakeFAU/alan/internal/durabletest",
+      "Result": "pass",
+      "ElapsedSeconds": 86.244
+    },
+    {
+      "Package": "github.com/JakeFAU/alan/examples/evidence",
+      "Result": "pass",
+      "ElapsedSeconds": 90.704
+    },
+    {
+      "Package": "github.com/JakeFAU/alan/research/semantics",
+      "Result": "pass",
+      "ElapsedSeconds": 128.563
+    },
+    {
+      "Package": "github.com/JakeFAU/alan/internal/investigationtest",
+      "Result": "pass",
+      "ElapsedSeconds": 205.076
+    },
+    {
+      "Package": "github.com/JakeFAU/alan/examples/worktree",
+      "Result": "pass",
+      "ElapsedSeconds": 244.136
+    },
+    {
+      "Package": "github.com/JakeFAU/alan/internal/compositiontest",
+      "Result": "fail",
+      "ElapsedSeconds": 385.389
+    },
+    {
+      "Package": "github.com/JakeFAU/alan/examples/investigation",
+      "Result": "pass",
+      "ElapsedSeconds": 1079.742
+    }
+  ],
+  "PassingEvents": 1005,
+  "Failures": [
+    {
+      "Time": "2026-10-26T19:09:13.995236-04:00",
+      "Action": "fail",
+      "Package": "github.com/JakeFAU/alan/internal/compositiontest",
+      "Test": "TestProcessPartialWithOutstandingTransport",
+      "Elapsed": 180.55
+    },
+    {
+      "Time": "2026-10-26T19:11:31.557652-04:00",
+      "Action": "fail",
+      "Package": "github.com/JakeFAU/alan/internal/compositiontest",
+      "Elapsed": 385.389
+    }
+  ],
+  "Markers": {
+    "INVESTIGATION": 102,
+    "WORKTREE": 147,
+    "DURABLE": 119,
+    "EVIDENCE": 120,
+    "ASYNC": 23,
+    "COMPOSITION": 20,
+    "QUALIFICATION": 15,
+    "CONFORMANCE": 6,
+    "SUPERVISION": 32
+  },
+  "RawLog": "docs/foundational/phase1g/evidence/task4/final-round4/final-race.go-test.jsonl.gz",
+  "RawSHA256": "bf07fbbace87ccf66340abdcc5b4d358bd1c637af8088159d75ea72f0db10fe7",
+  "GzipSHA256": "db303252ed7c294333fde176abd992af412f57771ba4ce4f0f2d97bb85ef017e",
+  "SourceUnchanged": true,
+  "Platform": "macOS-27.2-arm64-arm-64bit-Mach-O",
+  "GoVersion": "go version go1.27.3 darwin/arm64",
+  "CredentialAbsent": true
+}
+Traceback (most recent call last):
+  File "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan/docs/foundational/phase1g/tools/qualify.py", line 105, in <module>
+    assert returncode == 0 and not failures
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

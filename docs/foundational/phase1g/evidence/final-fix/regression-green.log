@@ -1,0 +1,38 @@
+test_fresh_execution_uses_executing_environment (test_qualify.QualificationMetadataTests.test_fresh_execution_uses_executing_environment) ... FAIL
+test_parse_existing_preserves_recorded_execution_environment (test_qualify.QualificationMetadataTests.test_parse_existing_preserves_recorded_execution_environment) ... ok
+
+======================================================================
+FAIL: test_fresh_execution_uses_executing_environment (test_qualify.QualificationMetadataTests.test_fresh_execution_uses_executing_environment)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan/docs/foundational/phase1g/tools/test_qualify.py", line 88, in test_fresh_execution_uses_executing_environment
+    self.assertEqual(calls[1], meta['Command'])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: ['-C', 'examples/worktree/consumer', 'test'[43 chars]...'] != ['go', '-C', 'examples/worktree/consumer', [49 chars]...']
+
+First differing element 0:
+'-C'
+'go'
+
+Second list contains 1 additional elements.
+First extra element 7:
+'./...'
+
++ ['go',
+- ['-C',
+? ^
+
++  '-C',
+? ^
+
+   'examples/worktree/consumer',
+   'test',
+   '-json',
+   '-count=1',
+   '-timeout=240s',
+   './...']
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.222s
+
+FAILED (failures=1)

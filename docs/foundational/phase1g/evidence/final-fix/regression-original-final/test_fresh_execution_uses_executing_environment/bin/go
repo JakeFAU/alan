@@ -1,0 +1,13 @@
+#!/opt/homebrew/opt/python@3.15/bin/python3.15
+import json, os, pathlib, sys
+assert os.environ['GOTOOLCHAIN'] == 'local'
+assert os.environ['GOFLAGS'] == '-mod=readonly'
+assert 'OPENAI_API_KEY' not in os.environ
+assert pathlib.Path.cwd() == pathlib.Path(os.environ['EXPECTED_ROOT'])
+with open(os.environ['CALLS'], 'a') as f:
+    f.write(json.dumps(sys.argv[1:]) + '\n')
+if sys.argv[1:] == ['version']:
+    print('go version executing-toolchain synthetic/host')
+else:
+    assert sys.argv[1:] == ['-C', 'examples/worktree/consumer', 'test', '-json', '-count=1', '-timeout=240s', './...']
+    print(json.dumps({'Action': 'pass', 'Package': 'synthetic/consumer', 'Test': 'TestFaultyOrdinaryCollectorReachesIndependentMappingMonitor'}))

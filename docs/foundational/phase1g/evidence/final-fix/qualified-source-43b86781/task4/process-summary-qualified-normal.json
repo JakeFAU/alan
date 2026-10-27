@@ -1,0 +1,338 @@
+{
+  "SourceID": "43b86781f819c6bf7a957956aceaf717a5808873114e8213bf1147620bdf2ec3",
+  "Mode": "normal",
+  "records": "extracted/final-normal.records.jsonl.gz",
+  "events": {
+    "process_start": 35,
+    "process_exit": 35,
+    "operator_closure": 4,
+    "effect_partial_cut": 1,
+    "effect_recovered_unknown": 1,
+    "physical_ownership_positive": 1,
+    "equal_payload_contacts": 1,
+    "crash_cut": 6,
+    "evidence_mutant": 60,
+    "recovery_interruption": 2,
+    "recovered": 6,
+    "actual_result_attempts": 2
+  },
+  "cuts": [
+    {
+      "test": "TestProcessRecoveryCuts/nested=false/accepted",
+      "record_index": 446,
+      "cut": "accepted",
+      "pid": 66888,
+      "sequence": 5,
+      "epoch": 1,
+      "not_yet_admitted": 3,
+      "admitted_without_outcome": 0,
+      "not_yet_collected": 3,
+      "collected": []
+    },
+    {
+      "test": "TestProcessRecoveryCuts/nested=false/recorded",
+      "record_index": 467,
+      "cut": "recorded",
+      "pid": 66895,
+      "sequence": 8,
+      "epoch": 0,
+      "not_yet_admitted": 2,
+      "admitted_without_outcome": 0,
+      "not_yet_collected": 3,
+      "collected": []
+    },
+    {
+      "test": "TestProcessRecoveryCuts/nested=false/partial",
+      "record_index": 486,
+      "cut": "partial",
+      "pid": 66900,
+      "sequence": 27,
+      "epoch": 1,
+      "not_yet_admitted": 0,
+      "admitted_without_outcome": 0,
+      "not_yet_collected": 2,
+      "collected": [
+        "item-a"
+      ]
+    },
+    {
+      "test": "TestProcessRecoveryCuts/nested=true/accepted",
+      "record_index": 505,
+      "cut": "accepted",
+      "pid": 66928,
+      "sequence": 5,
+      "epoch": 1,
+      "not_yet_admitted": 3,
+      "admitted_without_outcome": 0,
+      "not_yet_collected": 3,
+      "collected": []
+    },
+    {
+      "test": "TestProcessRecoveryCuts/nested=true/recorded",
+      "record_index": 526,
+      "cut": "recorded",
+      "pid": 66934,
+      "sequence": 8,
+      "epoch": 0,
+      "not_yet_admitted": 2,
+      "admitted_without_outcome": 0,
+      "not_yet_collected": 3,
+      "collected": []
+    },
+    {
+      "test": "TestProcessRecoveryCuts/nested=true/partial",
+      "record_index": 545,
+      "cut": "partial",
+      "pid": 66949,
+      "sequence": 27,
+      "epoch": 1,
+      "not_yet_admitted": 0,
+      "admitted_without_outcome": 0,
+      "not_yet_collected": 2,
+      "collected": [
+        "item-a"
+      ]
+    }
+  ],
+  "kills": [
+    {
+      "test": "TestOperatorClosureAtCompositionCuts/pre-admission",
+      "record_index": 3,
+      "pid": 66195,
+      "exit": -1,
+      "signal": "killed"
+    },
+    {
+      "test": "TestOperatorClosureAtCompositionCuts/accepted",
+      "record_index": 10,
+      "pid": 66205,
+      "exit": -1,
+      "signal": "killed"
+    },
+    {
+      "test": "TestOperatorClosureAtCompositionCuts/recorded",
+      "record_index": 20,
+      "pid": 66255,
+      "exit": -1,
+      "signal": "killed"
+    },
+    {
+      "test": "TestOperatorClosureAtCompositionCuts/partial",
+      "record_index": 73,
+      "pid": 66316,
+      "exit": -1,
+      "signal": "killed"
+    },
+    {
+      "test": "TestProcessPartialWithOutstandingTransport",
+      "record_index": 430,
+      "pid": 66465,
+      "exit": -1,
+      "signal": "killed"
+    },
+    {
+      "test": "TestProcessRecoveryCuts/nested=false/accepted",
+      "record_index": 455,
+      "pid": 66888,
+      "exit": -1,
+      "signal": "killed"
+    },
+    {
+      "test": "TestProcessRecoveryCuts/nested=false/accepted",
+      "record_index": 458,
+      "pid": 66889,
+      "exit": -1,
+      "signal": "killed"
+    },
+    {
+      "test": "TestProcessRecoveryCuts/nested=false/recorded",
+      "record_index": 476,
+      "pid": 66895,
+      "exit": -1,
+      "signal": "killed"
+    },
+    {
+      "test": "TestProcessRecoveryCuts/nested=false/partial",
+      "record_index": 495,
+      "pid": 66900,
+      "exit": -1,
+      "signal": "killed"
+    },
+    {
+      "test": "TestProcessRecoveryCuts/nested=true/accepted",
+      "record_index": 514,
+      "pid": 66928,
+      "exit": -1,
+      "signal": "killed"
+    },
+    {
+      "test": "TestProcessRecoveryCuts/nested=true/accepted",
+      "record_index": 517,
+      "pid": 66929,
+      "exit": -1,
+      "signal": "killed"
+    },
+    {
+      "test": "TestProcessRecoveryCuts/nested=true/recorded",
+      "record_index": 535,
+      "pid": 66934,
+      "exit": -1,
+      "signal": "killed"
+    },
+    {
+      "test": "TestProcessRecoveryCuts/nested=true/partial",
+      "record_index": 554,
+      "pid": 66949,
+      "exit": -1,
+      "signal": "killed"
+    }
+  ],
+  "network_denied_replays": [
+    {
+      "test": "TestOperatorClosureAtCompositionCuts/pre-admission",
+      "record_index": 6,
+      "pid": 66202,
+      "policy": "macOS sandbox-exec deny network*"
+    },
+    {
+      "test": "TestOperatorClosureAtCompositionCuts/accepted",
+      "record_index": 13,
+      "pid": 66239,
+      "policy": "macOS sandbox-exec deny network*"
+    },
+    {
+      "test": "TestOperatorClosureAtCompositionCuts/recorded",
+      "record_index": 23,
+      "pid": 66298,
+      "policy": "macOS sandbox-exec deny network*"
+    },
+    {
+      "test": "TestOperatorClosureAtCompositionCuts/partial",
+      "record_index": 79,
+      "pid": 66463,
+      "policy": "macOS sandbox-exec deny network*"
+    },
+    {
+      "test": "TestProcessPartialWithOutstandingTransport",
+      "record_index": 433,
+      "pid": 66859,
+      "policy": "macOS sandbox-exec deny network*"
+    },
+    {
+      "test": "TestProcessRecoveryCuts/nested=false/accepted",
+      "record_index": 463,
+      "pid": 66893,
+      "policy": "macOS sandbox-exec deny network*"
+    },
+    {
+      "test": "TestProcessRecoveryCuts/nested=false/recorded",
+      "record_index": 481,
+      "pid": 66897,
+      "policy": "macOS sandbox-exec deny network*"
+    },
+    {
+      "test": "TestProcessRecoveryCuts/nested=false/partial",
+      "record_index": 501,
+      "pid": 66927,
+      "policy": "macOS sandbox-exec deny network*"
+    },
+    {
+      "test": "TestProcessRecoveryCuts/nested=true/accepted",
+      "record_index": 522,
+      "pid": 66931,
+      "policy": "macOS sandbox-exec deny network*"
+    },
+    {
+      "test": "TestProcessRecoveryCuts/nested=true/recorded",
+      "record_index": 540,
+      "pid": 66948,
+      "policy": "macOS sandbox-exec deny network*"
+    },
+    {
+      "test": "TestProcessRecoveryCuts/nested=true/partial",
+      "record_index": 560,
+      "pid": 66955,
+      "policy": "macOS sandbox-exec deny network*"
+    }
+  ],
+  "effect_contacts": [
+    {
+      "test": "TestProcessPartialWithOutstandingTransport",
+      "record_index": 436,
+      "kind": "effect_recovered_unknown",
+      "ledger": [
+        {
+          "Order": 1,
+          "Question": "fast",
+          "Phase": "entered",
+          "ClientID": "alan-119258576c2e6f95bf6af1a57b5c8e03eef02bd8c9d74c7c2fe0cce2c396b4d0"
+        },
+        {
+          "Order": 2,
+          "Question": "fast",
+          "Phase": "response_written",
+          "ClientID": "alan-119258576c2e6f95bf6af1a57b5c8e03eef02bd8c9d74c7c2fe0cce2c396b4d0"
+        },
+        {
+          "Order": 3,
+          "Question": "hold",
+          "Phase": "entered",
+          "ClientID": "alan-7c0360fe841d806aa4f4c14e97d4f5764b47dfe7038f5d4f03ec0833badb72b9"
+        },
+        {
+          "Order": 4,
+          "Question": "later",
+          "Phase": "entered",
+          "ClientID": "alan-9c1b8a7a000e41daeeccf06c19afce0269e8343f13eaef5a8829b49eb2c16788"
+        },
+        {
+          "Order": 5,
+          "Question": "later",
+          "Phase": "response_written",
+          "ClientID": "alan-9c1b8a7a000e41daeeccf06c19afce0269e8343f13eaef5a8829b49eb2c16788"
+        },
+        {
+          "Order": 6,
+          "Question": "hold",
+          "Phase": "connection_closed_after_kill",
+          "ClientID": "alan-7c0360fe841d806aa4f4c14e97d4f5764b47dfe7038f5d4f03ec0833badb72b9"
+        }
+      ],
+      "unknown": "[\"e3bf0941390d8f93257ca70ad49bf9153d68edaa0de626d510b6413e4cf1df42\",1,15,0]",
+      "held_invocation": "[\"c36f9da73cc36e099df46fa7cef609c56d153a588a2784148b3a7579858de8cc\",1,12,0]"
+    },
+    {
+      "test": "TestEqualPayloadContactsRemainDistinct",
+      "record_index": 444,
+      "kind": "equal_payload_contacts",
+      "ledger": [
+        {
+          "Order": 1,
+          "Question": "same",
+          "Phase": "entered",
+          "ClientID": "alan-18cf6eedebd0872f99878098547d07734fafddfc3054bf78fe545670eaeca76c"
+        },
+        {
+          "Order": 2,
+          "Question": "same",
+          "Phase": "response_written",
+          "ClientID": "alan-18cf6eedebd0872f99878098547d07734fafddfc3054bf78fe545670eaeca76c"
+        },
+        {
+          "Order": 3,
+          "Question": "same",
+          "Phase": "entered",
+          "ClientID": "alan-4bfefe2c0d136b0189470b435b077e3158cf2595dfbdad5cbea94e2747dfb23a"
+        },
+        {
+          "Order": 4,
+          "Question": "same",
+          "Phase": "response_written",
+          "ClientID": "alan-4bfefe2c0d136b0189470b435b077e3158cf2595dfbdad5cbea94e2747dfb23a"
+        }
+      ],
+      "unknown": null,
+      "held_invocation": null
+    }
+  ]
+}

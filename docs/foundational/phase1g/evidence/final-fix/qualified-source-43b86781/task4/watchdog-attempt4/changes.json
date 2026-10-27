@@ -1,0 +1,46 @@
+{
+  "Scope": "Only approved test watchdog durations; unchanged causal assertions, inputs, cuts and work/resource ceilings",
+  "Files": [
+    {
+      "Path": "internal/compositiontest/process_test.go",
+      "OriginalSHA256": "9a2b1ad712c09e8ce18e35aef6f6d5b1f69c60e3833b1d1d54cb8f3938acde05",
+      "OverlaySHA256": "c26f6486a7e5493a343de6d36aa4799489239f89d150873ffbc2b9b8b9621ec1",
+      "Substitutions": [
+        [
+          "ExternalTimeout: 150 * time.Second",
+          "ExternalTimeout: 300 * time.Second",
+          1
+        ],
+        [
+          "\"-test.timeout=180s\"",
+          "\"-test.timeout=360s\"",
+          1
+        ],
+        [
+          "time.After(120 * time.Second)",
+          "time.After(300 * time.Second)",
+          1
+        ],
+        [
+          "time.After(180 * time.Second)",
+          "time.After(360 * time.Second)",
+          1
+        ]
+      ],
+      "Diff": "--- process_test.go\n+++ process_test.go\n@@ -251,7 +251,7 @@\n \t\t\t\t}\n \t\t\t\tregistry[evidence.ModelCapability] = model\n \t\t\t}\n-\t\t\t_, err = s.Run(ctx, runtime.RunOptions{MaxSteps: 2000, MaxDispatch: 500, MaxInFlight: 2, Adapters: registry, ExternalTimeout: 150 * time.Second})\n+\t\t\t_, err = s.Run(ctx, runtime.RunOptions{MaxSteps: 2000, MaxDispatch: 500, MaxInFlight: 2, Adapters: registry, ExternalTimeout: 300 * time.Second})\n \t\t}\n \t}\n \tif err != nil {\n@@ -287,7 +287,7 @@\n \tif err != nil {\n \t\tt.Fatal(err)\n \t}\n-\targs := []string{\"-test.run=^TestProcessChild$\", \"-test.v\", \"-test.timeout=180s\"}\n+\targs := []string{\"-test.run=^TestProcessChild$\", \"-test.v\", \"-test.timeout=360s\"}\n \tnetworkPolicy := \"no adapter registry; OS network denial unavailable\"\n \tbinary := exe\n \tif replay {\n@@ -349,7 +349,7 @@\n \t\t\traw, _ := os.ReadFile(p.log.Name())\n \t\t\tt.Fatalf(\"ack: %v %s\", err, raw)\n \t\t}\n-\tcase <-time.After(120 * time.Second):\n+\tcase <-time.After(300 * time.Second):\n \t\tt.Fatal(\"watchdog: missing boundary\")\n \t}\n \tif err := validAck(e, p.filter, p.cmd.Process.Pid, map[string]bool{}); err != nil {\n@@ -379,7 +379,7 @@\n \t\t} else if err != nil {\n \t\t\tt.Fatal(err, string(raw))\n \t\t}\n-\tcase <-time.After(180 * time.Second):\n+\tcase <-time.After(360 * time.Second):\n \t\tt.Fatal(\"watchdog: child did not exit\")\n \t}\n }\n"
+    },
+    {
+      "Path": "internal/compositiontest/effects_test.go",
+      "OriginalSHA256": "4b5efb5a40f4eee3b2d8a511ff55388c73c8ce5e37f657af59fae05f7a0568b7",
+      "OverlaySHA256": "7214abf971a6f81a670dc4edf8171882f3eaa29d669b711a3d7b5988359ad543",
+      "Substitutions": [
+        [
+          "time.After(120 * time.Second)",
+          "time.After(300 * time.Second)",
+          2
+        ]
+      ],
+      "Diff": "--- effects_test.go\n+++ effects_test.go\n@@ -111,7 +111,7 @@\n \tchild := startEndpoint(t, path, d.Collection.ID(), \"partial\", false, server.URL)\n \tselect {\n \tcase <-p.entered:\n-\tcase <-time.After(120 * time.Second):\n+\tcase <-time.After(300 * time.Second):\n \t\tt.Fatal(\"watchdog: no held transport\")\n \t}\n \tack := child.acknowledgment(t)\n@@ -160,7 +160,7 @@\n \tchild.wait(t, true)\n \tselect {\n \tcase <-p.ended:\n-\tcase <-time.After(120 * time.Second):\n+\tcase <-time.After(300 * time.Second):\n \t\tt.Fatal(\"watchdog: killed transport did not close\")\n \t}\n \trecovered := startEndpoint(t, path, d.Collection.ID(), \"\", false, server.URL)\n"
+    }
+  ]
+}

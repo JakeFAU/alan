@@ -1,0 +1,41 @@
+test_fresh_execution_uses_executing_environment (test_qualify.QualificationMetadataTests.test_fresh_execution_uses_executing_environment) ... FAIL
+test_parse_existing_preserves_recorded_execution_environment (test_qualify.QualificationMetadataTests.test_parse_existing_preserves_recorded_execution_environment) ... FAIL
+
+======================================================================
+FAIL: test_fresh_execution_uses_executing_environment (test_qualify.QualificationMetadataTests.test_fresh_execution_uses_executing_environment)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan/docs/foundational/phase1g/tools/test_qualify.py", line 83, in test_fresh_execution_uses_executing_environment
+    meta = self.run_tool()
+  File "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan/docs/foundational/phase1g/tools/test_qualify.py", line 79, in run_tool
+    self.assertEqual(proc.returncode, 0, proc.stderr.decode())
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 1 != 0 : Traceback (most recent call last):
+  File "<string>", line 3, in <module>
+    runpy.run_path('/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-metadata-test-suls_7sr/docs/foundational/phase1g/tools/qualify.py', run_name="__main__")
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen runpy>", line 292, in run_path
+  File "<frozen runpy>", line 97, in _run_module_code
+  File "<frozen runpy>", line 87, in _run_code
+  File "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-metadata-test-suls_7sr/docs/foundational/phase1g/tools/qualify.py", line 105, in <module>
+    assert returncode == 0 and not failures
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+
+
+======================================================================
+FAIL: test_parse_existing_preserves_recorded_execution_environment (test_qualify.QualificationMetadataTests.test_parse_existing_preserves_recorded_execution_environment)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan/docs/foundational/phase1g/tools/test_qualify.py", line 107, in test_parse_existing_preserves_recorded_execution_environment
+    self.assertEqual(meta[key], original[key], key)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'deliberately-different-freeze-host' != 'original-executing-host'
+- deliberately-different-freeze-host
++ original-executing-host
+ : Platform
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.407s
+
+FAILED (failures=2)

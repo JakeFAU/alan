@@ -1,0 +1,521 @@
+//go:build integration
+
+// Package compositiontest qualifies process recovery through public Store.Run.
+// Inspection here is test evidence, never application scheduling policy.
+package compositiontest
+
+import (
+	"context"
+	"crypto/sha256"
+	"encoding/json"
+	"fmt"
+	"github.com/JakeFAU/alan/examples/worktree"
+	"github.com/JakeFAU/alan/internal/boundary"
+	"github.com/JakeFAU/alan/runtime"
+	"github.com/JakeFAU/alan/schema"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"reflect"
+	"strings"
+	"syscall"
+	"testing"
+	"time"
+)
+
+func emit(t *testing.T, v any) {
+	t.Helper()
+	b, e := json.Marshal(v)
+	if e != nil {
+		t.Fatal(e)
+	}
+	t.Log("WORKTREE " + string(b))
+}
+func input() schema.Value {
+	return schema.List(
+		map[string]schema.Value{"item_id": schema.Text("item-a"), "number": schema.Int(2)},
+		map[string]schema.Value{"item_id": schema.Text("item-b"), "number": schema.Int(-3)},
+		map[string]schema.Value{"item_id": schema.Text("item-c"), "number": schema.Int(2)})
+}
+func inspect(t *testing.T, path string) runtime.Inspection {
+	t.Helper()
+	s, e := runtime.Inspect(t.Context(), path, runtime.DefaultLimits())
+	if e != nil {
+		t.Fatal(e)
+	}
+	return s
+}
+func decode[T any](row map[string]any, key string) T {
+	var v T
+	if e := json.Unmarshal([]byte(row[key].(string)), &v); e != nil {
+		panic(e)
+	}
+	return v
+}
+func collection(s runtime.Inspection, template string) (runtime.InvocationDescriptor, string) {
+	for _, r := range s.Tables["composition_invocations"] {
+		v := decode[runtime.InvocationDescriptor](r, "descriptor")
+		if v.TemplateID != template {
+			continue
+		}
+		for _, m := range s.Tables["composition_members"] {
+			if m["invocation_id"] == v.ID {
+				return v, m["subject"].(string)
+			}
+		}
+	}
+	return runtime.InvocationDescriptor{}, ""
+}
+func projection(s runtime.Inspection, subject string) runtime.Projection {
+	for _, r := range s.Tables["runs"] {
+		if r["subject"] == subject {
+			return decode[runtime.Projection](r, "projection")
+		}
+	}
+	return runtime.Projection{}
+}
+func rows(p runtime.Projection, name string) []map[string]schema.Value {
+	r, _ := p.Data[name].Records()
+	return r
+}
+
+// acceptance binds the original observation to the collector Receive commit.
+func acceptance(s runtime.Inspection, template string) (map[string]any, error) {
+	inv, subject := collection(s, template)
+	for _, r := range s.Tables["composition_requests"] {
+		if r["invocation_id"] != inv.ID {
+			continue
+		}
+		for _, o := range s.Tables["observations"] {
+			if o["id"] != r["observation_id"] || o["consumed_sequence"] == nil {
+				continue
+			}
+			for _, h := range s.Tables["history"] {
+				if h["subject"] != subject || h["subject"] != o["subject"] || h["generation"] != o["generation"] || h["sequence"] != o["consumed_sequence"] || h["selected_observation"] != o["id"] {
+					continue
+				}
+				if !decode[runtime.Projection](h, "successor").Data["items"].Equal(input()) {
+					return nil, fmt.Errorf("different accepted items")
+				}
+				return map[string]any{"invocation": inv, "subject": subject, "generation": h["generation"], "sequence": h["sequence"], "epoch": h["epoch"], "observation": o["id"], "items": input()}, nil
+			}
+		}
+	}
+	return nil, fmt.Errorf("collector Receive acceptance absent")
+}
+func validAck(got, want boundary.Event, pid int, used map[string]bool) error {
+	if got.PID != pid || got.Token != want.Token || got.Scenario != want.Scenario || got.Store != want.Store || got.Boundary != want.Boundary || used[got.Token] {
+		return fmt.Errorf("foreign or reused acknowledgment")
+	}
+	if got.Subject == "" || got.Generation != 1 || got.Sequence <= 0 || got.Phase != want.Phase {
+		return fmt.Errorf("invalid acknowledged source")
+	}
+	used[got.Token] = true
+	return nil
+}
+func durableAck(s runtime.Inspection, e boundary.Event) error {
+	if e.Boundary == "execution.committed" {
+		for _, h := range s.Tables["history"] {
+			if h["subject"] != e.Subject || h["generation"] != e.Generation || h["sequence"] != e.Sequence || h["epoch"] != e.Epoch {
+				continue
+			}
+			var intents []struct{ ID string }
+			if err := json.Unmarshal([]byte(h["intents"].(string)), &intents); err != nil {
+				return err
+			}
+			first := ""
+			if len(intents) > 0 {
+				first = intents[0].ID
+			}
+			if first != e.Intent {
+				return fmt.Errorf("execution intent mismatch")
+			}
+			return nil
+		}
+		return fmt.Errorf("acknowledged execution not committed")
+	}
+	// Invocation hooks emit Epoch=0, not an observed activation epoch.
+	if e.Epoch != 0 {
+		return fmt.Errorf("unexpected invocation hook epoch")
+	}
+	for _, r := range s.Tables["composition_results"] {
+		v := decode[runtime.InvocationOutcome](r, "descriptor")
+		if v.ID != e.Attempt || v.OperationID != e.Intent || v.Caller.Subject != e.Subject || v.Caller.Generation != e.Generation {
+			continue
+		}
+		for _, r := range s.Tables["composition_invocations"] {
+			inv := decode[runtime.InvocationDescriptor](r, "descriptor")
+			if inv.ID != v.InvocationID || inv.OperationID != e.Intent || inv.SourceSequence != e.Sequence || inv.RootID != e.Root {
+				continue
+			}
+			for _, h := range s.Tables["history"] {
+				if h["subject"] == e.Subject && h["generation"] == e.Generation && h["sequence"] == e.Sequence {
+					var intents []struct{ ID string }
+					_ = json.Unmarshal([]byte(h["intents"].(string)), &intents)
+					for _, i := range intents {
+						if i.ID == e.Intent {
+							return nil
+						}
+					}
+				}
+			}
+		}
+	}
+	return fmt.Errorf("acknowledged result lacks committed original operation")
+}
+func cutReached(s runtime.Inspection, template, cut string, e boundary.Event) bool {
+	_, subject := collection(s, template)
+	if subject == "" || e.Subject != subject {
+		return false
+	}
+	a, err := acceptance(s, template)
+	if err != nil {
+		return false
+	}
+	switch cut {
+	case "accepted":
+		return e.Boundary == "execution.committed" && a["sequence"] == e.Sequence
+	case "partial":
+		return e.Boundary == "execution.committed" && len(rows(projection(s, subject), "results")) == 1
+	case "recorded":
+		if e.Boundary != "invocation.result-recorded" {
+			return false
+		}
+		for _, d := range s.Tables["composition_outcome_deliveries"] {
+			if d["operation_id"] != e.Intent {
+				continue
+			}
+			for _, o := range s.Tables["observations"] {
+				if o["id"] == d["observation_id"] {
+					return o["consumed_sequence"] == nil
+				}
+			}
+		}
+	}
+	return false
+}
+func TestProcessChild(t *testing.T) {
+	path := os.Getenv("ALAN_COMPOSITION_DB")
+	if path == "" {
+		t.Skip("subprocess entry")
+	}
+	ctx, err := boundary.FromEnvironment(t.Context(), path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cut, template := os.Getenv("ALAN_COMPOSITION_CUT"), os.Getenv("ALAN_COMPOSITION_TEMPLATE")
+	if cut != "" {
+		pipe := ctx
+		ctx = boundary.WithObserver(ctx, func(ctx context.Context, e boundary.Event) error {
+			if e.Boundary != "execution.committed" && e.Boundary != "invocation.result-recorded" {
+				return nil
+			}
+			s, err := runtime.Inspect(ctx, path, runtime.DefaultLimits())
+			if err != nil {
+				return err
+			}
+			if cutReached(s, template, cut, e) {
+				return boundary.Reached(pipe, e)
+			}
+			return nil
+		})
+	}
+	if os.Getenv("ALAN_COMPOSITION_REPLAY") == "1" {
+		_, err = runtime.Replay(ctx, path, runtime.DefaultLimits())
+	} else {
+		var s *runtime.Store
+		s, err = runtime.Open(ctx, path, runtime.DefaultLimits())
+		if err == nil {
+			defer s.Close()
+			_, err = s.Run(ctx, runtime.RunOptions{MaxSteps: 2000, MaxDispatch: 500, MaxInFlight: 2})
+		}
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+type process struct {
+	cmd               *exec.Cmd
+	ack, release, log *os.File
+	filter            boundary.Event
+	stopped           bool
+}
+
+func start(t *testing.T, path, template, cut string, replay bool) *process {
+	t.Helper()
+	ackR, ackW, err := os.Pipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	relR, relW, err := os.Pipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	log, err := os.CreateTemp(t.TempDir(), "child-")
+	if err != nil {
+		t.Fatal(err)
+	}
+	exe, err := os.Executable()
+	if err != nil {
+		t.Fatal(err)
+	}
+	cmd := exec.Command(exe, "-test.run=^TestProcessChild$", "-test.v", "-test.timeout=180s")
+	for _, e := range os.Environ() {
+		if !strings.HasPrefix(e, "OPENAI_API_KEY=") && !strings.HasPrefix(e, "ALAN_BARRIER=") && !strings.HasPrefix(e, "ALAN_COMPOSITION_") {
+			cmd.Env = append(cmd.Env, e)
+		}
+	}
+	cmd.Env = append(cmd.Env, "ALAN_COMPOSITION_DB="+path, "ALAN_COMPOSITION_TEMPLATE="+template, "ALAN_COMPOSITION_CUT="+cut)
+	f := boundary.Event{Store: path, Scenario: t.Name(), Token: fmt.Sprintf("%s/%s/%d", t.Name(), cut, time.Now().UnixNano()), Boundary: "execution.committed", Phase: "post-commit"}
+	if cut == "recorded" {
+		f.Boundary = "invocation.result-recorded"
+		f.Phase = "pre-consumption"
+	}
+	if cut != "" {
+		raw, _ := json.Marshal(f)
+		cmd.Env = append(cmd.Env, "ALAN_BARRIER="+string(raw))
+	}
+	if replay {
+		cmd.Env = append(cmd.Env, "ALAN_COMPOSITION_REPLAY=1", "HTTP_PROXY=http://127.0.0.1:1", "HTTPS_PROXY=http://127.0.0.1:1")
+	}
+	cmd.ExtraFiles = []*os.File{ackW, relR}
+	cmd.Stdout = log
+	cmd.Stderr = log
+	if err = cmd.Start(); err != nil {
+		t.Fatal(err)
+	}
+	ackW.Close()
+	relR.Close()
+	p := &process{cmd: cmd, ack: ackR, release: relW, log: log, filter: f}
+	t.Cleanup(func() {
+		if !p.stopped {
+			_ = cmd.Process.Kill()
+			_ = cmd.Wait()
+		}
+		ackR.Close()
+		relW.Close()
+		log.Close()
+	})
+	raw, _ := os.ReadFile(exe)
+	emit(t, map[string]any{"kind": "process_start", "pid": cmd.Process.Pid, "command": cmd.Args, "binary_sha256": fmt.Sprintf("%x", sha256.Sum256(raw)), "filter": f, "cut": cut, "replay": replay})
+	return p
+}
+func (p *process) acknowledgment(t *testing.T) boundary.Event {
+	t.Helper()
+	var e boundary.Event
+	done := make(chan error, 1)
+	go func() { done <- json.NewDecoder(p.ack).Decode(&e) }()
+	select {
+	case err := <-done:
+		if err != nil {
+			raw, _ := os.ReadFile(p.log.Name())
+			t.Fatalf("ack: %v %s", err, raw)
+		}
+	case <-time.After(120 * time.Second):
+		t.Fatal("watchdog: missing boundary")
+	}
+	if err := validAck(e, p.filter, p.cmd.Process.Pid, map[string]bool{}); err != nil {
+		t.Fatal(err)
+	}
+	return e
+}
+func (p *process) wait(t *testing.T, kill bool) {
+	t.Helper()
+	if kill {
+		if err := p.cmd.Process.Signal(syscall.SIGKILL); err != nil {
+			t.Fatal(err)
+		}
+	}
+	done := make(chan error, 1)
+	go func() { done <- p.cmd.Wait() }()
+	select {
+	case err := <-done:
+		p.stopped = true
+		raw, _ := os.ReadFile(p.log.Name())
+		status := p.cmd.ProcessState.Sys().(syscall.WaitStatus)
+		emit(t, map[string]any{"kind": "process_exit", "pid": p.cmd.Process.Pid, "exit_code": p.cmd.ProcessState.ExitCode(), "signal": status.Signal().String(), "output": string(raw)})
+		if kill {
+			if err == nil || !status.Signaled() || status.Signal() != syscall.SIGKILL {
+				t.Fatal("not SIGKILL", err)
+			}
+		} else if err != nil {
+			t.Fatal(err, string(raw))
+		}
+	case <-time.After(180 * time.Second):
+		t.Fatal("watchdog: child did not exit")
+	}
+}
+func TestProcessRecoveryCuts(t *testing.T) {
+	for _, nested := range []bool{false, true} {
+		for _, cut := range []string{"accepted", "recorded", "partial"} {
+			t.Run(fmt.Sprintf("nested=%v/%s", nested, cut), func(t *testing.T) {
+				leaf, err := worktree.Deterministic()
+				if err != nil {
+					t.Fatal(err)
+				}
+				d, err := worktree.New(leaf, nested, worktree.DefaultLimits(1))
+				if err != nil {
+					t.Fatal(err)
+				}
+				path := filepath.Join(t.TempDir(), "work.sqlite")
+				s, err := runtime.Create(t.Context(), path, d.Provision, runtime.DefaultLimits())
+				if err != nil {
+					t.Fatal(err)
+				}
+				a, err := worktree.Submit(t.Context(), s, "frozen-three", input())
+				if err != nil || !a.Accepted {
+					t.Fatal(a, err)
+				}
+				if err = s.Close(); err != nil {
+					t.Fatal(err)
+				}
+				p := start(t, path, d.Collection.ID(), cut, false)
+				ack := p.acknowledgment(t)
+				before := inspect(t, path)
+				if err = durableAck(before, ack); err != nil {
+					t.Fatal(err)
+				}
+				if !cutReached(before, d.Collection.ID(), cut, ack) {
+					t.Fatal("wrong cut")
+				}
+				accepted, err := acceptance(before, d.Collection.ID())
+				if err != nil {
+					t.Fatal(err)
+				}
+				_, subject := collection(before, d.Collection.ID())
+				emit(t, map[string]any{"kind": "crash_cut", "cut": cut, "ack": ack, "acceptance": accepted, "collector_projection": projection(before, subject), "snapshot": before})
+				monitorControls(t, before, ack, p.filter, p.cmd.Process.Pid, d.Collection.ID())
+				p.wait(t, true)
+				stopped := inspect(t, path)
+				if !reflect.DeepEqual(before, stopped) {
+					t.Fatal("durable state changed after acknowledged stop")
+				}
+				r := start(t, path, d.Collection.ID(), "", false)
+				if r.cmd.Process.Pid == p.cmd.Process.Pid {
+					t.Fatal("PID reused")
+				}
+				r.wait(t, false)
+				after := inspect(t, path)
+				if err = finalMonitor(after, nested); err != nil {
+					t.Fatal(err)
+				}
+				if _, err = acceptance(after, d.Collection.ID()); err != nil {
+					t.Fatal(err)
+				}
+				for _, table := range []string{"composition_invocations", "composition_results", "composition_charges"} {
+					for _, row := range before.Tables[table] {
+						found := false
+						for _, later := range after.Tables[table] {
+							if reflect.DeepEqual(row, later) {
+								found = true
+								break
+							}
+						}
+						if !found {
+							t.Fatal("recovery replaced original", table, row)
+						}
+					}
+				}
+				replay := start(t, path, d.Collection.ID(), "", true)
+				replay.wait(t, false)
+				replayed := inspect(t, path)
+				if err = replayMonitor(after, replayed, 0, 0); err != nil {
+					t.Fatal(err)
+				}
+				emit(t, map[string]any{"kind": "recovered", "cut": cut, "old_pid": p.cmd.Process.Pid, "new_pid": r.cmd.Process.Pid, "after": after, "replay_unchanged": true, "resubmitted": false})
+			})
+		}
+	}
+}
+func finalMonitor(s runtime.Inspection, nested bool) error {
+	r := rows(projection(s, "root"), "results")
+	if len(r) != 3 {
+		return fmt.Errorf("wrong result count")
+	}
+	seen := map[string]bool{}
+	for i, row := range r {
+		response, err := row["responses"].Records()
+		if err != nil || len(response) != 1 || row["item_id"].Text != []string{"item-a", "item-b", "item-c"}[i] || response[0]["doubled"].Number != []int64{4, -6, 4}[i] || row["status"].Text != "succeeded" || seen[row["operation"].Text] {
+			return fmt.Errorf("literal item mapping violated")
+		}
+		seen[row["operation"].Text] = true
+	}
+	n := int64(4)
+	if nested {
+		n++
+	}
+	if len(s.Roots) != 1 || s.Roots[0].Charges.Invocations != n || s.Roots[0].Charges.CreatedRuns != n || s.Roots[0].Charges.Effects != 0 {
+		return fmt.Errorf("independent budget conservation violated")
+	}
+	if s.Roots[0].Outcome == nil || s.Roots[0].Outcome.Status != "succeeded" {
+		return fmt.Errorf("required root completion absent")
+	}
+	return originsMonitor(s)
+}
+func originsMonitor(s runtime.Inspection) error {
+	for _, r := range s.Tables["composition_invocations"] {
+		inv := decode[runtime.InvocationDescriptor](r, "descriptor")
+		found := false
+		for _, h := range s.Tables["history"] {
+			if h["subject"] != inv.Caller.Subject || h["generation"] != inv.Caller.Generation || h["sequence"] != inv.SourceSequence {
+				continue
+			}
+			var intents []struct{ ID string }
+			_ = json.Unmarshal([]byte(h["intents"].(string)), &intents)
+			for _, i := range intents {
+				if i.ID == inv.OperationID {
+					found = true
+				}
+			}
+		}
+		if !found {
+			return fmt.Errorf("creation without committed source intent")
+		}
+	}
+	return nil
+}
+func replayMonitor(before, after runtime.Inspection, a, b int) error {
+	if !reflect.DeepEqual(before, after) || a != b {
+		return fmt.Errorf("replay changed ledger or contacted provider")
+	}
+	return nil
+}
+func monitorControls(t *testing.T, s runtime.Inspection, ack, filter boundary.Event, pid int, template string) {
+	t.Helper()
+	for name, mutate := range map[string]func(*boundary.Event){"pid": func(e *boundary.Event) { e.PID++ }, "token": func(e *boundary.Event) { e.Token += "foreign" }, "source": func(e *boundary.Event) { e.Subject += "foreign" }, "generation": func(e *boundary.Event) { e.Generation++ }, "sequence": func(e *boundary.Event) { e.Sequence++ }, "epoch": func(e *boundary.Event) { e.Epoch++ }, "intent": func(e *boundary.Event) { e.Intent += "foreign" }} {
+		m := ack
+		mutate(&m)
+		err := validAck(m, filter, pid, map[string]bool{})
+		if err == nil {
+			err = durableAck(s, m)
+		}
+		if err == nil {
+			t.Fatal("control survived", name)
+		}
+		emit(t, map[string]any{"kind": "evidence_mutant", "fault": name, "original": ack, "mutant": m, "detected": err.Error()})
+	}
+	used := map[string]bool{}
+	if err := validAck(ack, filter, pid, used); err != nil {
+		t.Fatal(err)
+	}
+	if err := validAck(ack, filter, pid, used); err == nil {
+		t.Fatal("duplicate ack accepted")
+	}
+	m := s
+	m.Tables = make(map[string][]map[string]any, len(s.Tables))
+	for k, v := range s.Tables {
+		m.Tables[k] = v
+	}
+	m.Tables["history"] = nil
+	if _, err := acceptance(m, template); err == nil {
+		t.Fatal("selection passed without consumption commit")
+	}
+	if err := originsMonitor(m); err == nil {
+		t.Fatal("creation monitor vacuous")
+	}
+	if err := replayMonitor(s, s, 0, 1); err == nil {
+		t.Fatal("dispatch monitor vacuous")
+	}
+	emit(t, map[string]any{"kind": "evidence_mutant", "faults": []string{"missing consumption commit", "creation without commit", "replay transport contact"}, "detected": true, "classification": "monitor input mutation; no executed runtime fault"})
+}

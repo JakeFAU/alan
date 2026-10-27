@@ -43,7 +43,9 @@ Cancellation is operator-injected in qualification. There is one live Store owne
 
 ## Reproduce exact qualification
 
-The [source manifest](source-manifest.json) uses sorted uint64-length-delimited paths and bytes. The [archive manifest](archive-manifest.json) additionally identifies documentation, original control inputs and the local SQLite module proxy. The archive excludes credentials, temporary databases, build caches and itself. Toolchains are not bundled. Historical Phase1F source remains a separate embedded archive for historical claims.
+The current [source manifest](source-manifest.json) identifies metadata-tool source `ce4bbf6f9e6a0c7e94ccdfec09d97f9355b5e9bb1a6f49fcca2b17fe7256482a`; its Go/runtime/module/fixture inputs exactly match fully qualified source `43b86781f819c6bf7a957956aceaf717a5808873114e8213bf1147620bdf2ec3`. The [final-fix report](evidence/final-fix/report.md) records the focused metadata regression and fresh extracted consumer checks; it does not claim a repeat of the broad suites. New runs capture their executing platform and `go version` with the selected command environment. `--parse-existing` preserves the recorded execution environment; it cannot recover metadata absent from an old record.
+
+The source manifest uses sorted uint64-length-delimited paths and bytes. The [archive manifest](archive-manifest.json) additionally identifies documentation, original control inputs and the local SQLite module proxy. The archive excludes credentials, temporary databases, build caches and itself. Toolchains are not bundled. Historical Phase1F source remains a separate embedded archive for historical claims.
 
 ```sh
 # In the original checkout, retain new output under a fresh directory:
@@ -61,13 +63,13 @@ python3 docs/foundational/phase1g/tools/compare.py normal
 
 Collectors remove `OPENAI_API_KEY` without reading or printing it, verify source before/after, retain actual numeric exits, raw Go JSON and separate structured marker `WORKTREE`. Root `./...` excludes `examples/worktree/consumer`; its commands are mandatory and use a240s race watchdog. `normal` and `race` include integration. Existing Phase1A/B/C/conformance markers remain separate;15/20/32/6 record counts are checked and semantic payloads compared. A pass count is not proof of an unbounded property.
 
-`tools/reproduce.py` verifies every archive member, extracts to a fresh directory, starts with an empty GOMODCACHE, sets GOPROXY to the bundled file proxy, and reruns all five suite modes plus comparisons and auxiliary checks. Retained original output is under `evidence/task4/extracted`. The script refuses to replace its existing result. From a checkout containing the published archive, use a fresh host workspace with this exact layout:
+`tools/reproduce.py` verifies every archive member, extracts to a fresh directory, starts with an empty GOMODCACHE, sets GOPROXY to the bundled file proxy, and reruns all five suite modes plus comparisons and auxiliary checks. Retained full-suite output for source43b86781 remains under `evidence/task4/extracted` and is also snapshotted under `evidence/final-fix/qualified-source-43b86781/task4/extracted`. The original source/archive manifests and all original Task4 outputs are preserved in that qualified-source directory. For current focused verification, run `python3 docs/foundational/phase1g/evidence/final-fix/verify_focused.py` in a fresh copy with no existing `evidence/final-fix/extracted` result; it runs Python metadata tests and consumer test/vet/module verification only. The script refuses to replace its existing result. To reproduce the original full qualification from its retained archive, use a fresh host workspace with this exact layout:
 
 ```sh
 alan_repro_root=$(mktemp -d)
 mkdir -p "$alan_repro_root/docs/foundational/phase1g/tools"
-cp docs/foundational/phase1g/source.tar.gz \
-   docs/foundational/phase1g/archive-manifest.json \
+cp docs/foundational/phase1g/evidence/final-fix/qualified-source-43b86781/source.tar.gz \
+   docs/foundational/phase1g/evidence/final-fix/qualified-source-43b86781/archive-manifest.json \
    "$alan_repro_root/docs/foundational/phase1g/"
 cp docs/foundational/phase1g/tools/reproduce.py \
    "$alan_repro_root/docs/foundational/phase1g/tools/"
