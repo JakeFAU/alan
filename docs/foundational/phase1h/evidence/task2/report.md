@@ -1,6 +1,8 @@
 # Phase 1H Task 2 application report
 
-Status: independent application review required P2 whole-frontier count correction. Fix round1 has an executable RED/GREEN partial-intent regression and denial/early-stop checks passing. The minimal application fix is frozen for scoped rereview while its refreshed full root default run is pending. The Task2 gate remains open; no Task3 implementation has begun.
+Status: **Task2 DONE.** Scoped application review/P2 rereview approved, corrected full default/byte suite passed, and current-source public consumer, controlled integration and actual direct/nested CLI workflows passed. Task3 process/race/closure/negative-control qualification is separate and not claimed here.
+
+This report preserves chronological source-bound results; the final qualification section below supersedes earlier pending gates without relabelling historical outcomes.
 
 ## Delivered public application
 
@@ -89,3 +91,37 @@ Corrected source manifest is `fd7ab336ee82ccc27e846e994496a288256c63daa705927e67
 Refreshed selected-default input audit is `32126352479b32695b2227fbc59e638f7ee3cda59dc1a4620460248d8f864460` (1509files/288packages), retained under fix-r1/default-inputs with raw go-list gzip. Its explicit delta is retained, and the original audit/tool bytes remain preserved. The collector now supports a distinct --output directory to avoid overwriting historical results.
 
 `fix-r1-root-default` starts one full corrected `go test ./... -count=1 -timeout=45m -v` under sourcefd7; the heavy matrix is not redundantly rerun in a separate command. Root/byte gate remains pending. Scoped rereview can proceed on this minimal fix while that run is active. Earlier command HEAD/source identities are not retroactively relabelled.
+
+
+## Scoped approval and refreshed supporting results
+
+The unchanged independent `application-rereview.md` approves the52392fa..76d5ccd fix: original P2 addressed, no new breakage. It explicitly leaves the root/byte gate open. All current manifested Go/module/fixture files remain identical to the running sourcefd7.
+
+`fix-r1-consumer` passed120.296 test seconds, including `TestCLIAdaptiveRequest` and all direct/nested capacities1/2 primary/paired public-consumer cases. `fix-r1-integration` passed4.957 test seconds through the real controlled Responses transport and unchanged helper. These commands ran actual corrected sourcefd7 at their recorded HEAD76d5; prior9b supporting runs remain historical and are not relabelled.
+
+Fresh actual separate-process sourcefd7 direct/nested CLI init/submit/run/inspect/replay/recover commands also passed. `fix-r1/cli-counter-witness-after.json` retains each authentic first round2 Invoke frame at sequence501 with accepted6/trial6, alongside complete compressed inspection logs and exact command/source/output hashes. They use the unchanged complete three-seed request and preserve ordered results `[1,2,3,7,10,11,31]`. These refreshes are distinct from the original9b CLI history that exposed the bug. No additional heavy matrix command was run alongside the full corrected root suite.
+
+
+## Final Task2 qualification — corrected sourcefd7
+
+The full `go test ./... -count=1 -timeout=45m -v` **passed**, exit0,1565.465 wall /1564.257 adaptive-package test seconds, finishing2026-10-27T04:19:58Z. Its exact source is `fd7ab336ee82ccc27e846e994496a288256c63daa705927e672563d256e06a20`; all250 manifested Go/module/fixture inputs still match current contents. The command began at HEAD52392fa while the fix was uncommitted, and its record keeps that actual start HEAD. The subsequent76d5ccd review commit contains exactly the tested corrected code.18 package summaries passed with no FAIL. The controller independently verified this log/source evidence and scoped code-review conditions.
+
+All12 complete byte-case records passed, including both maximum16-candidate frontiers, direct/nested six/eight8192-NUL clarification answers, full legal helper answer/document/version/snippet fields and int64 extrema, plus both two-round prior-decision/cursor witnesses. `fix-r1/final-byte-summary.json` retains peaks by scope/variable and authenticated source-transition address, generation/epoch/history sequence and successor PC; `final-byte-records.json` retains all per-case records. Actual peaks:
+
+| Measurement | Bytes | Applicable unchanged bound |
+|---|---:|---:|
+| Complete adaptive Projection |285270|635904 (621KiB)|
+| Complete root Projection |111158|524288 (512KiB)|
+| Complete wrapper Projection |111218|524288 (512KiB)|
+| Complete unchanged-helper Projection |151321|1048576|
+| Largest canonical list array (decision row) |54327|262144|
+| Largest compiled program artifact |117295|1048576|
+| Prior decision + current/next + round/total/handles +2 data snapshots |175587|635904|
+
+Every committed complete Projection includes Data and all active cursor snapshots; no allocation sharing is credited. Every recursively retained native value/list array, observation, reduction intent array and actual artifact passed its corresponding unchanged check. Generated actual invocation operation IDs remain<128ASCII and reasons<=64ASCII in all outcomes. No full helper answer/citation variable or additional live list copy entered adaptive state. No runtime byte ceiling, root resource limit, schema, author API, helper policy or dependency changed. Current production application size is349 lines; application tests are1163 lines, plus217 consumer test lines. New compiled artifact identities and sizes are in fix-r1-identities.log; public schemas remain unchanged.
+
+Current-source supporting results are complete: separate consumer+CLI tests120.296 test seconds; real controlled unchanged-helper transport4.957 test seconds; fresh actual direct/nested CLI init/submit/run/inspect/replay/recover passed with first round2 accepted count6/trial6. Full correction RED/GREEN and exact original/after CLI witnesses remain retained. The first9b harness-failed broad run and intentionally stopped obsolete11c run remain nonpassing historical evidence, not crash/recovery qualification. The original constructor-only TDD limitation and later harness failures are preserved honestly.
+
+The post-run selected-default build-input audit reproduces `32126352479b32695b2227fbc59e638f7ee3cda59dc1a4620460248d8f864460` exactly (1509files/288packages). This gives Task3 an inspectable default-input comparison in addition to the original full source manifest; ignored integration/tool changes do not inherit a new tested-source label. System headers/libraries remain explicitly outside this source hash.
+
+Remaining scope limits: individual cancelled/abandoned child envelopes were not executed here; only generic success-versus-other forwarding plus actual succeeded/failed/rejected/absence diagnostics is claimed. Task3 owns authentic process cuts/recovery, failed+unknown barriers, operator root closure, application-negative controls, OS-isolated replay and broad race/final qualification. No Phase1H-wide completion, merge or provider spending is claimed.
