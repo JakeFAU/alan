@@ -1,6 +1,6 @@
-# Phase 1G qualification — bounded evidence complete, review pending
+# Phase 1G qualification — reviewed bounded evidence
 
-The starting baseline, contract and application/runtime implementation reviews are complete. Final implementation qualification passed on source `43b86781f819c6bf7a957956aceaf717a5808873114e8213bf1147620bdf2ec3`, including actual process boundaries and full offline archive reproduction. Independent Task4 and whole-branch review remain pending; this is finite-schedule evidence, not a general correctness or liveness proof.
+The starting baseline, contract and application/runtime implementation reviews are complete. Final implementation qualification passed on source `43b86781f819c6bf7a957956aceaf717a5808873114e8213bf1147620bdf2ec3`, including actual process boundaries and full offline archive reproduction. Independent Task4 and whole-branch reviews approved the bounded increment. Both minor final-review findings were corrected and passed scoped rereview. This is finite-schedule evidence, not a general correctness or liveness proof; see the [review record](03-review.md).
 
 The current top-level source/archive manifests describe the M1 metadata-tool correction, source `ce4bbf6f9e6a0c7e94ccdfec09d97f9355b5e9bb1a6f49fcca2b17fe7256482a`. Its changed inputs are only `tools/qualify.py` and the new focused Python regression; every Go, test, module, fixture and other original source input is byte-identical to the fully qualified source above. M2 reconciles README guidance. The [final-fix report](evidence/final-fix/report.md) separates focused tooling/consumer checks from the retained full qualification. The original manifests, archive, all Task4 outputs and adjacent document bytes are preserved under [qualified-source-43b86781](evidence/final-fix/qualified-source-43b86781/source-manifest.json); original logs are never relabeled.
 
@@ -32,12 +32,12 @@ The public application slice is committed at `6a5d9ea182e760c61149feaff47fe8dc0f
 | --- | --- | --- |
 | Starting main reproduces retained behavior | Historical source execution and source-byte comparison | Passed as scoped above |
 | New invocation contract is operationally specified | Independent specification review | Passed; not implementation proof |
-| One artifact handles variable typed work | Public API and independent result checks | Final-source extracted suites passed; Task4 review pending |
-| Logical work exceeds physical capacity without parent deadlock | Causal controlled-provider and nested schedules | Passed selected final-source fixtures; Task4 review pending |
-| Accepted work, partial results and pending operation survive process death | Acknowledged boundaries, SIGKILL, new-process inspections | Passed selected final-source fixtures; Task4 review pending |
-| Closure/late/unknown results preserve identities and budgets | Selected schedules and independent monitors | Passed selected final-source fixtures; Task4 review pending |
-| Historical replay cannot create or dispatch work | Credential-free/no-network replay and immutable ledger/contact checks | Passed selected final-source fixtures; Task4 review pending |
-| Evidence helper is an ordinary effectful template consumer | Public application and controlled provider | Final-source extracted suites passed; Task4 review pending |
+| One artifact handles variable typed work | Public API and independent result checks | Final-source extracted suites passed; independently reviewed within the stated scope |
+| Logical work exceeds physical capacity without parent deadlock | Causal controlled-provider and nested schedules | Passed selected final-source fixtures; independently reviewed within the stated scope |
+| Accepted work, partial results and pending operation survive process death | Acknowledged boundaries, SIGKILL, new-process inspections | Passed selected final-source fixtures; independently reviewed within the stated scope |
+| Closure/late/unknown results preserve identities and budgets | Selected schedules and independent monitors | Passed selected final-source fixtures; independently reviewed within the stated scope |
+| Historical replay cannot create or dispatch work | Credential-free/no-network replay and immutable ledger/contact checks | Passed selected final-source fixtures; independently reviewed within the stated scope |
+| Evidence helper is an ordinary effectful template consumer | Public application and controlled provider | Final-source extracted suites passed; independently reviewed within the stated scope |
 | General dynamic spawning, arbitrary recursion, liveness, remote cancellation or business exactly-once | None | Excluded |
 | New live provider smoke or answer-quality improvement | None | Not run/not claimed; previous study's authorization and ledger not reused |
 
