@@ -5,9 +5,11 @@ Includes selected Go/C/assembly/embed source files and module manifests. System
 headers/linked OS libraries are outside this source identity; toolchain settings
 are recorded separately. This is not a replacement for the full source manifest.
 """
-import gzip,hashlib,json,os,pathlib,subprocess
+import argparse,gzip,hashlib,json,os,pathlib,subprocess
 root=pathlib.Path(__file__).resolve().parents[5]
-out=pathlib.Path(__file__).resolve().parent
+parser=argparse.ArgumentParser();parser.add_argument('--output');args=parser.parse_args()
+out=pathlib.Path(args.output).resolve() if args.output else pathlib.Path(__file__).resolve().parent
+out.mkdir(parents=True,exist_ok=True)
 env=dict(os.environ);env.pop('OPENAI_API_KEY',None)
 env.update(GOTOOLCHAIN='local',GOPROXY='off',GOSUMDB='off',GOFLAGS='-mod=readonly',GOCACHE='/tmp/alan-phase1f-go-build')
 raw=subprocess.check_output(['go','list','-deps','-test','-json','./...'],cwd=root,env=env)

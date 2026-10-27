@@ -21,6 +21,11 @@ and are inspectable by each row's operation ID. Missing responses stay absent.
 
 Replies include `complete`, `stop_reason`, `rounds`, `work_count`, ordered
 `results`, and the entire unperformed `remaining` frontier (up to sixteen rows).
+The accepted frontier total is retained before its first item intent. Private
+`history` is progress through the item-emission loop and can be a prefix during
+emission; the full `current` frontier and `work_count` retain acceptance. History
+is complete before the next candidate collision check. Runtime charges count
+only actual admitted operations and reservations.
 Known non-success precedes invalid observations, duplicate identities, exhaustion,
 work bound, then round bound. Exhaustion succeeds; bounded stops succeed with
 `complete:false`; invalid requests/results, duplicates, and leaf failures send a

@@ -36,7 +36,7 @@ func build(leaf author.Template, p profile) (author.Template, error) {
 		"history": list(8, schema.Record{"work_id": integer()}), "round_results": list(8, result), "results": reply["results"], "responses": response,
 		"decision": list(1, schema.Record{"round": integer(), "candidate": list(16, frontier), "stop_reason": text(32), "complete": {Kind: "bool"}}),
 	}
-	values := map[string]schema.Value{"rounds": schema.Int(0), "work_count": schema.Int(0), "complete": schema.Bool(false), "stop_reason": schema.Text(""), "hard": schema.Bool(false), "active": schema.Bool(true), "tokens": schema.List(map[string]schema.Value{"round": schema.Int(1)}, map[string]schema.Value{"round": schema.Int(2)}, map[string]schema.Value{"round": schema.Int(3)})}
+	values := map[string]schema.Value{"rounds": schema.Int(0), "work_count": schema.Int(0), "trial": schema.Int(0), "complete": schema.Bool(false), "stop_reason": schema.Text(""), "hard": schema.Bool(false), "active": schema.Bool(true), "tokens": schema.List(map[string]schema.Value{"round": schema.Int(1)}, map[string]schema.Value{"round": schema.Int(2)}, map[string]schema.Value{"round": schema.Int(3)})}
 	for _, n := range []string{"duplicate", "overflow", "empty_frontier"} {
 		values[n] = schema.Bool(false)
 	}
@@ -87,7 +87,10 @@ func preflight(name string, history bool) []author.Step {
 }
 func roundBody(p profile) []author.Step {
 	fields := []string{"work_id", "parent_id", "edge", "round", p.payload}
-	invoke := []author.Step{author.Append("history", exprs("work_id")), increment("work_count"), author.Invoke("pending", "leaf", map[string]author.Expr{p.payload: author.Var(p.payload)}, nil), author.Append("handles", map[string]author.Expr{"work_id": author.Var("work_id"), "operation": author.Var("pending")})}
+	// history tracks the prefix whose item-emission loop has begun. The full
+	// current frontier and work_count retain application acceptance; history is
+	// complete before the next candidate collision check. It carries no charges.
+	invoke := []author.Step{author.Append("history", exprs("work_id")), author.Invoke("pending", "leaf", map[string]author.Expr{p.payload: author.Var(p.payload)}, nil), author.Append("handles", map[string]author.Expr{"work_id": author.Var("work_id"), "operation": author.Var("pending")})}
 	row := exprs(fields...)
 	row["operation"] = author.Var("pending")
 	row["status"] = author.Var("leaf_status")
@@ -116,7 +119,9 @@ func roundBody(p profile) []author.Step {
 		eq("valid_response", author.Boolean(false), setBool("invalid_observation", true)),
 	)}
 
-	steps := []author.Step{empty("handles"), empty("round_results"), empty("next"), setBool("invalid_observation", false), author.Set("failure_reason", author.String("")), author.ForEach(author.Var("current"), bindings(fields...), invoke...),
+	// Preflight computed the whole accepted total. Retain it before any item
+	// intent; runtime admission/effect charges remain separate actual facts.
+	steps := []author.Step{author.Set("work_count", author.Var("trial")), empty("handles"), empty("round_results"), empty("next"), setBool("invalid_observation", false), author.Set("failure_reason", author.String("")), author.ForEach(author.Var("current"), bindings(fields...), invoke...),
 		author.ForEach(author.Var("current"), bindings(fields...), author.ForEach(author.Var("handles"), map[string]string{"work_id": "handle_id", "operation": "pending"}, eq("work_id", author.Var("handle_id"), collect...))),
 		increment("rounds"), author.ForEach(author.Var("round_results"), resultBindings, derive...),
 	}
