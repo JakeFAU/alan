@@ -372,17 +372,114 @@ func (c *compiler) validate() error {
 	}
 	incoming := make([]map[string]string, len(c.program.Code))
 	incoming[0] = map[string]string{}
+	consts := make([]map[string]schema.Value, len(c.program.Code))
+	consts[0] = map[string]schema.Value{}
+	declFields := make([]map[string]schema.Field, len(c.program.Code))
+	declFields[0] = map[string]schema.Field{}
 	types := map[string]string{}
 	for name, f := range c.program.Author.Inputs.Record {
 		incoming[0][name] = c.kind(f)
 		types[name] = c.kind(f)
+		if f.Kind == "string" {
+			declFields[0][name] = f
+		}
 	}
 	for pc, in := range c.program.Code {
 		state := incoming[pc]
 		if state == nil {
 			continue
 		}
+		cstate := consts[pc]
+		fstate := declFields[pc]
 		next := maps.Clone(state)
+		nextConst := maps.Clone(cstate)
+		nextField := maps.Clone(fstate)
+		evalConst := func(m map[string]schema.Value, o executor.Operand) (schema.Value, bool) {
+			if (o.Ref == "") == (o.Literal == nil) {
+				return schema.Value{}, false
+			}
+			var v schema.Value
+			if o.Literal != nil {
+				if !o.Literal.Valid() {
+					return schema.Value{}, false
+				}
+				v = o.Literal.Clone()
+			} else {
+				var ok bool
+				v, ok = m[o.Ref]
+				if !ok {
+					return schema.Value{}, false
+				}
+				v = v.Clone()
+			}
+			if o.Offset != nil {
+				if v.Kind != "int" {
+					return schema.Value{}, false
+				}
+				b := *o.Offset
+				a := v.Number
+				if (b > 0 && a+b < a) || (b < 0 && a+b > a) {
+					return schema.Value{}, false
+				}
+				v.Number += b
+			}
+			return v, true
+		}
+		checkOperand := func(mConst map[string]schema.Value, mField map[string]schema.Field, o executor.Operand, want schema.Field) error {
+			if v, ok := evalConst(mConst, o); ok {
+				if err := want.Validate(v); err != nil {
+					return err
+				}
+			}
+			if o.Ref != "" && o.Literal == nil && o.Offset == nil && want.Kind == "string" {
+				if src, ok := mField[o.Ref]; ok && src.Kind == "string" {
+					candidates := src.Enum
+					if len(candidates) == 0 {
+						candidates = want.Enum
+					}
+					if len(candidates) > 0 {
+						compatible := false
+						var lastErr error
+						for _, candidate := range candidates {
+							val := schema.Text(candidate)
+							if err := src.Validate(val); err != nil {
+								lastErr = err
+								continue
+							}
+							if err := want.Validate(val); err == nil {
+								compatible = true
+								break
+							} else {
+								lastErr = err
+							}
+						}
+						if !compatible {
+							if lastErr != nil {
+								return lastErr
+							}
+							return fmt.Errorf("incompatible string schema")
+						}
+					}
+				}
+			}
+			return nil
+		}
+		assignMeta := func(dst string, o executor.Operand) {
+			if v, ok := evalConst(cstate, o); ok {
+				nextConst[dst] = v
+			} else {
+				delete(nextConst, dst)
+			}
+			if o.Ref != "" && o.Literal == nil && o.Offset == nil {
+				if f, ok := fstate[o.Ref]; ok {
+					nextField[dst] = f
+				} else {
+					delete(nextField, dst)
+				}
+			} else {
+				delete(nextField, dst)
+			}
+		}
 		read := func(o executor.Operand) (string, error) {
 			if (o.Ref == "") == (o.Literal == nil) {
 				return "", c.err(pc, "invalid expression")
@@ -467,6 +564,21 @@ func (c *compiler) validate() error {
 				if kind != "int" || other != "int" {
 					return c.err(pc, "add requires int")
 				}
+				a, okA := evalConst(cstate, in.A)
+				b, okB := evalConst(cstate, in.B)
+				if okA && okB && a.Kind == "int" && b.Kind == "int" && !((b.Number > 0 && a.Number+b.Number < a.Number) || (b.Number < 0 && a.Number+b.Number > a.Number)) {
+					nextConst[in.Dst] = schema.Int(a.Number + b.Number)
+				} else {
+					delete(nextConst, in.Dst)
+				}
+				delete(nextField, in.Dst)
+			} else {
+				if f, ok := c.program.Author.Collections[in.Dst]; ok {
+					if err := checkOperand(cstate, fstate, in.A, f); err != nil {
+						return c.err(pc, "collection %q: %v", in.Dst, err)
+					}
+				}
+				assignMeta(in.Dst, in.A)
 			}
 			if f, ok := c.program.Author.Collections[in.Dst]; ok && kind != c.kind(f) {
 				return c.err(pc, "collection assignment schema mismatch")
@@ -489,6 +601,23 @@ func (c *compiler) validate() error {
 			}
 			field := f
 			c.program.Code[pc].Collection = &field
+			for i := pc + 1; i < in.Otherwise && i < len(c.program.Code); i++ {
+				bodyIn := c.program.Code[i]
+				if bodyIn.Dst != "" {
+					delete(nextConst, bodyIn.Dst)
+					delete(nextField, bodyIn.Dst)
+				}
+				for _, dst := range bodyIn.Bind {
+					delete(nextConst, dst)
+					delete(nextField, dst)
+				}
+				if bodyIn.Op == "emit" {
+					for dst := range bodyIn.Updates {
+						delete(nextConst, dst)
+						delete(nextField, dst)
+					}
+				}
+			}
 		case "next":
 			f := c.program.Code[in.Target].Collection
 			if f == nil {
@@ -502,6 +631,12 @@ func (c *compiler) validate() error {
 					return c.err(pc, "unknown or duplicate loop binding")
 				}
 				seen[name] = true
+				delete(nextConst, name)
+				if bound.Kind == "string" {
+					nextField[name] = bound
+				} else {
+					delete(nextField, name)
+				}
 				if err := write(name, c.kind(bound)); err != nil {
 					return err
 				}
@@ -530,12 +665,11 @@ func (c *compiler) validate() error {
 				if got != c.kind(want) {
 					return c.err(pc, "append field type mismatch")
 				}
-				if o.Literal != nil {
-					if err := want.Validate(*o.Literal); err != nil {
-						return c.err(pc, "append field: %v", err)
-					}
+				if err := checkOperand(cstate, fstate, o, want); err != nil {
+					return c.err(pc, "append field: %v", err)
 				}
 			}
+			delete(nextConst, in.Dst)
 		case "loop":
 			continue
 		case "branch":
@@ -569,10 +703,8 @@ func (c *compiler) validate() error {
 				if kind != c.kind(f) {
 					return c.err(pc, "payload %q expects %s", name, f.Kind)
 				}
-				if o.Literal != nil {
-					if err = f.Validate(*o.Literal); err != nil {
-						return c.err(pc, "payload %q: %v", name, err)
-					}
+				if err = checkOperand(cstate, fstate, o, f); err != nil {
+					return c.err(pc, "payload %q: %v", name, err)
 				}
 			}
 			for _, name := range keys(in.Updates) {
@@ -583,11 +715,22 @@ func (c *compiler) validate() error {
 				if err != nil {
 					return err
 				}
+				if f, ok := c.program.Author.Collections[name]; ok && kind != c.kind(f) {
+					return c.err(pc, "collection update schema mismatch")
+				}
+				if f, ok := c.program.Author.Collections[name]; ok {
+					if err := checkOperand(cstate, fstate, in.Updates[name], f); err != nil {
+						return c.err(pc, "update %q: %v", name, err)
+					}
+				}
+				assignMeta(name, in.Updates[name])
 				if err = write(name, kind); err != nil {
 					return err
 				}
 			}
 			if in.Dst != "" {
+				delete(nextConst, in.Dst)
+				delete(nextField, in.Dst)
 				if err := write(in.Dst, "request:"+c.requests[pc]); err != nil {
 					return err
 				}
@@ -613,6 +756,12 @@ func (c *compiler) validate() error {
 					return c.err(pc, "duplicate binding %q", name)
 				}
 				seen[name] = true
+				delete(nextConst, name)
+				if f.Kind == "string" {
+					nextField[name] = f
+				} else {
+					delete(nextField, name)
+				}
 				if err := write(name, c.kind(f)); err != nil {
 					return err
 				}
@@ -620,8 +769,12 @@ func (c *compiler) validate() error {
 		case "end":
 			if in.Outcome == "succeeded" {
 				for _, name := range keys(c.program.Author.Outputs.Record) {
-					if next[name] != c.kind(c.program.Author.Outputs.Record[name]) {
+					want := c.program.Author.Outputs.Record[name]
+					if next[name] != c.kind(want) {
 						return c.err(pc, "output %q missing or wrong type", name)
+					}
+					if err := checkOperand(nextConst, nextField, executor.Ref(name), want); err != nil {
+						return c.err(pc, "output %q: %v", name, err)
 					}
 				}
 			}
@@ -643,10 +796,22 @@ func (c *compiler) validate() error {
 			}
 			if incoming[target] == nil {
 				incoming[target] = maps.Clone(next)
+				consts[target] = maps.Clone(nextConst)
+				declFields[target] = maps.Clone(nextField)
 			} else {
 				for name, kind := range incoming[target] {
 					if next[name] != kind {
 						delete(incoming[target], name)
+					}
+				}
+				for name, val := range consts[target] {
+					if nv, ok := nextConst[name]; !ok || !val.Equal(nv) {
+						delete(consts[target], name)
+					}
+				}
+				for name, f := range declFields[target] {
+					if nf, ok := nextField[name]; !ok || f.Kind != nf.Kind || f.MaxBytes != nf.MaxBytes || !slices.Equal(f.Enum, nf.Enum) {
+						delete(declFields[target], name)
 					}
 				}
 			}

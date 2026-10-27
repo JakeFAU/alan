@@ -79,8 +79,8 @@ func NestedProvision(config NestedConfig) (Provision, error) {
 		return p, err
 	}
 	p.Permissions = []Permission{
-		{Kind: "message", Source: config.Outer, Target: config.Inner, Operation: "message", Revision: 1},
-		{Kind: "message", Source: config.Inner, Target: config.Worker, Operation: "message", Revision: 1},
+		{Kind: "message", Source: config.Outer, Target: config.Inner, Operation: "message", Revision: 1, Obligation: "inner-start"},
+		{Kind: "message", Source: config.Inner, Target: config.Worker, Operation: "message", Revision: 1, Obligation: "worker-work"},
 		{Kind: "observation", Source: config.Worker, Target: config.Inner, Operation: "terminal", Revision: 1, Obligation: "worker-obligation"},
 		{Kind: "observation", Source: config.Inner, Target: config.Outer, Operation: "terminal", Revision: 1, Obligation: "outer-obligation"},
 		{Kind: "lifecycle", Source: config.Inner, Target: config.Worker, Operation: "Retry", Revision: 1},

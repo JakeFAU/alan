@@ -19,7 +19,7 @@ func TestCompositionMessageAuthorizationPrefix(t *testing.T) {
 			receive := Instruction{Op: "receive", Match: &Match{Kind: "message", Provenance: "ordinary-message", Source: Lit(Text("sender")), Generation: Lit(Int(1)), Obligation: Lit(Text("work")), Operation: Lit(Text(""))}, Bind: map[string]string{"number": "number"}}
 			addProgram(t, &p, "sender", []Instruction{send, {Op: "end", Outcome: "succeeded"}}, map[string]Value{})
 			addProgram(t, &p, "receiver", []Instruction{receive, {Op: "end", Outcome: "succeeded"}}, map[string]Value{})
-			p.Permissions = []Permission{{Kind: "message", Source: "sender", Target: "receiver", Operation: "message", Revision: 1}}
+			p.Permissions = []Permission{{Kind: "message", Source: "sender", Target: "receiver", Operation: "message", Revision: 1, Obligation: "work"}}
 			members := []RunID{{"receiver", 1}}
 			if scoped {
 				members = append(members, RunID{"sender", 1})

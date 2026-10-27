@@ -132,6 +132,7 @@ func validateMetadata(p Program) error {
 		}
 	}
 	contracts := map[string]string{}
+	sendContracts := map[string]string{}
 	for _, port := range m.Ports {
 		if port.ReceiveUsed {
 			key := fmt.Sprintf("%t/%q/%q", port.Local, port.Peer, port.Obligation)
@@ -139,6 +140,16 @@ func validateMetadata(p Program) error {
 				return fmt.Errorf("ambiguous receive contract")
 			}
 			contracts[key] = port.Receive.ID
+		}
+		if port.SendUsed {
+			if port.Local {
+				return fmt.Errorf("local port cannot send")
+			}
+			key := fmt.Sprintf("%q/%q", port.Peer, port.Obligation)
+			if previous := sendContracts[key]; previous != "" && previous != port.Send.ID {
+				return fmt.Errorf("ambiguous send contract")
+			}
+			sendContracts[key] = port.Send.ID
 		}
 	}
 	for pc, in := range p.Code {
@@ -181,6 +192,49 @@ func validateAuthorOutput(p Program, data map[string]Value) error {
 		output[name] = v
 	}
 	return p.Author.Outputs.Record.Validate(output)
+}
+func validateAuthorIntent(p Program, intent Intent) error {
+	if p.Author == nil {
+		return nil
+	}
+	switch intent.Kind {
+	case "adapter":
+		effect, ok := p.Author.Effects[intent.Obligation]
+		if !ok || effect.Capability != intent.Target || intent.Generation != 1 {
+			return fmt.Errorf("undeclared adapter capability")
+		}
+		if err := effect.Input.Record.Validate(intent.Payload); err != nil {
+			return fmt.Errorf("adapter input schema: %w", err)
+		}
+	case "invocation":
+		inv, ok := p.Author.Invocations[intent.Obligation]
+		if !ok || inv.TemplateID != intent.Target || intent.Generation != 1 {
+			return fmt.Errorf("undeclared invocation template")
+		}
+		if err := inv.Input.Record.Validate(intent.Payload); err != nil {
+			return fmt.Errorf("invocation input schema: %w", err)
+		}
+	case "message":
+		var matched *PortDeclaration
+		for _, port := range p.Author.Ports {
+			if port.SendUsed && !port.Local && port.Peer == intent.Target && port.Obligation == intent.Obligation && intent.Generation == 1 {
+				if matched != nil && matched.Send.ID != port.Send.ID {
+					return fmt.Errorf("ambiguous send contract")
+				}
+				cp := port
+				matched = &cp
+			}
+		}
+		if matched == nil {
+			return fmt.Errorf("undeclared message port")
+		}
+		if err := matched.Send.Record.Validate(intent.Payload); err != nil {
+			return fmt.Errorf("message send schema: %w", err)
+		}
+	default:
+		return fmt.Errorf("undeclared author intent kind %q", intent.Kind)
+	}
+	return nil
 }
 func authorAdmissionValid(p Program, d AdmissionDescriptor) bool {
 	if p.Semantics != CollectionSemanticVersion {

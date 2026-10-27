@@ -27,7 +27,7 @@ func retryProbe(t *testing.T) executor.Provision {
 		p.Permissions = append(p.Permissions, executor.Permission{Kind: "lifecycle", Source: source, Target: "worker", Operation: "Retry", Revision: 1})
 	}
 	for _, target := range []string{"worker", "new-probe"} {
-		p.Permissions = append(p.Permissions, executor.Permission{Kind: "input", Source: "local", Target: target, Operation: "input"})
+		p.Permissions = append(p.Permissions, executor.Permission{Kind: "input", Source: "local", Target: target, Operation: "input", Obligation: "input"})
 	}
 	return p
 }

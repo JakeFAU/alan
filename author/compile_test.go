@@ -215,3 +215,460 @@ func TestCompilePreservesUnicodeEffectRequestIdentity(t *testing.T) {
 		t.Fatal("Unicode effect identifiers changed")
 	}
 }
+
+func TestCompileRejectsStaticallyInvalidSchemasAndPreservesValidVariables(t *testing.T) {
+	enumField := schema.Field{Kind: "string", MaxBytes: 10, Enum: []string{"fast", "slow"}}
+	shortField := schema.Field{Kind: "string", MaxBytes: 4}
+	childArt, err := author.Compile(author.Definition{
+		Ports: map[string]author.Port{"entry": {Peer: "caller", Obligation: "task", Receive: schema.Record{"mode": enumField}, Send: schema.Record{"ok": shortField}}},
+		Steps: []author.Step{author.Receive("entry", map[string]string{"mode": "m"}), author.Send("entry", map[string]author.Expr{"ok": author.String("done")}), author.Success()},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	childTpl, err := author.NewTemplate(author.Application{"worker": {Artifact: childArt, Inputs: map[string]schema.Value{}}}, "worker", "entry")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	manyBranchSteps := make([]author.Step, 0, 25)
+	for range 20 {
+		manyBranchSteps = append(manyBranchSteps, author.IfEqual(author.Integer(0), author.Integer(1),
+			[]author.Step{author.Set("tmp", author.String("TOO_LONG_STRING")), author.Goto("join")},
+			nil,
+		))
+	}
+	manyBranchSteps = append(manyBranchSteps,
+		author.Set("tmp", author.String("TOO_LONG_STRING")),
+		author.Label("join"),
+		author.Set("short", author.Var("tmp")),
+		author.Success(),
+	)
+
+	invalidCases := []struct {
+		name string
+		d    author.Definition
+	}{
+		{
+			name: "invalid output enum literal",
+			d: author.Definition{
+				Outputs: schema.Record{"mode": enumField},
+				Steps:   []author.Step{author.Set("mode", author.String("INVALID_ENUM")), author.Success()},
+			},
+		},
+		{
+			name: "invalid output bounded string literal",
+			d: author.Definition{
+				Outputs: schema.Record{"short": shortField},
+				Steps:   []author.Step{author.Set("short", author.String("TOO_LONG_STRING")), author.Success()},
+			},
+		},
+		{
+			name: "invalid output propagated through variable",
+			d: author.Definition{
+				Outputs: schema.Record{"mode": enumField},
+				Steps:   []author.Step{author.Set("tmp", author.String("INVALID_ENUM")), author.Set("mode", author.Var("tmp")), author.Success()},
+			},
+		},
+		{
+			name: "invalid initial value flowing to output",
+			d: author.Definition{
+				Outputs: schema.Record{"mode": enumField},
+				Values:  map[string]schema.Value{"mode": schema.Text("INVALID_ENUM")},
+				Steps:   []author.Step{author.Success()},
+			},
+		},
+		{
+			name: "invalid enum passing through Var into Request",
+			d: author.Definition{
+				Effects: map[string]author.Effect{"tool": {Capability: "model", Input: schema.Record{"mode": enumField}, Output: schema.Record{"res": shortField}}},
+				Steps: []author.Step{
+					author.Set("tmp", author.String("NOT_IN_ENUM")),
+					author.Request("req", "tool", map[string]author.Expr{"mode": author.Var("tmp")}, nil),
+					author.Success(),
+				},
+			},
+		},
+		{
+			name: "invalid value passing through Var into Send",
+			d: author.Definition{
+				Ports: map[string]author.Port{"out": {Peer: "receiver", Obligation: "work", Send: schema.Record{"mode": enumField}}},
+				Steps: []author.Step{
+					author.Set("tmp", author.String("NOT_IN_ENUM")),
+					author.Send("out", map[string]author.Expr{"mode": author.Var("tmp")}),
+					author.Success(),
+				},
+			},
+		},
+		{
+			name: "invalid value passing through Var into Invoke",
+			d: author.Definition{
+				Invocations: map[string]author.Template{"sub": childTpl},
+				Steps: []author.Step{
+					author.Set("tmp", author.String("NOT_IN_ENUM")),
+					author.Invoke("inv", "sub", map[string]author.Expr{"mode": author.Var("tmp")}, nil),
+					author.Success(),
+				},
+			},
+		},
+		{
+			name: "invalid value passing through Var into Append",
+			d: author.Definition{
+				Collections: map[string]schema.Field{"items": {Kind: "list", MaxItems: 4, MaxBytes: 512, Element: schema.Record{"mode": enumField}}},
+				Steps: []author.Step{
+					author.Set("tmp", author.String("NOT_IN_ENUM")),
+					author.Append("items", map[string]author.Expr{"mode": author.Var("tmp")}),
+					author.Success(),
+				},
+			},
+		},
+		{
+			name: "invalid value in Request Updates targeting Output",
+			d: author.Definition{
+				Outputs: schema.Record{"mode": enumField},
+				Effects: map[string]author.Effect{"tool": {Capability: "model", Input: schema.Record{"q": shortField}}},
+				Steps: []author.Step{
+					author.Request("req", "tool", map[string]author.Expr{"q": author.String("ok")}, map[string]author.Expr{"mode": author.String("NOT_IN_ENUM")}),
+					author.Success(),
+				},
+			},
+		},
+		{
+			name: "must-constant invalid value preserved across more than 16 branch joins",
+			d: author.Definition{
+				Outputs: schema.Record{"short": shortField},
+				Steps:   manyBranchSteps,
+			},
+		},
+		{
+			name: "contradicted IfEqual then branch preserves invalid static constant",
+			d: author.Definition{
+				Effects: map[string]author.Effect{"tool": {Capability: "model", Input: schema.Record{"mode": enumField}}},
+				Steps: []author.Step{
+					author.Set("x", author.String("NOT_IN_ENUM")),
+					author.IfEqual(author.Var("x"), author.String("fast"),
+						[]author.Step{
+							author.Request("req", "tool", map[string]author.Expr{"mode": author.Var("x")}, nil),
+							author.Success(),
+						},
+						[]author.Step{author.Success()},
+					),
+				},
+			},
+		},
+		{
+			name: "contradicted IfEqual else branch preserves invalid static constant",
+			d: author.Definition{
+				Effects: map[string]author.Effect{"tool": {Capability: "model", Input: schema.Record{"mode": enumField}}},
+				Steps: []author.Step{
+					author.Set("x", author.String("NOT_IN_ENUM")),
+					author.IfEqual(author.Var("x"), author.String("NOT_IN_ENUM"),
+						[]author.Step{author.Success()},
+						[]author.Step{
+							author.Request("req", "tool", map[string]author.Expr{"mode": author.Var("x")}, nil),
+							author.Success(),
+						},
+					),
+				},
+			},
+		},
+		{
+			name: "disjoint input enum flowing into Request enum",
+			d: author.Definition{
+				Inputs:  schema.Record{"mode": {Kind: "string", MaxBytes: 10, Enum: []string{"a", "b"}}},
+				Effects: map[string]author.Effect{"tool": {Capability: "model", Input: schema.Record{"mode": enumField}}},
+				Steps: []author.Step{
+					author.Request("req", "tool", map[string]author.Expr{"mode": author.Var("mode")}, nil),
+					author.Success(),
+				},
+			},
+		},
+		{
+			name: "disjoint input MaxBytes shorter than all target enum members",
+			d: author.Definition{
+				Inputs:  schema.Record{"mode": {Kind: "string", MaxBytes: 2}},
+				Effects: map[string]author.Effect{"tool": {Capability: "model", Input: schema.Record{"mode": enumField}}},
+				Steps: []author.Step{
+					author.Request("req", "tool", map[string]author.Expr{"mode": author.Var("mode")}, nil),
+					author.Success(),
+				},
+			},
+		},
+		{
+			name: "contradicted IfEqual then branch on dynamic input enum does not launder incompatible source enum",
+			d: author.Definition{
+				Inputs:  schema.Record{"x": {Kind: "string", MaxBytes: 16, Enum: []string{"pending"}}},
+				Outputs: schema.Record{"out": {Kind: "string", MaxBytes: 16, Enum: []string{"done"}}},
+				Steps: []author.Step{
+					author.IfEqual(author.Var("x"), author.String("done"),
+						[]author.Step{author.Set("out", author.Var("x")), author.Success()},
+						[]author.Step{author.Failure()},
+					),
+				},
+			},
+		},
+		{
+			name: "ForEach over Receive-bound list preserves element enum constraints",
+			d: author.Definition{
+				Ports: map[string]author.Port{
+					"in": {
+						Local:      true,
+						Peer:       "local",
+						Obligation: "in",
+						Receive: schema.Record{
+							"items": {
+								Kind:     "list",
+								MaxItems: 4,
+								MaxBytes: 512,
+								Element:  schema.Record{"status": {Kind: "string", MaxBytes: 16, Enum: []string{"pending"}}},
+							},
+						},
+					},
+				},
+				Outputs: schema.Record{"out": {Kind: "string", MaxBytes: 16, Enum: []string{"done"}}},
+				Steps: []author.Step{
+					author.Receive("in", map[string]string{"items": "items"}),
+					author.ForEach(author.Var("items"), map[string]string{"status": "out"}, author.Success()),
+					author.Failure(),
+				},
+			},
+		},
+		{
+			name: "nested ForEach preserves inner list element enum constraints",
+			d: author.Definition{
+				Collections: map[string]schema.Field{
+					"outer": {
+						Kind:     "list",
+						MaxItems: 4,
+						MaxBytes: 512,
+						Element: schema.Record{
+							"children": {
+								Kind:     "list",
+								MaxItems: 4,
+								MaxBytes: 256,
+								Element:  schema.Record{"x": {Kind: "string", MaxBytes: 16, Enum: []string{"pending"}}},
+							},
+						},
+					},
+				},
+				Outputs: schema.Record{"out": {Kind: "string", MaxBytes: 16, Enum: []string{"done"}}},
+				Steps: []author.Step{
+					author.Append("outer", map[string]author.Expr{
+						"children": author.Value(schema.List(map[string]schema.Value{"x": schema.Text("pending")})),
+					}),
+					author.ForEach(author.Var("outer"), map[string]string{"children": "child"},
+						author.ForEach(author.Var("child"), map[string]string{"x": "out"},
+							author.Success(),
+						),
+					),
+					author.Failure(),
+				},
+			},
+		},
+		{
+			name: "ambiguous SendUsed ports sharing Peer and Obligation with conflicting Send schemas",
+			d: author.Definition{
+				Inputs: schema.Record{"dyn": {Kind: "string", MaxBytes: 32}},
+				Ports: map[string]author.Port{
+					"strict_out": {Peer: "receiver", Obligation: "work", Send: schema.Record{"mode": enumField}},
+					"wide_out":   {Peer: "receiver", Obligation: "work", Send: schema.Record{"mode": {Kind: "string", MaxBytes: 32}}},
+				},
+				Steps: []author.Step{
+					author.IfEqual(author.Var("dyn"), author.String("NEVER"),
+						[]author.Step{author.Send("wide_out", map[string]author.Expr{"mode": author.String("any")})},
+						[]author.Step{author.Send("strict_out", map[string]author.Expr{"mode": author.Var("dyn")})},
+					),
+					author.Success(),
+				},
+			},
+		},
+		{
+			name: "Append inside ForEach does not erase unmodified outer variable Must-Constant sharing element field name",
+			d: author.Definition{
+				Outputs: schema.Record{"out": enumField},
+				Collections: map[string]schema.Field{
+					"items": {Kind: "list", MaxItems: 4, MaxBytes: 256, Element: schema.Record{"v": shortField}},
+					"log":   {Kind: "list", MaxItems: 4, MaxBytes: 256, Element: schema.Record{"mode": shortField}},
+				},
+				Steps: []author.Step{
+					author.Set("mode", author.String("INVALID_ENUM")),
+					author.ForEach(author.Var("items"), map[string]string{"v": "item_v"},
+						author.Append("log", map[string]author.Expr{"mode": author.String("ok")}),
+					),
+					author.Set("out", author.Var("mode")),
+					author.Success(),
+				},
+			},
+		},
+	}
+
+	for _, tc := range invalidCases {
+		t.Run("reject_"+tc.name, func(t *testing.T) {
+			if _, err := author.Compile(tc.d); err == nil {
+				t.Fatalf("expected compile rejection for %s, got nil", tc.name)
+			}
+		})
+	}
+
+	validCases := []struct {
+		name string
+		d    author.Definition
+	}{
+		{
+			name: "valid enum and bounded string variables across Set Request Send Append Outputs",
+			d: author.Definition{
+				Outputs:     schema.Record{"mode": enumField, "short": shortField},
+				Collections: map[string]schema.Field{"items": {Kind: "list", MaxItems: 4, MaxBytes: 512, Element: schema.Record{"mode": enumField}}},
+				Effects:     map[string]author.Effect{"tool": {Capability: "model", Input: schema.Record{"mode": enumField}, Output: schema.Record{"res": shortField}}},
+				Ports:       map[string]author.Port{"out": {Peer: "receiver", Obligation: "work", Send: schema.Record{"mode": enumField}}},
+				Steps: []author.Step{
+					author.Set("tmp_mode", author.String("fast")),
+					author.Set("tmp_short", author.String("ok")),
+					author.Append("items", map[string]author.Expr{"mode": author.Var("tmp_mode")}),
+					author.Request("req", "tool", map[string]author.Expr{"mode": author.Var("tmp_mode")}, nil),
+					author.Send("out", map[string]author.Expr{"mode": author.Var("tmp_mode")}),
+					author.Set("mode", author.Var("tmp_mode")),
+					author.Set("short", author.Var("tmp_short")),
+					author.Success(),
+				},
+			},
+		},
+		{
+			name: "runtime-dependent input variable flowing to stricter Request Send and Outputs",
+			d: author.Definition{
+				Inputs:  schema.Record{"dynamic": {Kind: "string", MaxBytes: 20}},
+				Outputs: schema.Record{"short": shortField},
+				Effects: map[string]author.Effect{"tool": {Capability: "model", Input: schema.Record{"mode": enumField}}},
+				Ports:   map[string]author.Port{"out": {Peer: "receiver", Obligation: "work", Send: schema.Record{"mode": enumField}}},
+				Steps: []author.Step{
+					author.Request("req", "tool", map[string]author.Expr{"mode": author.Var("dynamic")}, nil),
+					author.Send("out", map[string]author.Expr{"mode": author.Var("dynamic")}),
+					author.Set("short", author.Var("dynamic")),
+					author.Success(),
+				},
+			},
+		},
+		{
+			name: "FR1 contradicted IfEqual branch does not pollute valid constant across join",
+			d: author.Definition{
+				Outputs: schema.Record{"out": enumField},
+				Effects: map[string]author.Effect{"tool": {Capability: "model", Input: schema.Record{"mode": enumField}}},
+				Steps: []author.Step{
+					author.Set("mode", author.String("fast")),
+					author.IfEqual(author.Var("mode"), author.String("NOT_IN_ENUM"),
+						[]author.Step{author.Set("seen", author.Boolean(true))},
+						[]author.Step{author.Set("seen", author.Boolean(false))},
+					),
+					author.Request("req", "tool", map[string]author.Expr{"mode": author.Var("mode")}, nil),
+					author.Set("out", author.Var("mode")),
+					author.Success(),
+				},
+			},
+		},
+		{
+			name: "FR2 correlated flag guard on fallback sentinel value",
+			d: author.Definition{
+				Inputs:  schema.Record{"go": {Kind: "bool"}},
+				Outputs: schema.Record{"out": enumField},
+				Effects: map[string]author.Effect{"tool": {Capability: "model", Input: schema.Record{"mode": enumField}}},
+				Steps: []author.Step{
+					author.IfEqual(author.Var("go"), author.Boolean(true),
+						[]author.Step{author.Set("mode", author.String("fast"))},
+						[]author.Step{author.Set("mode", author.String("UNSET_SENTINEL"))},
+					),
+					author.IfEqual(author.Var("go"), author.Boolean(true),
+						[]author.Step{
+							author.Request("req", "tool", map[string]author.Expr{"mode": author.Var("mode")}, nil),
+							author.Set("out", author.Var("mode")),
+							author.Success(),
+						},
+						[]author.Step{author.Failure()},
+					),
+				},
+			},
+		},
+		{
+			name: "FR3 collection row correlation guarded by active column in ForEach",
+			d: author.Definition{
+				Collections: map[string]schema.Field{
+					"rows": {
+						Kind: "list", MaxItems: 4, MaxBytes: 512,
+						Element: schema.Record{"active": {Kind: "bool"}, "mode": {Kind: "string", MaxBytes: 20}},
+					},
+				},
+				Values: map[string]schema.Value{
+					"rows": schema.List(
+						map[string]schema.Value{"active": schema.Bool(false), "mode": schema.Text("SKIP_ROW")},
+						map[string]schema.Value{"active": schema.Bool(true), "mode": schema.Text("fast")},
+					),
+				},
+				Effects: map[string]author.Effect{"tool": {Capability: "model", Input: schema.Record{"mode": enumField}}},
+				Steps: []author.Step{
+					author.ForEach(author.Var("rows"), map[string]string{"active": "act", "mode": "m"},
+						author.IfEqual(author.Var("act"), author.Boolean(true),
+							[]author.Step{author.Request("req", "tool", map[string]author.Expr{"mode": author.Var("m")}, nil)},
+							nil,
+						),
+					),
+					author.Success(),
+				},
+			},
+		},
+		{
+			name: "FR4 non-empty ForEach overwriting initial sentinel before Success",
+			d: author.Definition{
+				Outputs: schema.Record{"x": enumField},
+				Collections: map[string]schema.Field{
+					"items": {
+						Kind: "list", MaxItems: 4, MaxBytes: 256,
+						Element: schema.Record{"v": enumField},
+					},
+				},
+				Values: map[string]schema.Value{
+					"x":     schema.Text("UNSET_SENTINEL"),
+					"items": schema.List(map[string]schema.Value{"v": schema.Text("fast")}),
+				},
+				Steps: []author.Step{
+					author.ForEach(author.Var("items"), map[string]string{"v": "x"}),
+					author.Success(),
+				},
+			},
+		},
+		{
+			name: "FR5 intermediate scratch assignment to output variable overwritten before Success",
+			d: author.Definition{
+				Outputs: schema.Record{"mode": enumField},
+				Steps: []author.Step{
+					author.Set("mode", author.String("TEMP_WORKING_VALUE")),
+					author.Set("mode", author.String("fast")),
+					author.Success(),
+				},
+			},
+		},
+		{
+			name: "multi-port SendUsed allowed when obligations differ or schemas are identical aliases",
+			d: author.Definition{
+				Ports: map[string]author.Port{
+					"out_a":     {Peer: "receiver", Obligation: "work", Send: schema.Record{"mode": enumField}},
+					"out_alias": {Peer: "receiver", Obligation: "work", Send: schema.Record{"mode": enumField}},
+					"out_audit": {Peer: "receiver", Obligation: "audit", Send: schema.Record{"note": {Kind: "string", MaxBytes: 32}}},
+					"unused":    {Peer: "receiver", Obligation: "work", Send: schema.Record{"mode": {Kind: "string", MaxBytes: 32}}},
+				},
+				Steps: []author.Step{
+					author.Send("out_a", map[string]author.Expr{"mode": author.String("fast")}),
+					author.Send("out_alias", map[string]author.Expr{"mode": author.String("slow")}),
+					author.Send("out_audit", map[string]author.Expr{"note": author.String("audit-trail")}),
+					author.Success(),
+				},
+			},
+		},
+	}
+
+	for _, tc := range validCases {
+		t.Run("accept_"+tc.name, func(t *testing.T) {
+			if _, err := author.Compile(tc.d); err != nil {
+				t.Fatalf("unexpected compile failure for %s: %v", tc.name, err)
+			}
+		})
+	}
+}

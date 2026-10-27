@@ -443,6 +443,9 @@ func Reduce(p Program, s Projection, o *Observation, id RunID, seq int64, l Limi
 			}
 			intent.Payload[k] = x
 		}
+		if err := validateAuthorIntent(p, intent); err != nil {
+			return Reduction{}, err
+		}
 		for k, v := range in.Updates {
 			if k == "" || k == in.Dst {
 				return Reduction{}, fmt.Errorf("invalid update destination")
@@ -450,6 +453,13 @@ func Reduce(p Program, s Projection, o *Observation, id RunID, seq int64, l Limi
 			x, err := eval(v, s.Data)
 			if err != nil {
 				return Reduction{}, err
+			}
+			if p.Author != nil {
+				if col, ok := p.Author.Collections[k]; ok {
+					if err := col.Validate(x); err != nil {
+						return Reduction{}, err
+					}
+				}
 			}
 			next.Data[k] = x
 		}

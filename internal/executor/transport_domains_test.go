@@ -16,7 +16,7 @@ func transportMessageFixture(t *testing.T) Provision {
 	receiver[0].Match.Provenance = "ordinary-message"
 	receiver[0].Match.Source = Lit(Text("sender"))
 	addProgram(t, &p, "receiver", receiver, map[string]Value{})
-	p.Permissions = []Permission{{Kind: "message", Source: "sender", Target: "receiver", Operation: "message", Revision: 1}, {Kind: "input", Source: "local", Target: "receiver", Operation: "input"}}
+	p.Permissions = []Permission{{Kind: "message", Source: "sender", Target: "receiver", Operation: "message", Revision: 1, Obligation: "work"}, {Kind: "input", Source: "local", Target: "receiver", Operation: "input"}}
 	return p
 }
 func addTerminalParticipants(t *testing.T, p *Provision) {
