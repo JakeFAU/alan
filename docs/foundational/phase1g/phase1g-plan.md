@@ -114,4 +114,4 @@
 - [x] Add test-only faulty variants detected by unchanged independent monitors for cross-item/result binding, budget reset, premature success, uncommitted creation and replay dispatch/creation. Ensure each input reaches the relevant fault.
 - [x] Run focused checks, full default/integration/race suites, both vet modes, gofmt, dependency verification and prior research regressions. Capture raw commands/platform/outcomes; compare historical records separately from current-source changes.
 - [x] Retain exact source manifest/archive sufficient to reproduce, runbook, evidence-to-claim table, authoring/provisioning/record/concurrency/latency/recovery measurements and limitations. Obtain independent whole-branch review and preserve findings/fixes.
-- [ ] Commit reviewed increment, push implementation branch and open/attach draft PR against verified current main; do not merge/release.
+- [x] Commit reviewed increment, push implementation branch and open/attach draft PR against verified current main; do not merge/release.

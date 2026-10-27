@@ -13,4 +13,6 @@ The original full qualification, earlier failed attempts and all 1,120 historica
 
 The fix-wave audit records the exact tree at `f257e93`; subsequent review/publication documents are outside that audit's original-file allowlist. Frozen source hashes and both archive manifests remain authoritative for executable reproduction. Final adjacent documents are identified separately to avoid circular archive identities.
 
-The starting main was `80dead19846d9b034b4457a9436e43acb81da3df`. Publication preflight found current main `eb74e34cad27877f987ab5297fb5b4b31e469f24`, whose only intervening change is `.gitignore` maintenance. Phase1G does not change that file. The PR targets current `main`; publication confirmation follows separately.
+The starting main was `80dead19846d9b034b4457a9436e43acb81da3df`. Publication preflight found current main `eb74e34cad27877f987ab5297fb5b4b31e469f24`, whose only intervening change is `.gitignore` maintenance. Phase1G does not change that file. The PR targets current `main`; [Draft PR #13](https://github.com/JakeFAU/alan/pull/13) is open and attached to the task. CODEOWNER approval remains the user’s decision; no merge or release was performed.
+
+The [controller ledger](evidence/controller-ledger.md) retains implementation rulings and their evidence, including the watchdog and metadata-only verification decisions. [Publication metadata](evidence/publication.json) identifies the reviewed head and actual draft PR.
