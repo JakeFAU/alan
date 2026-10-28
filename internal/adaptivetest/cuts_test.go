@@ -126,7 +126,7 @@ func TestAdaptiveUnknownSibling(t *testing.T) {
 			p := start(t, path, c.ID(), "unknown", server.URL, false, "")
 			select {
 			case <-provider.entered:
-			case <-time.After(5 * time.Minute):
+			case <-time.After(raceDuration(5 * time.Minute)):
 				t.Fatal("watchdog: missing held request")
 			}
 			ack := p.acknowledgment(t)
@@ -142,7 +142,7 @@ func TestAdaptiveUnknownSibling(t *testing.T) {
 			p.wait(t, true)
 			select {
 			case <-provider.ended:
-			case <-time.After(time.Minute):
+			case <-time.After(raceDuration(time.Minute)):
 				t.Fatal("watchdog: transport did not close")
 			}
 			fresh := start(t, path, c.ID(), "", server.URL, false, "")
@@ -189,7 +189,7 @@ func TestAdaptiveCapacityAndOutOfOrder(t *testing.T) {
 					p := start(t, path, c.ID(), "capacity", server.URL, false, "")
 					select {
 					case <-provider.entered:
-					case <-time.After(5 * time.Minute):
+					case <-time.After(raceDuration(5 * time.Minute)):
 						t.Fatal("watchdog: missing held request")
 					}
 					// HTTP entry precedes admission of the witness input. Its retained

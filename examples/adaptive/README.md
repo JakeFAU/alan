@@ -77,3 +77,5 @@ and `go -C examples/adaptive/consumer test -count=1 ./...`. The root module does
 not discover tests in the consumer module. Every-transition byte measurements,
 artifact/schema identities, source manifests, logs, and authoring friction are
 retained under `docs/foundational/phase1h/evidence/task2`.
+
+Current source-specific process, capacity, closure, unknown and replay qualification is recorded in the [Phase1H qualification](../../docs/foundational/phase1h/02-qualification.md) and [review](../../docs/foundational/phase1h/03-review.md) records. Task2 measurements retain their historical source identities across the later rebase. The [runbook](../../docs/foundational/phase1h/04-runbook.md) covers source reproduction and the narrower effectful question/disposition profile.

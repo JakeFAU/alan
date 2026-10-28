@@ -1,6 +1,6 @@
 # Phase 1H runbook
 
-This ordinary application receives work after initialization. Returned typed results determine the next ordered frontier inside one retained adaptive member. No live provider credential is required or used by these examples. The same component works directly or through one ordinary wrapper. Current final qualification/review identities will be added after the Task3 review gate; earlier Task2/Phase1G evidence retains its original source identity.
+This ordinary application receives work after initialization. Returned typed results determine the next ordered frontier inside one retained adaptive member. No live provider credential is required or used by these examples. The same component works directly or through one ordinary wrapper. Exact source-specific test/archive identities and review scope are recorded in [qualification](02-qualification.md) and [review](03-review.md); earlier Task2/Phase1G evidence retains its original source identity. The independent harness checkpoint review permits final qualification and is distinct from whole-branch review.
 
 Run from repository root using the pinned local Go toolchain and dependency. Use a fresh database path for each `init`. Recover by opening the existing store; never initialize a replacement root or raise persisted limits.
 
@@ -96,3 +96,46 @@ Closure evidence is transparently split: the primary adaptive decision/kill/clos
 Read-only replay uses a subprocess with no adapter registry/credential and the exact supported macOS sandbox-exec deny-network policy; ledger digests and contacts must remain equal. Unsupported OS isolation is reported honestly. Runtime replay validity and the independent application oracle are separate verdicts. An authentic ordinary faulty source overlay overwrites consumed gamma0 with2; real forbidden10/11/31 admissions must occur and the unchanged oracle must reject them even while Run/Replay remain valid. A race parent builds that variant with race instrumentation.
 
 Final H source freeze, current-source broad integration/race, both consumer modules and verified extracted offline focused reproduction follow independent harness review. Historical G/F archives remain untouched alongside; the current H archive includes current required source/tools/inputs and pinned sqlite proxy without recursively copying old archives. Extracted focused reproduction is explicitly narrower than the full current-source suite. The rebase onto main56892cb changes compiler/executor inputs, so the earlier Task2 default result cannot qualify this source; a fresh changed-source default run is required. The original selected-input inventory and result remain historical. Task2's initial full behavioral/CLI matrix did not all predate implementation; the constructor-first red and later tests, original harness failures, byte fix and whole-frontier accepted-count RED→GREEN remain preserved. No full initial TDD chronology is claimed.
+
+## Final gates and offline source reproduction
+
+Use a fresh output directory for a new suite capture; retained results are never overwritten. Default and integration watchdogs are60m, root race600m, and consumer normal/race15m/60m. These detect hangs and do not change application limits.
+
+```sh
+qualification_dir="$(mktemp -d /tmp/alan-phase1h-qualification.XXXXXX)"
+export ALAN_H_OUT="$qualification_dir"
+python3 docs/foundational/phase1h/tools/qualify.py default
+python3 docs/foundational/phase1h/tools/qualify.py normal
+python3 docs/foundational/phase1h/tools/qualify.py race
+python3 docs/foundational/phase1h/tools/qualify.py old-consumer
+python3 docs/foundational/phase1h/tools/qualify.py old-consumer-race
+python3 docs/foundational/phase1h/tools/qualify.py consumer
+python3 docs/foundational/phase1h/tools/qualify.py consumer-race
+python3 docs/foundational/phase1h/tools/compare.py default
+python3 docs/foundational/phase1h/tools/compare.py normal
+python3 docs/foundational/phase1h/tools/compare.py race
+python3 docs/foundational/phase1h/tools/checks.py "$qualification_dir/final-normal"
+python3 docs/foundational/phase1h/tools/checks.py "$qualification_dir/final-race"
+```
+
+The source archive is self-contained for the declared offline commands: current package/test/module/fixture/tools/manuscript inputs and a pinned sqlite3 file proxy. It excludes historical nested source archives, the Go/C toolchain and generated run evidence. Archive-manifest hashes cover every member, including separately archived prose; source identity excludes generated reports to avoid self-reference. Historical sources and all original logs remain adjacent repository evidence. The retained harness-review script is an exact historical inspection source; it needs adjacent development artifacts and is not executed by the extracted-source behavioral reproduction.
+
+`tools/reproduce.py` verifies the final archive and every safe member before extraction into a fresh directory. It starts with an empty GOMODCACHE, uses only the bundled file proxy with sum lookup off, compiles root and both consumer modules, then runs focused decision/partial recovery, the causal capacity witness, unknown sibling, late-transport companion, isolated replay, faulty application, public consumer and historical semantic-package checks. This is focused extracted-source reproduction, not an extracted full default/integration/race suite. Its original command vectors, exits and source/archive identities are retained under `evidence/task3/extracted`. The full working-tree suites are separately captured by source.
+
+When reproducing the retained archive, use the existing manifests/archive without rerunning freeze/package in place: those tools deliberately refuse overwrites. Run `python3 docs/foundational/phase1h/tools/reproduce.py` from a fresh checkout that has no existing `evidence/task3/extracted` result, or invoke the recorded commands in a separate verified extraction. Exact resulting archive/member identities are in the generated qualification record. No automatic eventual-success claim is made for an unresolved non-idempotent effect.
+
+## Race watchdogs and fixture lifetimes
+
+The original consumer race command's15m watchdog expired after901.64s, with its two CLI cases passing in340.42s/343.55s against normal19.72s/17.72s; no data-race diagnostic was emitted. The failed command and full stack remain original evidence. Final race watchdogs account for this measured slowdown and the complete12-case byte matrix. They are operational hang detection, not semantic/liveness bounds.
+
+Task3 harness durations use the existing build-info race detection, shared with authentic-fault child instrumentation. Race builds multiply the following test durations by20; normal durations remain unchanged:
+
+| Use | Normal | Race | Role |
+| --- | ---: | ---: | --- |
+| ACK and held-contact wait |5m|100m|Hang watchdog|
+| Unknown connection close and companion contact/cancel/drain waits |1m|20m|Hang watchdog|
+| Regular child test and parent exit wait |12m|240m|Hang watchdog|
+| Authentic-fault child test |5m|100m|Hang watchdog|
+| Explicitly held HTTP attempts in process/companion fixtures |10m|200m|Fixture transport lifetime preserving the same barrier-controlled hold|
+
+The faulty application's immediate-response adapter lifetime stays1m. All releases, cancellations, SIGKILLs, frontier choices, unknown classification and completion claims still use the original barriers/evidence, never elapsed-time decisions. No step count, root budget, work/round limit, oracle, schema or ALAN program changes. Race process records report actual instrumentation, scale and child timeout; final checks require race instrumentation when the command requests it. Longer hang detection makes no liveness claim.

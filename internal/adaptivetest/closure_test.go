@@ -164,12 +164,12 @@ func TestAdaptiveClosureLateTransportCompanion(t *testing.T) {
 	})
 	done := make(chan error, 1)
 	go func() {
-		_, err := s.Run(ctx, runtime.RunOptions{Adapters: map[string]effects.Adapter{peerCapability: httpAdapter{server.URL}}, MaxSteps: 1000, MaxDispatch: 100, MaxInFlight: 2, ExternalTimeout: 10 * time.Minute})
+		_, err := s.Run(ctx, runtime.RunOptions{Adapters: map[string]effects.Adapter{peerCapability: httpAdapter{server.URL}}, MaxSteps: 1000, MaxDispatch: 100, MaxInFlight: 2, ExternalTimeout: raceDuration(10 * time.Minute)})
 		done <- err
 	}()
 	select {
 	case <-provider.entered:
-	case <-time.After(time.Minute):
+	case <-time.After(raceDuration(time.Minute)):
 		t.Fatal("watchdog: companion transport absent")
 	}
 	before := inspect(t, path)
@@ -182,7 +182,7 @@ func TestAdaptiveClosureLateTransportCompanion(t *testing.T) {
 	case closure = <-closed:
 	case err := <-done:
 		t.Fatal("Run before closure", err)
-	case <-time.After(time.Minute):
+	case <-time.After(raceDuration(time.Minute)):
 		t.Fatal("watchdog: cancellation absent")
 	}
 	if len(closure.Tables["lifecycle_results"]) != 1 {
@@ -202,7 +202,7 @@ func TestAdaptiveClosureLateTransportCompanion(t *testing.T) {
 	select {
 	case err := <-done:
 		must(t, err)
-	case <-time.After(time.Minute):
+	case <-time.After(raceDuration(time.Minute)):
 		t.Fatal("watchdog: late result drain")
 	}
 	after := inspect(t, path)
@@ -247,5 +247,5 @@ func TestAdaptiveClosureLateTransportCompanion(t *testing.T) {
 	if contacts(last) != 1 || peak != 1 {
 		t.Fatal("second contact or excess capacity")
 	}
-	emit(t, map[string]any{"kind": "closure_late_transport_companion", "lifecycle_decision": result, "first_operation": q.Data["first"], "second_operation": q.Data["second"], "second_source_authorization_allowed": true, "second_reservation_reason": "scope_closed", "provider_ledger": last, "charges": after.Roots[0].Charges, "fixed_static_runs": 3, "adaptive_input_submitted": false, "runtime_verdict": "cancelled root immutable", "application_verdict": "separate ordinary scoped peer late-result and reservation witness"})
+	emit(t, map[string]any{"kind": "closure_late_transport_companion", "lifecycle_decision": result, "first_operation": q.Data["first"], "second_operation": q.Data["second"], "second_source_authorization_allowed": true, "second_reservation_reason": "scope_closed", "provider_ledger": last, "charges": after.Roots[0].Charges, "fixed_static_runs": 3, "adaptive_input_submitted": false, "race_instrumented": raceEnabled(), "watchdog_scale": int64(raceDuration(time.Second) / time.Second), "runtime_verdict": "cancelled root immutable", "application_verdict": "separate ordinary scoped peer late-result and reservation witness"})
 }

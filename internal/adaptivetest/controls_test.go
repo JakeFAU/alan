@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime/debug"
 	"strings"
 	"testing"
 	"time"
@@ -80,14 +79,7 @@ func TestFaultyAdaptiveApplicationOracle(t *testing.T) {
 	must(t, os.WriteFile(overlayPath, raw, 0644))
 	binary := filepath.Join(folder, "adaptive-fault.test")
 	args := []string{"test", "-tags", "integration", "-c", "-o", binary, "-overlay", overlayPath}
-	race := false
-	if info, ok := debug.ReadBuildInfo(); ok {
-		for _, v := range info.Settings {
-			if v.Key == "-race" && v.Value == "true" {
-				race = true
-			}
-		}
-	}
+	race := raceEnabled()
 	if race {
 		args = append(args, "-race")
 	}
@@ -99,7 +91,7 @@ func TestFaultyAdaptiveApplicationOracle(t *testing.T) {
 	retain(t, "overlay", map[string]any{"original_source": string(original), "fault_source": mutated, "overlay": overlay, "build_argv": cmd.Args, "build_output": string(output), "race_instrumented": race})
 	must(t, err)
 	provider, server := newProvider(t, -1, true, false)
-	child := exec.CommandContext(context.WithoutCancel(t.Context()), binary, "-test.run=^TestAdaptiveFaultChild$", "-test.v", "-test.timeout=5m")
+	child := exec.CommandContext(context.WithoutCancel(t.Context()), binary, "-test.run=^TestAdaptiveFaultChild$", "-test.v", "-test.timeout="+raceDuration(5*time.Minute).String())
 	for _, v := range os.Environ() {
 		if !strings.HasPrefix(v, "OPENAI_API_KEY=") && !strings.HasPrefix(v, "ALAN_H_") && !strings.HasPrefix(v, "ALAN_BARRIER=") {
 			child.Env = append(child.Env, v)

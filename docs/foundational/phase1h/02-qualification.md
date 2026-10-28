@@ -1,0 +1,11 @@
+# Phase1H source-tagged qualification
+
+Final qualification is in progress. The [guard/comparison checkpoint](evidence/task3/final/guard-report.md) and [initial harness report](evidence/task3/report.md) preserve exact sources, command failures and conditional scope. Harness specification/quality review approved proceeding; final whole-branch review is separate.
+
+The fresh rebased default passed855 test/subtest events across18 passing packages in1688.792s at source4a92f31979d30e322b2afa195d8da6eb71333ab70c02029e8870189f73e0f5af. All12 byte/profile records passed. Subsequent integration-only watchdog/tool changes have exact unchanged1509-file/288-package default selection, retained in the source-equivalence record. The original default result is not relabeled. Runtime integration tests require the later integration gate.
+
+Both consumer normal modes and the worktree consumer race mode passed. The adaptive consumer's original15m race command timed out after901.64s after both CLI cases passed; complete stack/partial passes remain preserved and a60m covering rerun is required. Static/vet/module/build/format and actual documented loopback CLI checks passed as individually captured; the unsuitable normal build command for the test-only worktree module failed and the correct test-build command passed. No live provider request or credential was used.
+
+Current-to-historical comparison preserves source provenance:15 exact qualification payloads,20/32 composition/supervision records with exact ordered behavior after validating the sole pinned upstream permission-line edit, and six existing public conformance projections/model streams. This is not historical raw-source or raw-runtime-ledger equality. Original failed comparison and negative comparator controls remain evidence.
+
+Full integration/race, covering consumer race, final source/dependency archive, extracted offline focused reproduction and whole-branch review remain pending. The final generated record will enumerate actual commands, source/archive identities and remaining limits. No approval beyond the named checkpoints, distributed/liveness/power-loss proof, automatic unknown repair or answer-quality result is implied.

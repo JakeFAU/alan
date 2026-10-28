@@ -50,6 +50,12 @@ assert (
     and "rejected" in fault[0]["application_verdict"]
 )
 assert len([r for r in a if r.get("kind") == "recovered"]) == 6
+if "-race" in meta["Command"]:
+    # Compare requested instrumentation to actual build-info-derived records.
+    starts = [r for r in a if r.get("kind") == "process_start"]
+    assert starts and all(r["race_instrumented"] for r in starts)
+    assert all(r["watchdog_scale"] == 20 for r in starts)
+    assert fault[0]["race_instrumented"]
 print(
     json.dumps(
         dict(

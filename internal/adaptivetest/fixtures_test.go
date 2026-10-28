@@ -12,8 +12,10 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
+	"runtime/debug"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/JakeFAU/alan/author"
 	"github.com/JakeFAU/alan/effects"
@@ -251,4 +253,25 @@ func progressMonitor(s runtime.Inspection) error {
 		}
 	}
 	return fmt.Errorf("progress witness input lacks original committed consumption")
+}
+
+// raceEnabled preserves the original overlay child's build-info check.
+func raceEnabled() bool {
+	if info, ok := debug.ReadBuildInfo(); ok {
+		for _, v := range info.Settings {
+			if v.Key == "-race" && v.Value == "true" {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// raceDuration extends only test watchdogs and explicitly held fixture lifetimes.
+// Programs, resource bounds, barriers and outcome policy never depend on it.
+func raceDuration(normal time.Duration) time.Duration {
+	if raceEnabled() {
+		return 20 * normal
+	}
+	return normal
 }

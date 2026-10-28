@@ -28,14 +28,14 @@ elif "consumer" in mode:
             "test",
             "-json",
             "-count=1",
-            "-timeout=15m",
+            "-timeout=60m" if mode.endswith("race") else "-timeout=15m",
         ]
         + (["-race"] if mode.endswith("race") else [])
         + ["./..."]
     )
 else:
     if mode == "race":
-        cmd[cmd.index("-timeout=60m")] = "-timeout=120m"
+        cmd[cmd.index("-timeout=60m")] = "-timeout=600m"
     cmd += (
         (["-race"] if mode == "race" else [])
         + ([] if mode == "default" else ["-tags", "integration"])

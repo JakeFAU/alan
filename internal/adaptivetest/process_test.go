@@ -231,7 +231,7 @@ func TestAdaptiveProcessChild(t *testing.T) {
 	if ep := os.Getenv("ALAN_H_ENDPOINT"); ep != "" {
 		registry[adaptive.ScalarCapability] = httpAdapter{ep}
 	}
-	report, err := s.Run(ctx, runtime.RunOptions{Adapters: registry, MaxSteps: 30000, MaxDispatch: 3000, MaxInFlight: 2, ExternalTimeout: 10 * time.Minute})
+	report, err := s.Run(ctx, runtime.RunOptions{Adapters: registry, MaxSteps: 30000, MaxDispatch: 3000, MaxInFlight: 2, ExternalTimeout: raceDuration(10 * time.Minute)})
 	must(t, err)
 	if inputDone != nil {
 		must(t, <-inputDone)
@@ -261,7 +261,7 @@ func start(t *testing.T, path, template, cut, endpoint string, replay bool, bina
 		must(t, err)
 	}
 	exe := binary
-	args := []string{"-test.run=^TestAdaptiveProcessChild$", "-test.v", "-test.timeout=12m"}
+	args := []string{"-test.run=^TestAdaptiveProcessChild$", "-test.v", "-test.timeout=" + raceDuration(12*time.Minute).String()}
 	network := "not requested"
 	if replay {
 		sandbox, err := exec.LookPath("sandbox-exec")
@@ -322,7 +322,7 @@ func start(t *testing.T, path, template, cut, endpoint string, replay bool, bina
 	})
 	raw, err := os.ReadFile(exe)
 	must(t, err)
-	emit(t, map[string]any{"kind": "process_start", "pid": cmd.Process.Pid, "argv": cmd.Args, "binary_sha256": rawHash(raw), "filter": f, "network_isolation": network, "credential_absent": true})
+	emit(t, map[string]any{"kind": "process_start", "pid": cmd.Process.Pid, "argv": cmd.Args, "binary_sha256": rawHash(raw), "filter": f, "network_isolation": network, "credential_absent": true, "race_instrumented": raceEnabled(), "watchdog_scale": int64(raceDuration(time.Second) / time.Second), "child_timeout": raceDuration(12 * time.Minute).String()})
 	return p
 }
 func (p *process) acknowledgment(t *testing.T) boundary.Event {
@@ -336,7 +336,7 @@ func (p *process) acknowledgment(t *testing.T) boundary.Event {
 			raw, _ := os.ReadFile(p.log.Name())
 			t.Fatal(err, string(raw))
 		}
-	case <-time.After(5 * time.Minute):
+	case <-time.After(raceDuration(5 * time.Minute)):
 		t.Fatal("watchdog: boundary absent")
 	}
 	must(t, validAck(e, p.filter, p.cmd.Process.Pid, map[string]bool{}))
@@ -362,7 +362,7 @@ func (p *process) wait(t *testing.T, kill bool) {
 		} else {
 			must(t, err)
 		}
-	case <-time.After(12 * time.Minute):
+	case <-time.After(raceDuration(12 * time.Minute)):
 		t.Fatal("watchdog: child did not exit")
 	}
 }

@@ -3,7 +3,8 @@
 
 import gzip, importlib.util, json, os, sys
 from pathlib import Path
-from common import ROOT, DOC
+from common import ROOT, DOC, inventory, source_id
+from semantic_compare import compare_deterministic
 
 mode = sys.argv[1]
 assert mode in ("default", "normal", "race")
@@ -61,16 +62,19 @@ for marker, count in (
     y = [r["Evidence"] for r in b]
     if marker == "CONFORMANCE":
         result = c.compare_conformance(x, y, passed)
-    else:
+    elif marker == "QUALIFICATION":
         c.require(x == y, "exact ordered payloads")
         result = dict(Marker=marker, Records=count, ExactOrderedPayloads=True)
+    else:
+        result = compare_deterministic(marker, x, y, ROOT)
     results.append(result)
 report = dict(
     SourceID=current,
+    ComparatorSourceID=source_id(inventory()),
     BaselineSource=base,
     Mode=mode,
     Comparisons=results,
-    Scope="Actual current H run against frozen original Phase1E semantic payloads, with public conformance projection comparison; historical archives not re-executed.",
+    Scope="Actual H records: exact15 qualification payloads, ordered composition/supervision behavior after independently validating both provenance manifests and the sole pinned upstream bridge edit, and existing six public conformance projections/model streams. Not historical raw-metadata equality or historical-source execution.",
 )
 path = out / "comparison.json"
 assert not path.exists()

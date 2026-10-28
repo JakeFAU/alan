@@ -59,15 +59,19 @@ def inventory(root=ROOT):
                 "01-adaptive-contract.md",
                 "phase1h-plan.md",
                 "04-runbook.md",
+                "05-decisions.md",
             ):
                 if (doc / name).exists():
                     paths.add(doc / name)
         paths.update((doc / "evidence/fixtures").glob("*"))
     # Exact old comparison inputs and implementation, not historical nested archives.
     for name in (
+        "docs/foundational/05-decisions.md",
         "docs/foundational/phase1e/source-manifest.json",
         "docs/foundational/phase1e/tools/comparison.py",
         "docs/foundational/phase1h/evidence/task2/collect-default-inputs.py",
+        "docs/foundational/phase1h/evidence/task3/harness-review-evidence.py",
+        "docs/foundational/phase1h/evidence/task3/comparison-inputs/runtime_conformance-before.go.txt",
     ):
         if (root / name).exists():
             paths.add(root / name)

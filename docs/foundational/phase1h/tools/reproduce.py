@@ -4,6 +4,7 @@
 from pathlib import Path
 import gzip, json, os, subprocess, sys, tarfile, tempfile, time
 from common import ROOT, DOC, sha
+from semantic_compare import compare_deterministic
 
 manifest = json.loads((DOC / "archive-manifest.json").read_text())
 archive = DOC / "source.tar.gz"
@@ -51,7 +52,7 @@ with tempfile.TemporaryDirectory(prefix="alan-phase1h-offline-") as tmp:
             "integration",
             "./internal/adaptivetest",
             "-run",
-            "TestProcessAdaptiveCuts/nested=false/(decision|partial)$|TestAdaptiveUnknownSibling/false$|TestAdaptiveClosureLateTransportCompanion$|TestAdaptiveReadOnlyReplay$|TestFaultyAdaptiveApplicationOracle$",
+            "TestProcessAdaptiveCuts/nested=false/(decision|partial)$|TestAdaptiveCapacityAndOutOfOrder/nested=false/capacity=1/held=0$|TestAdaptiveUnknownSibling/false$|TestAdaptiveClosureLateTransportCompanion$|TestAdaptiveReadOnlyReplay$|TestFaultyAdaptiveApplicationOracle$",
             "-count=1",
             "-timeout=20m",
         ],
@@ -107,6 +108,44 @@ with tempfile.TemporaryDirectory(prefix="alan-phase1h-offline-") as tmp:
         (out / "reproduction.json").write_text(json.dumps(result, indent=2) + "\n")
         print(stem, cmd, p.returncode, flush=True)
         assert p.returncode == 0
+    # Exit zero alone must not stand in for the declared selected controls.
+    required_passes = {
+        "04": {
+            "TestProcessAdaptiveCuts/nested=false/decision",
+            "TestProcessAdaptiveCuts/nested=false/partial",
+            "TestAdaptiveCapacityAndOutOfOrder/nested=false/capacity=1/held=0",
+            "TestAdaptiveUnknownSibling/false",
+            "TestAdaptiveClosureLateTransportCompanion",
+            "TestAdaptiveReadOnlyReplay",
+            "TestFaultyAdaptiveApplicationOracle",
+        },
+        "05": {
+            f"TestAdaptivePublicConsumerDirectNested/nested={nested}/capacity={capacity}/paired={paired}"
+            for nested in ("false", "true")
+            for capacity in (1, 2)
+            for paired in ("false", "true")
+        },
+    }
+    asserted_passes = {}
+    for stem, required in required_passes.items():
+        events = [
+            json.loads(line)
+            for line in gzip.decompress(
+                (out / (stem + ".stdout.gz")).read_bytes()
+            ).splitlines()
+        ]
+        actual = {
+            event["Test"]
+            for event in events
+            if event.get("Action") == "pass" and event.get("Test")
+        }
+        assert required <= actual, (
+            stem,
+            "missing required actual pass",
+            sorted(required - actual),
+        )
+        asserted_passes[stem] = sorted(required)
+    result["RequiredActualPasses"] = asserted_passes
     # Compare current extracted semantic payloads with unchanged original records.
     sys.path.insert(0, str(root / "docs/foundational/phase1h/tools"))
     import common
@@ -145,8 +184,10 @@ with tempfile.TemporaryDirectory(prefix="alan-phase1h-offline-") as tmp:
             c.compare_conformance(
                 a, b, {p.rsplit("/", 1)[-1] for p in parsed["passes"]}
             )
-        else:
+        elif marker == "QUALIFICATION":
             assert a == b
+        else:
+            compare_deterministic(marker, a, b, root)
     assert (
         common.inventory(root)
         == json.loads(
