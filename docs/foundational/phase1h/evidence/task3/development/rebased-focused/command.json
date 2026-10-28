@@ -1,0 +1,105 @@
+{
+  "SourceID": "5d8758491348bd793f90b7f818d66013c17e379f2ec0a54906ad217eb0a9400a",
+  "Command": [
+    "go",
+    "test",
+    "-json",
+    "-tags",
+    "integration",
+    "./internal/adaptivetest",
+    "-count=1",
+    "-timeout=30m"
+  ],
+  "Directory": "/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan",
+  "HeadAtStart": "19065f30d4135c8710faed3db5c7311a01c2530e",
+  "StartedUTC": "2026-10-28T14:21:40.018169+00:00",
+  "Platform": "macOS-27.2-arm64-arm-64bit-Mach-O",
+  "GoVersion": "go version go1.27.3 darwin/arm64",
+  "GoEnvironment": {
+    "CC": "cc",
+    "CGO_ENABLED": "1",
+    "GOARCH": "arm64",
+    "GOOS": "darwin",
+    "GOVERSION": "go1.27.3"
+  },
+  "Environment": {
+    "GOTOOLCHAIN": "local",
+    "GOFLAGS": "-mod=readonly",
+    "GOCACHE": "/tmp/alan-phase1f-go-build",
+    "GOPROXY": "off",
+    "GOSUMDB": "off"
+  },
+  "CredentialAbsent": true,
+  "ElapsedSeconds": 399.154,
+  "ExitCode": 1,
+  "SourceUnchanged": true,
+  "SourceAfter": "5d8758491348bd793f90b7f818d66013c17e379f2ec0a54906ad217eb0a9400a",
+  "RawSHA256": "eac0e8cfe1537df0c3f1091db3b4511389749b7bd22491a07883e5a47a677944",
+  "StderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "SourceArchiveSHA256": "8ca5efdb64cdd59b2a8c234b5a031f6a9decd092f8212923b8a0afce425099ba",
+  "passes": [
+    "github.com/JakeFAU/alan/internal/adaptivetest/TestAdaptiveClosureAfterDecision/false",
+    "github.com/JakeFAU/alan/internal/adaptivetest/TestAdaptiveClosureAfterDecision/true",
+    "github.com/JakeFAU/alan/internal/adaptivetest/TestAdaptiveClosureAfterDecision",
+    "github.com/JakeFAU/alan/internal/adaptivetest/TestAdaptiveClosureLateTransportCompanion",
+    "github.com/JakeFAU/alan/internal/adaptivetest/TestAdaptiveReadOnlyReplay",
+    "github.com/JakeFAU/alan/internal/adaptivetest/TestFaultyAdaptiveApplicationOracle",
+    "github.com/JakeFAU/alan/internal/adaptivetest/TestProcessAdaptiveCuts/nested=false/decision",
+    "github.com/JakeFAU/alan/internal/adaptivetest/TestProcessAdaptiveCuts/nested=false/intents",
+    "github.com/JakeFAU/alan/internal/adaptivetest/TestProcessAdaptiveCuts/nested=false/partial",
+    "github.com/JakeFAU/alan/internal/adaptivetest/TestProcessAdaptiveCuts/nested=true/decision",
+    "github.com/JakeFAU/alan/internal/adaptivetest/TestProcessAdaptiveCuts/nested=true/intents",
+    "github.com/JakeFAU/alan/internal/adaptivetest/TestProcessAdaptiveCuts/nested=true/partial",
+    "github.com/JakeFAU/alan/internal/adaptivetest/TestProcessAdaptiveCuts",
+    "github.com/JakeFAU/alan/internal/adaptivetest/TestAdaptiveRootDenial/false",
+    "github.com/JakeFAU/alan/internal/adaptivetest/TestAdaptiveRootDenial/true",
+    "github.com/JakeFAU/alan/internal/adaptivetest/TestAdaptiveRootDenial",
+    "github.com/JakeFAU/alan/internal/adaptivetest/TestAdaptiveUnknownSibling/false",
+    "github.com/JakeFAU/alan/internal/adaptivetest/TestAdaptiveUnknownSibling/true",
+    "github.com/JakeFAU/alan/internal/adaptivetest/TestAdaptiveUnknownSibling",
+    "github.com/JakeFAU/alan/internal/adaptivetest/TestAdaptiveCapacityAndOutOfOrder/nested=false/capacity=1/held=0",
+    "github.com/JakeFAU/alan/internal/adaptivetest/TestAdaptiveCapacityAndOutOfOrder/nested=false/capacity=2/held=2",
+    "github.com/JakeFAU/alan/internal/adaptivetest/TestAdaptiveCapacityAndOutOfOrder/nested=true/capacity=1/held=0",
+    "github.com/JakeFAU/alan/internal/adaptivetest/TestAdaptiveCapacityAndOutOfOrder/nested=true/capacity=2/held=2"
+  ],
+  "failures": [
+    {
+      "Time": "2026-10-28T10:27:38.477019-04:00",
+      "Action": "fail",
+      "Package": "github.com/JakeFAU/alan/internal/adaptivetest",
+      "Test": "TestAdaptiveCapacityAndOutOfOrder/nested=false/capacity=2/held=0",
+      "Elapsed": 1.94
+    },
+    {
+      "Time": "2026-10-28T10:28:05.548647-04:00",
+      "Action": "fail",
+      "Package": "github.com/JakeFAU/alan/internal/adaptivetest",
+      "Test": "TestAdaptiveCapacityAndOutOfOrder/nested=true/capacity=2/held=0",
+      "Elapsed": 2.21
+    },
+    {
+      "Time": "2026-10-28T10:28:19.075945-04:00",
+      "Action": "fail",
+      "Package": "github.com/JakeFAU/alan/internal/adaptivetest",
+      "Test": "TestAdaptiveCapacityAndOutOfOrder",
+      "Elapsed": 54.66
+    },
+    {
+      "Time": "2026-10-28T10:28:19.081116-04:00",
+      "Action": "fail",
+      "Package": "github.com/JakeFAU/alan/internal/adaptivetest",
+      "Elapsed": 397.774
+    }
+  ],
+  "packages": [
+    {
+      "Time": "2026-10-28T10:28:19.081116-04:00",
+      "Action": "fail",
+      "Package": "github.com/JakeFAU/alan/internal/adaptivetest",
+      "Elapsed": 397.774
+    }
+  ],
+  "Markers": {
+    "ADAPTIVE": 194
+  }
+}

@@ -1,0 +1,63 @@
+# Phase1H scoped manuscript consistency audit
+
+Audit date: 2026-10-28. Read-only repository inspection; no tests, builds, replay, source edits, proof checking, or external citation checks were performed. This file is the only audit output. Source was concurrently being developed, so line numbers are discovery locations, not frozen identities.
+
+## Question and result
+
+Does the Phase1H ordinary adaptive application require a changed semantic claim, and what is the smallest synchronized manuscript addition that truthfully records its result and limits?
+
+Result: a bounded implementation case study is warranted; no new theorem, runtime primitive, distributed guarantee, or reference is warranted by the inspected increment. The code implements an application policy using retained iteration, conditionals, invocation and outcome consumption. Its historical Task2 evidence supports finite examples; it does not establish the manuscript's general termination, congruence or recovery theorems. Current-source post-rebase qualification and whole-branch review remain separate gates. No direct counterexample to a manuscript theorem was executed by this audit.
+
+## Evidence and exact boundaries
+
+- `AGENTS.md` sections 2, 5, 6, 8 require category distinctions, synchronized Markdown/LaTeX and preservation of source-bound evidence.
+- `docs/foundational/phase1h/assignment.md` sections 2–6 freeze three rounds/eight distinct items, actual outcome dependence, round barrier, unchanged-artifact direct/nested reuse, unknown preservation, and independent application oracle.
+- `01-adaptive-contract.md:13–31` gives integer seed domain 1..8, child IDs 3p+1/3p+2, candidate capacity16, response-presence distinction, complete versus runtime status, and evidence summary-only binding. Lines65–87 give complete preflight/barrier/stop precedence/decision commit/unknown behavior. Lines91–95 give charges and qualification intent.
+- `examples/adaptive/adaptive.go:31–39,44–65` retain requests, finite control tokens and bounded collections. Lines88–131 emit the entire current frontier, await original handles in order, derive only after consumption, preflight duplicates/capacity, and append one decision before adopting `next`. Lines122–125 retain the whole accepted `work_count=trial` before the first item Invoke. This application count is not a runtime admission charge; history is an emission-prefix list (lines90–93).
+- `examples/adaptive/policy.go:20–36,66–79` require the unchanged helper schemas, narrow adaptive questions to512 bytes, bind disposition only, and map answer/no_match/clarification/insufficient_evidence to0/0/1/2 children. Full answers/citations remain original runtime outcomes; this is not an answer-quality result.
+- `examples/adaptive/deployment.go:18–19,23–47,80–87` retain envelope32/64/depth3/96 and ordinary wrapper behavior. The root is fixed provisioning cost, separate from dynamically charged created runs.
+- `evidence/task2/report.md`, especially “Application review FIX ROUND1”, “Scoped approval and refreshed supporting results”, and “Final Task2 qualification — corrected sourcefd7”, attributes actual historical results to manifest `fd7ab336ee82ccc27e846e994496a288256c63daa705927e672563d256e06a20`. It reports corrected default suite, public consumer/direct+nested paired fixtures, controlled unchanged-helper transport, CLI workflows, all12 byte cases, and preserved count-before-intent RED/GREEN. The full suite is reported exit0 at2026-10-27T04:19:58Z. These are inspected historical records, not runs by this audit.
+- `evidence/rebase-20261028/identity.json` records user-requested base `56892cb20c4f4add4bcf786d146b0aed82fbc5d1` and rebased head `19065f30d4135c8710faed3db5c7311a01c2530e`; compiler/executor input changes explicitly invalidate prior selected-input reuse. Do not copy historical “current-source” wording into a present-tense manuscript qualification claim.
+- `evidence/task3/design-status.md` is explicitly historical design approval, not process-test evidence. Untracked `internal/adaptivetest` and development records exist. `cuts_test.go:15,49,119,176`, `closure_test.go:64,139`, and `controls_test.go:23,60` define the intended process, denial, unknown, capacity, closure, replay and faulty-application checks. Test definitions and their emitted verdict strings are not passing evidence. This audit did not validate the development command manifests or frozen retained outputs as current-source qualification.
+
+## Minimal synchronized manuscript change
+
+Insert one unnumbered case-study block in both files:
+
+- Markdown: after the existing §2.5 proof ending at `paper/alan-dissertation.md:231`, before the separator at233. Use bold paragraph lead, not a new numbered theorem.
+- LaTeX: after `paper/alan-dissertation.tex:190` (`\\end{proof}` for `thm:loops`), before the next section at192. Use `\\paragraph{Bounded adaptive application (Phase 1H).}` followed by the same semantic content. Convert inline code to `\\texttt{}` and escape underscores. This preserves all existing section/theorem labels and numbering.
+
+Suggested common text (time-stable qualification wording; no rewrite is needed solely because a later gate passes):
+
+> **Bounded adaptive application (Phase 1H).** `examples/adaptive` uses the existing public authoring operations to accept seed work after initialization and derive each ordered successor frontier from the preceding round's returned outcomes. A single retained three-token `ForEach` controls at most three rounds, with at most eight application-accepted leaf items across the obligation. Each round emits its item invocations, consumes all required outcomes through their original operation handles, checks the complete candidate frontier for identity collisions and remaining capacity, and retains a one-row decision before emitting successor work. Application work IDs are distinct from runtime operation identities. The full accepted-frontier count is retained before its first item intent; runtime invocation, created-run and external-attempt charges remain separate facts.
+>
+> The scalar policy maps returned observations0/1/2 to zero/one/two ordered children, using the finite integer identity scheme in the application contract. The historical paired controlled cases used the same request and retained artifacts: changing only gamma's returned observation from2 to0 changed frontiers `[1,2,3] / [7,10,11] / [31]` into `[1,2,3] / [7]`. Direct and wrapped deployment use the identical adaptive artifact at maximum leaf depths2 and3. Additional rounds do not increase invocation depth. Request round/work limits persist under the shared root envelope of32 accepted invocations,64 created runs and96 external reservations, with physical capacity1 or2; the fixed root run is separate provisioning cost.
+>
+> Protocol success does not mean exhaustive application completion. Work- or round-limit stops return `complete=false` with the entire unperformed frontier; only exhaustion returns `complete=true`. A required unknown outcome blocks the round barrier and remains spent, even if a sibling has a known failure. Neither an unknown outcome nor an absent response is converted into observation zero or permission for replacement work. Root closure may prevent any application reply. The effectful profile directly reuses the existing two-member evidence helper, accepts questions of at most512 UTF-8 bytes, and consumes only its returned disposition for branching; complete answers and citations remain inspectable in the original retained outcomes. It establishes no answer-quality or semantic-completeness claim.
+>
+> These are bounded implementation results, not a general expressiveness or recovery proof. The source-bound Task2 report records passing controlled direct/nested and paired-result cases and byte/profile checks at manifest `fd7ab336…`; those results predate the rebase onto `56892cb…` and do not qualify the rebased source. Process recovery, unknown/closure schedules, isolated replay, independent faulty-application rejection, final suites and review are qualified separately by source-tagged records under `docs/foundational/phase1h`; only records matching the relevant source establish that source's tested status. Replay checks retained protocol consistency; the independent expected-work ledger checks whether the application follows the intended frontier policy.
+
+This is sufficient for the increment. Avoid adding Phase1H to theorem statements or converting the case study into a general macro-expressiveness proof. A small optional addition to MD §8.1 item1 (line888) and the TeX conclusion may point back to the bounded case study, but duplication is unnecessary.
+
+`paper/references.bib` was read. No bibliography change is needed because this addition cites repository evidence and adds no external research claim. Preserve existing references; no link/source accuracy check is claimed.
+
+## Rules for updating the paragraph after final qualification
+
+1. The proposed status paragraph is time-stable. Retain it through final-source capture; put new exact-source command results and independent review in the qualification records it references. Keep historical fd7 evidence attributed to its original source.
+2. A passing `TestFaultyAdaptiveApplicationOracle` would support a concrete application-level negative control: authenticated gamma0 is overwritten with an ordinary Set2, forbidden descendants are actually admitted, Run/Replay accept the resulting protocol, and the unchanged paired oracle rejects it. It would not falsify runtime replay's historical-consistency contract or prove compiler correctness.
+3. The closure result is two schedules: decision/SIGKILL/cancellation with later admission denial and duplicate known settlement, plus a separate static-peer companion for a genuinely late HTTP receipt and subsequent `scope_closed` reservation. Never describe them as one adaptive execution with a complete round barrier and an unresolved required result. See `closure_test.go:101–117,139–259` and the reviewed closure clarification in `phase1h-plan.md`.
+4. Completion recovery uses a separately retained pure leaf with128 local padding iterations (`fixtures_test.go:25–35`); unknown external recovery remains pending. Report these assumptions rather than claiming universal completion after crash.
+5. Cancellation/abandonment child-envelope permutations remain outside Task2's executed fixtures; generic success-versus-other wrapper forwarding is narrower than exact envelope-status preservation.
+
+## Pre-existing broader obligations, not resolved by this increment
+
+These should be recorded separately rather than silently endorsed by the Phase1H tests or expanded into a new milestone here:
+
+- MD §2.5 theorem/proof (lines221–231) and TeX `thm:loops` proof (line189) assert a lexicographically strictly decreasing measure whose displayed final coordinate is the increasing PC; the MD proof omits a concrete phase/PC complement and claims decrease on every step despite the loop-to-next transition. This is a proof-presentation obligation, not a Phase1H executable counterexample or a validated refutation of the finite bound. A separate proof audit must supply an actual ranking and bound.
+- MD Lemma4.7(2), lines488–490, and TeX `lem:scheduler` (around296) infer unique quiescent state across all fair internal schedules. Determinism of individual steps, disjoint target inbox insertion and termination do not alone establish confluence when shared budgets/closure/admission compete. Phase1H's ordered-output fixture is much narrower. No general confluence proof or adverse schedule was checked here.
+- TeX is a condensed representation: the detailed MD §5.4 empirical qualification, §7 counterexamples and §8.2 open obligations have no full counterpart. Do not claim complete three-file manuscript synchronization merely because the new case-study paragraphs align. The proposed edit aligns the increment only.
+- MD line671's “mathematically airtight” language and the broad conclusion's established-proof phrasing exceed what the Phase1H finite tests could support. They are pre-existing rhetorical/general-theory claims, not newly established results.
+
+## Adjacent documentation status guidance
+
+The contract header at `01-adaptive-contract.md:3` still says implementation pending, and Task2's report contains formerly-current source assertions. Preserve frozen evidence verbatim, but current navigation/runbook/qualification documents should label those as historical and point to the rebase identity and new source-specific checks. `design-status.md` already follows this historical labeling pattern. No audit changes were made to these files.
