@@ -36,3 +36,12 @@ The [independent stage1 report](evidence/task3/final-review-stage1/alan-phase1h-
 ## Whole-branch review, stage2 evidence addendum
 
 The same reviewer's [stage2 addendum](evidence/task3/final-review-stage2/alan-phase1h-final-evidence-addendum.md) found no new issue in completed frozen-source integration, strict comparisons, archive/member verification and all six extracted commands with exact7+8 required pass names. Its [inspection artifacts/hashes](evidence/task3/final-review-stage2/provenance.json) remain separately retained generated review outputs. This is continuation of the same whole-branch review; final verdict still awaits the full race result and final metadata.
+
+
+## Metadata checkpoint inspection
+
+The same reviewer's [metadata addendum](evidence/task3/final-review-metadata/alan-phase1h-final-metadata-addendum.md) found the evidence-only delta680be378..564b4a4 clean. Its original audit/output and [separate hashes](evidence/task3/final-review-metadata/provenance.json) are retained as generated review artifacts. Final approval now awaits root race, its strict checks and the final status delta; no new code fix or repeated whole-code review is requested.
+
+## Completed worker qualification
+
+The full root race completed exit0/21481.340s with1146 actual pass paths/24 passing packages, zero failures, unchanged Source770 and all12 byte profiles. Strict race historical comparison and named-control/instrumentation checks passed. All required worker qualification and packaging gates are complete; the final [report](evidence/task3/report.md) and [integrity inspection](evidence/task3/final-integrity/result.json) retain exact scope. The controller’s same whole-branch reviewer still owns the final verdict over this completion delta. No final approval, push, PR, merge or release is claimed by the worker.

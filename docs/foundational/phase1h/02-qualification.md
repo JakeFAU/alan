@@ -1,16 +1,16 @@
 # Phase1H qualification — current status
 
-**Full root race is running; its final verdict and whole-branch approval remain pending.** All other required behavioral, consumer, static and archive/extracted gates below have completed. These are finite controlled single-host implementation results, not general correctness, liveness, distributed or power-loss proofs.
+**Required local qualification and packaging gates are complete; independent whole-branch approval remains pending.** The full default/integration/race, both consumers, applicable static checks and archive/extracted gates below have completed. These are finite controlled single-host implementation results, not general correctness, liveness, distributed or power-loss proofs.
 
 Frozen source is `770df465af2bfc3bfa78547b6ad821427fbe69a01cd5ad284ff9030e82269912`,277 contributing inputs, head at freeze `680be378e0104d5fcf7d045fced8123b0909f189`, main base `56892cb20c4f4add4bcf786d146b0aed82fbc5d1`. [Source association](evidence/task3/final/frozen-source-association.json) and [selected-input proof](evidence/task3/final/guard-source-equivalence.json) separate earlier actual results from the final source. Source remained unchanged in every completed final capture.
 
-## Completed commands and pending race
+## Completed commands
 
 | Gate | Actual source | Exit / seconds | Go pass events |
 | --- | --- | --- | ---: |
 | Fresh full default |4a92f319|0 /1688.792|855 across18 packages|
 | Full integration |770df465|0 /1899.128|1146 across24 packages|
-| Full root race |770df465|Running,600m watchdog|No completed verdict|
+| Full root race |770df465|0 /21481.340|1146 across24 packages|
 | Worktree consumer normal |4a92f319|0 /10.633|20|
 | Worktree consumer race |4a92f319|0 /104.896|20|
 | Adaptive consumer normal |4a92f319|0 /123.637|12|
@@ -26,11 +26,11 @@ Full integration contains224 ADAPTIVE records, all eight named qualification gro
 
 Runtime/replay protocol validity and application-policy validity remain distinct. The faulty ordinary program consumes authenticated gamma0, substitutes2 and actually admits forbidden10/11/31; the unchanged paired oracle rejects it while Run/Replay accept its protocol. Closure is two disclosed schedules, not a complete adaptive barrier containing a required unknown result. Completion cuts use the separately identified128-iteration pure fixture. Capacity adds a fixed ordinary progress member; static root+witness cost2 is separate from dynamic charges.
 
-All12 fresh default and integration byte/profile records passed. Actual measured maxima are adaptive Projection285270B, root111158B, wrapper111218B, unchanged helper151321B and program117295B; largest canonical decision array54327B. These fit the unchanged declared limits. The [fresh default peak records](evidence/task3/final/default-byte-summary.json) retain exact scope, variable and transition addresses; old fd7 measurements keep their historical identity.
+All12 byte/profile records passed in each actual default, integration and race run. Actual measured maxima are adaptive Projection285270B, root111158B, wrapper111218B, unchanged helper151321B and program117295B; largest canonical decision array54327B. These fit the unchanged declared limits. The [fresh default peak records](evidence/task3/final/default-byte-summary.json) retain exact scope, variable and transition addresses; old fd7 measurements keep their historical identity.
 
 ## Historical comparisons
 
-Actual default/integration15/20/32/6 comparisons passed:15 qualification payloads exactly;20 composition/32 supervision records with old/new complete manifests and every inner source identity validated first, then19/31 exactly equal ordered behavior records; six unchanged public conformance projections/model streams and Go pass events. Only the pinned user-merged one-line input permission addition `Obligation: "control"` is mapped. The exact pre-main bridge bytes are retained as a `.go.txt` input. This is not historical raw-source, raw-metadata or whole-runtime-trace equality. Manifest/inner-source tamper and behavior state/order/count changes are rejected by controls. Race comparison awaits the actual race result.
+Actual default/integration/race15/20/32/6 comparisons passed:15 qualification payloads exactly;20 composition/32 supervision records with old/new complete manifests and every inner source identity validated first, then19/31 exactly equal ordered behavior records; six unchanged public conformance projections/model streams and Go pass events. Only the pinned user-merged one-line input permission addition `Obligation: "control"` is mapped. The exact pre-main bridge bytes are retained as a `.go.txt` input. This is not historical raw-source, raw-metadata or whole-runtime-trace equality. Manifest/inner-source tamper and behavior state/order/count changes are rejected by controls. Strict race comparison passed. Its separate named-control check additionally required actual child race instrumentation and watchdog scale20, and passed.
 
 ## Immutable archive and actual offline extraction
 
@@ -42,6 +42,10 @@ Archive SHA256 `2e9efb6136f3de728cff2a09c3a7a3d0686375e6054577e4bb384414102d1d36
 
 Original first-controls inspector defects, whole-frontier counterexample and RED/GREEN, rebased capacity snapshot-order failures, the15m adaptive-consumer race timeout, unsuitable old-consumer build and naive raw-provenance comparison remain failed evidence. The consumer timeout's complete stack and partial CLI passes are preserved separately from the successful60m covering command. The selector-omission hypothesis was disproved by actual Go matcher output; its diagnostic assertion failure remains distinct from ALAN evidence. No original failed result is relabeled or test weakened.
 
-[Review scope](03-review.md) retains contract/application/harness/scoped approvals and the same whole-branch reviewer's stage1/stage2 inspection. No new actionable code issue was found, but final approval awaits full root race and final metadata. [Controller rulings](evidence/task3/controller-rulings-snapshot.md) preserve the detailed decisions. No GitHub Actions workflow exists in this repository; local commands are not remote CI results, and draft publication/actual available checks belong to the controller's later gate.
+[Review scope](03-review.md) retains contract/application/harness/scoped approvals and the same whole-branch reviewer's stage1/stage2 inspection. No new actionable code issue was found in those review stages; final whole-branch approval now awaits the controller’s review of completed race evidence and final metadata. [Controller rulings](evidence/task3/controller-rulings-snapshot.md) preserve the detailed decisions. No GitHub Actions workflow exists in this repository; local commands are not remote CI results, and draft publication/actual available checks belong to the controller's later gate.
 
 Open research limits include individual cancelled/abandoned child-envelope permutations, automatic eventual repair of unknown non-idempotent work, unbounded fairness/liveness, distributed ownership, power-loss recovery, compiler correctness and business exactly-once. The manuscript audit leaves broader loop-ranking presentation, fair-schedule confluence, wider Markdown–LaTeX alignment and overbroad proof rhetoric unresolved. Initial full tests-first chronology was not achieved; constructor RED and later meaningful regressions do not retroactively establish it.
+
+## Final integrity inspection
+
+The [post-capture inspection](evidence/task3/final-integrity/result.json) verified all277 frozen inputs,309 archive members,41 captured commands,138 retained artifact references, all six extracted commands with required7/8 actual pass names and13 separately hashed review outputs. Race completed exit0/21481.340s with1146 passing test paths/24 passing packages, zero failed events and no emitted data-race warning. Its raw SHA256 is `f8a43edd490831e84d00587bcf3365f28e88b3c74eee5baa317cd17acab8730e`. The generated inspector’s first attempt compared Encoder JSON including its newline to a Marshal value digest; its compressed hash matched, and the corrected inspector removes exactly that one terminating newline. The original attempted inspector and diagnosis remain separate inspection evidence, not an ALAN failure. No Go source or test was changed or rerun for this correction.
