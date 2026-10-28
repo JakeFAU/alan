@@ -1,0 +1,135 @@
+{
+  "SourceID": "770df465af2bfc3bfa78547b6ad821427fbe69a01cd5ad284ff9030e82269912",
+  "ArchiveSHA256": "2e9efb6136f3de728cff2a09c3a7a3d0686375e6054577e4bb384414102d1d36",
+  "VerifiedMembers": 309,
+  "InitialModuleCacheEmpty": true,
+  "CredentialAbsent": true,
+  "Commands": [
+    {
+      "Command": [
+        "go",
+        "test",
+        "-run",
+        "^$",
+        "./..."
+      ],
+      "Directory": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1h-offline-4gr5alue/source",
+      "ExitCode": 0,
+      "ElapsedSeconds": 17.4582462500548,
+      "RawSHA256": "9c85097a3ded516fb1993cedac011f02404164aa8f3aea11620963cf50b2bdca",
+      "StderrSHA256": "aced3291440fe3caa8a7247623afb72017d915626e9b26721edede644b45da5d"
+    },
+    {
+      "Command": [
+        "go",
+        "-C",
+        "examples/worktree/consumer",
+        "test",
+        "-run",
+        "^$",
+        "./..."
+      ],
+      "Directory": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1h-offline-4gr5alue/source",
+      "ExitCode": 0,
+      "ElapsedSeconds": 0.7228446659864858,
+      "RawSHA256": "2f7dfa54bc439fc0472ddad1a8f5842f20e6333491a13f281e07a08cd7c5ea74",
+      "StderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "Command": [
+        "go",
+        "-C",
+        "examples/adaptive/consumer",
+        "test",
+        "-run",
+        "^$",
+        "./..."
+      ],
+      "Directory": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1h-offline-4gr5alue/source",
+      "ExitCode": 0,
+      "ElapsedSeconds": 0.6720030000433326,
+      "RawSHA256": "b7edab280dd9e27de209d7d6cab864c567381d6ddafbc4facb9bd846ccfd9bb1",
+      "StderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "Command": [
+        "go",
+        "test",
+        "-json",
+        "-tags",
+        "integration",
+        "./internal/adaptivetest",
+        "-run",
+        "TestProcessAdaptiveCuts/nested=false/(decision|partial)$|TestAdaptiveCapacityAndOutOfOrder/nested=false/capacity=1/held=0$|TestAdaptiveUnknownSibling/false$|TestAdaptiveClosureLateTransportCompanion$|TestAdaptiveReadOnlyReplay$|TestFaultyAdaptiveApplicationOracle$",
+        "-count=1",
+        "-timeout=20m"
+      ],
+      "Directory": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1h-offline-4gr5alue/source",
+      "ExitCode": 0,
+      "ElapsedSeconds": 140.76773050008342,
+      "RawSHA256": "ebac1886f2a810c7bc60a63a843c1a6035cc760a09da6d25241f3033035981b8",
+      "StderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "Command": [
+        "go",
+        "-C",
+        "examples/adaptive/consumer",
+        "test",
+        "-json",
+        "-run",
+        "TestAdaptivePublicConsumerDirectNested",
+        "-count=1",
+        "-timeout=15m",
+        "./..."
+      ],
+      "Directory": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1h-offline-4gr5alue/source",
+      "ExitCode": 0,
+      "ElapsedSeconds": 92.39846066699829,
+      "RawSHA256": "38367b1386001f15361d4df8915574f82e95b6e3074c7c0906d20787e48d539e",
+      "StderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "Command": [
+        "go",
+        "test",
+        "-json",
+        "-tags",
+        "integration",
+        "./research/semantics",
+        "-count=1",
+        "-timeout=5m"
+      ],
+      "Directory": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1h-offline-4gr5alue/source",
+      "ExitCode": 0,
+      "ElapsedSeconds": 7.275595207931474,
+      "RawSHA256": "121559de6771bcab9442b7068f1961f8614cc87fb5dda2d7f24754c234fb7166",
+      "StderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "Scope": "Offline empty-module-cache compile of root/both consumers, focused new boundaries/controls/public consumer and old semantic package. No extracted full default/integration/race suite claim.",
+  "Result": "PASS",
+  "RequiredActualPasses": {
+    "04": [
+      "TestAdaptiveCapacityAndOutOfOrder/nested=false/capacity=1/held=0",
+      "TestAdaptiveClosureLateTransportCompanion",
+      "TestAdaptiveReadOnlyReplay",
+      "TestAdaptiveUnknownSibling/false",
+      "TestFaultyAdaptiveApplicationOracle",
+      "TestProcessAdaptiveCuts/nested=false/decision",
+      "TestProcessAdaptiveCuts/nested=false/partial"
+    ],
+    "05": [
+      "TestAdaptivePublicConsumerDirectNested/nested=false/capacity=1/paired=false",
+      "TestAdaptivePublicConsumerDirectNested/nested=false/capacity=1/paired=true",
+      "TestAdaptivePublicConsumerDirectNested/nested=false/capacity=2/paired=false",
+      "TestAdaptivePublicConsumerDirectNested/nested=false/capacity=2/paired=true",
+      "TestAdaptivePublicConsumerDirectNested/nested=true/capacity=1/paired=false",
+      "TestAdaptivePublicConsumerDirectNested/nested=true/capacity=1/paired=true",
+      "TestAdaptivePublicConsumerDirectNested/nested=true/capacity=2/paired=false",
+      "TestAdaptivePublicConsumerDirectNested/nested=true/capacity=2/paired=true"
+    ]
+  },
+  "SourceUnchanged": true,
+  "OriginalSemanticComparisons": "PASS"
+}

@@ -21,6 +21,17 @@ JSON
 "$alan_work_dir/alan-compose" recover --db "$alan_work_dir/work.sqlite"
 ```
 
+The direct profile uses the same input contract without the wrapper. In the same shell after building the executable above, use a separate store:
+
+```sh
+"$alan_work_dir/alan-compose" init --db "$alan_work_dir/direct.sqlite" --capacity 1
+"$alan_work_dir/alan-compose" submit --db "$alan_work_dir/direct.sqlite" --id work-direct-1 --input "$alan_work_dir/items.json"
+"$alan_work_dir/alan-compose" run --db "$alan_work_dir/direct.sqlite"
+"$alan_work_dir/alan-compose" inspect --db "$alan_work_dir/direct.sqlite"
+"$alan_work_dir/alan-compose" replay --db "$alan_work_dir/direct.sqlite"
+"$alan_work_dir/alan-compose" recover --db "$alan_work_dir/direct.sqlite"
+```
+
 Expected ordered doubled values are4,-6,4 under the original three IDs. `submit` acknowledges transport admission. The collection accepts the work only when its own Receive commit retains the typed list. The static driver's intake and the enclosing invocation admission are different boundaries. A successful command exit means the command returned normally; inspect `Snapshot.Roots[].Outcome` for public completion and `Result.results` for ordered item outcomes. Local quiescence or a local terminal is not sufficient.
 
 One root handles one work obligation. Use a new store for new root work; recovery opens the original store and never resubmits its input. Duplicate transport delivery reuses the original binding. Physical activation epochs advance on recovery, while item IDs, invocation operations, accepted artifacts, root limits and spent charges remain. Recorded outcomes can still await ordinary consumption. An unknown external operation stays unknown and spent; recovery does not authorize an automatic repeat or replace it with a fresh business operation.

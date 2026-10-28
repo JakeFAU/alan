@@ -1,0 +1,55 @@
+# Phase 1H review scope
+
+**Final verdict: APPROVE** for specification compliance and code quality at `ed3006859dcdf075e92192b0722afc6f29ec2c43`, over main base `56892cb20c4f4add4bcf786d146b0aed82fbc5d1`. The [verbatim final report](evidence/task3/final-review/alan-phase1h-final-verdict.md) and [inspection artifact hashes](evidence/task3/final-review/provenance.json) complete the same staged independent review. No unresolved actionable finding remains. Frozen source and archive are unchanged. Publication and actual remote checks are separate; no merge or release is approved.
+
+The checkpoint descriptions below retain their historical scope and pending status at the time they were written. They do not override the final verdict above.
+
+The independent harness checkpoint review returned APPROVE for both specification compliance and task quality at `4463e9aeaad0f76cce4df14af4e47419632a86d3`, over base `19065f30d4135c8710faed3db5c7311a01c2530e`. Its [verbatim report](evidence/task3/harness-review.md) and [original inspection source](evidence/task3/harness-review-evidence.py) are retained. The reviewer inspected sources, raw events, source archives and saved states; no Go suite was rerun for that review. It found no actionable checkpoint deviation and permitted final qualification.
+
+At that checkpoint this was not final whole-branch approval. Final source/archive and actual suite results are recorded in [qualification](02-qualification.md). Whole-branch review and any scoped rereview remain the controller's independent gate before draft publication. The implementing worker does not grant that approval. No merge or release is authorized. Repository `.github` contains CODEOWNERS and no Actions workflow; local results must not be labeled remote CI results. Actual PR/head/available checks belong to later publication metadata.
+
+## Preserved findings and corrections
+
+- The initial [contract review](evidence/contract-review.md) found escaped questions/full-answer copying incompatible with the proposed state bounds and overbroad wrapper-status wording. The [scoped rereview](evidence/contract-rereview.md) approved a512-byte adaptive question profile, disposition-only summaries with original full outcomes retained, and each wrapper's own success/nonsuccess status. Original failed profiles and frozen expectations remain evidence.
+- The independent [application review](evidence/task2/application-review.md) found the whole accepted frontier counter lagging at its first successor intent: count4 against trial6. The [application rereview](evidence/task2/application-rereview.md) approved retaining count6 before that intent, supported by preserved RED/GREEN and partial-intent regression. Runtime charges remain actual admissions. Task2's full initial behavioral matrix did not all predate implementation; constructor-red and later meaningful regressions are retained without claiming a full tests-first chronology.
+- Historical Task3 first-controls source6682473e had two inspector defects: rejected publications were absent from an accepted-only lookup, and the lifecycle request descriptor was mistaken for the result. Corrected monitors use composition_publications and lifecycle_results.result. Original inputs/source/logs remain unchanged.
+- The first rebased focused run source5d875849 failed two capacity2/held0 correlation checks because its inspection preceded the concurrently advancing provider ledger. The correction snapshots ledger before inspection and retains both before assertions, without changing the contact monitor. Source9f15cc58 passed all six corrected cases. Missing original pre-trigger snapshot pairs remain explicitly absent; no reconstruction is advertised as original evidence.
+- A later selector concern was tested with a tiny [standard-library matcher witness](evidence/task3/reproduction-matcher-probe/diagnosis.md). Go1.27.3 selected all intended controls. The diagnostic wrapper's assertion expecting omissions failed; the hypothesis was retracted. This is neither an ALAN failure nor an executed-tool counterexample. Extraction additionally checks actual required pass names so command success cannot substitute for coverage.
+
+## Research limits carried forward
+
+Qualification covers finite controlled single-host schedules. The pure completion-recovery leaf uses128 bounded local iterations. The capacity witness adds one ordinary static member with separately reported fixed cost. Closure is explicitly two schedules: primary decision/kill/closure with duplicate known settlement, and a distinct live-peer late HTTP result plus scope_closed reservation denial. A complete adaptive barrier with a required unknown result is not claimed.
+
+Unknown non-idempotent work remains spent and pending without automatic eventual-result repair. Individual cancelled/abandoned child-envelope permutations, unbounded fairness/liveness, distributed ownership, power-loss recovery, compiler correctness and business exactly-once are not established.
+
+The [manuscript audit](evidence/task3/manuscript-audit.md) required only a synchronized bounded case study. It preserves separate open loop-ranking presentation, fair-schedule confluence, wider Markdown–LaTeX alignment and overbroad proof-rhetoric obligations. This increment does not prove or repair them; no new bibliography entry or external citation check is claimed.
+
+
+## Guard/comparison scoped approval
+
+The [verbatim scoped rereview](evidence/task3/guard-rereview.md) returned APPROVE for specification and quality over4463e9a..14ce818, source4471f4feb6eade4722f796a2c425b0f4adcb017eec691cc5a51ba8015f6f983f. It independently checked race duration assumptions, exact selected-default equivalence, pinned semantic provenance mapping and negatives, the disproved selector hypothesis and actual upstream integration scope. Its nonblocking P3 README ambiguity was corrected in the exact prose sentence and independently verified CLOSED before the next source freeze. The source4471 review predates that disclosed prose-only correction; the final manifest records the successor identity. No behavioral rerun is required for the wording change.
+
+This releases the remaining actual qualification gates; it does not mark them complete or grant final whole-branch approval. Original findings and original failed commands remain retained.
+
+
+## Whole-branch review, stage1
+
+The [independent stage1 report](evidence/task3/final-review-stage1/alan-phase1h-final-review.md) found no new actionable code/contract defect at frozen head680be378/source770df465 and found the code ready for the remaining gates. It withheld the final verdict pending full integration/race, covering consumer race and archive/extracted evidence. Its [inspection artifacts and raw hashes](evidence/task3/final-review-stage1/provenance.json) are retained separately as later review outputs; they are not retroactively added to the frozen qualification input inventory. The same whole-branch reviewer will inspect completion evidence; stage1 is not final approval.
+
+
+## Whole-branch review, stage2 evidence addendum
+
+The same reviewer's [stage2 addendum](evidence/task3/final-review-stage2/alan-phase1h-final-evidence-addendum.md) found no new issue in completed frozen-source integration, strict comparisons, archive/member verification and all six extracted commands with exact7+8 required pass names. Its [inspection artifacts/hashes](evidence/task3/final-review-stage2/provenance.json) remain separately retained generated review outputs. This is continuation of the same whole-branch review; final verdict still awaits the full race result and final metadata.
+
+
+## Metadata checkpoint inspection
+
+The same reviewer's [metadata addendum](evidence/task3/final-review-metadata/alan-phase1h-final-metadata-addendum.md) found the evidence-only delta680be378..564b4a4 clean. Its original audit/output and [separate hashes](evidence/task3/final-review-metadata/provenance.json) are retained as generated review artifacts. Final approval now awaits root race, its strict checks and the final status delta; no new code fix or repeated whole-code review is requested.
+
+## Completed worker qualification
+
+The full root race completed exit0/21481.340s with1146 actual pass paths/24 passing packages, zero failures, unchanged Source770 and all12 byte profiles. Strict race historical comparison and named-control/instrumentation checks passed. All required worker qualification and packaging gates are complete; the final [report](evidence/task3/report.md) and [integrity inspection](evidence/task3/final-integrity/result.json) retain exact scope. The controller’s same whole-branch reviewer still owns the final verdict over this completion delta. No final approval, push, PR, merge or release is claimed by the worker.
+
+## Final whole-branch verdict
+
+The independent reviewer inspected the completed root race, all actual child race instrumentation, causal snapshots, strict comparisons and final 101-path generated metadata delta. It returned APPROVE for the exact reviewed identities above. Its eight final inspection/report outputs are retained verbatim with separate SHA-256 provenance; they are later review artifacts, not retroactive frozen test inputs. The original findings, tests-first chronology limitation and research obligations remain in the final report.

@@ -1,0 +1,410 @@
+{
+  "format": "alan/phase1h-independent-byte-oracle/v1",
+  "status": "additive pre-implementation expectations; not executed application evidence",
+  "original_ledger_unchanged": {
+    "path": "/tmp/alan-phase1h-expected-ledger.json",
+    "cases": 24,
+    "sha256": "4fc58131e849fc15fd45dee5426c087fb7db4f99cb9539667da7b075f9cbff97"
+  },
+  "sources": [
+    "docs/foundational/phase1h/evidence/contract-review.md",
+    "docs/foundational/phase1h/evidence/contract-v0.md",
+    "existing public schema.Value tagged encoding and finite collection validation",
+    "architect profile correction relayed by parent"
+  ],
+  "independence": {
+    "future_application_source_read": false,
+    "application_builder_imported_or_executed": false,
+    "literal_frontier_expectations": true,
+    "byte_counts": "independent Python compact JSON model of existing exported tagged scalar/list representation"
+  },
+  "bounds": {
+    "request_question_max_utf8_bytes": 512,
+    "unchanged_evidence_leaf_question_max_utf8_bytes": 4096,
+    "seed_max_items": 8,
+    "candidate_and_remaining_max_items": 16,
+    "handles_round_results_total_results_max_items": 8,
+    "response_projection_max_items": 1,
+    "every_list_max_canonical_array_bytes": 262144,
+    "runtime_projection_max_data_bytes": 1048576,
+    "root_limits": {
+      "max_invocations": 32,
+      "max_created_runs": 64,
+      "max_external_reservations": 96,
+      "max_depth": 3
+    },
+    "physical_capacity_cases": [
+      1,
+      2
+    ]
+  },
+  "projection_contract": {
+    "adaptive_result_responses_element_fields": [
+      "disposition"
+    ],
+    "disposition_type": "string; original helper disposition enum and128-byte maximum",
+    "leaf_public_response": "unchanged full original schema: disposition,answer,document,version,snippet,start,end",
+    "bound_await_response_fields": [
+      "disposition"
+    ],
+    "presence": "original public response presence separately retained; absent is empty responses list",
+    "caller_projection_drops": [
+      "answer",
+      "document",
+      "version",
+      "snippet",
+      "start",
+      "end"
+    ],
+    "original_authenticated_outcome": "full original public response remains immutable and inspectable under original leaf invocation operation/result identity; projection never rewrites or truncates it",
+    "scalar_result_projection": "unchanged observation:int"
+  },
+  "canonical_size_convention": {
+    "size_unit": "bytes of compact canonical array JSON, excluding enclosing tagged list wrapper",
+    "fixture_operation_strings": [
+      "op1",
+      "op2",
+      "op3",
+      "op4",
+      "op5",
+      "op6",
+      "op7",
+      "op8"
+    ],
+    "fixture_reason": "member_succeeded",
+    "fixture_strings": "ASCII and NUL only; matches relevant Go JSON escaping; object-key ordering does not affect size",
+    "runtime_operation_identity_bytes": "unknown before execution; replace placeholder width using exact encoded-width delta, never compare IDs to op1 fixture placeholders",
+    "utf8_vs_escaped": "question512 is512 UTF8 bytes and3072 JSON escaped content bytes; max checks use UTF8, list ceiling uses canonical encoded bytes"
+  },
+  "cases": [
+    {
+      "case": "old_4096_nul_question_rejected",
+      "input": {
+        "seeds": [
+          {
+            "work_id": 1,
+            "question": {
+              "codepoint": "U+0000",
+              "repeat": 4096,
+              "utf8_bytes": 4096
+            }
+          }
+        ]
+      },
+      "expected": "request schema rejection before any evidence leaf itemwork",
+      "application_stop_reason": "none required; schema rejection is before ordinary application acceptance",
+      "accepted_leaf_invocations": 0,
+      "leaf_created_runs": 0,
+      "external_reservations": 0,
+      "rationale": "4096 exceeds new512-byte application question bound despite being valid for the unchanged helper4096 question schema",
+      "must_not": "truncate, normalize, replace with question prefix, or dispatch helper to discover overflow"
+    },
+    {
+      "case": "eight_512_nul_insufficient",
+      "input": {
+        "work_ids": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "question_each": {
+          "encoding": "UTF-8",
+          "repeat": 512,
+          "codepoint": "U+0000",
+          "utf8_bytes": 512,
+          "json_escaped_content_bytes": 3072
+        },
+        "max_rounds": 3,
+        "max_work": 8
+      },
+      "provider_public_results": [
+        {
+          "work_id": 1,
+          "disposition": "insufficient_evidence"
+        },
+        {
+          "work_id": 2,
+          "disposition": "insufficient_evidence"
+        },
+        {
+          "work_id": 3,
+          "disposition": "insufficient_evidence"
+        },
+        {
+          "work_id": 4,
+          "disposition": "insufficient_evidence"
+        },
+        {
+          "work_id": 5,
+          "disposition": "insufficient_evidence"
+        },
+        {
+          "work_id": 6,
+          "disposition": "insufficient_evidence"
+        },
+        {
+          "work_id": 7,
+          "disposition": "insufficient_evidence"
+        },
+        {
+          "work_id": 8,
+          "disposition": "insufficient_evidence"
+        }
+      ],
+      "known_result_count": 8,
+      "rounds": 1,
+      "policy_observations": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "remaining_ids": [
+        4,
+        5,
+        7,
+        8,
+        10,
+        11,
+        13,
+        14,
+        16,
+        17,
+        19,
+        20,
+        22,
+        23,
+        25,
+        26
+      ],
+      "remaining_parent_ids": [
+        1,
+        1,
+        2,
+        2,
+        3,
+        3,
+        4,
+        4,
+        5,
+        5,
+        6,
+        6,
+        7,
+        7,
+        8,
+        8
+      ],
+      "remaining_edges": [
+        "left",
+        "right",
+        "left",
+        "right",
+        "left",
+        "right",
+        "left",
+        "right",
+        "left",
+        "right",
+        "left",
+        "right",
+        "left",
+        "right",
+        "left",
+        "right"
+      ],
+      "remaining_question_each": "exact original512 NUL bytes",
+      "remaining_round_each": 2,
+      "prior_history_collisions": [
+        4,
+        5,
+        7,
+        8
+      ],
+      "stop_reason": "duplicate_work_id",
+      "complete": false,
+      "protocol_completion": "failed after diagnostic public reply",
+      "next_frontier_item_invocations": 0,
+      "charges": {
+        "application_work_count": 8,
+        "accepted_evidence_leaf_invocations": 8,
+        "direct": {
+          "accepted_invocations": 9,
+          "created_runs": 17
+        },
+        "nested": {
+          "accepted_invocations": 10,
+          "created_runs": 18
+        },
+        "external_reservations": 8,
+        "fixed_static_root_runs": 1
+      },
+      "exact_fixture_array_bytes": {
+        "seed8": 25569,
+        "remaining16": 54053,
+        "projected_result8_with_op_placeholders": 30009
+      },
+      "original_outcomes_preserved": true
+    },
+    {
+      "case": "eight_tiny_questions_8192_nul_clarifications",
+      "input": {
+        "work_ids": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "question_each": "q",
+        "max_rounds": 3,
+        "max_work": 8
+      },
+      "original_leaf_public_response_each": {
+        "disposition": "clarification",
+        "answer": {
+          "codepoint": "U+0000",
+          "repeat": 8192,
+          "utf8_bytes": 8192,
+          "json_escaped_content_bytes": 49152
+        },
+        "document": "",
+        "version": "",
+        "snippet": "",
+        "start": 0,
+        "end": 0
+      },
+      "adaptive_result_responses_each": [
+        {
+          "disposition": "clarification"
+        }
+      ],
+      "known_result_count": 8,
+      "rounds": 1,
+      "ordered_result_ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "remaining_ids": [
+        4,
+        7,
+        10,
+        13,
+        16,
+        19,
+        22,
+        25
+      ],
+      "remaining_parent_ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "remaining_edges": [
+        "check",
+        "check",
+        "check",
+        "check",
+        "check",
+        "check",
+        "check",
+        "check"
+      ],
+      "remaining_question_each": "q",
+      "remaining_round_each": 2,
+      "prior_history_collisions": [
+        4,
+        7
+      ],
+      "stop_reason": "duplicate_work_id",
+      "complete": false,
+      "protocol_completion": "failed after diagnostic public reply",
+      "next_frontier_item_invocations": 0,
+      "charges": {
+        "application_work_count": 8,
+        "accepted_evidence_leaf_invocations": 8,
+        "direct": {
+          "accepted_invocations": 9,
+          "created_runs": 17
+        },
+        "nested": {
+          "accepted_invocations": 10,
+          "created_runs": 18
+        },
+        "external_reservations": 8,
+        "fixed_static_root_runs": 1
+      },
+      "exact_fixture_array_bytes": {
+        "seed8": 1001,
+        "remaining8": 2463,
+        "projected_result8_with_op_placeholders": 5377,
+        "old_unprojected_result8_with_op_placeholders": 401473
+      },
+      "exact_original_response_record_bytes_each": 49592,
+      "exact_projected_response_record_bytes_each": 80,
+      "original_outcome_count": 8,
+      "original_outcomes_preserved": true,
+      "original_answer_byte_equality_required": true,
+      "must_not": "bind/copy full8192-byte answers into adaptive result/projection/cursor records, or alter original authenticated leaf outcomes"
+    },
+    {
+      "case": "question_513_rejected",
+      "input": {
+        "seeds": [
+          {
+            "work_id": 1,
+            "question": {
+              "codepoint": "U+0000",
+              "repeat": 513,
+              "utf8_bytes": 513,
+              "json_escaped_content_bytes": 3078
+            }
+          }
+        ]
+      },
+      "expected": "request schema rejection before any evidence leaf itemwork",
+      "accepted_leaf_invocations": 0,
+      "leaf_created_runs": 0,
+      "external_reservations": 0,
+      "boundary_pair": "512 NUL accepted in eight-item case above;513 rejected independent of canonical list fitting",
+      "must_not": "interpret512 as escaped-byte count, UTF16 code units, or rune count"
+    }
+  ],
+  "required_future_verification": [
+    "Validate exact new native request schema512-byte question bound through public admission/author paths, without dispatch.",
+    "Run both accepted worst-byte cases through ordinary retained programs, with exact original helper statuses and full public outcomes; compare literal ordered remaining frontier and stop precedence.",
+    "Bind only disposition from evidence Await; prove full answer/citation values are absent from adaptive state/result/cursor snapshots but remain in original authenticated outcome records.",
+    "Measure complete actual adaptive projection JSON bytes at worst simultaneous live state: seed/frontier/current item; eight handles; complete round evidence; accumulated results; full16 candidates; decision with its candidate copy; all active durable loop snapshots. Assert <=1048576 with no runtime ceiling increase.",
+    "Validate every declared list <=262144 canonical array bytes and actual compiled retained program/artifact serialized bounds through public validation. Lists fitting individually are not aggregate projection proof.",
+    "Use actual generated operation/reason strings when measuring; placeholders are independent size examples, not a substitute for actual runtime IDs.",
+    "Record actual tested source identity and preserve original24-case ledger SHA256; no broad-suite or application execution claim is made by this oracle."
+  ],
+  "ambiguities": [
+    "No pre-implementation exact complete-projection or compiled-artifact byte total can be asserted without the future authored variable/cursor layout. The bound is exact; qualification must measure/check actual complete values.",
+    "Schema-rejected input has zero leaf admissions/runs/effects. Enclosing invocation charges depend on where the caller attempts admission; do not invent a successful application reply or conflate schema refusal with an accepted stopping result.",
+    "Generated operation/reason character and length bounds must come from actual public runtime provenance/measurement. If worst arbitrary schema-valid4096-byte strings are claimed, include their escaped widths rather than assuming placeholders."
+  ]
+}

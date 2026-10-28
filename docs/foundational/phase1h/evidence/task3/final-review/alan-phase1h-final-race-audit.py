@@ -1,0 +1,26 @@
+import pathlib,json,gzip,hashlib,tarfile,collections,re,struct,ast
+R=pathlib.Path('/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan');D=R/'docs/foundational/phase1h';F=D/'evidence/task3/final';P=F/'final-race';sha=lambda b:hashlib.sha256(b).hexdigest();gz=lambda p:gzip.decompress(p.read_bytes());m=json.loads((P/'command.json').read_text());sm=json.loads((P/'sources.json').read_text());frozen=json.loads((D/'source-manifest.json').read_text());assert sm=={'SourceID':frozen['SourceID'],'Files':frozen['Files']};assert all(sha((R/p).read_bytes())==h for p,h in sm['Files'].items());assert m['SourceID']==m['SourceAfter']==sm['SourceID'] and m['SourceUnchanged'] and m['ExitCode']==0
+raw=gz(P/'stdout.gz');err=gz(P/'stderr.gz');assert sha(raw)==m['RawSHA256']=='f8a43edd490831e84d00587bcf3365f28e88b3c74eee5baa317cd17acab8730e';assert sha(err)==m['StderrSHA256'];assert b'WARNING: DATA RACE' not in raw+err;assert sha((P/'source.tar.gz').read_bytes())==m['SourceArchiveSHA256']
+with tarfile.open(P/'source.tar.gz') as t:
+ ms=t.getmembers();assert len(ms)==len(sm['Files'])==len({x.name for x in ms});assert {x.name for x in ms}==set(sm['Files']);members={}
+ for x in ms:
+  assert x.isfile() and not pathlib.Path(x.name).is_absolute() and '..' not in pathlib.Path(x.name).parts;members[x.name]=t.extractfile(x).read();assert sha(members[x.name])==sm['Files'][x.name]
+# Reuse only reviewer-owned read-only decoder/comparison definitions, not test tools.
+tree=ast.parse(pathlib.Path('/tmp/alan-phase1h-final-stage2-audit.py').read_text());nodes=[n for n in tree.body if isinstance(n,ast.FunctionDef) and n.name in ['parse','compare']];exec(compile(ast.Module(body=nodes,type_ignores=[]),'<reviewer-definitions>','exec'))
+pattern=re.compile(r'^\s*(?:[^\s:]+:\d+:\s*)?(QUALIFICATION|COMPOSITION|SUPERVISION|CONFORMANCE|DURABLE|ASYNC|EVIDENCE|INVESTIGATION|WORKTREE|ADAPTIVE|ADAPTIVE_BYTES|ADAPTIVE_ACCEPTANCE_BOUNDARY) (.*)$');events,records=parse(raw);saved=[json.loads(x) for x in gz(P/'records.jsonl.gz').splitlines()];assert len(records)==len(saved)
+for i,(a,b) in enumerate(zip(records,saved),1):assert all(b[k]==v for k,v in a.items()) and b['SourceID']==sm['SourceID'] and b['Mode']=='race' and b['RecordIndex']==i
+passes=[e for e in events if e.get('Action')=='pass'];assert not any(e.get('Action')=='fail' for e in events);assert sum(bool(e.get('Test')) for e in passes)==1146;assert sum(not e.get('Test') for e in passes)==24;assert ['/'.join([e['Package'],e['Test']]) for e in passes if e.get('Test')]==m['passes'];markers=dict(collections.Counter(r['Marker'] for r in records));assert markers==m['Markers'];a=[r['Evidence'] for r in records if r['Marker']=='ADAPTIVE'];starts=[e for e in a if e.get('kind')=='process_start'];assert len(starts)==32 and all(e['race_instrumented'] and e['watchdog_scale']==20 and e['child_timeout']=='4h0m0s' for e in starts);kinds=collections.Counter(e.get('kind') for e in a)
+for k,n in {'recovered':6,'crash_cut':6,'capacity_held':6,'out_of_order_completed':6,'root_denial':2,'unknown_failed_sibling':2,'closure_after_decision':2,'closure_late_transport_companion':1,'read_only_replay':1,'faulty_application_oracle':1}.items():assert kinds[k]==n
+for e in a:
+ if e.get('kind')=='recovered':assert e['old_pid']!=e['new_pid'] and not e['resubmitted']
+ if e.get('kind')=='fault_child_exit':assert e['race_instrumented'];assert 'Run and Replay valid' in e['output']
+ if e.get('kind')=='faulty_application_oracle':assert e['race_instrumented'] and e['forbidden_admitted']==[10,11,31] and 'rejected' in e['application_verdict']
+ if e.get('kind')=='closure_late_transport_companion':assert e['race_instrumented'] and e['watchdog_scale']==20
+ if e.get('kind')=='read_only_replay':assert e['before_ledger_sha256']==e['after_ledger_sha256'] and e['before_contacts']==e['after_contacts']==7 and e['credential_absent'] and not e['adapter_registry_present'] and e['network_isolation']=='macOS sandbox-exec deny network*'
+artifacts=0
+for e in a:
+ if e.get('kind')!='retained_artifact':continue
+ p=P/'artifacts'/e['path'].split('/artifacts/',1)[1];assert sha(p.read_bytes())==e['gzip_sha256'];v=json.loads(gz(p));artifacts+=1
+ if p.name=='overlay.json.gz':assert v['race_instrumented'] and '-race' in v['build_argv'];assert v['original_source']==members['examples/adaptive/adaptive.go'].decode()
+baseline=[json.loads(x) for x in gz(R/'docs/foundational/phase1e/evidence/final-race.records.jsonl.gz').splitlines()];bridge='research/semantics/runtime_conformance_test.go';before=members['docs/foundational/phase1h/evidence/task3/comparison-inputs/runtime_conformance-before.go.txt'];comparison=compare(records,events)
+summary={'source':sm['SourceID'],'head_at_start':m['HeadAtStart'],'elapsed_seconds':m['ElapsedSeconds'],'raw_sha256':m['RawSHA256'],'source_members_verified':len(members),'test_passes':1146,'package_passes':24,'markers':markers,'adaptive_kinds':dict(kinds),'race_instrumented_regular_processes':len(starts),'fault_overlay_race_flag_verified':True,'artifact_hashes_verified':artifacts,'comparison':comparison};path=pathlib.Path('/tmp/alan-phase1h-final-race-audit.json');path.write_text(json.dumps(summary,indent=2)+'\n');print(json.dumps(summary,indent=2))

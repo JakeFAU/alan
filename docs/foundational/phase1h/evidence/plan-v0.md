@@ -1,0 +1,102 @@
+# Phase 1H Bounded Adaptive Composition Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Deliver a reviewed draft PR proving that one retained ordinary application derives bounded future work from actual completed outcomes.
+
+**Architecture:** One adaptive member uses a durable ForEach over three round tokens, ordinary Invoke/Await loops, and retained typed collections. Scalar and unchanged evidence-helper leaf contracts are handled by application-authored steps; wrappers forward the same adaptive artifact and schema. The existing composition executor, persistence layout, root accounting, closure and replay stay unchanged.
+
+**Tech Stack:** Go 1.27.3, public ALAN author/schema/runtime packages, existing SQLite persistence and controlled fixtures, Python qualification collectors.
+
+**Spec:** `docs/foundational/phase1h/01-adaptive-contract.md`; assignment retained under `docs/foundational/phase1h/assignment.md`.
+
+## Global Constraints
+
+- Initial round plus at most two follow-ups; maximum three.
+- Total distinct leaf work items: eight across the entire obligation. Persist max_rounds/max_work in the request; never refresh limits on recovery.
+- Physical external capacity one and two; depth three below depth-zero root; shared root 32 accepted invocations, 64 created runs, 96 external attempt reservations.
+- Controlled fixtures only; no new live spending, prompt tuning, corpus changes, UI, scheduler, lifecycle model, persistence migration, distributed ownership, unrestricted recursion, merge or release.
+- Seed IDs are application integers 1..8. Candidate frontier permits sixteen records to retain all derived but unperformed work; existing generic value limits remain unchanged.
+- Work policy runs in retained ordinary programs. Go may construct artifacts and provision fixtures, never select runtime frontiers on the application's behalf.
+- Unknown required work remains pending/spent; recovery cannot repeat completed external work or issue replacement business work.
+- Sequential implementation slices with independent review before the next meaningful boundary; default final delivery is push and draft PR.
+
+## Review Focus
+
+- Seed/derived ID collision across rounds must reject the whole next frontier before any of its item Invokes (Task 2 collision test).
+- A full eight-item round returning observation2 produces sixteen remaining children and no ninth admitted item (Task 2 full-remaining test).
+- Reaching both limits simultaneously uses work_limit precedence; exact limit with empty candidate is exhausted (Task 2 stop-precedence test).
+- A known failed result plus an unresolved sibling must remain pending until the required round barrier, preserving spent unknown work (Task 3 unknown-sibling test).
+- Cancellation after decision but before admission must fence new descendants even if late evidence arrives, without erasing the decision (Task 3 closure test).
+
+---
+
+## File and interface map
+
+Final documents: `docs/foundational/phase1h/{00-plan.md,01-adaptive-contract.md,02-qualification.md,03-review.md,04-runbook.md}` plus immutable evidence directories. The independent expected fixture is `docs/foundational/phase1h/evidence/fixtures/expected-work.json` (or the controller's independently authored equivalent; do not regenerate it from application helpers).
+
+Application package `examples/adaptive`:
+
+- `adaptive.go`: shared retained frontier, duplicate, round, barrier, stop and result steps.
+- `policy.go`: scalar/evidence schema construction and ordinary observation/payload-selection steps.
+- `leaf.go`: `ScalarLeaf(controlled bool) (author.Template,error)`; controlled capability name is `adaptive-observe`, request `{value:int}`, response `{observation:int}`. False selects a pure Send of input value. Recovery uses retained programs, never calls this constructor to rebuild active work.
+- `deployment.go`: `type Deployment struct { Provision runtime.Provision; Adaptive, Entry author.Template }`; `New(component author.Template, nested bool, limits runtime.ResourceLimits) (Deployment,error)`; `Submit(ctx context.Context,s *runtime.Store,identity string,request map[string]schema.Value) (runtime.AdmissionResult,error)`. Root local port `intake`, obligation `work`; wrapper/member public port `public`, obligation `work`.
+- Public application constructors: `NewScalar(leaf author.Template) (author.Template,error)` and `NewEvidence(leaf author.Template) (author.Template,error)`. Validate exact leaf request/result contract at authoring. Private authoring helpers may emit steps once; no invoked round helper.
+- `adaptive_test.go`, `effects_integration_test.go`, `README.md`; separate `consumer/{go.mod,main.go,main_test.go,contract_test.go}` imports only public packages and provides the runnable CLI.
+- `examples/adaptive/consumer/main.go`: init, submit, run, inspect, replay, recover. Submit accepts the complete typed application request, including profile limits; no frontier-generation command. Mirror alan-compose's controlled endpoint validation and credential-free defaults.
+
+Qualification package `internal/adaptivetest/{oracle_test.go,process_test.go,controls_test.go}`: tests may inspect internals for evidence, but all application behavior uses public interfaces. Reuse `internal/boundary`, Phase 1G subprocess/token validation patterns, and `runtime.Inspect`/`Replay`. Keep native Go package split focused if a file grows unwieldy. Tools under `docs/foundational/phase1h/tools` reuse existing collectors/source hashing/comparison/reproduction machinery and add a distinct `ADAPTIVE` marker; do not rewrite frozen Phase 1G evidence.
+
+### Task 1: Establish baseline, contract, and independent expectations
+
+**Files:** create Phase 1H documentation/evidence above; modify only current Phase 1G documentation passages identified by review. Preserve frozen historical snapshots and source/evidence identities.
+
+**Interfaces:** consumes actual reviewed Phase 1G source/APIs, qualified historical source/archive manifests, current main and PR metadata. Produces reviewed `01-adaptive-contract.md`, this plan, a hand-authored expected-work ledger and exact baseline source identity. The ledger records input/artifact identity expectations, round/item/parent/edge/payload/outcome/stop/charge expectations without calling any application builder.
+
+- [ ] Record git HEAD, main and Phase 1G PR state; retain clean/dirty baseline and actual source digest. If Phase 1G is unmerged, base on reviewed implementation and disclose dependency; never merge it to proceed.
+- [ ] Label current historical pending statements as historical and put exact supported direct CLI commands beside the existing nested example. Preserve originals in Phase 1H baseline evidence and do not change historical archives.
+- [ ] Retain the compact primary oracle: seed `(1,0),(2,1),(3,2)`; round2 `(7,0),(10,1),(11,0)`; round3 `(31,0)`; observations `0,1,2 / 0,1,0 / 0`; exhausted; seven leaves. Retain paired unchanged request/artifacts with gamma observation0: `(1,2,3)/(7)`; four leaves. Include human aliases separately from integer IDs.
+- [ ] Retain empty, all-zero, duplicate, ancestry collision, round/work limit, denial, known failure, unknown and effectful expectations. Primary scalar enclosing-inclusive direct/nested charges are invocations/runs 8/9 and effects7; paired 5/6 and effects4. Empty has no leaves/effects and enclosing calls1/2.
+- [ ] Independently review the contract against existing public code: integer naming restriction, candidate16 bound, failure/limit precedence, retained decision, nested depth and evidence two-member accounting. Retain review and any revisions before application work starts.
+- [ ] Verify baseline with required existing collectors, associate every run with actual source and retain failures. Avoid repeating an unchanged broad suite if baseline qualification already supplied the same gate.
+- [ ] Commit reviewed baseline/docs/expectations with an explicit design-only message. Freeze independent ledger before code implementation.
+
+### Task 2: Ordinary adaptive component, public consumers, controlled evidence
+
+**Files:** create application, consumer, and CLI files in the map above; add tests before implementing behavior. No executor/persistence changes are planned.
+
+**Interfaces:** consumes reviewed contract and frozen oracle. Produces constructors/deployment/Submit signatures above and immutable scalar/evidence adaptive templates. Scalar request `{seeds:[{work_id:int,value:int}],max_rounds:int,max_work:int}`. Evidence swaps seed value for bounded question. Replies carry complete, stop_reason, rounds, work_count, ordered results and full remaining; results wrap the leaf's exact public response in zero-or-one responses list.
+
+- [ ] Write `TestScalarAdaptivePairedResults`: identical controlled scalar/adaptive IDs and request; only gamma returned observation differs. Compare all ordered IDs, child payloads, parent/edge, rounds, stop and charges to the frozen ledger. It must fail initially because the package/constructors do not exist.
+- [ ] Write `TestScalarAdaptiveValidationAndBounds`: cases empty, all-zero, invalid ID0/9, invalid limits0/4 and0/9, duplicate seed, cross-round seed/child collision, eight distinct IDs with equal payload, eight observation2 seeds retaining sixteen remaining children, exact-bound exhausted, simultaneous work+round bound→work_limit. Assert no affected frontier Invoke before full validation and no prefix admission for oversized frontier.
+- [ ] Write `TestAdaptiveArtifactReuse`: seeds of different sizes and round profiles share one authored adaptive artifact; direct/nested deployments use the same adaptive ID and schemas; root depth0 deepest direct2/nested3; no round-template invocations. Compile only one round body via a three-token durable ForEach, never Repeat unrolling.
+- [ ] Run `go test ./examples/adaptive -count=1`; retain expected initial failure, then implement the minimum application in `adaptive.go`/`policy.go`/`leaf.go`. Use nested ForEach+IfEqual for integer identity checks; declared bounded lists for current/next/handles/history/results; equality-before-increment budget checks. After all result consumption and derivation, clear the one-row decision collection with Set(empty), then Append the complete decision row in one ordinary commit before admission. Outer loop no-ops after stop.
+- [ ] Implement `New` and `Submit` in `deployment.go`, copying ordinary wrapper/intake mechanics from `examples/worktree/worktree.go`. Include the controlled scalar capability or unchanged evidence capabilities in the fixed root allowlist; retain all limits at provision and request acceptance.
+- [ ] Implement root/wrapper reply forwarding with explicit response presence. Bounded application stop sends complete false while protocol succeeds; hard application errors send diagnostics then fail. Missing/unknown responses never become zero observations.
+- [ ] Add `TestControlledEvidenceAdaptive`: directly invoke `worktree.Evidence(evidence.Budgets{MaxModelRequests:2,MaxLookupRequests:1})` as the two-member leaf; controlled clarification then answer drives two rounds through ordinary public results, plus known invalid-result failure. Verify no adapter wrapper/depth4. Assert two items: direct3/nested4 invocations, direct5/nested6 created runs, four total effects for clarification1+answer3. Child question policy is exactly the reviewed contract.
+- [ ] Add `TestAdaptivePublicConsumerDirectNested` in the separate module. Compile/provision/submit/Run/inspect through public APIs, both capacity1 and2, and compare actual work/result to the independently retained fixture. Run `go -C examples/adaptive/consumer test -count=1 ./...`; successful root `./...` alone does not cover this module.
+- [ ] Add CLI init/submit/run/inspect/replay/recover and `TestCLIAdaptiveRequest`; use fresh temporary stores, complete JSON requests and controlled fixtures. Ensure recover opens existing state and does not resubmit, regenerate request limits, or rebuild active frontiers.
+- [ ] Run focused default/integration tests for changed packages, separate consumer checks, and exact direct/nested CLI examples. Independently review ordinary orchestration, public usability and resource math. Retain actual authoring line count/awkwardness (integer ID finite domain; explicit duplicate scans; schema-dependent response bindings).
+- [ ] Commit the tested application slice after review; no runtime repair is authorized by this plan. If a new limitation appears, preserve the smallest executable counterexample, compare a local authoring solution with the smallest generic repair, and obtain independent review before implementing that repair.
+
+### Task 3: Recovery, causal negative controls, final qualification and draft PR
+
+**Files:** qualification package/tools/runbook/report/review/evidence from the map; extend application tests only for discovered behavior, preserving failing variants and original source identities.
+
+**Interfaces:** consumes immutable ordinary templates, exact public request/result contracts and frozen oracle. Produces source-tagged `ADAPTIVE` records with acknowledged process boundaries, retained projections/operations/charges and independent application verdicts. Runtime/replay verdict and application-semantic verdict are separate fields.
+
+- [ ] Write `TestProcessAdaptiveCuts` with three cuts: decision committed before next-round intent; some next-round intents/admissions durable with remainder pending; partial next-round results consumed while sibling unfinished. Reuse actual child process termination and fresh-process recovery, validate PID/token/scenario/store/phase/sequence, and compare original work IDs/operations/evidence/charges/result to the oracle. Use pure/unattempted work for eventual-completion cases.
+- [ ] Write `TestAdaptiveCapacityAndOutOfOrder`: hold a controlled first transport; capacity1 forbids second contact while independent logical progress continues, capacity2 allows the second to finish. Reverse completion ordering and require identical ordered frontiers/results; exercise direct/nested with logical work above capacity. Watchdogs detect hangs only.
+- [ ] Write `TestAdaptiveRootDenial`: lower persisted invocation budget so the adaptive accepts seed/next work before a later retained denial. Assert original accepted frontiers, ordered rejected outcomes/reasons, complete false, root_budget_denied, conserved charges and no reset on recovery.
+- [ ] Write `TestAdaptiveUnknownSibling`: one known failed leaf plus one required external operation whose authorized attempt becomes unknown. Assert no round decision/public success/replacement, original unknown identity and reservation persist across kill/recovery, and no repeated contact. This case intentionally has no eventual application result.
+- [ ] Write `TestAdaptiveClosureAfterDecision`: acknowledge decision before first successor admission; close through the supported single Store owner/lifecycle operation; verify attempted late admissions/reservations denied, original decision/partial evidence preserved, and late results cannot reopen scope. Cancellation need not provide an application reply.
+- [ ] Write `TestAdaptiveReadOnlyReplay`: exact supported network-denying subprocess isolation, no adapter registry/credential, before/after ledger digest equality and zero contact. Report unsupported platform isolation honestly.
+- [ ] Write `TestFaultyAdaptiveApplicationOracle`: build an authentic ordinary faulty variant for the paired case that consumes gamma observation0 then overwrites it with2. Require it reaches next-round decision and actual forbidden successor admission; runtime/replay protocol may pass, but the unchanged independent application oracle rejects extra10/11/31. Do not mutate expected-work logic to fit it.
+- [ ] Run focused process/control tests and independent qualification review; fix failures preserving original evidence. Collect each source's commands, exits, raw logs, structured records and actual platform/toolchain before proceeding.
+- [ ] Run one final required changed-source default/integration/race pass and both old/new external consumer normal/race checks; retain original Phase1A/B/C/conformance comparisons. Reuse Phase 1G tools for capture/hash/reproduction, extend their new Phase 1H wrappers for ADAPTIVE markers and the new consumer, and verify extracted-source reproduction. Do not relabel historical results as current runs.
+- [ ] Complete runbook with copyable direct/nested scalar and evidence runs, paired observations, explicit application stopping outputs, inspect/recover/replay procedures and honest unknown limitations. Record exact tested source/archive identities, reviewed head, authoring friction and unresolved scope limits.
+- [ ] Obtain independent whole-branch review and scoped rereview of fixes. Push and open a draft PR with dependency/base, exact head and available CI status; attach the created PR to the current task. Do not merge or release. Final report answers the five assignment questions using actual evidence.
+
+## Plan self-review
+
+The three slices cover baseline cleanup/independent expectations; ordinary public application/effectful reuse; then process recovery, negative controls, final qualification and publication. All inter-slice function names are declared above. Every Review Focus condition has an owning named test. No implementation begins before the contract review. Files and helper decomposition may be made smaller during implementation without changing this contract; any semantic change returns to independent review.
