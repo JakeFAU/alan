@@ -19,3 +19,10 @@ Qualification covers finite controlled single-host schedules. The pure completio
 Unknown non-idempotent work remains spent and pending without automatic eventual-result repair. Individual cancelled/abandoned child-envelope permutations, unbounded fairness/liveness, distributed ownership, power-loss recovery, compiler correctness and business exactly-once are not established.
 
 The [manuscript audit](evidence/task3/manuscript-audit.md) required only a synchronized bounded case study. It preserves separate open loop-ranking presentation, fair-schedule confluence, wider Markdown–LaTeX alignment and overbroad proof-rhetoric obligations. This increment does not prove or repair them; no new bibliography entry or external citation check is claimed.
+
+
+## Guard/comparison scoped approval
+
+The [verbatim scoped rereview](evidence/task3/guard-rereview.md) returned APPROVE for specification and quality over4463e9a..14ce818, source4471f4feb6eade4722f796a2c425b0f4adcb017eec691cc5a51ba8015f6f983f. It independently checked race duration assumptions, exact selected-default equivalence, pinned semantic provenance mapping and negatives, the disproved selector hypothesis and actual upstream integration scope. Its nonblocking P3 README ambiguity was corrected in the exact prose sentence and independently verified CLOSED before the next source freeze. The source4471 review predates that disclosed prose-only correction; the final manifest records the successor identity. No behavioral rerun is required for the wording change.
+
+This releases the remaining actual qualification gates; it does not mark them complete or grant final whole-branch approval. Original findings and original failed commands remain retained.
