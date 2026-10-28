@@ -1,0 +1,383 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs,array,longtable}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!60!black,
+  citecolor=green!50!black,
+  urlcolor=blue!70!black
+}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{counterexample}[theorem]{Counterexample}
+
+\newcommand{\Act}{\mathsf{Act}}
+\newcommand{\Obs}{\mathsf{Obs}}
+\newcommand{\Subj}{\mathsf{Subj}}
+\newcommand{\RunID}{\mathsf{RunID}}
+\newcommand{\Val}{\mathsf{Val}}
+\newcommand{\Opd}{\mathsf{Opd}}
+\newcommand{\Instr}{\mathsf{Instr}}
+\newcommand{\Conf}{\mathsf{Conf}}
+\newcommand{\ITree}{\mathsf{ITree}}
+\newcommand{\JITree}{\mathsf{JITree}}
+
+\lstdefinestyle{alancode}{
+  basicstyle=\ttfamily\footnotesize,
+  frame=single,
+  breaklines=true,
+  columns=fullflexible,
+  backgroundcolor=\color{gray!6}
+}
+
+\title{\textbf{Retainable Interactive Computation:\\Operational Semantics, Algebraic Effects, and Crash-Consistent Recovery in the Agentic Lambda Abstraction Network (ALAN)}}
+\author{ALAN Research Monograph}
+\date{October 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Contemporary frameworks for autonomous and language-model-driven agents are overwhelmingly engineered as ad hoc orchestration libraries: they embed control flow inside opaque host-language closures, conflate probabilistic model completions with authoritative state transitions, and rely on the incidental survival of an operating-system process to carry residual computation forward. When a process fails mid-execution, or when a higher-order coordinator must supervise, bound, retry, or cancel a subordinate agent, the computation itself possesses no independent mathematical existence.
+
+This monograph develops the theoretical foundations of \textbf{ALAN (Agentic Lambda Abstraction Network)}, a programming-language and computation-model architecture whose central thesis is that \emph{agentic computation must be a first-class, retainable mathematical object}. Rather than treating agents as black-box callbacks connected by workflow arrows, ALAN formulates an agent as a version-bound, finite-step interactive transition system whose residual control, typed environment, correlation obligations, and pending effect intents are explicitly reified as serializable projections.
+
+We situate ALAN at the intersection of five classical traditions in theoretical computer science and distributed systems: (I)~Church, Turing, and Felleisen's theory of computability versus \emph{macro-expressiveness} \cite{church1936unsolvable,turing1936computable,felleisen1991expressive}; (II)~Plotkin and Turi's \emph{structural} and \emph{mathematical operational semantics} \cite{plotkin1981structural,turi1997towards}; (III)~Milner, Hewitt, and Agha's calculi of \emph{mobile processes and actor configurations} \cite{hewitt1973universal,milner1992calculus,agha1997foundation}; (IV)~Moggi, Plotkin, Pretnar, and Xia et al.'s \emph{algebraic effects and coinductive Interaction Trees} \cite{moggi1991notions,plotkin2013handling,xia2020interaction}; and (V)~Schneider, Lamport, and Chandy's theory of \emph{fault-tolerant state machines, causal ordering, and consistent cuts} \cite{lamport1978time,chandy1985distributed,schneider1990implementing}.
+
+Synthesizing these five pillars, we prove four primary formal results grounded directly in ALAN's executable semantics and single-host durable implementation: (1)~the relative macro-expressiveness of supervision, coordination, and bounded snapshot-cursor iteration ($\Lambda_{\text{ALAN}}$); (2)~a syntactic bimorphism lowering high-level interactions into standard Interaction Trees over a split-phase signature $E_{\text{split}} = \mathsf{Emit} \uplus \mathsf{Receive}$, paired with a novel \emph{Split-Phase Journaled Handler Algebra} ($\mathcal{H}_{\text{journal}}$) whose per-intent state evolves monotonically over a four-stage consistent epistemic poset $\mathbb{O}_{\text{eff}}^{\text{cons}} = \{\bot_{\text{unauth}}, \mathsf{Suppressed}(r), \mathsf{Unknown}, \mathsf{Known}(v)\}$ completed by an improper fault element $\top_{\text{conflict}}$ into a five-kind bounded lattice $\widehat{\mathbb{O}}_{\text{eff}}$; (3)~the orthogonality of provenance, communication, and lifecycle authority graphs ($\mathcal{G}_{\text{prov}} \perp \mathcal{G}_{\text{comm}} \perp \mathcal{G}_{\text{life}}$) and a complete inductive proof of conditional compositional congruence for budget-indexed, interface-scoped failure/divergence bisimulation ($\approx^{\Delta}_{I,\mathcal{B}}$) preserving dual mailbox-admission and continuation-consumption refusals; and (4)~an FLP-style impossibility theorem for unconditional crash bisimulation across unreconciled non-idempotent in-flight effects, leading to the \emph{Two-Regime Fundamental Theorem of Durable Interactive Recovery}, which establishes symmetric forward bisimulation ($\operatorname{Recover}(\Gamma_{\text{crash}}) \approx_{\mathrm{obs}} \mathsf{Commit}(\Gamma)$) outside the non-idempotent in-flight window and directed \emph{Epistemic Prefix Simulation} ($\operatorname{Recover}(\Gamma_{\text{crash}}) \preccurlyeq_{\mathrm{ep}} \Gamma$) inside it.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+\section{Introduction: The Ontological Crisis of Agentic Computation}
+
+\subsection{Orchestration Frameworks versus Models of Computation}
+The rapid proliferation of large language models (LLMs) has catalyzed an industry of software frameworks purporting to build ``autonomous agents.'' Viewed through the lens of programming-language theory, however, nearly all contemporary agent frameworks are variations on a single, fragile idiom: \emph{imperative host-language orchestration}. In such systems, an ``agent'' is a Python, TypeScript, or Go closure that loops over a mutable prompt buffer, invokes an external HTTP endpoint to sample tokens from a probabilistic model, parses tool-call strings from the completion, and executes arbitrary host callbacks in-place.
+
+This architecture suffers from a foundational ontological confusion by conflating three layers that must be kept mathematically distinct:
+\begin{enumerate}
+  \item \textbf{Probabilistic Epistemic Proposals:} A language model completion is not a computation step; it is an untrusted, nondeterministic external observation sampled from a stochastic oracle.
+  \item \textbf{Deterministic Residual Control:} The logic that validates an observation against a schema, updates local state, enforces budget ceilings, and selects the next branch of work is a pure, finite state transition.
+  \item \textbf{Authoritative World Transitions:} Admitting a message to a peer's inbox, mutating an external database, or incrementing the execution generation of a failed child computation are irreversible distributed commitments subject to partial failure, message reordering, and process death.
+\end{enumerate}
+
+When a conventional agent framework embeds all three layers inside the call stack of a live OS process, the \emph{continuation} of the agent---what remains to be done, which obligations are outstanding, and what authority the agent holds---is implicitly encoded in ephemeral instruction pointers, heap pointers, and open TCP sockets. If the executor process receives \texttt{SIGKILL} after dispatching an external tool request but before recording its receipt, the residual computation vanishes.
+
+\subsection{Durable Workflows versus Durable Computation}
+Even industrial ``durable execution'' engines (such as Temporal) address process crashes via event-sourced replay of host-language coroutines rather than reifying the computation itself. A decisive gulf separates \emph{durable workflow bookkeeping} from \emph{durable computation}:
+\begin{itemize}
+  \item \textbf{First-Class Projections vs.\ Opaque Coroutines:} Workflow engines treat the program as an opaque host closure whose state is invisible except by re-executing host code from step $0$. ALAN represents every computation as an explicit, version-bound instruction array $P_v$ and serializable projection $\sigma = \langle \mathit{pc}, \rho, \mathit{status}, \kappa \rangle$.
+  \item \textbf{Ordinary Supervision vs.\ Privileged Runtime Strata:} In workflow and actor engines, supervision and retry policies are privileged runtime mechanisms. In ALAN, a supervisor or coordinator is an ordinary program in the same calculus that consumes typed terminal observations and emits lifecycle intents through the same interpreter (\texttt{executor.Reduce}).
+  \item \textbf{Split-Phase Effect Authority:} Rather than collapsing external activities into \texttt{Started}/\texttt{Completed}, ALAN factors every interaction across five distinct commit boundaries ($\mathsf{Prepare} \to \mathsf{Commit} \to \mathsf{Authorize} \to \mathsf{Apply} \to \mathsf{Settle}$) with explicit epistemic outcomes ($\mathsf{Suppressed}$ vs.\ $\mathsf{Unknown}$).
+\end{itemize}
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}p{0.28\textwidth}p{0.33\textwidth}p{0.33\textwidth}@{}}
+\toprule
+\textbf{Foundational Work} & \textbf{Fundamental Contribution} & \textbf{Connection to ALAN} \\
+\midrule
+Church (1936) \cite{church1936unsolvable}; Turing (1936) \cite{turing1936computable} & $\lambda$-calculus and universal mechanical computation & Small, universal compositional core without privileged agent classes \\
+Felleisen (1991) \cite{felleisen1991expressive} & Rigorous distinction between computability and macro-expressiveness & Proving supervision is derived while typed outcome admission is essential \\
+Plotkin (1981) \cite{plotkin1981structural} & Structural Operational Semantics (SOS) & ALAN's finite interpreter (\texttt{Reduce}) and global ledger transition rules \\
+Turi \& Plotkin (1997) \cite{turi1997towards} & Mathematical operational semantics \& bialgebraic congruence & Compositional equivalence for nested agent networks \\
+Milner, Parrow \& Walker (1992) \cite{milner1992calculus}; Hewitt (1973) \cite{hewitt1973universal} & Mobile processes ($\pi$-calculus) and actor configurations & Dynamic template invocation (\texttt{compose}), capability scoping, and identity \\
+Moggi (1991) \cite{moggi1991notions}; Plotkin \& Pretnar (2009/2013) \cite{plotkin2013handling} & Computational monads and algebraic effect handlers & Separating pure reduction from durable intents and runtime adapter execution \\
+Xia et al.\ (2020) \cite{xia2020interaction} & Coinductive Interaction Trees ($\ITree$) & Mathematical analogue to ALAN's retained interactive computations \\
+Lamport (1978) \cite{lamport1978time}; Chandy \& Lamport (1985) \cite{chandy1985distributed} & Causal happens-before ordering and consistent global cuts & Per-run observation serialization, generation routing, and replay cuts \\
+Schneider (1990) \cite{schneider1990implementing} & Fault-tolerant deterministic state machines & Journaled replay and crash recovery extended to external uncertainty \\
+\bottomrule
+\end{tabular}
+\caption{The intellectual lineage of ALAN across programming languages and distributed systems.}
+\label{tab:lineage}
+\end{table}
+
+\subsection{Distinguishing Engineering Synthesis from Mathematical Contributions}
+To situate this work precisely for a programming-languages audience, we distinguish what ALAN synthesizes from existing literature from where existing formalisms break down:
+\begin{enumerate}
+  \item \textbf{Engineering Synthesis of Known Theory:} Representing local step execution (\texttt{Reduce}) as a deterministic transition function $\delta_v$ instantiates Plotkin's SOS \cite{plotkin1981structural}; lowering synchronous requests $\mathsf{Vis}(e, k)$ into split-phase $\mathsf{Emit}$ and $\mathsf{Receive}$ instructions is a standard free-monad homomorphism $\mathcal{S} : \ITree_{E,R} \to \ITree_{E_{\text{split}}, R}$ \cite{xia2020interaction}; and re-evaluating history rows under monotonically increasing epoch numbers $e \mapsto e+1$ synthesizes Schneider's state-machine replay \cite{schneider1990implementing} and Burrows's fencing tokens \cite{burrows2006chubby}.
+  \item \textbf{Specific Mathematical Contributions of This Work:}
+  \begin{itemize}
+    \item \emph{The Split-Phase Journaled Handler Algebra ($\mathcal{H}_{\text{journal}}$) and Consistent Epistemic Poset ($\mathbb{O}_{\text{eff}}^{\text{cons}}$):} Standard $\ITree$ interpretation (\texttt{interp}) applies a monadic handler $h : E_{\text{split}} \leadsto \mathsf{StateT}(\mathcal{D}, M)$ atomically inside the evaluation thread, which cannot model an effect in flight across a process crash or concurrent \texttt{CancelRun}. We formulate the asynchronous handler protocol over the four-stage consistent epistemic poset $\mathbb{O}_{\text{eff}}^{\text{cons}}$ completed by $\top_{\text{conflict}}$ into $\widehat{\mathbb{O}}_{\text{eff}}$ (where $\mathsf{Suppressed}(r)$ and $\mathsf{Known}(v)$ are strictly incomparable consistent elements whose join is $\top_{\text{conflict}}$) and prove the Cancellation--Authorization Dichotomy (Theorem~\ref{thm:dichotomy}).
+    \item \emph{Relative Macro-Expressiveness of Supervision:} Using Felleisen's $\preceq_{\text{macro}}$ \cite{felleisen1991expressive}, we prove both positive macro-eliminability of supervision and its exact negative boundary when typed terminal inbox admission is omitted (Theorem~\ref{thm:supervise}).
+    \item \emph{Inductive Congruence under Dual Refusals and Shared External Effects:} We show why standard weak bisimulation fails under hiding in the presence of asynchronous mailbox admission vs.\ synchronous continuation consumption, shared external endpoints $\mathcal{W}_\ell$, and shared root conservation envelopes $\mathcal{B}(r)$, and prove conditional congruence across the explicit context grammar $\mathcal{C}_{\text{adm}}$ (Theorem~\ref{thm:congruence}).
+    \item \emph{Impossibility of Unconditional Crash Bisimulation and the Two-Regime Recovery Theorem:} We prove that no deterministic recovery operator without out-of-band world introspection can achieve symmetric forward bisimulation across an unreconciled non-idempotent Window-$W_3$ crash while guaranteeing at-most-once world mutation (Proposition~\ref{prop:impossibility}), and establish the Two-Regime Fundamental Theorem (Theorem~\ref{thm:fundamental}) uniting $\approx_{\mathrm{obs}}$ and directed epistemic simulation $\preccurlyeq_{\mathrm{ep}}$.
+  \end{itemize}
+\end{enumerate}
+
+\section{Pillar I: Computational Universality, Bounded Realizability, and Felleisen Expressiveness}
+
+\subsection{Beyond the Turing Tarpit}
+Church \cite{church1936unsolvable}, Turing \cite{turing1936computable}, and Minsky's Theorem Ia \cite{minsky1961recursive} establish that two unbounded integer registers with increment-and-jump and decrement-and-branch-on-zero suffice to compute any partial recursive function. In an open, durable agent system, however, appealing to Turing completeness obscures two critical realities:
+\begin{enumerate}
+  \item \textbf{Bounded Realizability:} Practical durable deployments enforce explicit resource ceilings $\mathcal{L} = (\mathit{MaxProgramBytes}, \mathit{MaxDataBytes}, \mathit{MaxObservationBytes}, \mathit{MaxOutputBytes})$ (each $1\text{ MiB}$ by default in \texttt{internal/executor/program.go}) and checked 64-bit integer arithmetic (\texttt{int64} overflow trapping to \texttt{ErrLimit}). Unbounded host callbacks violate finite-step scheduling.
+  \item \textbf{Computability vs.\ Macro-Expressiveness:} Following Felleisen \cite{felleisen1991expressive}, whole-program simulation via Gödel numbering is vacuous for language design because it destroys concurrency, local state isolation, and observational equivalence in contexts.
+\end{enumerate}
+
+\begin{definition}[Contextual Equivalence and Macro-Eliminability, after Felleisen \cite{felleisen1991expressive}]
+Let $\mathcal{L} = (\mathsf{Syn}_{\mathcal{L}}, \Conf_{\mathcal{L}}, \longrightarrow_{\mathcal{L}}, \Obs_{\mathcal{L}})$ be an interactive calculus. Two terms $P, Q \in \mathsf{Syn}_{\mathcal{L}}$ are \emph{contextually equivalent}, written $P \simeq_{\mathcal{L}} Q$, if $\Obs_{\mathcal{L}}(C[P]) = \Obs_{\mathcal{L}}(C[Q])$ for every closing context $C[\cdot]$. An extension $\mathcal{L}^+ = \mathcal{L} \cup \{F(\cdot_1, \dots, \cdot_k)\}$ is \emph{macro-expressible} in $\mathcal{L}$ ($\mathcal{L}^+ \preceq_{\text{macro}} \mathcal{L}$) if there exists a homomorphic translation $\mathcal{T} : \mathsf{Syn}_{\mathcal{L}^+} \to \mathsf{Syn}_{\mathcal{L}}$ fixing $\mathcal{L}$-primitives such that $\mathcal{T}(F(t_1,\dots,t_k)) = \Phi_F[\mathcal{T}(t_1),\dots,\mathcal{T}(t_k)]$ for a fixed $\mathcal{L}$-context $\Phi_F$ and $\Obs_{\mathcal{L}^+}(P) = \Obs_{\mathcal{L}}(\mathcal{T}(P))$ for all closed $P$.
+\end{definition}
+
+\begin{theorem}[Inexpressibility of \texttt{Conditional} in Trace-Fixed Total \texttt{OneShot} Calculi]
+\label{thm:oneshot}
+Let $\mathcal{L}_{\text{fixed}}$ be generated by atomic \texttt{OneShot} leaves $L_i$ and sequential composition $P ; Q$, where each leaf $L_i$ is total, terminates normally without input-dependent failure or early exit, and emits a fixed nonempty sequence of observable effect labels $\vec{\alpha}(L_i) \in \Act^+$ independent of input data $\rho$. Let $\mathcal{L}_{\text{fixed}}^+$ adjoin $\mathsf{Conditional}(p, A, B)$ for a non-constant predicate $p(\rho) \in \{\mathsf{true}, \mathsf{false}\}$. Then $\mathcal{L}_{\text{fixed}} \prec_{\text{macro}} \mathcal{L}_{\text{fixed}}^+$.
+\end{theorem}
+\begin{proof}
+By structural induction on $M \in \mathsf{Syn}_{\mathcal{L}_{\text{fixed}}}$, totality and normal termination of every leaf $L_i$ ensure that in $P ; Q$, $P$ always emits its complete fixed trace $\vec{u}$ and passes control to $Q$, which emits its complete fixed trace $\vec{v}$, making the concatenated trace $\pi(M, \rho) = \vec{u}\cdot\vec{v}$ independent of $\rho$. By contrast, $\mathsf{Conditional}(p, L_{\text{left}}, L_{\text{right}})$ with $\vec{\alpha}(L_{\text{left}}) \ne \vec{\alpha}(L_{\text{right}})$ emits input-dependent traces. (When leaves instead evaluate a pure reducer $\delta_v$ that selects residual control, \texttt{Conditional} is locally macro-eliminable via \texttt{branch} and \texttt{jump}.)
+\end{proof}
+
+\subsection{Macro-Eliminability of Supervision and the Phase 1C Falsification}
+
+\begin{theorem}[Macro-Eliminability of Bounded Supervision]
+\label{thm:supervise}
+In ALAN's core instruction calculus $\mathcal{L}_{\text{ALAN}}$ (\texttt{set}, \texttt{add}, \texttt{branch}, \texttt{jump}, \texttt{receive}, \texttt{emit}, \texttt{end}), a bounded supervisor $\mathsf{Supervise}(a_{\text{child}}, B_{\text{retry}}, \mathit{obl}, P_{\text{init}}, P_{\text{succ}})$ is locally macro-expressible without any privileged supervisor opcode or runtime role dispatch, \emph{if and only if} the runtime boundary admits typed terminal observations ($\mathit{kind}=\mathtt{"terminal"}, \mathit{prov}=\mathtt{"runtime\text{-}terminal"}$) and correlated lifecycle intents/settlements ($\mathit{kind}=\mathtt{"lifecycle"}$).
+\end{theorem}
+\begin{proof}
+The constructive macro-expansion $\Phi_{\mathsf{Supervise}}$ is given by the 15-instruction inner supervisor in \texttt{internal/executor/examples.go} (\texttt{NestedProvision}, lines 52--69):
+\begin{lstlisting}[style=alancode]
+pc  0: receive(kind="message", prov="ordinary-message", src=Outer, gen=1, obl="inner-start") -> [started]
+pc  1: emit(kind="message", target=Worker, gen=Ref("expected"), obl="worker-work", payload=P_init)
+pc  2: receive(kind="terminal", prov="runtime-terminal", src=Worker, gen=Ref("expected"), obl=obl) -> [outcome]
+pc  3: branch(Ref("outcome") == "succeeded", target=13, otherwise=4)
+pc  4: branch(Ref("outcome") == "failed",    target=5,  otherwise=14)
+pc  5: branch(Ref("spent")   == Ref("limit"), target=14, otherwise=6)
+pc  6: emit(dst="pending", kind="lifecycle", target=Worker, gen=Ref("expected"), obl=obl,
+            payload={"operation": "Retry", "revision": Ref("revision")},
+            updates={"spent": Offset("spent", +1)})
+pc  7: receive(kind="lifecycle", prov="runtime-lifecycle", src=Worker, gen=Ref("expected"),
+               obl=obl, op=Ref("pending")) -> [accepted, reason, successor, disposition]
+pc  8: branch(Ref("accepted") == true, target=9, otherwise=14)
+pc  9: set(dst="expected", A=Ref("successor"))
+pc 10: set(dst="pending",  A="")
+pc 11: emit(kind="message", target=Worker, gen=Ref("expected"), obl="worker-work", payload=P_succ)
+pc 12: jump(target=2)
+pc 13: end(outcome="succeeded")
+pc 14: end(outcome="failed")
+\end{lstlisting}
+At \texttt{pc = 6}, \texttt{emit} atomically commits the \texttt{Retry} intent, stores its canonical ID into \texttt{pending}, and increments \texttt{spent} by $+1$. Conversely, in the initial Phase 1 model where \texttt{DeliverTerminal} updated an external ledger without inserting a typed \texttt{"terminal"} inbox observation (Phase 1C regression in \texttt{docs/foundational/05-decisions.md}), no ordinary instruction at \texttt{pc = 2} could observe child failure, proving that typed outcome admission is an essential expressive boundary.
+\end{proof}
+
+\subsection{Bounded Data-Dependent Iteration and Snapshot Cursors (Phase 1G)}
+
+\begin{theorem}[Laminar Cursor Conservation and Strong Termination]
+\label{thm:loops}
+Let $P$ be any program passing \texttt{validateProgram(P)} under \texttt{CollectionSemanticVersion} (\texttt{internal/executor/collections.go}), with code length $L = |P.\mathtt{Code}|$, list capacity bound $M = \max_c c.\mathtt{MaxItems}$, and loop nesting depth $d \le \mathtt{MaxNesting}$. For any valid open projection $\sigma_0$:
+\begin{enumerate}
+  \item \textbf{Snapshot Invariance:} Mutations to $\rho[\mathtt{items}]$ inside a loop body leave the active cursor's cloned $\kappa[\mathit{pc}_{\text{start}}].\mathit{Snapshot}$ invariant.
+  \item \textbf{Cursor Well-Bracketedness:} $\kappa[\mathit{pc}_{\text{start}}]$ exists in $\sigma$ iff $\mathit{pc}_{\text{start}} < \sigma.\mathit{pc} < P.\mathtt{Code}[\mathit{pc}_{\text{start}}].\mathtt{Otherwise}$.
+  \item \textbf{Strong Termination:} Every local reduction sequence without \texttt{receive} terminates in at most $L \cdot (M+2)^d$ steps.
+\end{enumerate}
+\end{theorem}
+\begin{proof}
+\texttt{validateCollections} enforces that all \texttt{foreach}--\texttt{loop} intervals are strictly nested or disjoint (laminar), forbids any backward \texttt{jump} or \texttt{branch} ($\mathit{target} \le \mathit{pc}$), and forbids external jumps into a loop body. Thus the tuple of remaining snapshot elements $(|\kappa[\mathit{pc}_1].\mathit{Snapshot}| - \kappa[\mathit{pc}_1].\mathit{Index}, \dots, \sigma.\mathit{pc})$ strictly decreases in the well-founded lexicographic order on $\mathbb{N}^{d+1}$ at every step.
+\end{proof}
+
+\section{Pillar II: Structural and Mathematical Operational Semantics}
+
+\subsection{Small-Step Operational Semantics of Pure Local Reduction ($\delta_v$)}
+Let $x = (a, g) \in \RunID$ be a logical execution identity, $n \in \mathbb{N}^+$ the next commit sequence, and $\sigma = \langle \mathit{pc}, \rho, \mathit{status}, \kappa \rangle$ an open projection ($\mathit{status} = \mathtt{"open"}$). The pure single-step reducer $\delta_v$ (\texttt{executor.Reduce} in \texttt{internal/executor/program.go}) defines the judgment $P, x, n, \mathcal{L} \vdash \langle \sigma, o_{\text{opt}} \rangle \xrightarrow{\delta_v} \langle \sigma', \vec{\iota} \rangle$:
+
+\[
+\textbf{(R-Receive)} \quad
+\frac{
+  \begin{array}{c}
+    I_{\mathit{pc}} = \mathsf{Receive}(\mathcal{M}, \beta) \quad o_{\text{opt}} = \mathsf{Some}(o) \quad o.\mathit{Run} = x \quad \|o\|_{\text{json}} \le \mathcal{L}.\mathit{MaxObs} \\
+    \langle o.\mathit{Kind}, o.\mathit{Prov}, o.\mathit{Src}, o.\mathit{SrcGen}, o.\mathit{Obl}, o.\mathit{Op} \rangle = \langle \mathcal{M}.\mathit{kind}, \mathcal{M}.\mathit{prov}, \llbracket \mathcal{M}.e_{\text{src}} \rrbracket_\rho, \llbracket \mathcal{M}.e_{\text{gen}} \rrbracket_\rho, \llbracket \mathcal{M}.e_{\text{obl}} \rrbracket_\rho, \llbracket \mathcal{M}.e_{\text{op}} \rrbracket_\rho \rangle \\
+    \mathsf{schemaValid}_P(\mathit{pc}, o.\mathit{Payload}) \quad \rho' = \mathsf{bindPayload}(\rho, \beta, o.\mathit{Payload})
+  \end{array}
+}{
+  P, x, n, \mathcal{L} \vdash \langle \sigma, \mathsf{Some}(o) \rangle \xrightarrow{\;\delta_v\;} \langle \mathsf{clean}_P(\langle \mathit{pc}+1, \rho', \mathtt{"open"}, \kappa \rangle), [] \rangle
+}
+\]
+
+\[
+\textbf{(R-Emit)} \quad
+\frac{
+  \begin{array}{c}
+    I_{\mathit{pc}} = \mathsf{Emit}(\mathit{dst}_{\text{opt}}, \mathcal{E}, \Upsilon) \quad o_{\text{opt}} = \mathsf{None} \quad \mathit{id} = \mathtt{json}([a, g, n, 0]) \\
+    \iota = \langle \mathit{ID}: \mathit{id},\; \mathit{Run}: x,\; \mathit{Seq}: n,\; \mathit{Ord}: 0,\; \mathit{Kind}: \mathcal{E}.\mathit{kind},\; \mathit{Target}: \llbracket \mathcal{E}.e_{\text{target}} \rrbracket_\rho,\; \mathit{Gen}: \llbracket \mathcal{E}.e_{\text{gen}} \rrbracket_\rho,\; \mathit{Obl}: \llbracket \mathcal{E}.e_{\text{obl}} \rrbracket_\rho,\; \mathit{Payload}: \llbracket \Pi \rrbracket_\rho \rangle \\
+    \mathsf{authorIntentValid}_P(\iota) \quad \rho_1 = \rho[\forall (k \mapsto e_u) \in \Upsilon : k \mapsto \llbracket e_u \rrbracket_\rho] \quad \rho_2 = \rho_1[\mathit{dst}_{\text{opt}} \mapsto \mathsf{Str}(\mathit{id})] \quad \|[\iota]\|_{\text{json}} \le \mathcal{L}.\mathit{MaxOut}
+  \end{array}
+}{
+  P, x, n, \mathcal{L} \vdash \langle \sigma, \mathsf{None} \rangle \xrightarrow{\;\delta_v\;} \langle \mathsf{clean}_P(\langle \mathit{pc}+1, \rho_2, \mathtt{"open"}, \kappa \rangle), [\iota] \rangle
+}
+\]
+
+\begin{lemma}[Purity and Strong Determinism of $\delta_v$]
+\label{lem:determinism}
+For any valid program $P$, run identity $x = (a,g)$, sequence $n \in \mathbb{N}^+$, limits $\mathcal{L}$, open projection $\sigma$, and optional observation $o_{\text{opt}}$, $\xrightarrow{\delta_v}$ is a partial function producing unique canonical JSON bytes for $\sigma'$ and $\vec{\iota}$.
+\end{lemma}
+
+\subsection{Global Transition Rules at the Runtime Boundary}
+Embedding $\delta_v$ into a global configuration $\Gamma$ yields the atomic commit and authorization transitions:
+\[
+\textbf{(G-Commit)} \quad
+\frac{
+  \begin{array}{c}
+    p = \langle x=(a,g), e, n+1, o_{\text{opt}}, \sigma', \vec{\iota} \rangle \in \Gamma.\mathsf{Prop} \quad \Gamma.\Subj[a] = \langle g_{\text{curr}}, \mathit{owner}, w, \mathit{retired} \rangle \\
+    g = g_{\text{curr}} \quad \neg \mathit{retired} \quad \Gamma.\mathsf{Runs}[x] = \langle P_v, e_{\text{curr}}, n_{\text{curr}}, \sigma \rangle \quad e = e_{\text{curr}} \quad n = n_{\text{curr}} \quad \sigma.\mathit{status} = \mathtt{"open"} \\
+    (o_{\text{opt}} = \mathsf{Some}(o) \implies o \in \Gamma.\Obs[x] \land o.\mathit{consumed} = \bot) \quad \neg \mathsf{scopeClosed}(\Gamma, x)
+  \end{array}
+}{
+  \Gamma \xrightarrow{\;\mathsf{Commit}(x, e, n+1)\;} \Gamma'
+}
+\]
+\[
+\textbf{(G-Authorize)} \quad
+\frac{
+  \begin{array}{c}
+    \iota \in \Gamma.\mathsf{Int} \quad \iota.\mathit{ID} \notin \operatorname{dom}(\Gamma.\mathsf{Att}) \quad x = \iota.\mathit{Run} = (a, g) \\
+    \Gamma.\Subj[a] = \langle g_{\text{curr}}, \mathit{owner}, w_{\text{curr}}, \mathit{retired} \rangle \quad \Gamma.\mathsf{Runs}[x] = \langle P_v, e, n, \sigma \rangle \\
+    \mathit{allowed} \iff (g = g_{\text{curr}} \land \neg \mathit{retired} \land w_{\text{curr}} = \iota.\mathit{revision} \land \sigma.\mathit{status} = \mathtt{"open"} \land \neg \mathsf{scopeClosed}(\Gamma, x) \land \mathsf{grant}(\Gamma.\mathsf{Perm}, \iota))
+  \end{array}
+}{
+  \Gamma \xrightarrow{\;\mathsf{Authorize}(\iota.\mathit{ID})\;} \Gamma\big[\mathsf{Att}[\iota.\mathit{ID}] \leftarrow \langle \mathit{Allowed}: \mathit{allowed},\; \mathit{Reason}: \mathit{reason} \rangle\big]
+}
+\]
+
+\section{Pillar III: Dynamic Concurrency, Orthogonal Authority, and Compositional Congruence}
+
+\subsection{The Four-Tier Identity Hierarchy and Orthogonal Authority Graphs}
+Unlike the $\pi$-calculus \cite{milner1992calculus} or classical actor models \cite{hewitt1973universal,agha1997foundation}, ALAN separates identity into four tiers: (1)~Retained Computation $(P_v, \sigma)$; (2)~Logical Subject $a \in \Subj$; (3)~Logical Execution (Run) $x = (a, g) \in \RunID$; and (4)~Physical Activation $(x, e) \in \RunID \times \mathbb{N}^+$, alongside ownership revision $w \in \mathbb{N}^+$.
+
+\begin{theorem}[Authority Non-Amplification and Graph Orthogonality --- Invariant I3]
+\label{thm:orthogonality}
+In ALAN's operational semantics, the provenance graph $\mathcal{G}_{\text{prov}}$, communication/observation graph $\mathcal{G}_{\text{comm}}$, and lifecycle authority graph $\mathcal{G}_{\text{life}}$ are mutually orthogonal ($\mathcal{G}_{\text{prov}} \perp \mathcal{G}_{\text{comm}} \perp \mathcal{G}_{\text{life}}$): holding send or terminal-observation permissions in $\mathcal{G}_{\text{comm}}$ never enables an accepted lifecycle transition (\texttt{Retry}, \texttt{CancelRun}, \texttt{AbandonRun}, \texttt{RetireSubject}) in $\mathcal{G}_{\text{life}}$.
+\end{theorem}
+
+\subsection{Two-Tier Injective Identity Algebra}
+To eliminate receipt spoofing, transport domain shadowing, and cross-store operation key collisions, ALAN defines:
+\begin{align}
+  \mathsf{AdmKey}(d, \tau_{\text{raw}}) &\triangleq \mathtt{json}\big([\mathtt{"admission"},\; d,\; \tau_{\text{raw}}]\big), \quad d \in \{\mathtt{input},\mathtt{message},\mathtt{terminal},\mathtt{lifecycle},\mathtt{external},\mathtt{adapter}\}, \\
+  \mathsf{ExtKey}(\mathcal{N}_{256}, (a,g), n, k) &\triangleq \mathtt{json}\big([\mathtt{"alan/external/v2"},\; \mathcal{N}_{256},\; a,\; g,\; n,\; k]\big), \quad \mathcal{N}_{256} \in \{0,1\}^{256}.
+\end{align}
+
+\subsection{Bounded Template Invocations and Conditional Congruence}
+
+\begin{theorem}[Root Resource Conservation and Waiting-Parent Slot Freedom]
+\label{thm:conservation}
+Let $r$ be a composition root with envelope $\mathcal{B}(r) = \langle D_{\max}, I_{\max}, R_{\max}, E_{\max}, C_{\text{phys}} \rangle$ (\texttt{internal/executor/invocation.go}). Across arbitrary interleavings of local steps, template invocations, external adapter calls, root closures, and \texttt{SIGKILL} recoveries: (1)~total created runs in $r$'s tree never exceed $R_{\max}$, invocations never exceed $I_{\max}$, effect reservations never exceed $E_{\max}$, and depth never exceeds $D_{\max}$; and (2)~a parent run suspended at \texttt{AwaitInvocation} occupies zero physical transport slots in $C_{\text{phys}}$.
+\end{theorem}
+
+\begin{definition}[Admissible Contexts, Dual Readiness, and Budget-Indexed Bisimulation $\approx^{\Delta}_{I,\mathcal{B}}$]
+The grammar of admissible composition contexts $\mathcal{C}_{\text{adm}}(I_{\text{in}} \Rightarrow I_{\text{out}})$ is generated by:
+\[
+  C[\cdot] \;::=\; [\cdot] \;\mid\; C[\cdot] \parallel_{\mathcal{I}} Q \;\mid\; Q \parallel_{\mathcal{I}} C[\cdot] \;\mid\; \mathsf{hide}\; H \;\mathsf{in}\; C[\cdot] \;\mid\; \mathsf{Invoke}_{T,r}(C[\cdot]), \qquad H \cap \mathcal{E}_{\text{ext}} = \emptyset.
+\]
+Because mailbox admission (\texttt{AdmitMessage}/\texttt{DecideLifecycle}) is asynchronous with respect to a run's program counter while observation consumption (\texttt{Reduce} at \texttt{receive}) is synchronous with the 6-tuple guard $\mathcal{M}$, every configuration $\Gamma$ exposes two refusal/readiness observables at interface $I$: \emph{mailbox admission readiness} $\mathsf{AdmReady}_I(\Gamma) \subseteq \Sigma_{\text{in}}$ (which target subjects/generations are open vs.\ closed/retired) and \emph{continuation consumption readiness} $\mathsf{WaitReady}_I(\Gamma) \subseteq \mathsf{Match}_I$ (which 6-tuple guards $\mathcal{M}$ are awaited by suspended \texttt{receive} instructions). External interactions are labeled by open transitions $\mathsf{extAuth}(r_{\text{root}}, g_{\text{root}}, \ell, \Pi, \Delta\mathcal{B}) \in \mathcal{E}_{\text{ext}}^{\text{req}}$ and environment-quantified responses $\mathsf{extSettle}(\iota.\mathit{ID}, v) \in \mathcal{E}_{\text{ext}}^{\text{resp}}$ ($\forall v \in \Val$).
+
+A symmetric relation $\mathcal{R}$ is a \emph{Budget-Indexed, Interface-Scoped Failure/Divergence Bisimulation} ($\approx^{\Delta}_{I,\mathcal{B}}$) if whenever $(\Gamma_1, \Gamma_2) \in \mathcal{R}$:
+\begin{enumerate}
+  \item \textbf{Weak Transfer \& Budget Preservation:} $\Gamma_1 \xrightarrow{\alpha}_H \Gamma'_1$ implies $\Gamma_2 \stackrel{\hat{\alpha}}{\Longrightarrow}_H \Gamma'_2$ with $(\Gamma'_1, \Gamma'_2) \in \mathcal{R}$ and equal root resource debits $\Delta\mathcal{B}(\Gamma_1 \to \Gamma'_1) = \Delta\mathcal{B}(\Gamma_2 \Rightarrow \Gamma'_2)$;
+  \item \textbf{Dual Refusal Preservation at Quiescence:} If $\Gamma_1$ is $H$-quiescent, $\Gamma_2 \stackrel{\epsilon}{\Longrightarrow}_H \Gamma'_2$ for an $H$-quiescent $\Gamma'_2$ with $(\Gamma_1, \Gamma'_2) \in \mathcal{R}$, $\Delta\mathcal{B} = \vec{0}$, $\mathsf{AdmReady}_I(\Gamma_1) = \mathsf{AdmReady}_I(\Gamma'_2)$, and $\mathsf{WaitReady}_I(\Gamma_1) = \mathsf{WaitReady}_I(\Gamma'_2)$;
+  \item \textbf{Divergence Sensitivity ($\Delta$):} $\Gamma_1 \uparrow_H \iff \Gamma_2 \uparrow_H$.
+\end{enumerate}
+\end{definition}
+
+\begin{lemma}[Round-Robin Turn Fairness and Interleaving Coincidence in \texttt{Store.Run}]
+\label{lem:scheduler}
+In \texttt{internal/executor/runner.go}, \texttt{selectReady} scans runs in round-robin rotation after \texttt{*last} and skips unready \texttt{receive} instructions in $O(1)$ without holding transport slots, while background workers execute HTTP I/O without holding the store mutex. Under bounded interaction rank (H5), all fair schedules of internal $\tau_H$-steps from $\Gamma$ strongly normalize to the same unique $H$-quiescent logical store state.
+\end{lemma}
+
+\begin{theorem}[Conditional Compositional Congruence of $\approx^{\Delta}_{I,\mathcal{B}}$]
+\label{thm:congruence}
+For every admissible context $C[\cdot] \in \mathcal{C}_{\text{adm}}(I_A \Rightarrow I_C)$, if $\Gamma_A \approx^{\Delta}_{I_A,\mathcal{B}} \Gamma_{A'}$, then $C[\Gamma_A] \approx^{\Delta}_{I_C,\mathcal{B}} C[\Gamma_{A'}]$, provided: (H1)~private subject namespaces are disjoint from $Q$ and unextruded in $\Sigma_{\text{out}}$; (H2)~external effects carry full root request provenance $(r_{\text{root}}, g_{\text{root}})$ and preserve root budget debits $\Delta\mathcal{B}$; (H3)~internal receives bind exact 6-tuple correlation guards including generation; (H4)~scheduler progress is non-blocking across suspended peers (Lemma~\ref{lem:scheduler}); and (H5)~every internal communication cycle in $H$ strictly decreases a well-founded measure $\mu_H$ bounded by local loop counters or $\mathcal{B}(r)$.
+\end{theorem}
+\begin{proof}
+By structural induction on $C[\cdot] \in \mathcal{C}_{\text{adm}}$.
+\emph{Case I ($[\cdot] \parallel_{\mathcal{I}} Q$):} Define $\mathcal{R}_{\parallel} = \{(\Gamma_A \parallel_{\mathcal{I}} \Gamma_Q, \Gamma_{A'} \parallel_{\mathcal{I}} \Gamma_Q) \mid (\Gamma_A, \Gamma_{A'}) \in \mathcal{R}, \text{equal } \mathcal{B}_{\text{rem}}\}$. By (H1) and (H4), local transitions of $\Gamma_Q$ commute with internal $\tau$-steps of $\Gamma_{A'}$ and observe identical remaining root budgets $\mathcal{B}_{\text{rem}}$ by (H2). For shared external endpoints $\mathcal{W}_\ell$, any interleaved mutations by $\Gamma_Q$ determine the response $v \in \Val$ supplied to the open input transition $\mathsf{extSettle}(\iota.\mathit{ID}, v)$; since $\mathcal{R}$ transfers across $\mathsf{extSettle}(\iota.\mathit{ID}, v)$ for all $v \in \Val$, shared world state cannot distinguish $\Gamma_A$ from $\Gamma_{A'}$. Cross-boundary handshakes in $\mathcal{I}$ match identically by 6-tuple routing (H3). At quiescence, subject disjointness (H1) yields additive decomposition of $\mathsf{AdmReady}_{I_C}$ and $\mathsf{WaitReady}_{I_C}$. Infinite $\tau$-sequences cannot cross $\mathcal{I}$ infinitely often by (H5), so divergence projects to $\Gamma_A \uparrow \iff \Gamma_{A'} \uparrow$.
+\emph{Case II ($\mathsf{hide}\; H \;\mathsf{in}\; [\cdot]$):} Functorial relabeling $\tau_H$ preserves weak transfer on $I \setminus H$ while leaving root-tagged external labels $\mathcal{E}_{\text{ext}}$ visible by (H2); $H$-quiescent states restrict $\mathsf{AdmReady}_I$ and $\mathsf{WaitReady}_I$ to $I \setminus H$; and well-foundedness of $\mu_H$ (H5) prevents finite-step components from forming infinite $\tau_H$-cycles upon hiding.
+\end{proof}
+
+\section{Pillar IV: Algebraic Effects, Split-Phase Operational Handlers, and the Epistemic Effect Lattice}
+
+\subsection{Split-Phase $\ITree$ Lowering versus the Asynchronous Handler Algebra}
+At the pure syntax and local reduction level ($\delta_v$), factoring $\mathsf{Vis}(e : E(A), k : A \to X)$ into \texttt{emit} and \texttt{receive} is a syntactic bimorphism $\mathcal{S} : \ITree_{E,R} \to \ITree_{E_{\text{split}}, R}$ over $E_{\text{split}} = \mathsf{Emit} \uplus \mathsf{Receive}$:
+\[
+  \mathcal{S}\big(\mathsf{Vis}(e, k)\big) \;\triangleq\; \mathsf{Vis}\Big(\mathsf{Emit}(e),\; \lambda \mathit{id}.\; \mathsf{Vis}\big(\mathsf{Receive}(\mathit{id}),\; \lambda a.\; \mathcal{S}(k(a))\big)\Big).
+\]
+However, in Xia et al.\ \cite{xia2020interaction}, \texttt{interp} applies a monadic handler $h : E_{\text{split}} \leadsto \mathsf{StateT}(\mathcal{D}, M)$ synchronously inside the evaluator's thread, which cannot represent effects interrupted across the four distributed crash windows $W_1$ (post-reduce, pre-commit), $W_2$ (post-commit, pre-authorize vs.\ cancel), $W_3$ (post-authorize, in-flight transport), and $W_4$ (post-receipt, pre-settlement).
+
+ALAN's mathematical contribution in Pillar IV is therefore the \emph{Split-Phase Journaled Handler Algebra} ($\mathcal{H}_{\text{journal}}$), which interprets each committed intent $\iota \in \mathcal{D}.\mathsf{Int}$ as an asynchronous coalgebraic protocol evolving over a four-stage \emph{consistent epistemic poset} $(\mathbb{O}_{\text{eff}}^{\text{cons}}, \sqsubseteq_{\text{info}})$:
+\[
+  \mathbb{O}_{\text{eff}}^{\text{cons}} \;\triangleq\; \{\bot_{\text{unauth}}\} \;\uplus\; \big\{\mathsf{Suppressed}(r) \mid r \in \mathsf{Reason}_{\text{deny}}\big\} \;\uplus\; \{\mathsf{Unknown}\} \;\uplus\; \big\{\mathsf{Known}(v) \mid v \in \Val\big\},
+\]
+with covering relations $\bot_{\text{unauth}} \sqsubset_{\text{info}} \mathsf{Suppressed}(r)$ and $\bot_{\text{unauth}} \sqsubset_{\text{info}} \mathsf{Unknown} \sqsubset_{\text{info}} \mathsf{Known}(v)$. Crucially, $\mathsf{Suppressed}(r)$ and $\mathsf{Known}(v)$ are \emph{strictly incomparable} in $\mathbb{O}_{\text{eff}}^{\text{cons}}$. Adjoining an improper top fault element $\top_{\text{conflict}}$ completes $\mathbb{O}_{\text{eff}}^{\text{cons}}$ into the five-kind bounded algebraic lattice $\widehat{\mathbb{O}}_{\text{eff}} = \mathbb{O}_{\text{eff}}^{\text{cons}} \uplus \{\top_{\text{conflict}}\}$, where $\mathsf{Suppressed}(r) \sqcup \mathsf{Known}(v) = \top_{\text{conflict}}$ (\texttt{corrupt("receipt without authorization")} at \texttt{external.go:496}) and $\mathsf{Known}(v_1) \sqcup \mathsf{Known}(v_2) = \top_{\text{conflict}}$ for $v_1 \ne v_2$ (\texttt{ErrConflict} at \texttt{external.go:322}).
+
+\begin{theorem}[The Cancellation--Authorization Dichotomy]
+\label{thm:dichotomy}
+For any committed intent $\iota \in \Gamma.\mathsf{Int}$ of run $x=(a,g)$ and concurrent closure $c \in \{\mathsf{CancelRun}(a,g,w), \mathsf{RetireSubject}(a,w)\}$:
+\begin{enumerate}
+  \item If $c \prec \mathsf{Authorize}(\iota)$ in the store's serialization order, $\iota$ transitions to the maximal consistent state $\mathsf{Suppressed}(\mathtt{source\_closed})$ and non-execution of $\iota$ in $\mathcal{W}$ is guaranteed under trusted dispatch.
+  \item If $\mathsf{Authorize}(\iota) \prec c$, $\iota$ transitions to $\mathsf{Unknown}$ (refinable to $\mathsf{Known}(v)$ upon late receipt arrival from the pre-cancellation attempt), and no new mutating attempt for $\iota$ may ever be launched after $c$, even with an idempotency key.
+\end{enumerate}
+\end{theorem}
+
+\subsection{Separating Probabilistic Intelligence from Deterministic Execution}
+In \texttt{examples/evidence/evidence.go} and \texttt{examples/investigation/investigation.go}, LLM invocations (\texttt{evidence-model}) are compiled into split-phase \texttt{author.Request} and \texttt{author.Await} steps surrounded by pure deterministic guards: budget enforcement (\texttt{model\_spent < model\_limit}), tool-name verification (\texttt{plan\_tool == "lookup"}), deterministic span-exclusion copying across revision rounds, and byte-exact citation provenance verification across \texttt{document}, \texttt{version}, \texttt{snippet}, \texttt{start}, and \texttt{end}.
+
+\section{Pillar V: Crash-Consistent Operational Semantics and the Two-Regime Fundamental Theorem}
+
+\subsection{Two-Tier Configurations, the Recovery Operator, and the Window-$W_3$ Impossibility Theorem}
+We decompose a single-host ALAN configuration into $\Gamma = \langle \mathcal{D}, \mathcal{V}, \mathcal{W} \rangle$, where $\mathcal{D}$ is the durable SQLite WAL/FULL store, $\mathcal{V}$ is the volatile activation state, and $\mathcal{W}$ is the external world state. Let $\mathsf{Commit}(\langle \mathcal{D}, \mathcal{V}, \mathcal{W} \rangle) = \langle \mathcal{D}, \emptyset_{\mathcal{V}}, \mathcal{W} \rangle$ and $\mathsf{Crash}(\Gamma) \ni \langle \mathcal{D}, \emptyset_{\mathcal{V}}, \mathcal{W}' \rangle$. Upon recovery, $\mathsf{Recover}$ validates ledger integrity and increments activation epochs $e \mapsto e+1$ for open runs. When an authorized non-idempotent external attempt or adapter attempt has no recorded receipt ($\iota \in \mathsf{Unresolved}_{\text{non-idem}}(\mathcal{D})$), ALAN \emph{neither re-transmits the request nor fabricates a synthetic inbox observation} (\texttt{"unknown outcome has no result"} at \texttt{adapters.go:314}); instead, the waiting run remains quiescently suspended at \texttt{receive} while $\iota.\mathit{ID}$ is surfaced in \texttt{RunReport.UnknownExternal} / \texttt{UnknownAdapters} (\texttt{external\_test.go:175--226}).
+
+\begin{proposition}[Impossibility of Unconditional Symmetric Crash Bisimulation in Non-Idempotent Window $W_3$]
+\label{prop:impossibility}
+Let $\iota \in \mathsf{Unresolved}_{\text{non-idem}}(\mathcal{D})$ be an authorized in-flight intent in Window $W_3$ targeting a non-idempotent endpoint $\mathcal{W}_{\ell}^{\text{non-idem}}$ without an out-of-band read-only receipt-lookup channel, and let $k(v)$ be a continuation whose observable output depends on $v$. No deterministic recovery operator $\mathsf{Recover}(\langle \mathcal{D}, \emptyset_{\mathcal{V}}, \mathcal{W}' \rangle)$ can simultaneously guarantee (1)~At-Most-Once World Safety ($\#\mathsf{Apply}_{\ell} \le 1$ across $\mathcal{W}' \in \{\mathcal{W}, \mathsf{apply}(\mathcal{W}, \alpha)\}$) and (2)~Unconditional Symmetric Forward Bisimulation with the uninterrupted execution where the live socket in $\mathcal{V}$ delivers $v$ to $k(v)$.
+\end{proposition}
+\begin{proof}
+Because $\mathcal{D}$ is identical whether the request dropped before reaching $\mathcal{W}_\ell$ ($\mathcal{W}' = \mathcal{W}$) or mutated $\mathcal{W}_\ell$ just before the response socket died ($\mathcal{W}' = \mathsf{apply}(\mathcal{W}, \alpha)$), re-dispatching $\alpha$ violates (1) in the latter case ($\#\mathsf{Apply}_{\ell} = 2$), whereas withholding re-dispatch leaves $k$ without $v$, violating (2) in the realization where the live socket returned $v$.
+\end{proof}
+
+\subsection{The Two-Regime Fundamental Theorem of Durable Computation}
+Accordingly, let $\approx_{\mathrm{obs}}$ denote symmetric weak forward bisimulation modulo epoch abstraction $\pi_{\text{logical}}(\mathcal{D})$, and let $\Gamma_{\text{rec}} \preccurlyeq_{\mathrm{ep}} \Gamma_{\text{live}}$ denote \emph{Directed Epistemic Prefix \& Safety Simulation}: (i)~$\pi_{\text{logical}}(\mathcal{D}_{\text{rec}}) = \pi_{\text{logical}}(\mathcal{D}_{\text{live}})$ with $\eta_{\mathcal{D}_{\text{rec}}}(\iota) \sqsubseteq_{\text{info}} \eta_{\mathcal{D}_{\text{live}}}(\iota) \ne \top_{\text{conflict}}$; (ii)~at-most-once physical mutation ($\#\mathsf{Apply}_\ell \le 1$); (iii)~full symmetric forward bisimulation ($\approx_{\mathrm{obs}}$) for all peer runs independent of $\mathsf{Unresolved}_{\text{non-idem}}(\mathcal{D}_{\text{rec}})$; and (iv)~quiescent halting at \texttt{receive} for affected runs, rejoining $\approx_{\mathrm{obs}}$ upon late receipt reconciliation.
+
+\begin{theorem}[Two-Regime Fundamental Theorem of Durable Computation in ALAN]
+\label{thm:fundamental}
+Let $\Gamma = \langle \mathcal{D}, \mathcal{V}, \mathcal{W} \rangle$ be any reachable configuration under semantic version $v_{\text{sem}}$. Then:
+\begin{enumerate}
+  \item \textbf{Part I (Historical Replay Completeness and Zero-Effect Soundness --- Invariant I4):} Read-only $\mathsf{Replay}(\mathcal{D})$ (\texttt{internal/executor/replay.go}) deterministically reconstructs every historical projection $\hat{\sigma}_s = h_s.\mathit{successor}$ and intent array $\hat{\vec{\iota}}_s = h_s.\mathit{intents}$ ($1 \le s \le n$) while performing zero mutations to $\mathcal{D}$ and zero dispatches to $\mathcal{W}$.
+  \item \textbf{Part II (Symmetric Forward Bisimulation Regime):} For any crash $\Gamma_{\text{crash}} \in \mathsf{Crash}(\Gamma)$ with $\mathsf{Unresolved}_{\text{non-idem}}(\mathcal{D}) = \emptyset$ (crashes outside Window $W_3$, idempotent profiles, or reconciled receipts),
+  \[
+    \operatorname{Recover}(\Gamma_{\text{crash}}) \;\approx_{\mathrm{obs}}\; \mathsf{Commit}(\Gamma).
+  \]
+  \item \textbf{Part III (Directed Epistemic Simulation Regime):} For any crash $\Gamma_{\text{crash}} \in \mathsf{Crash}(\Gamma)$ with $\mathsf{Unresolved}_{\text{non-idem}}(\mathcal{D}) \ne \emptyset$,
+  \[
+    \operatorname{Recover}(\Gamma_{\text{crash}}) \;\preccurlyeq_{\mathrm{ep}}\; \Gamma,
+  \]
+  and if every affected run $x$ is enclosed in an epistemically convergent supervisory context $S[x]$ (where $\iota$ is disposable/reconciled and $S$ executes \texttt{AbandonRun} + \texttt{Retry}), hiding $H_S$ restores outer bisimulation $\mathsf{hide}\; H_S \;\mathsf{in}\; S[\operatorname{Recover}(\Gamma_{\text{crash}})] \approx^{\Delta}_{I_S,\mathcal{B}} \mathsf{hide}\; H_S \;\mathsf{in}\; S[\mathsf{Commit}(\Gamma)]$ modulo retry debit $\Delta B$.
+\end{enumerate}
+\end{theorem}
+\begin{proof}
+Part~I follows by induction on $s \in \{0,\dots,n\}$ from Lemma~\ref{lem:determinism}, immutability of $\mathcal{D}.\mathsf{Prog}$ and $\mathcal{D}.\Obs$, and the read-only guard (\texttt{mode=ro}, \texttt{PRAGMA query\_only=1}). Part~II follows because $\delta_v$ is independent of epoch $e$, supervisory budgets and pending operation IDs live inside committed projections $\sigma.\mathtt{Data}$, lifecycle decisions in $\mathcal{D}.\mathsf{Life}$ are idempotent prior to eligibility re-evaluation, and idempotent external endpoints deduplicate re-transmissions on $\mathsf{ExtKey}(\mathcal{N}_{256}, x, n, 0)$. Part~III follows from \texttt{retryEligibleWork} (\texttt{runner.go:596--617}), which suppresses re-transmission of authorized non-idempotent/adapter attempts lacking results, leaving $x$ quiescent at \texttt{receive}, reporting $\iota.\mathit{ID} \in \mathtt{UnknownExternal} \cup \mathtt{UnknownAdapters}$, and scheduling independent peers via Lemma~\ref{lem:scheduler}.
+\end{proof}
+
+\begin{theorem}[Impossibility of Blind Cross-Generation Business Deduplication]
+\label{thm:crossgen}
+Across a supervisor-initiated \texttt{Retry} from $x_1 = (a, g)$ to $x_2 = (a, g+1)$, the execution-scoped external keys $\mathsf{ExtKey}(\mathcal{N}_{256}, (a, g), n, 0) \ne \mathsf{ExtKey}(\mathcal{N}_{256}, (a, g+1), n, 0)$ are distinct. Consequently, computation recovery and outbox idempotence cannot prevent duplicate external mutation across generations unless the application threads a generation-invariant business key or reconciles $\mathsf{Unknown}$ prior to retry (witnessed by \texttt{business:order-7} in Phase 1C).
+\end{theorem}
+
+\section{Conclusion}
+ALAN demonstrates that the path beyond fragile agent orchestration is neither adding more prompt wrappers nor inventing privileged workflow node types. By uniting Felleisen's expressive minimality, Plotkin and Turi's mathematical operational semantics, Milner and Hewitt's concurrent topologies, Xia et al.'s Interaction Trees, and Schneider and Lamport's fault-tolerant state machines into a single crash-consistent calculus, ALAN makes agentic computation a rigorous, retainable, and composable mathematical object.
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}
