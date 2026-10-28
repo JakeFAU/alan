@@ -1,8 +1,12 @@
 # Phase 1H review scope
 
+**Final verdict: APPROVE** for specification compliance and code quality at `ed3006859dcdf075e92192b0722afc6f29ec2c43`, over main base `56892cb20c4f4add4bcf786d146b0aed82fbc5d1`. The [verbatim final report](evidence/task3/final-review/alan-phase1h-final-verdict.md) and [inspection artifact hashes](evidence/task3/final-review/provenance.json) complete the same staged independent review. No unresolved actionable finding remains. Frozen source and archive are unchanged. Publication and actual remote checks are separate; no merge or release is approved.
+
+The checkpoint descriptions below retain their historical scope and pending status at the time they were written. They do not override the final verdict above.
+
 The independent harness checkpoint review returned APPROVE for both specification compliance and task quality at `4463e9aeaad0f76cce4df14af4e47419632a86d3`, over base `19065f30d4135c8710faed3db5c7311a01c2530e`. Its [verbatim report](evidence/task3/harness-review.md) and [original inspection source](evidence/task3/harness-review-evidence.py) are retained. The reviewer inspected sources, raw events, source archives and saved states; no Go suite was rerun for that review. It found no actionable checkpoint deviation and permitted final qualification.
 
-This is not final whole-branch approval. Final source/archive and actual suite results are recorded in [qualification](02-qualification.md). Whole-branch review and any scoped rereview remain the controller's independent gate before draft publication. The implementing worker does not grant that approval. No merge or release is authorized. Repository `.github` contains CODEOWNERS and no Actions workflow; local results must not be labeled remote CI results. Actual PR/head/available checks belong to later publication metadata.
+At that checkpoint this was not final whole-branch approval. Final source/archive and actual suite results are recorded in [qualification](02-qualification.md). Whole-branch review and any scoped rereview remain the controller's independent gate before draft publication. The implementing worker does not grant that approval. No merge or release is authorized. Repository `.github` contains CODEOWNERS and no Actions workflow; local results must not be labeled remote CI results. Actual PR/head/available checks belong to later publication metadata.
 
 ## Preserved findings and corrections
 
@@ -45,3 +49,7 @@ The same reviewer's [metadata addendum](evidence/task3/final-review-metadata/ala
 ## Completed worker qualification
 
 The full root race completed exit0/21481.340s with1146 actual pass paths/24 passing packages, zero failures, unchanged Source770 and all12 byte profiles. Strict race historical comparison and named-control/instrumentation checks passed. All required worker qualification and packaging gates are complete; the final [report](evidence/task3/report.md) and [integrity inspection](evidence/task3/final-integrity/result.json) retain exact scope. The controller’s same whole-branch reviewer still owns the final verdict over this completion delta. No final approval, push, PR, merge or release is claimed by the worker.
+
+## Final whole-branch verdict
+
+The independent reviewer inspected the completed root race, all actual child race instrumentation, causal snapshots, strict comparisons and final 101-path generated metadata delta. It returned APPROVE for the exact reviewed identities above. Its eight final inspection/report outputs are retained verbatim with separate SHA-256 provenance; they are later review artifacts, not retroactive frozen test inputs. The original findings, tests-first chronology limitation and research obligations remain in the final report.
