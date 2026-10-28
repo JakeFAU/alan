@@ -72,3 +72,17 @@ The [guard/comparison report](final/guard-report.md) records the measured race s
 ## Guard approval and final qualification release
 
 The independent [guard/comparison rereview](guard-rereview.md) approved specification and task quality at14ce818/source4471f4fe. It verified all five concerns and closed its preserved P3 README watchdog ambiguity after inspecting the exact prose-only correction. The formal report is retained verbatim. Final source freeze must use the new README identity; default4a92 still retains its exact selected-input attribution. The controller released full root integration/race, covering60m consumer race and actual archive/extracted qualification; none is claimed complete by this release or by scoped approval.
+
+
+## Frozen-source integration and archive progress
+
+At source770df465/head680be378, full integration passed exit0/1899.128s with1146 Go pass events/24 passing packages and all224 ADAPTIVE/12 byte records; strict15/20/32/6 comparison and named-control checks passed. Source unchanged. Full root race is active under the reviewed600m watchdog, not yet a completed gate; covering60m consumer race remains active.
+
+Archive2e9efb6136f3de728cff2a09c3a7a3d0686375e6054577e4bb384414102d1d36 is immutable,5,258,134bytes/309members, exact source770 plus pinned dependency proxy and package-time prose snapshots. Actual offline empty-module-cache focused reproduction passed all six commands in259.806s, with exact7focused/8consumer pass names, historical semantic comparison and extracted-source equality. Canonical final working-tree status records may update adjacent to the immutable package; archive-context.json discloses their timing. Independent whole-branch stage1 found no new code/contract defect; final verdict remains withheld pending remaining gates.
+
+
+## Completed consumer race and saved evidence checkpoint
+
+The covering adaptive-consumer race passed exit0/2476.348s with all12 actual pass events, no fail event and frozen source770 unchanged. The original15m timeout remains failed evidence. Both old/new external consumer normal/race gates are covered. Full root race session26628 remains active; no completed root-race verdict or final whole-branch approval is claimed.
+
+The same whole-branch reviewer's stage2 addendum supports actual integration and archive/extracted evidence with no new finding; its original scripts/outputs have separate hashes and are not frozen inputs. Full controller rulings are retained as a separately provenanced snapshot. Completed integration, consumers and archive/reproduction evidence are checkpointed before the long remaining root-race run completes; contributing source remains identical to head680be378/source770.

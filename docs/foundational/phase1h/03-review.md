@@ -26,3 +26,13 @@ The [manuscript audit](evidence/task3/manuscript-audit.md) required only a synch
 The [verbatim scoped rereview](evidence/task3/guard-rereview.md) returned APPROVE for specification and quality over4463e9a..14ce818, source4471f4feb6eade4722f796a2c425b0f4adcb017eec691cc5a51ba8015f6f983f. It independently checked race duration assumptions, exact selected-default equivalence, pinned semantic provenance mapping and negatives, the disproved selector hypothesis and actual upstream integration scope. Its nonblocking P3 README ambiguity was corrected in the exact prose sentence and independently verified CLOSED before the next source freeze. The source4471 review predates that disclosed prose-only correction; the final manifest records the successor identity. No behavioral rerun is required for the wording change.
 
 This releases the remaining actual qualification gates; it does not mark them complete or grant final whole-branch approval. Original findings and original failed commands remain retained.
+
+
+## Whole-branch review, stage1
+
+The [independent stage1 report](evidence/task3/final-review-stage1/alan-phase1h-final-review.md) found no new actionable code/contract defect at frozen head680be378/source770df465 and found the code ready for the remaining gates. It withheld the final verdict pending full integration/race, covering consumer race and archive/extracted evidence. Its [inspection artifacts and raw hashes](evidence/task3/final-review-stage1/provenance.json) are retained separately as later review outputs; they are not retroactively added to the frozen qualification input inventory. The same whole-branch reviewer will inspect completion evidence; stage1 is not final approval.
+
+
+## Whole-branch review, stage2 evidence addendum
+
+The same reviewer's [stage2 addendum](evidence/task3/final-review-stage2/alan-phase1h-final-evidence-addendum.md) found no new issue in completed frozen-source integration, strict comparisons, archive/member verification and all six extracted commands with exact7+8 required pass names. Its [inspection artifacts/hashes](evidence/task3/final-review-stage2/provenance.json) remain separately retained generated review outputs. This is continuation of the same whole-branch review; final verdict still awaits the full race result and final metadata.
