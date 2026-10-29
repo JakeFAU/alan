@@ -1,0 +1,21 @@
+--- FAIL: TestCommunicationDecoder (0.00s)
+    --- FAIL: TestCommunicationDecoder/wrong-dispatch-link (0.00s)
+panic: assignment to entry in nil map [recovered, repanicked]
+
+goroutine 38 [running]:
+testing.tRunner.func1.2({0x102e99a58, 0x102f4fd60})
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/testing/testing.go:2125 +0x1a0
+testing.tRunner.func1()
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/testing/testing.go:2128 +0x2c8
+panic({0x102e99a58?, 0x102f4fd60?})
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/runtime/panic.go:859 +0x120
+github.com/JakeFAU/alan/internal/substitutiontest.TestCommunicationDecoder.func10(0x102ed5bc8?, 0x5002356fe510)
+	/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan/internal/substitutiontest/communication_decoder_test.go:86 +0x1b0
+github.com/JakeFAU/alan/internal/substitutiontest.TestCommunicationDecoder.func14(0x500235732248)
+	/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan/internal/substitutiontest/communication_decoder_test.go:111 +0x184
+testing.tRunner(0x500235732248, 0x5002356804e0)
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/testing/testing.go:2195 +0xc4
+created by testing.(*T).Run in goroutine 37
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/testing/testing.go:2260 +0x3b8
+FAIL	github.com/JakeFAU/alan/internal/substitutiontest	0.219s
+FAIL

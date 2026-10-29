@@ -1,0 +1,248 @@
+//go:build integration
+
+package communication_test
+
+import (
+	"encoding/json"
+	"fmt"
+	"path/filepath"
+	"strconv"
+	"testing"
+
+	communication "github.com/JakeFAU/alan/examples/communication"
+	"github.com/JakeFAU/alan/runtime"
+	"github.com/JakeFAU/alan/schema"
+)
+
+type intent struct {
+	ID                       string
+	Run                      runtime.RunID
+	Sequence                 int64
+	Kind, Target, Obligation string
+	Payload                  map[string]schema.Value
+}
+type observation struct {
+	ID                       string
+	Run                      runtime.RunID
+	Kind, Provenance, Source string
+	SourceGeneration         int64
+	Obligation, Operation    string
+	Payload                  map[string]schema.Value
+}
+
+func parse(t *testing.T, raw any, dst any) {
+	t.Helper()
+	if err := json.Unmarshal([]byte(fmt.Sprint(raw)), dst); err != nil {
+		t.Fatal(err)
+	}
+}
+func number(t *testing.T, raw any) int64 {
+	t.Helper()
+	n, err := strconv.ParseInt(fmt.Sprint(raw), 10, 64)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return n
+}
+func consumption(t *testing.T, s runtime.Inspection, id string) int64 {
+	t.Helper()
+	for _, row := range s.Tables["observations"] {
+		if row["id"] != id || row["consumed_sequence"] == nil {
+			continue
+		}
+		seq := number(t, row["consumed_sequence"])
+		for _, h := range s.Tables["history"] {
+			if h["subject"] == row["subject"] && number(t, h["sequence"]) == seq && h["selected_observation"] == id {
+				return seq
+			}
+		}
+		t.Fatal("consumption lacks selected history linkage", row)
+	}
+	return 0
+}
+func selected(t *testing.T, s runtime.Inspection, subject, kind, obligation string) (observation, int64) {
+	t.Helper()
+	for _, row := range s.Tables["observations"] {
+		var o observation
+		parse(t, row["descriptor"], &o)
+		if o.Run.Subject == subject && o.Kind == kind && o.Obligation == obligation {
+			return o, consumption(t, s, o.ID)
+		}
+	}
+	return observation{}, 0
+}
+
+// Removing either wait, checking the wrong ACK handle, or deciding before ACK
+// must fail this policy check through actual retained messages and consumption.
+func TestCommunicationPolicy(t *testing.T) {
+	for _, tc := range []struct {
+		name, candidate, mode, root string
+		options                     communication.Options
+		report, ack                 bool
+	}{
+		{name: "answer_a", root: "succeeded", report: true, ack: true},
+		{name: "answer_b", candidate: "b", root: "succeeded", report: true, ack: true},
+		{name: "candidate_fail", mode: "fail", root: "failed", report: true, ack: true},
+		{name: "candidate_absent", mode: "absent", root: "failed", report: true, ack: true},
+		{name: "candidate_pending", mode: "pending", root: "open", report: true},
+		{name: "s_fail", root: "failed", options: communication.Options{SMode: "fail"}, report: true, ack: true},
+		{name: "s_absent", root: "failed", options: communication.Options{SMode: "absent"}, report: true, ack: true},
+		{name: "s_pending", root: "open", options: communication.Options{SMode: "pending"}},
+		{name: "candidate_fail_s_pending", mode: "fail", root: "open", options: communication.Options{SMode: "pending"}},
+		{name: "wrong_report_request", root: "open", options: communication.Options{WrongReportRequest: true}, report: true},
+		{name: "wrong_ack_request", root: "succeeded", options: communication.Options{WrongACKRequest: true}, report: true, ack: true},
+		{name: "wrong_ack_handle", root: "succeeded", options: communication.Options{WrongACKHandle: true}, report: true, ack: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			cfg := config()
+			if tc.mode != "" {
+				cfg.Request.Mode = tc.mode
+			}
+			d, err := communication.New(candidate(t, tc.candidate), cfg, tc.options)
+			if err != nil {
+				t.Fatal(err)
+			}
+			path := filepath.Join(t.TempDir(), "retained.db")
+			store, err := runtime.Create(t.Context(), path, d.Provision, runtime.DefaultLimits())
+			if err != nil {
+				t.Fatal(err)
+			}
+			t.Cleanup(func() { _ = store.Close() })
+			report, err := store.Run(t.Context(), runtime.RunOptions{MaxSteps: 200, MaxDispatch: 200, MaxInFlight: 1})
+			if err != nil {
+				t.Fatal(err)
+			}
+			root, err := store.Snapshot(t.Context(), runtime.RunID{Subject: "root", Generation: 1})
+			if err != nil {
+				t.Fatal(err)
+			}
+			peer, err := store.Snapshot(t.Context(), runtime.RunID{Subject: "peer", Generation: 1})
+			if err != nil {
+				t.Fatal(err)
+			}
+			s, err := runtime.Inspect(t.Context(), path, runtime.DefaultLimits())
+			if err != nil {
+				t.Fatal(err)
+			}
+			if root.Projection.Status != tc.root {
+				t.Fatalf("root=%s want=%s", root.Projection.Status, tc.root)
+			}
+			messages := map[string][]intent{}
+			for _, row := range s.Tables["intents"] {
+				var i intent
+				parse(t, row["descriptor"], &i)
+				if i.Obligation == "phase1k_s_report" || i.Obligation == "phase1k_s_ack" {
+					messages[i.Obligation] = append(messages[i.Obligation], i)
+				}
+			}
+			reports, acks := messages["phase1k_s_report"], messages["phase1k_s_ack"]
+			wantReport, wantACK := 0, 0
+			if tc.report {
+				wantReport = 1
+			}
+			if tc.ack {
+				wantACK = 1
+			}
+			if len(reports) != wantReport || len(acks) != wantACK {
+				t.Fatalf("report/ACK intents=%d/%d want=%d/%d", len(reports), len(acks), wantReport, wantACK)
+			}
+			reportObs, reportConsumed := selected(t, s, "root", "message", "phase1k_s_report")
+			ackObs, ackConsumed := selected(t, s, "peer", "message", "phase1k_s_ack")
+			_, candidateConsumed := selected(t, s, "root", "invocation", "candidate")
+			_, sConsumed := selected(t, s, "peer", "invocation", "peer")
+			if tc.report {
+				msg := reports[0]
+				if msg.Run.Subject != "peer" || msg.Target != "root" || sConsumed == 0 || msg.Sequence <= sConsumed {
+					t.Fatal("report precedes actual S consumption", msg, sConsumed)
+				}
+				for _, pair := range []struct{ payload, data string }{{"status", "peer_status"}, {"reason", "peer_reason"}, {"response_present", "peer_present"}, {"s_operation", "peer_pending"}} {
+					if !msg.Payload[pair.payload].Equal(peer.Projection.Data[pair.data]) {
+						t.Fatal("untruthful report", pair, msg.Payload, peer.Projection.Data)
+					}
+				}
+				wantID := int64(1)
+				if tc.options.WrongReportRequest {
+					wantID = 2
+				}
+				if msg.Payload["request_id"].Number != wantID {
+					t.Fatal("wrong report identity control")
+				}
+				if !msg.Payload["response_present"].Flag {
+					if msg.Payload["response_id"].Number != 0 || msg.Payload["response_value"].Number != 0 {
+						t.Fatal("absent response filler fabricated", msg.Payload)
+					}
+					if _, ok := peer.Projection.Data["peer_id"]; ok {
+						t.Fatal("absent response retained stale binding")
+					}
+				} else if msg.Payload["response_id"].Number != 1 || msg.Payload["response_value"].Number != 0 {
+					t.Fatal("original S response changed", msg.Payload)
+				}
+			}
+			if tc.ack {
+				msg := acks[0]
+				if candidateConsumed == 0 || reportConsumed <= candidateConsumed || msg.Sequence <= reportConsumed {
+					t.Fatal("ACK before candidate/report consumption", candidateConsumed, reportConsumed, msg)
+				}
+				if msg.Run.Subject != "root" || msg.Target != "peer" {
+					t.Fatal("ACK source/target changed")
+				}
+				wantID := reportObs.Payload["request_id"].Number
+				if tc.options.WrongACKRequest {
+					wantID = 2
+				}
+				wantHandle := reportObs.Payload["s_operation"].Text
+				if tc.options.WrongACKHandle {
+					wantHandle = "phase1k-wrong-s-operation"
+				}
+				if msg.Payload["request_id"].Number != wantID || msg.Payload["s_operation"].Text != wantHandle {
+					t.Fatal("ACK does not echo report/control", msg.Payload)
+				}
+				if root.Projection.Status != "open" && root.Sequence <= msg.Sequence {
+					t.Fatal("root decided before ACK commitment")
+				}
+			}
+			wrongACK := tc.options.WrongACKRequest || tc.options.WrongACKHandle
+			peerMustWait := !tc.ack || wrongACK
+			if peerMustWait && peer.Projection.Status != "open" {
+				t.Fatal("peer terminated without matching ACK", peer.Projection)
+			}
+			if wrongACK && ackConsumed == 0 {
+				t.Fatal("wrong ACK was not actually selected")
+			}
+			if peer.Projection.Status == "succeeded" {
+				if ackConsumed == 0 || peer.Sequence <= ackConsumed || ackObs.Payload["s_operation"].Text != peer.Projection.Data["peer_pending"].Text || ackObs.Payload["request_id"].Number != 1 {
+					t.Fatal("peer Success lacks matching selected ACK")
+				}
+			}
+			if tc.root == "failed" {
+				t.Logf("negative branch actual peer=%s ACK consumed=%d (root freeze may precede ACK consumption)", peer.Projection.Status, ackConsumed)
+			}
+			if tc.name == "candidate_pending" && reportConsumed != 0 {
+				t.Fatal("root bypassed pending candidate Await")
+			}
+			if tc.options.SMode == "pending" && (len(reports) != 0 || sConsumed != 0) {
+				t.Fatal("pending S fabricated outcome")
+			}
+			if len(s.Roots) != 1 {
+				t.Fatal("missing root")
+			}
+			charges := s.Roots[0].Charges
+			wantCharge := int64(2)
+			if tc.candidate == "b" {
+				wantCharge = 3
+			}
+			if charges.Invocations != wantCharge || charges.CreatedRuns != wantCharge || charges.Effects != 0 || len(s.Tables["composition_admission_decisions"]) != int(wantCharge) {
+				t.Fatal("unexpected extra dynamic/effect work", charges)
+			}
+			if tc.root == "succeeded" && !wrongACK && (len(report.Roots) != 1 || report.Roots[0].Outcome == nil || report.Roots[0].Outcome.Status != "succeeded") {
+				t.Fatal("answer automatic sample did not complete", report.Roots)
+			}
+			if wrongACK && s.Roots[0].Outcome != nil {
+				t.Fatal("local success misreported as aggregate completion")
+			}
+			if _, err := runtime.Replay(t.Context(), path, runtime.DefaultLimits()); err != nil {
+				t.Fatal(err)
+			}
+		})
+	}
+}

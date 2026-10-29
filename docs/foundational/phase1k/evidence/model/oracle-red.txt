@@ -1,0 +1,76 @@
+=== RUN   TestOracleAdversarialCausality
+=== RUN   TestOracleAdversarialCausality/denial_is_not_delivery
+    oracle_test.go:62: want admission_authorization, got []
+=== RUN   TestOracleAdversarialCausality/dispatch_ack_is_not_delivery
+    oracle_test.go:62: want observation_admission, got []
+=== RUN   TestOracleAdversarialCausality/admission_is_not_consumption
+    oracle_test.go:62: want ack_before_peer_terminal, got []
+=== RUN   TestOracleAdversarialCausality/foreign_selected_observation
+    oracle_test.go:62: want consumption_identity, got []
+=== RUN   TestOracleAdversarialCausality/foreign_message
+    oracle_test.go:62: want admission_identity, got []
+=== RUN   TestOracleAdversarialCausality/foreign_authorization
+    oracle_test.go:62: want admission_identity, got []
+=== RUN   TestOracleAdversarialCausality/changed_authorization
+    oracle_test.go:62: want authorization_reuse, got []
+=== RUN   TestOracleAdversarialCausality/changed_admission
+    oracle_test.go:62: want admission_reuse, got []
+=== RUN   TestOracleAdversarialCausality/authorization_predates_send
+    oracle_test.go:62: want authorization_sequence, got []
+=== RUN   TestOracleAdversarialCausality/allowed_after_terminal
+    oracle_test.go:62: want authorization_source, got []
+=== RUN   TestOracleAdversarialCausality/consumption_without_observation
+    oracle_test.go:62: want consumption_identity, got []
+=== RUN   TestOracleAdversarialCausality/foreign_receiver
+    oracle_test.go:62: want consumption_identity, got []
+=== RUN   TestOracleAdversarialCausality/stale_generation
+    oracle_test.go:62: want observation_identity, got []
+=== RUN   TestOracleAdversarialCausality/changed_payload
+    oracle_test.go:62: want observation_payload, got []
+=== RUN   TestOracleAdversarialCausality/wrong_ack_request
+    oracle_test.go:62: want ack_correlation, got []
+=== RUN   TestOracleAdversarialCausality/wrong_ack_handle
+    oracle_test.go:62: want ack_correlation, got []
+=== RUN   TestOracleAdversarialCausality/ack_before_report
+    oracle_test.go:62: want ack_after_report, got []
+=== RUN   TestOracleAdversarialCausality/root_before_ack
+    oracle_test.go:62: want ack_before_root_terminal, got []
+=== RUN   TestOracleAdversarialCausality/peer_before_ack
+    oracle_test.go:62: want ack_before_peer_terminal, got []
+=== RUN   TestOracleAdversarialCausality/aggregate_with_open_peer
+    oracle_test.go:62: want aggregate_members, got []
+=== RUN   TestOracleAdversarialCausality/report_admitted_unconsumed
+    oracle_test.go:62: want report_consumption, got []
+=== RUN   TestOracleAdversarialCausality/report_truth_changed
+    oracle_test.go:62: want report_mapping, got []
+=== RUN   TestOracleAdversarialCausality/wrong_dispatch_link
+    oracle_test.go:62: want dispatch_identity, got []
+--- FAIL: TestOracleAdversarialCausality (0.00s)
+    --- FAIL: TestOracleAdversarialCausality/denial_is_not_delivery (0.00s)
+    --- FAIL: TestOracleAdversarialCausality/dispatch_ack_is_not_delivery (0.00s)
+    --- FAIL: TestOracleAdversarialCausality/admission_is_not_consumption (0.00s)
+    --- FAIL: TestOracleAdversarialCausality/foreign_selected_observation (0.00s)
+    --- FAIL: TestOracleAdversarialCausality/foreign_message (0.00s)
+    --- FAIL: TestOracleAdversarialCausality/foreign_authorization (0.00s)
+    --- FAIL: TestOracleAdversarialCausality/changed_authorization (0.00s)
+    --- FAIL: TestOracleAdversarialCausality/changed_admission (0.00s)
+    --- FAIL: TestOracleAdversarialCausality/authorization_predates_send (0.00s)
+    --- FAIL: TestOracleAdversarialCausality/allowed_after_terminal (0.00s)
+    --- FAIL: TestOracleAdversarialCausality/consumption_without_observation (0.00s)
+    --- FAIL: TestOracleAdversarialCausality/foreign_receiver (0.00s)
+    --- FAIL: TestOracleAdversarialCausality/stale_generation (0.00s)
+    --- FAIL: TestOracleAdversarialCausality/changed_payload (0.00s)
+    --- FAIL: TestOracleAdversarialCausality/wrong_ack_request (0.00s)
+    --- FAIL: TestOracleAdversarialCausality/wrong_ack_handle (0.00s)
+    --- FAIL: TestOracleAdversarialCausality/ack_before_report (0.00s)
+    --- FAIL: TestOracleAdversarialCausality/root_before_ack (0.00s)
+    --- FAIL: TestOracleAdversarialCausality/peer_before_ack (0.00s)
+    --- FAIL: TestOracleAdversarialCausality/aggregate_with_open_peer (0.00s)
+    --- FAIL: TestOracleAdversarialCausality/report_admitted_unconsumed (0.00s)
+    --- FAIL: TestOracleAdversarialCausality/report_truth_changed (0.00s)
+    --- FAIL: TestOracleAdversarialCausality/wrong_dispatch_link (0.00s)
+=== RUN   TestOraclePendingAndReordered
+--- PASS: TestOraclePendingAndReordered (0.00s)
+FAIL
+FAIL	github.com/JakeFAU/alan/research/communication	0.182s
+FAIL

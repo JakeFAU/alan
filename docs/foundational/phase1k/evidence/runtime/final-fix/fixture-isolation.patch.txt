@@ -1,0 +1,85 @@
+--- before/internal/substitutiontest/communication_decoder_test.go
++++ after/internal/substitutiontest/communication_decoder_test.go
+@@ -18,24 +18,41 @@
+ func TestCommunicationDecoder(t *testing.T) {
+ 	q := model.Request{ID: 1, Value: 0, Mode: "answer"}
+ 	originals := map[string]runtime.Inspection{}
++	// Every selected case can obtain its genuine source directly. The cache
++	// shares immutable snapshots without requiring a sibling subtest to run.
++	original := func(t *testing.T, source string) runtime.Inspection {
++		t.Helper()
++		if s, ok := originals[source]; ok {
++			return s
++		}
++		path := communicationFixture(t)
++		var s runtime.Inspection
++		switch source {
++		case "late", "early":
++			s = driveCommunication(t, path, communication.J1, source)
++		case "admitted":
++			d := newCommunicationDriver(t, path)
++			s = d.drive("report-authorized-peer-terminal")
++			d.deliver(communicationReport(s).ID)
++			s = inspect(t, path)
++		default:
++			t.Fatalf("unknown decoder source %q", source)
++		}
++		originals[source] = s
++		return s
++	}
+ 	for _, order := range []string{"late", "early"} {
+ 		t.Run("source-"+order, func(t *testing.T) {
+-			path := communicationFixture(t)
+-			originals[order] = driveCommunication(t, path, communication.J1, order)
++			_ = original(t, order)
+ 		})
+ 	}
+ 	t.Run("admitted-unconsumed", func(t *testing.T) {
+-		path := communicationFixture(t)
+-		d := newCommunicationDriver(t, path)
+-		s := d.drive("report-authorized-peer-terminal")
+-		d.deliver(communicationReport(s).ID)
+-		s = inspect(t, path)
++		s := original(t, "admitted")
+ 		tr, e := decodeCommunication(s, q, communication.J1)
+ 		must(t, e)
+ 		if !tr.Messages[0].Admission.Accepted || tr.Messages[0].Consumption != nil || projection(s, "root").Status != "open" {
+ 			t.Fatal("admission incorrectly became consumption")
+ 		}
+-		originals["admitted"] = s
+ 		retain(t, "positive-prefix", map[string]any{"inspection": s, "trace": tr})
+ 	})
+ 	cases := []struct {
+@@ -103,7 +120,8 @@
+ 	}
+ 	for _, c := range cases {
+ 		t.Run(c.name, func(t *testing.T) {
+-			raw, e := json.Marshal(originals[c.source])
++			source := original(t, c.source)
++			raw, e := json.Marshal(source)
+ 			must(t, e)
+ 			var s runtime.Inspection
+ 			must(t, json.Unmarshal(raw, &s))
+@@ -116,11 +134,11 @@
+ 			if e == nil {
+ 				t.Fatal("raw mutation accepted before normalization", tr)
+ 			}
+-			retain(t, "rejection", map[string]any{"mutation": c.name, "source": c.source, "source_hash": hash(originals[c.source]), "mutated_hash": hash(s), "error": e.Error()})
++			retain(t, "rejection", map[string]any{"mutation": c.name, "source": c.source, "source_hash": hash(source), "mutated_hash": hash(s), "error": e.Error()})
+ 		})
+ 	}
+ 	t.Run("unrelated-order", func(t *testing.T) {
+-		s := originals["early"]
++		s := original(t, "early")
+ 		raw, _ := json.Marshal(s)
+ 		must(t, json.Unmarshal(raw, &s))
+ 		for _, rows := range s.Tables {
+@@ -134,7 +152,7 @@
+ 		retain(t, "reordered", map[string]any{"trace": tr, "inspection_hash": hash(s)})
+ 	})
+ 	t.Run("J2-unavailable", func(t *testing.T) {
+-		if _, e := decodeCommunication(originals["early"], q, communication.J2); e == nil {
++		if _, e := decodeCommunication(original(t, "early"), q, communication.J2); e == nil {
+ 			t.Fatal("J1 relabeled as absent J2 artifact")
+ 		}
+ 	})

@@ -1,0 +1,156 @@
+{
+  "Namespace": "e842bd8e7c29e1918b7af6e18dcc3131f6251a050b3e8acb495d5a050145470d",
+  "KeyVersion": 2,
+  "Settings": {
+    "JournalMode": "wal",
+    "SQLiteVersion": "3.53.4",
+    "SQLiteSourceID": "2026-07-24 19:02:57 bf7c7f30031888f4e796e429ab3978879485813aaca6f641c7b33e4e09459bcc",
+    "Synchronous": 2,
+    "ForeignKeys": 1,
+    "BusyTimeoutMS": 5000,
+    "QueryOnly": 1
+  },
+  "Tables": {
+    "adapter_attempts": [],
+    "adapter_results": [],
+    "admissions": [
+      {
+        "descriptor": "{\"TransportID\":\"phase1k-terminal-probe\",\"Kind\":\"terminal\",\"LogicalID\":\"[\\\"terminal\\\",\\\"peer\\\",1,1,\\\"receiver\\\",\\\"done\\\"]\",\"Source\":{\"Subject\":\"peer\",\"Generation\":1},\"Target\":\"receiver\",\"Generation\":0,\"Obligation\":\"done\",\"Operation\":\"\",\"Payload\":{\"outcome\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"succeeded\",\"Flag\":false}},\"IntentID\":\"\",\"TerminalSequence\":1}",
+        "domain": "terminal",
+        "id": "[\"admission\",\"terminal\",\"phase1k-terminal-probe\"]",
+        "observation_id": "[\"observation\",\"terminal\",\"[\\\"terminal\\\",\\\"peer\\\",1,1,\\\"receiver\\\",\\\"done\\\"]\"]",
+        "result": "{\"TransportID\":\"phase1k-terminal-probe\",\"Accepted\":true,\"Reason\":\"accepted\",\"Bound\":{\"Subject\":\"receiver\",\"Generation\":1},\"ObservationID\":\"[\\\"observation\\\",\\\"terminal\\\",\\\"[\\\\\\\"terminal\\\\\\\",\\\\\\\"peer\\\\\\\",1,1,\\\\\\\"receiver\\\\\\\",\\\\\\\"done\\\\\\\"]\\\"]\"}",
+        "transport_id": "phase1k-terminal-probe"
+      }
+    ],
+    "attempts": [],
+    "corpus_assets": [],
+    "external_attempts": [],
+    "external_receipts": [],
+    "history": [
+      {
+        "epoch": 1,
+        "generation": 1,
+        "intents": "[]",
+        "selected_observation": null,
+        "sequence": 1,
+        "source_revision": 1,
+        "subject": "peer",
+        "successor": "{\"PC\":0,\"Data\":{},\"Status\":\"succeeded\"}"
+      }
+    ],
+    "intents": [],
+    "lifecycle_results": [],
+    "message_acknowledgments": [],
+    "metadata": [
+      {
+        "key_version": 2,
+        "namespace": "e842bd8e7c29e1918b7af6e18dcc3131f6251a050b3e8acb495d5a050145470d",
+        "schema_version": 3,
+        "semantics": "alan/1d/v1",
+        "singleton": 1
+      }
+    ],
+    "observations": [
+      {
+        "consumed_sequence": null,
+        "descriptor": "{\"ID\":\"[\\\"observation\\\",\\\"terminal\\\",\\\"[\\\\\\\"terminal\\\\\\\",\\\\\\\"peer\\\\\\\",1,1,\\\\\\\"receiver\\\\\\\",\\\\\\\"done\\\\\\\"]\\\"]\",\"Run\":{\"Subject\":\"receiver\",\"Generation\":1},\"Kind\":\"terminal\",\"Provenance\":\"runtime-terminal\",\"Source\":\"peer\",\"SourceGeneration\":1,\"Obligation\":\"done\",\"Operation\":\"\",\"Payload\":{\"outcome\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"succeeded\",\"Flag\":false}}}",
+        "generation": 1,
+        "id": "[\"observation\",\"terminal\",\"[\\\"terminal\\\",\\\"peer\\\",1,1,\\\"receiver\\\",\\\"done\\\"]\"]",
+        "subject": "receiver"
+      }
+    ],
+    "permissions": [
+      {
+        "kind": "observation",
+        "obligation": "done",
+        "operation": "terminal",
+        "revision": 1,
+        "source": "peer",
+        "target": "receiver"
+      }
+    ],
+    "programs": [
+      {
+        "bytes": "{\"Semantics\":\"alan/1e/v1\",\"Code\":[{\"Op\":\"end\",\"Dst\":\"\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":null,\"Bind\":null,\"Effect\":null,\"Updates\":null,\"Outcome\":\"succeeded\"}],\"Author\":{\"Compiler\":\"alan/author/v1\",\"Name\":\"phase1k-terminal-probe-peer\",\"Inputs\":{\"ID\":\"44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a\",\"Record\":{}},\"Outputs\":{\"ID\":\"44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a\",\"Record\":{}},\"Templates\":{},\"Positions\":[\"steps/0:end:\"],\"Labels\":{},\"Effects\":{},\"Ports\":{},\"Receives\":{}}}",
+        "id": "2d35f0d7ba7c98814a1acdc740e9553bec8226b9bff05809feede9404796cda7",
+        "semantics": "alan/1e/v1"
+      },
+      {
+        "bytes": "{\"Code\":[{\"Bind\":{\"outcome\":\"peer_outcome\"},\"Match\":{\"Generation\":{\"Literal\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false}},\"Kind\":\"terminal\",\"Obligation\":{\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"done\",\"Flag\":false}},\"Operation\":{\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"\",\"Flag\":false}},\"Provenance\":\"runtime-terminal\",\"Source\":{\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"peer\",\"Flag\":false}}},\"Op\":\"receive\"},{\"Op\":\"end\",\"Outcome\":\"succeeded\"}],\"Semantics\":\"alan/1d/v1\"}",
+        "id": "6c5e1f4077006c93914bddc75a3b3608366f3f38c2b4ff91f2137d992af0bcd1",
+        "semantics": "alan/1d/v1"
+      }
+    ],
+    "run_origins": [
+      {
+        "descriptor": "{\"Subject\":{\"ID\":\"peer\",\"Generation\":1,\"Owner\":\"owner:peer\",\"Revision\":1,\"Retired\":false,\"RetryCancelled\":false},\"ProgramID\":\"2d35f0d7ba7c98814a1acdc740e9553bec8226b9bff05809feede9404796cda7\",\"Initial\":{\"PC\":0,\"Data\":{},\"Status\":\"open\"}}",
+        "generation": 1,
+        "kind": "root",
+        "operation_id": null,
+        "predecessor_generation": null,
+        "subject": "peer"
+      },
+      {
+        "descriptor": "{\"Subject\":{\"ID\":\"receiver\",\"Generation\":1,\"Owner\":\"owner:receiver\",\"Revision\":1,\"Retired\":false,\"RetryCancelled\":false},\"ProgramID\":\"6c5e1f4077006c93914bddc75a3b3608366f3f38c2b4ff91f2137d992af0bcd1\",\"Initial\":{\"PC\":0,\"Data\":{},\"Status\":\"open\"}}",
+        "generation": 1,
+        "kind": "root",
+        "operation_id": null,
+        "predecessor_generation": null,
+        "subject": "receiver"
+      }
+    ],
+    "runs": [
+      {
+        "epoch": 1,
+        "generation": 1,
+        "initial": "{\"PC\":0,\"Data\":{},\"Status\":\"open\"}",
+        "program_id": "2d35f0d7ba7c98814a1acdc740e9553bec8226b9bff05809feede9404796cda7",
+        "projection": "{\"PC\":0,\"Data\":{},\"Status\":\"succeeded\"}",
+        "sequence": 1,
+        "subject": "peer"
+      },
+      {
+        "epoch": 1,
+        "generation": 1,
+        "initial": "{\"PC\":0,\"Data\":{},\"Status\":\"open\"}",
+        "program_id": "6c5e1f4077006c93914bddc75a3b3608366f3f38c2b4ff91f2137d992af0bcd1",
+        "projection": "{\"PC\":0,\"Data\":{},\"Status\":\"open\"}",
+        "sequence": 0,
+        "subject": "receiver"
+      }
+    ],
+    "settlements": [],
+    "subjects": [
+      {
+        "generation": 1,
+        "id": "peer",
+        "owner": "owner:peer",
+        "retired": 0,
+        "retry_cancelled": 0,
+        "revision": 1
+      },
+      {
+        "generation": 1,
+        "id": "receiver",
+        "owner": "owner:receiver",
+        "retired": 0,
+        "retry_cancelled": 0,
+        "revision": 1
+      }
+    ],
+    "terminal_obligations": [
+      {
+        "delivery_status": "{}",
+        "destinations": "[{\"Target\":\"receiver\",\"Obligation\":\"done\"}]",
+        "generation": 1,
+        "operation_id": null,
+        "outcome": "{\"PC\":0,\"Data\":{},\"Status\":\"succeeded\"}",
+        "sequence": 1,
+        "source_revision": 1,
+        "subject": "peer"
+      }
+    ]
+  },
+  "Roots": null
+}
