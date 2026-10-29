@@ -1,0 +1,5037 @@
+[
+  {
+    "Name": "reference/local/entry-commit",
+    "Applicable": true,
+    "Result": {
+      "Name": "bare/id1/value0/answer/I3/R3/D3",
+      "States": 6,
+      "Transitions": 5,
+      "Revisits": 0,
+      "Terminal": 1,
+      "Pending": 0,
+      "Stuck": 0,
+      "RankFailures": 0,
+      "Cutoffs": 0,
+      "Outcomes": [
+        {
+          "RootStatus": "cancelled",
+          "PeerStatus": "",
+          "CandidateStatus": "rejected",
+          "CandidateReason": "source_closed",
+          "CandidatePresent": false,
+          "CandidateID": 0,
+          "CandidateValue": 0,
+          "I": 0,
+          "R": 0,
+          "E": 0,
+          "Pending": false,
+          "Closed": true
+        }
+      ],
+      "Traces": [
+        [
+          {
+            "Kind": "invoke_commit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "close_root",
+            "Operation": "",
+            "Parent": "",
+            "Role": "",
+            "Request": {
+              "ID": 0,
+              "Value": 0,
+              "Mode": ""
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "admit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "rejected",
+            "Reason": "source_closed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "publish",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "rejected",
+            "Reason": "source_closed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "outcome_deliver",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "rejected",
+            "Reason": "source_closed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          }
+        ]
+      ],
+      "Counterexamples": null
+    }
+  },
+  {
+    "Name": "reference/local/entry-admitted",
+    "Applicable": true,
+    "Result": {
+      "Name": "bare/id1/value0/answer/I3/R3/D3",
+      "States": 12,
+      "Transitions": 12,
+      "Revisits": 1,
+      "Terminal": 1,
+      "Pending": 0,
+      "Stuck": 0,
+      "RankFailures": 0,
+      "Cutoffs": 0,
+      "Outcomes": [
+        {
+          "RootStatus": "cancelled",
+          "PeerStatus": "",
+          "CandidateStatus": "failed",
+          "CandidateReason": "missing_reply",
+          "CandidatePresent": false,
+          "CandidateID": 0,
+          "CandidateValue": 0,
+          "I": 1,
+          "R": 1,
+          "E": 0,
+          "Pending": false,
+          "Closed": true
+        }
+      ],
+      "Traces": [
+        [
+          {
+            "Kind": "invoke_commit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "admit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "accepted",
+            "Reason": "",
+            "Present": false,
+            "I": 1,
+            "R": 1,
+            "E": 0
+          },
+          {
+            "Kind": "close_root",
+            "Operation": "",
+            "Parent": "",
+            "Role": "",
+            "Request": {
+              "ID": 0,
+              "Value": 0,
+              "Mode": ""
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "request_consume",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "choose_local",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "reply_commit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "committed",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "terminal_freeze",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "reply_admit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "refused",
+            "Reason": "scope_closed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "publish",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "failed",
+            "Reason": "missing_reply",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "outcome_deliver",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "failed",
+            "Reason": "missing_reply",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          }
+        ]
+      ],
+      "Counterexamples": null
+    }
+  },
+  {
+    "Name": "reference/local/helper-commit",
+    "Applicable": false,
+    "Result": {
+      "Name": "",
+      "States": 0,
+      "Transitions": 0,
+      "Revisits": 0,
+      "Terminal": 0,
+      "Pending": 0,
+      "Stuck": 0,
+      "RankFailures": 0,
+      "Cutoffs": 0,
+      "Outcomes": null,
+      "Traces": null,
+      "Counterexamples": null
+    }
+  },
+  {
+    "Name": "reference/local/reply-commit",
+    "Applicable": true,
+    "Result": {
+      "Name": "bare/id1/value0/answer/I3/R3/D3",
+      "States": 12,
+      "Transitions": 12,
+      "Revisits": 1,
+      "Terminal": 1,
+      "Pending": 0,
+      "Stuck": 0,
+      "RankFailures": 0,
+      "Cutoffs": 0,
+      "Outcomes": [
+        {
+          "RootStatus": "cancelled",
+          "PeerStatus": "",
+          "CandidateStatus": "failed",
+          "CandidateReason": "missing_reply",
+          "CandidatePresent": false,
+          "CandidateID": 0,
+          "CandidateValue": 0,
+          "I": 1,
+          "R": 1,
+          "E": 0,
+          "Pending": false,
+          "Closed": true
+        }
+      ],
+      "Traces": [
+        [
+          {
+            "Kind": "invoke_commit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "admit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "accepted",
+            "Reason": "",
+            "Present": false,
+            "I": 1,
+            "R": 1,
+            "E": 0
+          },
+          {
+            "Kind": "request_consume",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "choose_local",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "reply_commit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "committed",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "close_root",
+            "Operation": "",
+            "Parent": "",
+            "Role": "",
+            "Request": {
+              "ID": 0,
+              "Value": 0,
+              "Mode": ""
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "terminal_freeze",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "reply_admit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "refused",
+            "Reason": "scope_closed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "publish",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "failed",
+            "Reason": "missing_reply",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "outcome_deliver",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "failed",
+            "Reason": "missing_reply",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          }
+        ]
+      ],
+      "Counterexamples": null
+    }
+  },
+  {
+    "Name": "reference/local/published",
+    "Applicable": true,
+    "Result": {
+      "Name": "bare/id1/value0/answer/I3/R3/D3",
+      "States": 12,
+      "Transitions": 12,
+      "Revisits": 1,
+      "Terminal": 1,
+      "Pending": 0,
+      "Stuck": 0,
+      "RankFailures": 0,
+      "Cutoffs": 0,
+      "Outcomes": [
+        {
+          "RootStatus": "cancelled",
+          "PeerStatus": "",
+          "CandidateStatus": "succeeded",
+          "CandidateReason": "member_succeeded",
+          "CandidatePresent": true,
+          "CandidateID": 1,
+          "CandidateValue": 1,
+          "I": 1,
+          "R": 1,
+          "E": 0,
+          "Pending": false,
+          "Closed": true
+        }
+      ],
+      "Traces": [
+        [
+          {
+            "Kind": "invoke_commit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "admit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "accepted",
+            "Reason": "",
+            "Present": false,
+            "I": 1,
+            "R": 1,
+            "E": 0
+          },
+          {
+            "Kind": "request_consume",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "choose_local",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "reply_commit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "committed",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "terminal_freeze",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "reply_admit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "accepted",
+            "Reason": "",
+            "Present": true,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "publish",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "succeeded",
+            "Reason": "member_succeeded",
+            "Present": true,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "close_root",
+            "Operation": "",
+            "Parent": "",
+            "Role": "",
+            "Request": {
+              "ID": 0,
+              "Value": 0,
+              "Mode": ""
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "outcome_deliver",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "succeeded",
+            "Reason": "member_succeeded",
+            "Present": true,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          }
+        ]
+      ],
+      "Counterexamples": null
+    }
+  },
+  {
+    "Name": "artifact/local/entry-commit",
+    "Applicable": true,
+    "Result": {
+      "Name": "bare/id1/value0/answer/I3/R3/D3",
+      "States": 6,
+      "Transitions": 5,
+      "Revisits": 0,
+      "Terminal": 1,
+      "Pending": 0,
+      "Stuck": 0,
+      "RankFailures": 0,
+      "Cutoffs": 0,
+      "Outcomes": [
+        {
+          "RootStatus": "cancelled",
+          "PeerStatus": "",
+          "CandidateStatus": "rejected",
+          "CandidateReason": "source_closed",
+          "CandidatePresent": false,
+          "CandidateID": 0,
+          "CandidateValue": 0,
+          "I": 0,
+          "R": 0,
+          "E": 0,
+          "Pending": false,
+          "Closed": true
+        }
+      ],
+      "Traces": [
+        [
+          {
+            "Kind": "invoke_commit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "close_root",
+            "Operation": "",
+            "Parent": "",
+            "Role": "",
+            "Request": {
+              "ID": 0,
+              "Value": 0,
+              "Mode": ""
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "admit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "rejected",
+            "Reason": "source_closed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "publish",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "rejected",
+            "Reason": "source_closed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "outcome_deliver",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "rejected",
+            "Reason": "source_closed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          }
+        ]
+      ],
+      "Counterexamples": null
+    }
+  },
+  {
+    "Name": "artifact/local/entry-admitted",
+    "Applicable": true,
+    "Result": {
+      "Name": "bare/id1/value0/answer/I3/R3/D3",
+      "States": 16,
+      "Transitions": 17,
+      "Revisits": 2,
+      "Terminal": 1,
+      "Pending": 0,
+      "Stuck": 0,
+      "RankFailures": 0,
+      "Cutoffs": 0,
+      "Outcomes": [
+        {
+          "RootStatus": "cancelled",
+          "PeerStatus": "",
+          "CandidateStatus": "failed",
+          "CandidateReason": "missing_reply",
+          "CandidatePresent": false,
+          "CandidateID": 0,
+          "CandidateValue": 0,
+          "I": 1,
+          "R": 1,
+          "E": 0,
+          "Pending": false,
+          "Closed": true
+        }
+      ],
+      "Traces": [
+        [
+          {
+            "Kind": "invoke_commit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "admit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "accepted",
+            "Reason": "",
+            "Present": false,
+            "I": 1,
+            "R": 1,
+            "E": 0
+          },
+          {
+            "Kind": "close_root",
+            "Operation": "",
+            "Parent": "",
+            "Role": "",
+            "Request": {
+              "ID": 0,
+              "Value": 0,
+              "Mode": ""
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "request_consume",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "choose_local",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "private_step",
+            "Operation": "e",
+            "Parent": "",
+            "Role": "candidate",
+            "Request": {
+              "ID": 0,
+              "Value": 0,
+              "Mode": ""
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "private_step",
+            "Operation": "e",
+            "Parent": "",
+            "Role": "candidate",
+            "Request": {
+              "ID": 0,
+              "Value": 0,
+              "Mode": ""
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "reply_commit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "committed",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "reply_admit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "refused",
+            "Reason": "scope_closed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "private_step",
+            "Operation": "e",
+            "Parent": "",
+            "Role": "candidate",
+            "Request": {
+              "ID": 0,
+              "Value": 0,
+              "Mode": ""
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "terminal_freeze",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "publish",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "failed",
+            "Reason": "missing_reply",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "outcome_deliver",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "failed",
+            "Reason": "missing_reply",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          }
+        ]
+      ],
+      "Counterexamples": null
+    }
+  },
+  {
+    "Name": "artifact/local/helper-commit",
+    "Applicable": false,
+    "Result": {
+      "Name": "",
+      "States": 0,
+      "Transitions": 0,
+      "Revisits": 0,
+      "Terminal": 0,
+      "Pending": 0,
+      "Stuck": 0,
+      "RankFailures": 0,
+      "Cutoffs": 0,
+      "Outcomes": null,
+      "Traces": null,
+      "Counterexamples": null
+    }
+  },
+  {
+    "Name": "artifact/local/reply-commit",
+    "Applicable": true,
+    "Result": {
+      "Name": "bare/id1/value0/answer/I3/R3/D3",
+      "States": 16,
+      "Transitions": 17,
+      "Revisits": 2,
+      "Terminal": 1,
+      "Pending": 0,
+      "Stuck": 0,
+      "RankFailures": 0,
+      "Cutoffs": 0,
+      "Outcomes": [
+        {
+          "RootStatus": "cancelled",
+          "PeerStatus": "",
+          "CandidateStatus": "failed",
+          "CandidateReason": "missing_reply",
+          "CandidatePresent": false,
+          "CandidateID": 0,
+          "CandidateValue": 0,
+          "I": 1,
+          "R": 1,
+          "E": 0,
+          "Pending": false,
+          "Closed": true
+        }
+      ],
+      "Traces": [
+        [
+          {
+            "Kind": "invoke_commit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "admit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "accepted",
+            "Reason": "",
+            "Present": false,
+            "I": 1,
+            "R": 1,
+            "E": 0
+          },
+          {
+            "Kind": "request_consume",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "choose_local",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "private_step",
+            "Operation": "e",
+            "Parent": "",
+            "Role": "candidate",
+            "Request": {
+              "ID": 0,
+              "Value": 0,
+              "Mode": ""
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "private_step",
+            "Operation": "e",
+            "Parent": "",
+            "Role": "candidate",
+            "Request": {
+              "ID": 0,
+              "Value": 0,
+              "Mode": ""
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "reply_commit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "committed",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "close_root",
+            "Operation": "",
+            "Parent": "",
+            "Role": "",
+            "Request": {
+              "ID": 0,
+              "Value": 0,
+              "Mode": ""
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "reply_admit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "refused",
+            "Reason": "scope_closed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "private_step",
+            "Operation": "e",
+            "Parent": "",
+            "Role": "candidate",
+            "Request": {
+              "ID": 0,
+              "Value": 0,
+              "Mode": ""
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "terminal_freeze",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "publish",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "failed",
+            "Reason": "missing_reply",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "outcome_deliver",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "failed",
+            "Reason": "missing_reply",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          }
+        ]
+      ],
+      "Counterexamples": null
+    }
+  },
+  {
+    "Name": "artifact/local/published",
+    "Applicable": true,
+    "Result": {
+      "Name": "bare/id1/value0/answer/I3/R3/D3",
+      "States": 16,
+      "Transitions": 17,
+      "Revisits": 2,
+      "Terminal": 1,
+      "Pending": 0,
+      "Stuck": 0,
+      "RankFailures": 0,
+      "Cutoffs": 0,
+      "Outcomes": [
+        {
+          "RootStatus": "cancelled",
+          "PeerStatus": "",
+          "CandidateStatus": "succeeded",
+          "CandidateReason": "member_succeeded",
+          "CandidatePresent": true,
+          "CandidateID": 1,
+          "CandidateValue": 1,
+          "I": 1,
+          "R": 1,
+          "E": 0,
+          "Pending": false,
+          "Closed": true
+        }
+      ],
+      "Traces": [
+        [
+          {
+            "Kind": "invoke_commit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "admit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "accepted",
+            "Reason": "",
+            "Present": false,
+            "I": 1,
+            "R": 1,
+            "E": 0
+          },
+          {
+            "Kind": "request_consume",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "choose_local",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "private_step",
+            "Operation": "e",
+            "Parent": "",
+            "Role": "candidate",
+            "Request": {
+              "ID": 0,
+              "Value": 0,
+              "Mode": ""
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "private_step",
+            "Operation": "e",
+            "Parent": "",
+            "Role": "candidate",
+            "Request": {
+              "ID": 0,
+              "Value": 0,
+              "Mode": ""
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "reply_commit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "committed",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "reply_admit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "accepted",
+            "Reason": "",
+            "Present": true,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "private_step",
+            "Operation": "e",
+            "Parent": "",
+            "Role": "candidate",
+            "Request": {
+              "ID": 0,
+              "Value": 0,
+              "Mode": ""
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "terminal_freeze",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "publish",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "succeeded",
+            "Reason": "member_succeeded",
+            "Present": true,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "close_root",
+            "Operation": "",
+            "Parent": "",
+            "Role": "",
+            "Request": {
+              "ID": 0,
+              "Value": 0,
+              "Mode": ""
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "outcome_deliver",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "succeeded",
+            "Reason": "member_succeeded",
+            "Present": true,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          }
+        ]
+      ],
+      "Counterexamples": null
+    }
+  },
+  {
+    "Name": "reference/helper/entry-commit",
+    "Applicable": true,
+    "Result": {
+      "Name": "bare/id1/value0/answer/I3/R3/D3",
+      "States": 6,
+      "Transitions": 5,
+      "Revisits": 0,
+      "Terminal": 1,
+      "Pending": 0,
+      "Stuck": 0,
+      "RankFailures": 0,
+      "Cutoffs": 0,
+      "Outcomes": [
+        {
+          "RootStatus": "cancelled",
+          "PeerStatus": "",
+          "CandidateStatus": "rejected",
+          "CandidateReason": "source_closed",
+          "CandidatePresent": false,
+          "CandidateID": 0,
+          "CandidateValue": 0,
+          "I": 0,
+          "R": 0,
+          "E": 0,
+          "Pending": false,
+          "Closed": true
+        }
+      ],
+      "Traces": [
+        [
+          {
+            "Kind": "invoke_commit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "close_root",
+            "Operation": "",
+            "Parent": "",
+            "Role": "",
+            "Request": {
+              "ID": 0,
+              "Value": 0,
+              "Mode": ""
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "admit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "rejected",
+            "Reason": "source_closed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "publish",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "rejected",
+            "Reason": "source_closed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "outcome_deliver",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "rejected",
+            "Reason": "source_closed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          }
+        ]
+      ],
+      "Counterexamples": null
+    }
+  },
+  {
+    "Name": "reference/helper/entry-admitted",
+    "Applicable": true,
+    "Result": {
+      "Name": "bare/id1/value0/answer/I3/R3/D3",
+      "States": 14,
+      "Transitions": 13,
+      "Revisits": 0,
+      "Terminal": 1,
+      "Pending": 0,
+      "Stuck": 0,
+      "RankFailures": 0,
+      "Cutoffs": 0,
+      "Outcomes": [
+        {
+          "RootStatus": "cancelled",
+          "PeerStatus": "",
+          "CandidateStatus": "failed",
+          "CandidateReason": "member_failed",
+          "CandidatePresent": false,
+          "CandidateID": 0,
+          "CandidateValue": 0,
+          "I": 1,
+          "R": 1,
+          "E": 0,
+          "Pending": false,
+          "Closed": true
+        }
+      ],
+      "Traces": [
+        [
+          {
+            "Kind": "invoke_commit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "admit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "accepted",
+            "Reason": "",
+            "Present": false,
+            "I": 1,
+            "R": 1,
+            "E": 0
+          },
+          {
+            "Kind": "close_root",
+            "Operation": "",
+            "Parent": "",
+            "Role": "",
+            "Request": {
+              "ID": 0,
+              "Value": 0,
+              "Mode": ""
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "request_consume",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "choose_helper",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "invoke_commit",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "admit",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "rejected",
+            "Reason": "scope_closed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "publish",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "rejected",
+            "Reason": "scope_closed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "outcome_deliver",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "rejected",
+            "Reason": "scope_closed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "outcome_consume",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "rejected",
+            "Reason": "scope_closed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "terminal_freeze",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "publish",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "failed",
+            "Reason": "member_failed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "outcome_deliver",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "failed",
+            "Reason": "member_failed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          }
+        ]
+      ],
+      "Counterexamples": null
+    }
+  },
+  {
+    "Name": "reference/helper/helper-commit",
+    "Applicable": true,
+    "Result": {
+      "Name": "bare/id1/value0/answer/I3/R3/D3",
+      "States": 14,
+      "Transitions": 13,
+      "Revisits": 0,
+      "Terminal": 1,
+      "Pending": 0,
+      "Stuck": 0,
+      "RankFailures": 0,
+      "Cutoffs": 0,
+      "Outcomes": [
+        {
+          "RootStatus": "cancelled",
+          "PeerStatus": "",
+          "CandidateStatus": "failed",
+          "CandidateReason": "member_failed",
+          "CandidatePresent": false,
+          "CandidateID": 0,
+          "CandidateValue": 0,
+          "I": 1,
+          "R": 1,
+          "E": 0,
+          "Pending": false,
+          "Closed": true
+        }
+      ],
+      "Traces": [
+        [
+          {
+            "Kind": "invoke_commit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "admit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "accepted",
+            "Reason": "",
+            "Present": false,
+            "I": 1,
+            "R": 1,
+            "E": 0
+          },
+          {
+            "Kind": "request_consume",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "choose_helper",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "invoke_commit",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "close_root",
+            "Operation": "",
+            "Parent": "",
+            "Role": "",
+            "Request": {
+              "ID": 0,
+              "Value": 0,
+              "Mode": ""
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "admit",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "rejected",
+            "Reason": "scope_closed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "publish",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "rejected",
+            "Reason": "scope_closed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "outcome_deliver",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "rejected",
+            "Reason": "scope_closed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "outcome_consume",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "rejected",
+            "Reason": "scope_closed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "terminal_freeze",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "publish",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "failed",
+            "Reason": "member_failed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "outcome_deliver",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "failed",
+            "Reason": "member_failed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          }
+        ]
+      ],
+      "Counterexamples": null
+    }
+  },
+  {
+    "Name": "reference/helper/reply-commit",
+    "Applicable": true,
+    "Result": {
+      "Name": "bare/id1/value0/answer/I3/R3/D3",
+      "States": 22,
+      "Transitions": 23,
+      "Revisits": 2,
+      "Terminal": 1,
+      "Pending": 0,
+      "Stuck": 0,
+      "RankFailures": 0,
+      "Cutoffs": 0,
+      "Outcomes": [
+        {
+          "RootStatus": "cancelled",
+          "PeerStatus": "",
+          "CandidateStatus": "failed",
+          "CandidateReason": "missing_reply",
+          "CandidatePresent": false,
+          "CandidateID": 0,
+          "CandidateValue": 0,
+          "I": 2,
+          "R": 2,
+          "E": 0,
+          "Pending": false,
+          "Closed": true
+        }
+      ],
+      "Traces": [
+        [
+          {
+            "Kind": "invoke_commit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "admit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "accepted",
+            "Reason": "",
+            "Present": false,
+            "I": 1,
+            "R": 1,
+            "E": 0
+          },
+          {
+            "Kind": "request_consume",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "choose_helper",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "invoke_commit",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "admit",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "accepted",
+            "Reason": "",
+            "Present": false,
+            "I": 1,
+            "R": 1,
+            "E": 0
+          },
+          {
+            "Kind": "request_consume",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "reply_commit",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "committed",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "terminal_freeze",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "reply_admit",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "accepted",
+            "Reason": "",
+            "Present": true,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "publish",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "succeeded",
+            "Reason": "member_succeeded",
+            "Present": true,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "outcome_deliver",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "succeeded",
+            "Reason": "member_succeeded",
+            "Present": true,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "outcome_consume",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "succeeded",
+            "Reason": "member_succeeded",
+            "Present": true,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "reply_commit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "committed",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "close_root",
+            "Operation": "",
+            "Parent": "",
+            "Role": "",
+            "Request": {
+              "ID": 0,
+              "Value": 0,
+              "Mode": ""
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "terminal_freeze",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "reply_admit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "refused",
+            "Reason": "scope_closed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "publish",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "failed",
+            "Reason": "missing_reply",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "outcome_deliver",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "failed",
+            "Reason": "missing_reply",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          }
+        ]
+      ],
+      "Counterexamples": null
+    }
+  },
+  {
+    "Name": "reference/helper/published",
+    "Applicable": true,
+    "Result": {
+      "Name": "bare/id1/value0/answer/I3/R3/D3",
+      "States": 22,
+      "Transitions": 23,
+      "Revisits": 2,
+      "Terminal": 1,
+      "Pending": 0,
+      "Stuck": 0,
+      "RankFailures": 0,
+      "Cutoffs": 0,
+      "Outcomes": [
+        {
+          "RootStatus": "cancelled",
+          "PeerStatus": "",
+          "CandidateStatus": "succeeded",
+          "CandidateReason": "member_succeeded",
+          "CandidatePresent": true,
+          "CandidateID": 1,
+          "CandidateValue": 1,
+          "I": 2,
+          "R": 2,
+          "E": 0,
+          "Pending": false,
+          "Closed": true
+        }
+      ],
+      "Traces": [
+        [
+          {
+            "Kind": "invoke_commit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "admit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "accepted",
+            "Reason": "",
+            "Present": false,
+            "I": 1,
+            "R": 1,
+            "E": 0
+          },
+          {
+            "Kind": "request_consume",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "choose_helper",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "invoke_commit",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "admit",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "accepted",
+            "Reason": "",
+            "Present": false,
+            "I": 1,
+            "R": 1,
+            "E": 0
+          },
+          {
+            "Kind": "request_consume",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "reply_commit",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "committed",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "terminal_freeze",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "reply_admit",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "accepted",
+            "Reason": "",
+            "Present": true,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "publish",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "succeeded",
+            "Reason": "member_succeeded",
+            "Present": true,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "outcome_deliver",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "succeeded",
+            "Reason": "member_succeeded",
+            "Present": true,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "outcome_consume",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "succeeded",
+            "Reason": "member_succeeded",
+            "Present": true,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "reply_commit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "committed",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "terminal_freeze",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "reply_admit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "accepted",
+            "Reason": "",
+            "Present": true,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "publish",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "succeeded",
+            "Reason": "member_succeeded",
+            "Present": true,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "close_root",
+            "Operation": "",
+            "Parent": "",
+            "Role": "",
+            "Request": {
+              "ID": 0,
+              "Value": 0,
+              "Mode": ""
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "outcome_deliver",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "succeeded",
+            "Reason": "member_succeeded",
+            "Present": true,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          }
+        ]
+      ],
+      "Counterexamples": null
+    }
+  },
+  {
+    "Name": "artifact/helper/entry-commit",
+    "Applicable": true,
+    "Result": {
+      "Name": "bare/id1/value0/answer/I3/R3/D3",
+      "States": 6,
+      "Transitions": 5,
+      "Revisits": 0,
+      "Terminal": 1,
+      "Pending": 0,
+      "Stuck": 0,
+      "RankFailures": 0,
+      "Cutoffs": 0,
+      "Outcomes": [
+        {
+          "RootStatus": "cancelled",
+          "PeerStatus": "",
+          "CandidateStatus": "rejected",
+          "CandidateReason": "source_closed",
+          "CandidatePresent": false,
+          "CandidateID": 0,
+          "CandidateValue": 0,
+          "I": 0,
+          "R": 0,
+          "E": 0,
+          "Pending": false,
+          "Closed": true
+        }
+      ],
+      "Traces": [
+        [
+          {
+            "Kind": "invoke_commit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "close_root",
+            "Operation": "",
+            "Parent": "",
+            "Role": "",
+            "Request": {
+              "ID": 0,
+              "Value": 0,
+              "Mode": ""
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "admit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "rejected",
+            "Reason": "source_closed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "publish",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "rejected",
+            "Reason": "source_closed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "outcome_deliver",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "rejected",
+            "Reason": "source_closed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          }
+        ]
+      ],
+      "Counterexamples": null
+    }
+  },
+  {
+    "Name": "artifact/helper/entry-admitted",
+    "Applicable": true,
+    "Result": {
+      "Name": "bare/id1/value0/answer/I3/R3/D3",
+      "States": 15,
+      "Transitions": 14,
+      "Revisits": 0,
+      "Terminal": 1,
+      "Pending": 0,
+      "Stuck": 0,
+      "RankFailures": 0,
+      "Cutoffs": 0,
+      "Outcomes": [
+        {
+          "RootStatus": "cancelled",
+          "PeerStatus": "",
+          "CandidateStatus": "failed",
+          "CandidateReason": "member_failed",
+          "CandidatePresent": false,
+          "CandidateID": 0,
+          "CandidateValue": 0,
+          "I": 1,
+          "R": 1,
+          "E": 0,
+          "Pending": false,
+          "Closed": true
+        }
+      ],
+      "Traces": [
+        [
+          {
+            "Kind": "invoke_commit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "admit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "accepted",
+            "Reason": "",
+            "Present": false,
+            "I": 1,
+            "R": 1,
+            "E": 0
+          },
+          {
+            "Kind": "close_root",
+            "Operation": "",
+            "Parent": "",
+            "Role": "",
+            "Request": {
+              "ID": 0,
+              "Value": 0,
+              "Mode": ""
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "request_consume",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "choose_helper",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "invoke_commit",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "admit",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "rejected",
+            "Reason": "scope_closed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "publish",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "rejected",
+            "Reason": "scope_closed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "outcome_deliver",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "rejected",
+            "Reason": "scope_closed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "outcome_consume",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "rejected",
+            "Reason": "scope_closed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "private_step",
+            "Operation": "e",
+            "Parent": "",
+            "Role": "candidate",
+            "Request": {
+              "ID": 0,
+              "Value": 0,
+              "Mode": ""
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "terminal_freeze",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "publish",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "failed",
+            "Reason": "member_failed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "outcome_deliver",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "failed",
+            "Reason": "member_failed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          }
+        ]
+      ],
+      "Counterexamples": null
+    }
+  },
+  {
+    "Name": "artifact/helper/helper-commit",
+    "Applicable": true,
+    "Result": {
+      "Name": "bare/id1/value0/answer/I3/R3/D3",
+      "States": 15,
+      "Transitions": 14,
+      "Revisits": 0,
+      "Terminal": 1,
+      "Pending": 0,
+      "Stuck": 0,
+      "RankFailures": 0,
+      "Cutoffs": 0,
+      "Outcomes": [
+        {
+          "RootStatus": "cancelled",
+          "PeerStatus": "",
+          "CandidateStatus": "failed",
+          "CandidateReason": "member_failed",
+          "CandidatePresent": false,
+          "CandidateID": 0,
+          "CandidateValue": 0,
+          "I": 1,
+          "R": 1,
+          "E": 0,
+          "Pending": false,
+          "Closed": true
+        }
+      ],
+      "Traces": [
+        [
+          {
+            "Kind": "invoke_commit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "admit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "accepted",
+            "Reason": "",
+            "Present": false,
+            "I": 1,
+            "R": 1,
+            "E": 0
+          },
+          {
+            "Kind": "request_consume",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "choose_helper",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "invoke_commit",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "close_root",
+            "Operation": "",
+            "Parent": "",
+            "Role": "",
+            "Request": {
+              "ID": 0,
+              "Value": 0,
+              "Mode": ""
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "admit",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "rejected",
+            "Reason": "scope_closed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "publish",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "rejected",
+            "Reason": "scope_closed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "outcome_deliver",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "rejected",
+            "Reason": "scope_closed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "outcome_consume",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "rejected",
+            "Reason": "scope_closed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "private_step",
+            "Operation": "e",
+            "Parent": "",
+            "Role": "candidate",
+            "Request": {
+              "ID": 0,
+              "Value": 0,
+              "Mode": ""
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "terminal_freeze",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "publish",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "failed",
+            "Reason": "member_failed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "outcome_deliver",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "failed",
+            "Reason": "member_failed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          }
+        ]
+      ],
+      "Counterexamples": null
+    }
+  },
+  {
+    "Name": "artifact/helper/reply-commit",
+    "Applicable": true,
+    "Result": {
+      "Name": "bare/id1/value0/answer/I3/R3/D3",
+      "States": 27,
+      "Transitions": 28,
+      "Revisits": 2,
+      "Terminal": 1,
+      "Pending": 0,
+      "Stuck": 0,
+      "RankFailures": 0,
+      "Cutoffs": 0,
+      "Outcomes": [
+        {
+          "RootStatus": "cancelled",
+          "PeerStatus": "",
+          "CandidateStatus": "failed",
+          "CandidateReason": "missing_reply",
+          "CandidatePresent": false,
+          "CandidateID": 0,
+          "CandidateValue": 0,
+          "I": 2,
+          "R": 2,
+          "E": 0,
+          "Pending": false,
+          "Closed": true
+        }
+      ],
+      "Traces": [
+        [
+          {
+            "Kind": "invoke_commit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "admit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "accepted",
+            "Reason": "",
+            "Present": false,
+            "I": 1,
+            "R": 1,
+            "E": 0
+          },
+          {
+            "Kind": "request_consume",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "choose_helper",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "invoke_commit",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "admit",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "accepted",
+            "Reason": "",
+            "Present": false,
+            "I": 1,
+            "R": 1,
+            "E": 0
+          },
+          {
+            "Kind": "request_consume",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "private_step",
+            "Operation": "h",
+            "Parent": "",
+            "Role": "helper",
+            "Request": {
+              "ID": 0,
+              "Value": 0,
+              "Mode": ""
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "private_step",
+            "Operation": "h",
+            "Parent": "",
+            "Role": "helper",
+            "Request": {
+              "ID": 0,
+              "Value": 0,
+              "Mode": ""
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "reply_commit",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "committed",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "terminal_freeze",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "reply_admit",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "accepted",
+            "Reason": "",
+            "Present": true,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "publish",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "succeeded",
+            "Reason": "member_succeeded",
+            "Present": true,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "outcome_deliver",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "succeeded",
+            "Reason": "member_succeeded",
+            "Present": true,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "outcome_consume",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "succeeded",
+            "Reason": "member_succeeded",
+            "Present": true,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "private_step",
+            "Operation": "e",
+            "Parent": "",
+            "Role": "candidate",
+            "Request": {
+              "ID": 0,
+              "Value": 0,
+              "Mode": ""
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "private_step",
+            "Operation": "e",
+            "Parent": "",
+            "Role": "candidate",
+            "Request": {
+              "ID": 0,
+              "Value": 0,
+              "Mode": ""
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "private_step",
+            "Operation": "e",
+            "Parent": "",
+            "Role": "candidate",
+            "Request": {
+              "ID": 0,
+              "Value": 0,
+              "Mode": ""
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "reply_commit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "committed",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "close_root",
+            "Operation": "",
+            "Parent": "",
+            "Role": "",
+            "Request": {
+              "ID": 0,
+              "Value": 0,
+              "Mode": ""
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "terminal_freeze",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "reply_admit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "refused",
+            "Reason": "scope_closed",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "publish",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "failed",
+            "Reason": "missing_reply",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "outcome_deliver",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "failed",
+            "Reason": "missing_reply",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          }
+        ]
+      ],
+      "Counterexamples": null
+    }
+  },
+  {
+    "Name": "artifact/helper/published",
+    "Applicable": true,
+    "Result": {
+      "Name": "bare/id1/value0/answer/I3/R3/D3",
+      "States": 27,
+      "Transitions": 28,
+      "Revisits": 2,
+      "Terminal": 1,
+      "Pending": 0,
+      "Stuck": 0,
+      "RankFailures": 0,
+      "Cutoffs": 0,
+      "Outcomes": [
+        {
+          "RootStatus": "cancelled",
+          "PeerStatus": "",
+          "CandidateStatus": "succeeded",
+          "CandidateReason": "member_succeeded",
+          "CandidatePresent": true,
+          "CandidateID": 1,
+          "CandidateValue": 1,
+          "I": 2,
+          "R": 2,
+          "E": 0,
+          "Pending": false,
+          "Closed": true
+        }
+      ],
+      "Traces": [
+        [
+          {
+            "Kind": "invoke_commit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "admit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "accepted",
+            "Reason": "",
+            "Present": false,
+            "I": 1,
+            "R": 1,
+            "E": 0
+          },
+          {
+            "Kind": "request_consume",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "choose_helper",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "invoke_commit",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "admit",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "accepted",
+            "Reason": "",
+            "Present": false,
+            "I": 1,
+            "R": 1,
+            "E": 0
+          },
+          {
+            "Kind": "request_consume",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "private_step",
+            "Operation": "h",
+            "Parent": "",
+            "Role": "helper",
+            "Request": {
+              "ID": 0,
+              "Value": 0,
+              "Mode": ""
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "private_step",
+            "Operation": "h",
+            "Parent": "",
+            "Role": "helper",
+            "Request": {
+              "ID": 0,
+              "Value": 0,
+              "Mode": ""
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "reply_commit",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "committed",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "terminal_freeze",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "reply_admit",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "accepted",
+            "Reason": "",
+            "Present": true,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "publish",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "succeeded",
+            "Reason": "member_succeeded",
+            "Present": true,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "outcome_deliver",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "succeeded",
+            "Reason": "member_succeeded",
+            "Present": true,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "outcome_consume",
+            "Operation": "h",
+            "Parent": "e",
+            "Role": "helper",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "succeeded",
+            "Reason": "member_succeeded",
+            "Present": true,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "private_step",
+            "Operation": "e",
+            "Parent": "",
+            "Role": "candidate",
+            "Request": {
+              "ID": 0,
+              "Value": 0,
+              "Mode": ""
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "private_step",
+            "Operation": "e",
+            "Parent": "",
+            "Role": "candidate",
+            "Request": {
+              "ID": 0,
+              "Value": 0,
+              "Mode": ""
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "private_step",
+            "Operation": "e",
+            "Parent": "",
+            "Role": "candidate",
+            "Request": {
+              "ID": 0,
+              "Value": 0,
+              "Mode": ""
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "reply_commit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "committed",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "terminal_freeze",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "reply_admit",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "accepted",
+            "Reason": "",
+            "Present": true,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "publish",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "succeeded",
+            "Reason": "member_succeeded",
+            "Present": true,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "close_root",
+            "Operation": "",
+            "Parent": "",
+            "Role": "",
+            "Request": {
+              "ID": 0,
+              "Value": 0,
+              "Mode": ""
+            },
+            "ID": 0,
+            "Value": 0,
+            "Status": "",
+            "Reason": "",
+            "Present": false,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          },
+          {
+            "Kind": "outcome_deliver",
+            "Operation": "e",
+            "Parent": "root",
+            "Role": "candidate",
+            "Request": {
+              "ID": 1,
+              "Value": 0,
+              "Mode": "answer"
+            },
+            "ID": 1,
+            "Value": 1,
+            "Status": "succeeded",
+            "Reason": "member_succeeded",
+            "Present": true,
+            "I": 0,
+            "R": 0,
+            "E": 0
+          }
+        ]
+      ],
+      "Counterexamples": null
+    }
+  }
+]

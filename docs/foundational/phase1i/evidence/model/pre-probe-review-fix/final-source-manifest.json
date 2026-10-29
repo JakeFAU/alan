@@ -1,0 +1,42 @@
+{
+  "utc": "2026-10-29T00:36:24.385857+00:00",
+  "scope": "corrected original-v3 and separately named runtime-boundary extension",
+  "sources": {
+    "research/substitution/auxiliary_test.go": "aa011e6ba661ea658c1bcd3931159034904b6dd856cd214fda8269296a2bcea6",
+    "research/substitution/candidates.go": "670d0265608ff7c519b6838bd65485427f231591516aaa6f75d8ad42566ade69",
+    "research/substitution/candidates_test.go": "008b15c4c5c4a2aa9e2a3e94a3fcff76e8dfa91c0de8c52f96e8d542e9171c2c",
+    "research/substitution/correspondence_test.go": "986e23925e702f061a4f9b0606bb45a11befcbb6109a854fe3579c60bfee1464",
+    "research/substitution/effect.go": "b1f65b5cb9189536ccca746089321b0cd22dc1133d62fc73d74e22ba204f8f33",
+    "research/substitution/effect_test.go": "b417d30e8d719777b10b99aea29b8a8b511d1f171774fae97171ca930c38b019",
+    "research/substitution/envelope_test.go": "e20d5b7c9024a1a90b8787ab07d71aaf7a010c5564a52a3a943d79c38eb67ff4",
+    "research/substitution/explorer.go": "9e8dc11ec95c8a14510aea483ffc6495a2c5fb12273ebaca25cbc57a997cb5f9",
+    "research/substitution/model.go": "1faef47e9ef17401512aba14239fc07ad7031a6db249600844752b35db342ddf",
+    "research/substitution/model_test.go": "497324ee87d21aca53ccf6307c29c0ecc4c334d3e2d0b24471314050bf94fc7b",
+    "research/substitution/oracle.go": "9f7f5f59414c439392ab813759c6ed1c99f4be21aaa44f03a24cf953eb3899ad",
+    "research/substitution/oracle_test.go": "1094aa0a03fb27124b9f581e0cf33d80b1ff2dad8fd99383ce0f5d79872b2332",
+    "research/substitution/probes.go": "5d398ecfa3dbf3a2b02348a06fcc2b688eeaa4916a9da0a17e69aa39fd5dca73",
+    "research/substitution/probes_test.go": "3e9cd6e0a025373ac847c69dc930459930d57c37f1bacb30f8c5adb78d6afbfa",
+    "research/substitution/relation.go": "4d4977eb96432269fbff9b550c74fd59527b3d3df5833d46f0cda1e77961a6be",
+    "research/substitution/runtime_boundary.go": "b22089368f93bea5f3e471292f0b7308419b937508e78942343cdb001d362e44",
+    "research/substitution/runtime_boundary_test.go": "2d6b7e153f98ecad9ed6a49f749902032920070b645271c188370fc3808e8591",
+    "research/substitution/README.md": "e58d6ee22420d0774f9e30866b73a68414738016e0ada956e18d63cc09543dbc"
+  },
+  "frozen_oracle_unchanged": true,
+  "oracle_sha256": "9f7f5f59414c439392ab813759c6ed1c99f4be21aaa44f03a24cf953eb3899ad",
+  "commands": [
+    "env -u OPENAI_API_KEY GOTOOLCHAIN=local GOPROXY=off GOSUMDB=off GOFLAGS=-mod=readonly GOCACHE=/tmp/alan-phase1f-go-build ALAN_MODEL_EVIDENCE=/tmp/alan-phase1i-model go test -v -count=1 -timeout=10m ./research/substitution",
+    "env -u OPENAI_API_KEY GOTOOLCHAIN=local GOPROXY=off GOSUMDB=off GOFLAGS=-mod=readonly GOCACHE=/tmp/alan-phase1f-go-build go vet ./research/substitution",
+    "gofmt -l research/substitution/*.go"
+  ],
+  "results": {
+    "test": "PASS 6.131s",
+    "vet": "exit0 empty output",
+    "gofmt": "exit0 empty output"
+  },
+  "inspected_runtime_guards": {
+    "internal/executor/invocation.go": "b40c1edc17249a31ccff84408a7855098e3a51ad28579ea856efc34bf4fa6746",
+    "internal/executor/lifecycle.go": "0de0f51e3fd7c0b89a0db279dfc3d7ab7079e6640ae3693bc2312f7cbf802a51",
+    "internal/executor/invocation_closure.go": "4aa89061a6749f16ac2ef4f66a50b7c0bcf5ad1a998bda768d26ed1276f3dc5c",
+    "internal/executor/invocation_outcome.go": "adeaba4f04843867c5405a6bfb5a8716e64654a3e96bc58ad190ec23cbfcb53d"
+  }
+}

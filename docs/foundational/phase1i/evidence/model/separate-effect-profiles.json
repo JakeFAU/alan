@@ -1,0 +1,223 @@
+[
+  {
+    "Scenario": "known",
+    "States": 12,
+    "Transitions": 11,
+    "Revisits": 0,
+    "Terminal": 1,
+    "Pending": 0,
+    "RankFailures": 0,
+    "Cutoffs": 0,
+    "Outcomes": [
+      {
+        "Entry": 3,
+        "Effect": 5,
+        "Authorized": true,
+        "Reserved": true,
+        "Launched": true,
+        "Known": true,
+        "Unknown": false,
+        "Closed": false,
+        "Reopened": false,
+        "I": 1,
+        "R": 1,
+        "E": 1,
+        "Reply": true,
+        "Frozen": true,
+        "Published": true
+      }
+    ],
+    "ShortestTraces": [
+      [
+        "entry_commit",
+        "entry_admit",
+        "request_consume",
+        "effect_commit",
+        "source_authorize",
+        "final_reservation",
+        "original_launch",
+        "authentic_receipt",
+        "reply_commit",
+        "terminal_freeze",
+        "publish_known_outcome"
+      ]
+    ],
+    "Violations": null
+  },
+  {
+    "Scenario": "unknown-reopen",
+    "States": 10,
+    "Transitions": 9,
+    "Revisits": 0,
+    "Terminal": 0,
+    "Pending": 1,
+    "RankFailures": 0,
+    "Cutoffs": 0,
+    "Outcomes": [
+      {
+        "Entry": 3,
+        "Effect": 5,
+        "Authorized": true,
+        "Reserved": true,
+        "Launched": true,
+        "Known": false,
+        "Unknown": true,
+        "Closed": false,
+        "Reopened": true,
+        "I": 1,
+        "R": 1,
+        "E": 1,
+        "Reply": false,
+        "Frozen": false,
+        "Published": false
+      }
+    ],
+    "ShortestTraces": [
+      [
+        "entry_commit",
+        "entry_admit",
+        "request_consume",
+        "effect_commit",
+        "source_authorize",
+        "final_reservation",
+        "original_launch",
+        "unknown_attempt",
+        "reopen_same_operation"
+      ]
+    ],
+    "Violations": null
+  },
+  {
+    "Scenario": "closure-before-reservation",
+    "States": 8,
+    "Transitions": 7,
+    "Revisits": 0,
+    "Terminal": 1,
+    "Pending": 0,
+    "RankFailures": 0,
+    "Cutoffs": 0,
+    "Outcomes": [
+      {
+        "Entry": 3,
+        "Effect": 3,
+        "Authorized": true,
+        "Reserved": false,
+        "Launched": false,
+        "Known": false,
+        "Unknown": false,
+        "Closed": true,
+        "Reopened": false,
+        "I": 1,
+        "R": 1,
+        "E": 0,
+        "Reply": false,
+        "Frozen": false,
+        "Published": false
+      }
+    ],
+    "ShortestTraces": [
+      [
+        "entry_commit",
+        "entry_admit",
+        "request_consume",
+        "effect_commit",
+        "source_authorize",
+        "close_root",
+        "final_reservation"
+      ]
+    ],
+    "Violations": null
+  },
+  {
+    "Scenario": "reserved-then-closure",
+    "States": 13,
+    "Transitions": 12,
+    "Revisits": 0,
+    "Terminal": 1,
+    "Pending": 0,
+    "RankFailures": 0,
+    "Cutoffs": 0,
+    "Outcomes": [
+      {
+        "Entry": 3,
+        "Effect": 5,
+        "Authorized": true,
+        "Reserved": true,
+        "Launched": true,
+        "Known": true,
+        "Unknown": false,
+        "Closed": true,
+        "Reopened": false,
+        "I": 1,
+        "R": 1,
+        "E": 1,
+        "Reply": true,
+        "Frozen": true,
+        "Published": true
+      }
+    ],
+    "ShortestTraces": [
+      [
+        "entry_commit",
+        "entry_admit",
+        "request_consume",
+        "effect_commit",
+        "source_authorize",
+        "final_reservation",
+        "close_root",
+        "original_launch",
+        "authentic_receipt",
+        "reply_commit",
+        "terminal_freeze",
+        "publish_known_outcome"
+      ]
+    ],
+    "Violations": null
+  },
+  {
+    "Scenario": "late-live",
+    "States": 13,
+    "Transitions": 12,
+    "Revisits": 0,
+    "Terminal": 1,
+    "Pending": 0,
+    "RankFailures": 0,
+    "Cutoffs": 0,
+    "Outcomes": [
+      {
+        "Entry": 3,
+        "Effect": 5,
+        "Authorized": true,
+        "Reserved": true,
+        "Launched": true,
+        "Known": true,
+        "Unknown": false,
+        "Closed": true,
+        "Reopened": false,
+        "I": 1,
+        "R": 1,
+        "E": 1,
+        "Reply": true,
+        "Frozen": true,
+        "Published": true
+      }
+    ],
+    "ShortestTraces": [
+      [
+        "entry_commit",
+        "entry_admit",
+        "request_consume",
+        "effect_commit",
+        "source_authorize",
+        "final_reservation",
+        "original_launch",
+        "close_root",
+        "authentic_receipt",
+        "reply_commit",
+        "terminal_freeze",
+        "publish_known_outcome"
+      ]
+    ],
+    "Violations": null
+  }
+]

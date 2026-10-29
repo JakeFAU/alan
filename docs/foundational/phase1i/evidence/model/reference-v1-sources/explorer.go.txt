@@ -1,0 +1,219 @@
+package substitution
+
+import (
+	"fmt"
+	"sort"
+)
+
+type ContextObservation struct {
+	RootStatus, PeerStatus           string
+	CandidateStatus, CandidateReason string
+	CandidatePresent                 bool
+	CandidateID, CandidateValue      int
+	I, R, E                          int
+	Pending, Closed                  bool
+}
+
+func Observe(s State) ContextObservation {
+	o := s.Ops[entry]
+	return ContextObservation{s.RootStatus, s.PeerStatus, o.Status, o.Reason, o.Present, o.ID, o.Value, s.I, s.R, s.E, s.Ops[entry].PC == pending, s.Closed}
+}
+
+type Counterexample struct {
+	Code, Detail string
+	Trace        []Observation
+}
+type Census struct {
+	Name                                                                                                                         string
+	Configurations, Entitled, States, Transitions, Revisits, Rejections, Terminal, Pending, Stuck, Cycles, RankFailures, Cutoffs int
+	Counterexamples                                                                                                              []Counterexample
+	Outcomes                                                                                                                     []ContextObservation
+}
+type node struct {
+	s      State
+	parent int
+	event  Observation
+}
+
+func path(nodes []node, index int, last *Observation) []Observation {
+	var rev []Observation
+	if last != nil {
+		rev = append(rev, *last)
+	}
+	for index > 0 {
+		rev = append(rev, nodes[index].event)
+		index = nodes[index].parent
+	}
+	for i, j := 0, len(rev)-1; i < j; i, j = i+1, j-1 {
+		rev[i], rev[j] = rev[j], rev[i]
+	}
+	return rev
+}
+func safety(c Config, s State) (string, string) {
+	accepted := 0
+	for _, o := range s.Ops {
+		if o.Admission == 1 {
+			accepted++
+		}
+	}
+	if c.Local && s.PeerTicket == spent {
+		accepted++
+	}
+	if s.I != accepted || s.R != accepted || s.E != 0 || s.I > c.I || s.R > c.R {
+		return "ledger", "debit differs from accepted singleton admissions"
+	}
+	demand := 0
+	for _, o := range s.Ops {
+		if o.Ticket == possible || o.Ticket == committed {
+			demand++
+		}
+	}
+	if c.Local && s.PeerTicket == possible {
+		demand++
+	}
+	if Entitled(c) && !s.Closed && (s.I+demand > c.I || s.R+demand > c.R) {
+		return "entitlement", "spent plus unspent tickets exceeds original limit"
+	}
+	for _, o := range s.Ops {
+		if o.Reply == 2 && (o.Role == "candidate" || o.Role == "helper" || o.Role == "wrapper") {
+			if o.ReplyID != c.Request.ID {
+				return "application_id", "accepted reply changed application id"
+			}
+			if o.ReplyValue != 1-c.Request.Value {
+				return "complement", "accepted reply is not complement"
+			}
+		}
+		if o.Role == "candidate" && c.Request.Mode != "answer" && o.Reply != 0 {
+			return "mode_reply", "non-answer candidate committed response"
+		}
+		if o.Published && o.Status == "succeeded" && !o.Present {
+			return "missing_reply", "successful envelope lacks present response"
+		}
+		if o.Consumed && !o.Delivered {
+			return "original_handle", "consumed without original delivery"
+		}
+	}
+	return "", ""
+}
+func terminalKind(c Config, s State) string {
+	if s.Closed {
+		return "terminal"
+	}
+	if s.RootPC == terminal && s.PeerPC == terminal {
+		return "terminal"
+	}
+	if s.Ops[entry].PC == pending && (c.Shape != "parallel" || s.PeerPC == terminal) {
+		return "pending"
+	}
+	return "stuck"
+}
+
+// Explore performs breadth-first enumeration without a cutoff. Every successor
+// is checked before deduplication. First failure per code is a shortest trace.
+func Explore(c Config, v Variant) Census {
+	result := Census{Name: ConfigName(c), Configurations: 1}
+	if Entitled(c) {
+		result.Entitled = 1
+	}
+	initial := Initial(c)
+	nodes := []node{{s: initial, parent: -1}}
+	seen := map[State]int{initial: 0}
+	failSeen := map[string]bool{}
+	outcomes := map[ContextObservation]bool{}
+	report := func(code, detail string, index int, e *Observation) {
+		if !failSeen[code] {
+			failSeen[code] = true
+			result.Counterexamples = append(result.Counterexamples, Counterexample{code, detail, path(nodes, index, e)})
+		}
+	}
+	for index := 0; index < len(nodes); index++ {
+		s := nodes[index].s
+		edges := Successors(c, v, s)
+		if len(edges) == 0 {
+			switch terminalKind(c, s) {
+			case "terminal":
+				result.Terminal++
+			case "pending":
+				result.Pending++
+			default:
+				result.Stuck++
+				report("stuck", "maximal state is neither terminal nor declared pending", index, nil)
+			}
+			if Entitled(c) && !s.Closed && (s.RootStatus != "succeeded" || (c.Shape == "parallel" && s.PeerStatus != "succeeded")) {
+				report("completion", "initially entitled maximal open path did not complete", index, nil)
+			}
+			outcomes[Observe(s)] = true
+		}
+		for _, e := range edges {
+			result.Transitions++
+			if e.Event.Kind == "admit" && e.Event.Status == "rejected" {
+				result.Rejections++
+			}
+			if Rank(e.Next) <= Rank(s) {
+				result.RankFailures++
+				report("rank", "intrinsic rank failed to increase", index, &e.Event)
+			}
+			if code, detail := safety(c, e.Next); code != "" {
+				report(code, detail, index, &e.Event)
+			}
+			// The trace monitor is independent of state invariants and runs on each new
+			// observable edge, including revisits. Prefix reconstruction is intentional.
+			if failures := CheckTrace(c.Request, path(nodes, index, &e.Event)); len(failures) > 0 {
+				for _, f := range failures {
+					report(f.Code, f.Detail, index, &e.Event)
+				}
+			}
+			if _, ok := seen[e.Next]; ok {
+				result.Revisits++
+				continue
+			}
+			seen[e.Next] = len(nodes)
+			nodes = append(nodes, node{e.Next, index, e.Event})
+		}
+	}
+	result.States = len(nodes)
+	// Strict rank proves no directed cycle in this explored graph. A failed rank
+	// is never silently called acyclic; SCC/cycle status then remains unresolved.
+	if result.RankFailures > 0 {
+		result.Cycles = -1
+	}
+	for o := range outcomes {
+		result.Outcomes = append(result.Outcomes, o)
+	}
+	sort.Slice(result.Outcomes, func(i, j int) bool { return fmt.Sprint(result.Outcomes[i]) < fmt.Sprint(result.Outcomes[j]) })
+	return result
+}
+func Configurations() []Config {
+	var all []Config
+	for _, shape := range []string{"bare", "sequential", "parallel", "hidden", "wrapped"} {
+		for id := 1; id <= 2; id++ {
+			for value := 0; value <= 1; value++ {
+				for _, m := range []string{"answer", "fail", "absent", "pending"} {
+					for i := 0; i <= 3; i++ {
+						for r := 0; r <= 3; r++ {
+							for d := 1; d <= 3; d++ {
+								all = append(all, Config{Shape: shape, Request: Request{id, value, m}, I: i, R: r, Depth: d})
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	return all
+}
+
+// CheckContext checks exact terminal/pending envelope and charge membership,
+// independently of a runtime decoder. The caller must not label a cutoff final.
+func CheckContext(c Config, v Variant, observed ContextObservation) error {
+	census := Explore(c, v)
+	if len(census.Counterexamples) > 0 {
+		return fmt.Errorf("model has unresolved counterexample: %s", census.Counterexamples[0].Code)
+	}
+	for _, o := range census.Outcomes {
+		if o == observed {
+			return nil
+		}
+	}
+	return fmt.Errorf("observation is not a maximal %s product result: %+v", v, observed)
+}
