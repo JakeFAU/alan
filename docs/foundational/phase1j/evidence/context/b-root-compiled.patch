@@ -1,0 +1,821 @@
+--- c0-b-root-program.json
++++ join-b-root-program.json
+@@ -73,20 +73,99 @@
+       }
+     },
+     "Labels": {},
+-    "Name": "",
++    "Name": "phase1j-join-root",
+     "Outputs": {
+       "ID": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+       "Record": {}
+     },
+-    "Ports": {},
++    "Ports": {
++      "join": {
++        "Local": false,
++        "Obligation": "phase1j_s_join",
++        "Peer": "peer",
++        "Receive": {
++          "ID": "ba919d26d9cb7db5cefdcb19d2c11e82897e864cdf91af39592e4064fa084440",
++          "Record": {
++            "reason": {
++              "Enum": null,
++              "Kind": "string",
++              "MaxBytes": 4096
++            },
++            "request_id": {
++              "Enum": null,
++              "Kind": "int",
++              "MaxBytes": 0
++            },
++            "response_id": {
++              "Enum": null,
++              "Kind": "int",
++              "MaxBytes": 0
++            },
++            "response_present": {
++              "Enum": null,
++              "Kind": "bool",
++              "MaxBytes": 0
++            },
++            "response_value": {
++              "Enum": null,
++              "Kind": "int",
++              "MaxBytes": 0
++            },
++            "s_operation": {
++              "Enum": null,
++              "Kind": "string",
++              "MaxBytes": 256
++            },
++            "status": {
++              "Enum": [
++                "abandoned",
++                "cancelled",
++                "failed",
++                "rejected",
++                "succeeded"
++              ],
++              "Kind": "string",
++              "MaxBytes": 20
++            }
++          }
++        },
++        "ReceiveUsed": true,
++        "Send": {
++          "ID": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
++          "Record": {}
++        },
++        "SendUsed": false
++      }
++    },
+     "Positions": [
+       "steps/0:invoke:candidatepending",
+       "steps/1:await-invocation:candidate",
+-      "steps/2:if",
+-      "steps/2:if/then/0:if",
+-      "steps/2:if/then/0:if/then/0:end:",
+-      "steps/2:if/then/0:if/else/0:end:",
+-      "steps/2:if/else/0:end:"
++      "steps/2:receive:join",
++      "steps/3:if",
++      "steps/3:if/join",
++      "steps/3:if/else/0:receive:join",
++      "steps/3:if/else/1:end:",
++      "steps/4:if",
++      "steps/4:if/then/0:set:expected_value",
++      "steps/4:if/join",
++      "steps/4:if/else/0:set:expected_value",
++      "steps/5:if",
++      "steps/5:if/then/0:if",
++      "steps/5:if/then/0:if/then/0:if",
++      "steps/5:if/then/0:if/then/0:if/then/0:if",
++      "steps/5:if/then/0:if/then/0:if/then/0:if/then/0:if",
++      "steps/5:if/then/0:if/then/0:if/then/0:if/then/0:if/then/0:if",
++      "steps/5:if/then/0:if/then/0:if/then/0:if/then/0:if/then/0:if/then/0:if",
++      "steps/5:if/then/0:if/then/0:if/then/0:if/then/0:if/then/0:if/then/0:if/then/0:if",
++      "steps/5:if/then/0:if/then/0:if/then/0:if/then/0:if/then/0:if/then/0:if/then/0:if/then/0:end:",
++      "steps/5:if/then/0:if/then/0:if/then/0:if/then/0:if/then/0:if/then/0:if/then/0:if/else/0:end:",
++      "steps/5:if/then/0:if/then/0:if/then/0:if/then/0:if/then/0:if/then/0:if/else/0:end:",
++      "steps/5:if/then/0:if/then/0:if/then/0:if/then/0:if/then/0:if/else/0:end:",
++      "steps/5:if/then/0:if/then/0:if/then/0:if/then/0:if/else/0:end:",
++      "steps/5:if/then/0:if/then/0:if/then/0:if/else/0:end:",
++      "steps/5:if/then/0:if/then/0:if/else/0:end:",
++      "steps/5:if/then/0:if/else/0:end:",
++      "steps/5:if/else/0:end:"
+     ],
+     "Receives": {
+       "1": {
+@@ -124,6 +203,98 @@
+             "MaxBytes": 20
+           }
+         }
++      },
++      "2": {
++        "ID": "ba919d26d9cb7db5cefdcb19d2c11e82897e864cdf91af39592e4064fa084440",
++        "Record": {
++          "reason": {
++            "Enum": null,
++            "Kind": "string",
++            "MaxBytes": 4096
++          },
++          "request_id": {
++            "Enum": null,
++            "Kind": "int",
++            "MaxBytes": 0
++          },
++          "response_id": {
++            "Enum": null,
++            "Kind": "int",
++            "MaxBytes": 0
++          },
++          "response_present": {
++            "Enum": null,
++            "Kind": "bool",
++            "MaxBytes": 0
++          },
++          "response_value": {
++            "Enum": null,
++            "Kind": "int",
++            "MaxBytes": 0
++          },
++          "s_operation": {
++            "Enum": null,
++            "Kind": "string",
++            "MaxBytes": 256
++          },
++          "status": {
++            "Enum": [
++              "abandoned",
++              "cancelled",
++              "failed",
++              "rejected",
++              "succeeded"
++            ],
++            "Kind": "string",
++            "MaxBytes": 20
++          }
++        }
++      },
++      "5": {
++        "ID": "ba919d26d9cb7db5cefdcb19d2c11e82897e864cdf91af39592e4064fa084440",
++        "Record": {
++          "reason": {
++            "Enum": null,
++            "Kind": "string",
++            "MaxBytes": 4096
++          },
++          "request_id": {
++            "Enum": null,
++            "Kind": "int",
++            "MaxBytes": 0
++          },
++          "response_id": {
++            "Enum": null,
++            "Kind": "int",
++            "MaxBytes": 0
++          },
++          "response_present": {
++            "Enum": null,
++            "Kind": "bool",
++            "MaxBytes": 0
++          },
++          "response_value": {
++            "Enum": null,
++            "Kind": "int",
++            "MaxBytes": 0
++          },
++          "s_operation": {
++            "Enum": null,
++            "Kind": "string",
++            "MaxBytes": 256
++          },
++          "status": {
++            "Enum": [
++              "abandoned",
++              "cancelled",
++              "failed",
++              "rejected",
++              "succeeded"
++            ],
++            "Kind": "string",
++            "MaxBytes": 20
++          }
++        }
+       }
+     },
+     "Templates": {}
+@@ -268,6 +439,312 @@
+       "A": {
+         "Literal": null,
+         "Offset": null,
++        "Ref": ""
++      },
++      "B": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": ""
++      },
++      "Bind": {
++        "reason": "join_reason",
++        "request_id": "join_request_id",
++        "response_id": "join_id",
++        "response_present": "join_present",
++        "response_value": "join_value",
++        "s_operation": "join_s_operation",
++        "status": "join_status"
++      },
++      "Dst": "",
++      "Effect": null,
++      "Match": {
++        "Generation": {
++          "Literal": {
++            "Flag": false,
++            "Kind": "int",
++            "Number": 1,
++            "Text": ""
++          },
++          "Offset": null,
++          "Ref": ""
++        },
++        "Kind": "message",
++        "Obligation": {
++          "Literal": {
++            "Flag": false,
++            "Kind": "string",
++            "Number": 0,
++            "Text": "phase1j_s_join"
++          },
++          "Offset": null,
++          "Ref": ""
++        },
++        "Operation": {
++          "Literal": {
++            "Flag": false,
++            "Kind": "string",
++            "Number": 0,
++            "Text": ""
++          },
++          "Offset": null,
++          "Ref": ""
++        },
++        "Provenance": "ordinary-message",
++        "Source": {
++          "Literal": {
++            "Flag": false,
++            "Kind": "string",
++            "Number": 0,
++            "Text": "peer"
++          },
++          "Offset": null,
++          "Ref": ""
++        }
++      },
++      "Op": "receive",
++      "Otherwise": 0,
++      "Outcome": "",
++      "Target": 0,
++      "Updates": null
++    },
++    {
++      "A": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": "join_request_id"
++      },
++      "B": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": "request_id"
++      },
++      "Bind": null,
++      "Dst": "",
++      "Effect": null,
++      "Match": null,
++      "Op": "branch",
++      "Otherwise": 5,
++      "Outcome": "",
++      "Target": 4,
++      "Updates": null
++    },
++    {
++      "A": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": ""
++      },
++      "B": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": ""
++      },
++      "Bind": null,
++      "Dst": "",
++      "Effect": null,
++      "Match": null,
++      "Op": "jump",
++      "Otherwise": 0,
++      "Outcome": "",
++      "Target": 7,
++      "Updates": null
++    },
++    {
++      "A": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": ""
++      },
++      "B": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": ""
++      },
++      "Bind": {
++        "reason": "join_reason",
++        "request_id": "join_request_id",
++        "response_id": "join_id",
++        "response_present": "join_present",
++        "response_value": "join_value",
++        "s_operation": "join_s_operation",
++        "status": "join_status"
++      },
++      "Dst": "",
++      "Effect": null,
++      "Match": {
++        "Generation": {
++          "Literal": {
++            "Flag": false,
++            "Kind": "int",
++            "Number": 1,
++            "Text": ""
++          },
++          "Offset": null,
++          "Ref": ""
++        },
++        "Kind": "message",
++        "Obligation": {
++          "Literal": {
++            "Flag": false,
++            "Kind": "string",
++            "Number": 0,
++            "Text": "phase1j_s_join"
++          },
++          "Offset": null,
++          "Ref": ""
++        },
++        "Operation": {
++          "Literal": {
++            "Flag": false,
++            "Kind": "string",
++            "Number": 0,
++            "Text": ""
++          },
++          "Offset": null,
++          "Ref": ""
++        },
++        "Provenance": "ordinary-message",
++        "Source": {
++          "Literal": {
++            "Flag": false,
++            "Kind": "string",
++            "Number": 0,
++            "Text": "peer"
++          },
++          "Offset": null,
++          "Ref": ""
++        }
++      },
++      "Op": "receive",
++      "Otherwise": 0,
++      "Outcome": "",
++      "Target": 0,
++      "Updates": null
++    },
++    {
++      "A": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": ""
++      },
++      "B": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": ""
++      },
++      "Bind": null,
++      "Dst": "",
++      "Effect": null,
++      "Match": null,
++      "Op": "end",
++      "Otherwise": 0,
++      "Outcome": "failed",
++      "Target": 0,
++      "Updates": null
++    },
++    {
++      "A": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": "request_value"
++      },
++      "B": {
++        "Literal": {
++          "Flag": false,
++          "Kind": "int",
++          "Number": 0,
++          "Text": ""
++        },
++        "Offset": null,
++        "Ref": ""
++      },
++      "Bind": null,
++      "Dst": "",
++      "Effect": null,
++      "Match": null,
++      "Op": "branch",
++      "Otherwise": 10,
++      "Outcome": "",
++      "Target": 8,
++      "Updates": null
++    },
++    {
++      "A": {
++        "Literal": {
++          "Flag": false,
++          "Kind": "int",
++          "Number": 1,
++          "Text": ""
++        },
++        "Offset": null,
++        "Ref": ""
++      },
++      "B": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": ""
++      },
++      "Bind": null,
++      "Dst": "expected_value",
++      "Effect": null,
++      "Match": null,
++      "Op": "set",
++      "Otherwise": 0,
++      "Outcome": "",
++      "Target": 0,
++      "Updates": null
++    },
++    {
++      "A": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": ""
++      },
++      "B": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": ""
++      },
++      "Bind": null,
++      "Dst": "",
++      "Effect": null,
++      "Match": null,
++      "Op": "jump",
++      "Otherwise": 0,
++      "Outcome": "",
++      "Target": 11,
++      "Updates": null
++    },
++    {
++      "A": {
++        "Literal": {
++          "Flag": false,
++          "Kind": "int",
++          "Number": 0,
++          "Text": ""
++        },
++        "Offset": null,
++        "Ref": ""
++      },
++      "B": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": ""
++      },
++      "Bind": null,
++      "Dst": "expected_value",
++      "Effect": null,
++      "Match": null,
++      "Op": "set",
++      "Otherwise": 0,
++      "Outcome": "",
++      "Target": 0,
++      "Updates": null
++    },
++    {
++      "A": {
++        "Literal": null,
++        "Offset": null,
+         "Ref": "child_status"
+       },
+       "B": {
+@@ -285,9 +762,9 @@
+       "Effect": null,
+       "Match": null,
+       "Op": "branch",
+-      "Otherwise": 6,
+-      "Outcome": "",
+-      "Target": 3,
++      "Otherwise": 27,
++      "Outcome": "",
++      "Target": 12,
+       "Updates": null
+     },
+     {
+@@ -311,9 +788,150 @@
+       "Effect": null,
+       "Match": null,
+       "Op": "branch",
+-      "Otherwise": 5,
+-      "Outcome": "",
+-      "Target": 4,
++      "Otherwise": 26,
++      "Outcome": "",
++      "Target": 13,
++      "Updates": null
++    },
++    {
++      "A": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": "answer_id"
++      },
++      "B": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": "request_id"
++      },
++      "Bind": null,
++      "Dst": "",
++      "Effect": null,
++      "Match": null,
++      "Op": "branch",
++      "Otherwise": 25,
++      "Outcome": "",
++      "Target": 14,
++      "Updates": null
++    },
++    {
++      "A": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": "answer_value"
++      },
++      "B": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": "expected_value"
++      },
++      "Bind": null,
++      "Dst": "",
++      "Effect": null,
++      "Match": null,
++      "Op": "branch",
++      "Otherwise": 24,
++      "Outcome": "",
++      "Target": 15,
++      "Updates": null
++    },
++    {
++      "A": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": "join_status"
++      },
++      "B": {
++        "Literal": {
++          "Flag": false,
++          "Kind": "string",
++          "Number": 0,
++          "Text": "succeeded"
++        },
++        "Offset": null,
++        "Ref": ""
++      },
++      "Bind": null,
++      "Dst": "",
++      "Effect": null,
++      "Match": null,
++      "Op": "branch",
++      "Otherwise": 23,
++      "Outcome": "",
++      "Target": 16,
++      "Updates": null
++    },
++    {
++      "A": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": "join_present"
++      },
++      "B": {
++        "Literal": {
++          "Flag": true,
++          "Kind": "bool",
++          "Number": 0,
++          "Text": ""
++        },
++        "Offset": null,
++        "Ref": ""
++      },
++      "Bind": null,
++      "Dst": "",
++      "Effect": null,
++      "Match": null,
++      "Op": "branch",
++      "Otherwise": 22,
++      "Outcome": "",
++      "Target": 17,
++      "Updates": null
++    },
++    {
++      "A": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": "join_id"
++      },
++      "B": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": "request_id"
++      },
++      "Bind": null,
++      "Dst": "",
++      "Effect": null,
++      "Match": null,
++      "Op": "branch",
++      "Otherwise": 21,
++      "Outcome": "",
++      "Target": 18,
++      "Updates": null
++    },
++    {
++      "A": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": "join_value"
++      },
++      "B": {
++        "Literal": {
++          "Flag": false,
++          "Kind": "int",
++          "Number": 0,
++          "Text": ""
++        },
++        "Offset": null,
++        "Ref": ""
++      },
++      "Bind": null,
++      "Dst": "",
++      "Effect": null,
++      "Match": null,
++      "Op": "branch",
++      "Otherwise": 20,
++      "Outcome": "",
++      "Target": 19,
+       "Updates": null
+     },
+     {
+@@ -334,6 +952,132 @@
+       "Op": "end",
+       "Otherwise": 0,
+       "Outcome": "succeeded",
++      "Target": 0,
++      "Updates": null
++    },
++    {
++      "A": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": ""
++      },
++      "B": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": ""
++      },
++      "Bind": null,
++      "Dst": "",
++      "Effect": null,
++      "Match": null,
++      "Op": "end",
++      "Otherwise": 0,
++      "Outcome": "failed",
++      "Target": 0,
++      "Updates": null
++    },
++    {
++      "A": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": ""
++      },
++      "B": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": ""
++      },
++      "Bind": null,
++      "Dst": "",
++      "Effect": null,
++      "Match": null,
++      "Op": "end",
++      "Otherwise": 0,
++      "Outcome": "failed",
++      "Target": 0,
++      "Updates": null
++    },
++    {
++      "A": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": ""
++      },
++      "B": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": ""
++      },
++      "Bind": null,
++      "Dst": "",
++      "Effect": null,
++      "Match": null,
++      "Op": "end",
++      "Otherwise": 0,
++      "Outcome": "failed",
++      "Target": 0,
++      "Updates": null
++    },
++    {
++      "A": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": ""
++      },
++      "B": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": ""
++      },
++      "Bind": null,
++      "Dst": "",
++      "Effect": null,
++      "Match": null,
++      "Op": "end",
++      "Otherwise": 0,
++      "Outcome": "failed",
++      "Target": 0,
++      "Updates": null
++    },
++    {
++      "A": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": ""
++      },
++      "B": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": ""
++      },
++      "Bind": null,
++      "Dst": "",
++      "Effect": null,
++      "Match": null,
++      "Op": "end",
++      "Otherwise": 0,
++      "Outcome": "failed",
++      "Target": 0,
++      "Updates": null
++    },
++    {
++      "A": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": ""
++      },
++      "B": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": ""
++      },
++      "Bind": null,
++      "Dst": "",
++      "Effect": null,
++      "Match": null,
++      "Op": "end",
++      "Otherwise": 0,
++      "Outcome": "failed",
+       "Target": 0,
+       "Updates": null
+     },

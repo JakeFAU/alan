@@ -1,0 +1,4747 @@
+{
+  "scope": "Independent finite-stutter mapping after pre-inspection J1 freeze. Model path counts are abstract protocol paths, not exact runtime instruction schedules. Pure forward suffix instructions preserve enabled environment choices. Original 32 Sets are represented individually. Model Sequence coordinates preserve per-actor order, not equality with concrete step numbers.",
+  "records": [
+    {
+      "artifact": "docs/foundational/phase1j/evidence/context/artifacts/join-a-root-program.json",
+      "sha256": "d7fa07a0913dc035c5a1e6b47a1d663064184f4818bb1e38e91d9d3ca157e216",
+      "instructions": [
+        {
+          "pc": 0,
+          "model": "candidate invoke_commit",
+          "instruction": {
+            "Op": "emit",
+            "Dst": "pending",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": {
+              "Kind": "invocation",
+              "Target": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "a03135203f8b728a6aa7b732d06952cc87b70b3aced2c0833293e333760eece5",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Generation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "int",
+                  "Number": 1,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Obligation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "candidate",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Payload": {
+                "id": {
+                  "Ref": "request_id",
+                  "Literal": null,
+                  "Offset": null
+                },
+                "mode": {
+                  "Ref": "request_mode",
+                  "Literal": null,
+                  "Offset": null
+                },
+                "value": {
+                  "Ref": "request_value",
+                  "Literal": null,
+                  "Offset": null
+                }
+              }
+            },
+            "Updates": {},
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 1,
+          "model": "candidate outcome_consume into retained fields",
+          "instruction": {
+            "Op": "receive",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": {
+              "Kind": "invocation",
+              "Provenance": "runtime-invocation",
+              "Source": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "a03135203f8b728a6aa7b732d06952cc87b70b3aced2c0833293e333760eece5",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Generation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "int",
+                  "Number": 1,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Obligation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "candidate",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Operation": {
+                "Ref": "pending",
+                "Literal": null,
+                "Offset": null
+              }
+            },
+            "Bind": {
+              "reason": "child_reason",
+              "response.id": "answer_id",
+              "response.value": "answer_value",
+              "response_present": "child_present",
+              "status": "child_status"
+            },
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 2,
+          "model": "report_consume at mandatory join",
+          "instruction": {
+            "Op": "receive",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": {
+              "Kind": "message",
+              "Provenance": "ordinary-message",
+              "Source": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "peer",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Generation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "int",
+                  "Number": 1,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Obligation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "phase1j_s_join",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Operation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              }
+            },
+            "Bind": {
+              "reason": "join_reason",
+              "request_id": "join_request_id",
+              "response_id": "join_id",
+              "response_present": "join_present",
+              "response_value": "join_value",
+              "s_operation": "join_s_operation",
+              "status": "join_status"
+            },
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 3,
+          "model": "finite stutter: request correlation guard",
+          "instruction": {
+            "Op": "branch",
+            "Dst": "",
+            "A": {
+              "Ref": "join_request_id",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "request_id",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 4,
+            "Otherwise": 5,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 4,
+          "model": "finite stutter: matched correlation jump",
+          "instruction": {
+            "Op": "jump",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 7,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 5,
+          "model": "out-of-profile wrong request waits on absent second report",
+          "instruction": {
+            "Op": "receive",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": {
+              "Kind": "message",
+              "Provenance": "ordinary-message",
+              "Source": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "peer",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Generation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "int",
+                  "Number": 1,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Obligation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "phase1j_s_join",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Operation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              }
+            },
+            "Bind": {
+              "reason": "join_reason",
+              "request_id": "join_request_id",
+              "response_id": "join_id",
+              "response_present": "join_present",
+              "response_value": "join_value",
+              "s_operation": "join_s_operation",
+              "status": "join_status"
+            },
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 6,
+          "model": "out-of-profile failure only after second report",
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "failed"
+          }
+        },
+        {
+          "pc": 7,
+          "model": "finite stutter: complement calculation or success predicate guard",
+          "instruction": {
+            "Op": "branch",
+            "Dst": "",
+            "A": {
+              "Ref": "request_value",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 0,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "Target": 8,
+            "Otherwise": 10,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 8,
+          "model": "finite stutter: complement calculation or success predicate guard",
+          "instruction": {
+            "Op": "set",
+            "Dst": "expected_value",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 1,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 9,
+          "model": "finite stutter: complement calculation or success predicate guard",
+          "instruction": {
+            "Op": "jump",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 11,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 10,
+          "model": "finite stutter: complement calculation or success predicate guard",
+          "instruction": {
+            "Op": "set",
+            "Dst": "expected_value",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 0,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 11,
+          "model": "finite stutter: complement calculation or success predicate guard",
+          "instruction": {
+            "Op": "branch",
+            "Dst": "",
+            "A": {
+              "Ref": "child_status",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "string",
+                "Number": 0,
+                "Text": "succeeded",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "Target": 12,
+            "Otherwise": 27,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 12,
+          "model": "finite stutter: complement calculation or success predicate guard",
+          "instruction": {
+            "Op": "branch",
+            "Dst": "",
+            "A": {
+              "Ref": "child_present",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "bool",
+                "Number": 0,
+                "Text": "",
+                "Flag": true
+              },
+              "Offset": null
+            },
+            "Target": 13,
+            "Otherwise": 26,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 13,
+          "model": "finite stutter: complement calculation or success predicate guard",
+          "instruction": {
+            "Op": "branch",
+            "Dst": "",
+            "A": {
+              "Ref": "answer_id",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "request_id",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 14,
+            "Otherwise": 25,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 14,
+          "model": "finite stutter: complement calculation or success predicate guard",
+          "instruction": {
+            "Op": "branch",
+            "Dst": "",
+            "A": {
+              "Ref": "answer_value",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "expected_value",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 15,
+            "Otherwise": 24,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 15,
+          "model": "finite stutter: complement calculation or success predicate guard",
+          "instruction": {
+            "Op": "branch",
+            "Dst": "",
+            "A": {
+              "Ref": "join_status",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "string",
+                "Number": 0,
+                "Text": "succeeded",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "Target": 16,
+            "Otherwise": 23,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 16,
+          "model": "finite stutter: complement calculation or success predicate guard",
+          "instruction": {
+            "Op": "branch",
+            "Dst": "",
+            "A": {
+              "Ref": "join_present",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "bool",
+                "Number": 0,
+                "Text": "",
+                "Flag": true
+              },
+              "Offset": null
+            },
+            "Target": 17,
+            "Otherwise": 22,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 17,
+          "model": "finite stutter: complement calculation or success predicate guard",
+          "instruction": {
+            "Op": "branch",
+            "Dst": "",
+            "A": {
+              "Ref": "join_id",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "request_id",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 18,
+            "Otherwise": 21,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 18,
+          "model": "finite stutter: complement calculation or success predicate guard",
+          "instruction": {
+            "Op": "branch",
+            "Dst": "",
+            "A": {
+              "Ref": "join_value",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 0,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "Target": 19,
+            "Otherwise": 20,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 19,
+          "model": "root_terminal succeeded",
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "succeeded"
+          }
+        },
+        {
+          "pc": 20,
+          "model": "root_terminal failed",
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "failed"
+          }
+        },
+        {
+          "pc": 21,
+          "model": "root_terminal failed",
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "failed"
+          }
+        },
+        {
+          "pc": 22,
+          "model": "root_terminal failed",
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "failed"
+          }
+        },
+        {
+          "pc": 23,
+          "model": "root_terminal failed",
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "failed"
+          }
+        },
+        {
+          "pc": 24,
+          "model": "root_terminal failed",
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "failed"
+          }
+        },
+        {
+          "pc": 25,
+          "model": "root_terminal failed",
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "failed"
+          }
+        },
+        {
+          "pc": 26,
+          "model": "root_terminal failed",
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "failed"
+          }
+        },
+        {
+          "pc": 27,
+          "model": "root_terminal failed",
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "failed"
+          }
+        }
+      ]
+    },
+    {
+      "artifact": "docs/foundational/phase1j/evidence/context/artifacts/join-a-peer-program.json",
+      "sha256": "6a77bf8322f8bf227e7c78597d6e753d8d9390f3c981fec7f2bdc59814ea71ef",
+      "instructions": [
+        {
+          "pc": 0,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 0,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 1,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 1,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 2,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 2,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 3,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 3,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 4,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 4,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 5,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 5,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 6,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 6,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 7,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 7,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 8,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 8,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 9,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 9,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 10,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 10,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 11,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 11,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 12,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 12,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 13,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 13,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 14,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 14,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 15,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 15,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 16,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 16,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 17,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 17,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 18,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 18,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 19,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 19,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 20,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 20,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 21,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 21,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 22,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 22,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 23,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 23,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 24,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 24,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 25,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 25,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 26,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 26,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 27,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 27,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 28,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 28,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 29,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 29,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 30,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 30,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 31,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 31,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 32,
+          "model": "S invoke_commit",
+          "instruction": {
+            "Op": "emit",
+            "Dst": "peer_pending",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": {
+              "Kind": "invocation",
+              "Target": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "a6bfb72f823541b21e8780faf1eaab779254f5a563e5352cd631521c7ab6c61c",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Generation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "int",
+                  "Number": 1,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Obligation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "peer",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Payload": {
+                "id": {
+                  "Ref": "request_id",
+                  "Literal": null,
+                  "Offset": null
+                },
+                "value": {
+                  "Ref": "request_value",
+                  "Literal": null,
+                  "Offset": null
+                }
+              }
+            },
+            "Updates": {},
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 33,
+          "model": "S original outcome_consume",
+          "instruction": {
+            "Op": "receive",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": {
+              "Kind": "invocation",
+              "Provenance": "runtime-invocation",
+              "Source": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "a6bfb72f823541b21e8780faf1eaab779254f5a563e5352cd631521c7ab6c61c",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Generation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "int",
+                  "Number": 1,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Obligation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "peer",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Operation": {
+                "Ref": "peer_pending",
+                "Literal": null,
+                "Offset": null
+              }
+            },
+            "Bind": {
+              "reason": "peer_reason",
+              "response.id": "peer_id",
+              "response.value": "peer_value",
+              "response_present": "peer_present",
+              "status": "peer_status"
+            },
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 34,
+          "model": "finite stutter: copy immutable request id",
+          "instruction": {
+            "Op": "set",
+            "Dst": "report_request_id",
+            "A": {
+              "Ref": "request_id",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 35,
+          "model": "finite stutter: actual consumed presence guard",
+          "instruction": {
+            "Op": "branch",
+            "Dst": "",
+            "A": {
+              "Ref": "peer_present",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "bool",
+                "Number": 0,
+                "Text": "",
+                "Flag": true
+              },
+              "Offset": null
+            },
+            "Target": 36,
+            "Otherwise": 38,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 36,
+          "model": "report_commit present exact payload",
+          "instruction": {
+            "Op": "emit",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": {
+              "Kind": "message",
+              "Target": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "root",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Generation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "int",
+                  "Number": 1,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Obligation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "phase1j_s_join",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Payload": {
+                "reason": {
+                  "Ref": "peer_reason",
+                  "Literal": null,
+                  "Offset": null
+                },
+                "request_id": {
+                  "Ref": "report_request_id",
+                  "Literal": null,
+                  "Offset": null
+                },
+                "response_id": {
+                  "Ref": "peer_id",
+                  "Literal": null,
+                  "Offset": null
+                },
+                "response_present": {
+                  "Ref": "peer_present",
+                  "Literal": null,
+                  "Offset": null
+                },
+                "response_value": {
+                  "Ref": "peer_value",
+                  "Literal": null,
+                  "Offset": null
+                },
+                "s_operation": {
+                  "Ref": "peer_pending",
+                  "Literal": null,
+                  "Offset": null
+                },
+                "status": {
+                  "Ref": "peer_status",
+                  "Literal": null,
+                  "Offset": null
+                }
+              }
+            },
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 37,
+          "model": "finite stutter: jump to peer terminal",
+          "instruction": {
+            "Op": "jump",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 39,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 38,
+          "model": "report_commit absent with zero fillers",
+          "instruction": {
+            "Op": "emit",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": {
+              "Kind": "message",
+              "Target": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "root",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Generation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "int",
+                  "Number": 1,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Obligation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "phase1j_s_join",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Payload": {
+                "reason": {
+                  "Ref": "peer_reason",
+                  "Literal": null,
+                  "Offset": null
+                },
+                "request_id": {
+                  "Ref": "report_request_id",
+                  "Literal": null,
+                  "Offset": null
+                },
+                "response_id": {
+                  "Ref": "",
+                  "Literal": {
+                    "Kind": "int",
+                    "Number": 0,
+                    "Text": "",
+                    "Flag": false
+                  },
+                  "Offset": null
+                },
+                "response_present": {
+                  "Ref": "peer_present",
+                  "Literal": null,
+                  "Offset": null
+                },
+                "response_value": {
+                  "Ref": "",
+                  "Literal": {
+                    "Kind": "int",
+                    "Number": 0,
+                    "Text": "",
+                    "Flag": false
+                  },
+                  "Offset": null
+                },
+                "s_operation": {
+                  "Ref": "peer_pending",
+                  "Literal": null,
+                  "Offset": null
+                },
+                "status": {
+                  "Ref": "peer_status",
+                  "Literal": null,
+                  "Offset": null
+                }
+              }
+            },
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 39,
+          "model": "peer_terminal succeeded",
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "succeeded"
+          }
+        }
+      ]
+    },
+    {
+      "artifact": "docs/foundational/phase1j/evidence/context/artifacts/join-b-root-program.json",
+      "sha256": "4c5ea75d4e08467042f3f25491ac341a5e0347652207d9970ffc6be3b4220292",
+      "instructions": [
+        {
+          "pc": 0,
+          "model": "candidate invoke_commit",
+          "instruction": {
+            "Op": "emit",
+            "Dst": "pending",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": {
+              "Kind": "invocation",
+              "Target": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "2e10975004e0351d07b237e0360a2b96b50d5884b651cfa5bfc8e88af62da266",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Generation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "int",
+                  "Number": 1,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Obligation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "candidate",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Payload": {
+                "id": {
+                  "Ref": "request_id",
+                  "Literal": null,
+                  "Offset": null
+                },
+                "mode": {
+                  "Ref": "request_mode",
+                  "Literal": null,
+                  "Offset": null
+                },
+                "value": {
+                  "Ref": "request_value",
+                  "Literal": null,
+                  "Offset": null
+                }
+              }
+            },
+            "Updates": {},
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 1,
+          "model": "candidate outcome_consume into retained fields",
+          "instruction": {
+            "Op": "receive",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": {
+              "Kind": "invocation",
+              "Provenance": "runtime-invocation",
+              "Source": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "2e10975004e0351d07b237e0360a2b96b50d5884b651cfa5bfc8e88af62da266",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Generation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "int",
+                  "Number": 1,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Obligation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "candidate",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Operation": {
+                "Ref": "pending",
+                "Literal": null,
+                "Offset": null
+              }
+            },
+            "Bind": {
+              "reason": "child_reason",
+              "response.id": "answer_id",
+              "response.value": "answer_value",
+              "response_present": "child_present",
+              "status": "child_status"
+            },
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 2,
+          "model": "report_consume at mandatory join",
+          "instruction": {
+            "Op": "receive",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": {
+              "Kind": "message",
+              "Provenance": "ordinary-message",
+              "Source": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "peer",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Generation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "int",
+                  "Number": 1,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Obligation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "phase1j_s_join",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Operation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              }
+            },
+            "Bind": {
+              "reason": "join_reason",
+              "request_id": "join_request_id",
+              "response_id": "join_id",
+              "response_present": "join_present",
+              "response_value": "join_value",
+              "s_operation": "join_s_operation",
+              "status": "join_status"
+            },
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 3,
+          "model": "finite stutter: request correlation guard",
+          "instruction": {
+            "Op": "branch",
+            "Dst": "",
+            "A": {
+              "Ref": "join_request_id",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "request_id",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 4,
+            "Otherwise": 5,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 4,
+          "model": "finite stutter: matched correlation jump",
+          "instruction": {
+            "Op": "jump",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 7,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 5,
+          "model": "out-of-profile wrong request waits on absent second report",
+          "instruction": {
+            "Op": "receive",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": {
+              "Kind": "message",
+              "Provenance": "ordinary-message",
+              "Source": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "peer",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Generation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "int",
+                  "Number": 1,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Obligation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "phase1j_s_join",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Operation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              }
+            },
+            "Bind": {
+              "reason": "join_reason",
+              "request_id": "join_request_id",
+              "response_id": "join_id",
+              "response_present": "join_present",
+              "response_value": "join_value",
+              "s_operation": "join_s_operation",
+              "status": "join_status"
+            },
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 6,
+          "model": "out-of-profile failure only after second report",
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "failed"
+          }
+        },
+        {
+          "pc": 7,
+          "model": "finite stutter: complement calculation or success predicate guard",
+          "instruction": {
+            "Op": "branch",
+            "Dst": "",
+            "A": {
+              "Ref": "request_value",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 0,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "Target": 8,
+            "Otherwise": 10,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 8,
+          "model": "finite stutter: complement calculation or success predicate guard",
+          "instruction": {
+            "Op": "set",
+            "Dst": "expected_value",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 1,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 9,
+          "model": "finite stutter: complement calculation or success predicate guard",
+          "instruction": {
+            "Op": "jump",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 11,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 10,
+          "model": "finite stutter: complement calculation or success predicate guard",
+          "instruction": {
+            "Op": "set",
+            "Dst": "expected_value",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 0,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 11,
+          "model": "finite stutter: complement calculation or success predicate guard",
+          "instruction": {
+            "Op": "branch",
+            "Dst": "",
+            "A": {
+              "Ref": "child_status",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "string",
+                "Number": 0,
+                "Text": "succeeded",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "Target": 12,
+            "Otherwise": 27,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 12,
+          "model": "finite stutter: complement calculation or success predicate guard",
+          "instruction": {
+            "Op": "branch",
+            "Dst": "",
+            "A": {
+              "Ref": "child_present",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "bool",
+                "Number": 0,
+                "Text": "",
+                "Flag": true
+              },
+              "Offset": null
+            },
+            "Target": 13,
+            "Otherwise": 26,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 13,
+          "model": "finite stutter: complement calculation or success predicate guard",
+          "instruction": {
+            "Op": "branch",
+            "Dst": "",
+            "A": {
+              "Ref": "answer_id",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "request_id",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 14,
+            "Otherwise": 25,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 14,
+          "model": "finite stutter: complement calculation or success predicate guard",
+          "instruction": {
+            "Op": "branch",
+            "Dst": "",
+            "A": {
+              "Ref": "answer_value",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "expected_value",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 15,
+            "Otherwise": 24,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 15,
+          "model": "finite stutter: complement calculation or success predicate guard",
+          "instruction": {
+            "Op": "branch",
+            "Dst": "",
+            "A": {
+              "Ref": "join_status",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "string",
+                "Number": 0,
+                "Text": "succeeded",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "Target": 16,
+            "Otherwise": 23,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 16,
+          "model": "finite stutter: complement calculation or success predicate guard",
+          "instruction": {
+            "Op": "branch",
+            "Dst": "",
+            "A": {
+              "Ref": "join_present",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "bool",
+                "Number": 0,
+                "Text": "",
+                "Flag": true
+              },
+              "Offset": null
+            },
+            "Target": 17,
+            "Otherwise": 22,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 17,
+          "model": "finite stutter: complement calculation or success predicate guard",
+          "instruction": {
+            "Op": "branch",
+            "Dst": "",
+            "A": {
+              "Ref": "join_id",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "request_id",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 18,
+            "Otherwise": 21,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 18,
+          "model": "finite stutter: complement calculation or success predicate guard",
+          "instruction": {
+            "Op": "branch",
+            "Dst": "",
+            "A": {
+              "Ref": "join_value",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 0,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "Target": 19,
+            "Otherwise": 20,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 19,
+          "model": "root_terminal succeeded",
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "succeeded"
+          }
+        },
+        {
+          "pc": 20,
+          "model": "root_terminal failed",
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "failed"
+          }
+        },
+        {
+          "pc": 21,
+          "model": "root_terminal failed",
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "failed"
+          }
+        },
+        {
+          "pc": 22,
+          "model": "root_terminal failed",
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "failed"
+          }
+        },
+        {
+          "pc": 23,
+          "model": "root_terminal failed",
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "failed"
+          }
+        },
+        {
+          "pc": 24,
+          "model": "root_terminal failed",
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "failed"
+          }
+        },
+        {
+          "pc": 25,
+          "model": "root_terminal failed",
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "failed"
+          }
+        },
+        {
+          "pc": 26,
+          "model": "root_terminal failed",
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "failed"
+          }
+        },
+        {
+          "pc": 27,
+          "model": "root_terminal failed",
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "failed"
+          }
+        }
+      ]
+    },
+    {
+      "artifact": "docs/foundational/phase1j/evidence/context/artifacts/join-b-peer-program.json",
+      "sha256": "6a77bf8322f8bf227e7c78597d6e753d8d9390f3c981fec7f2bdc59814ea71ef",
+      "instructions": [
+        {
+          "pc": 0,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 0,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 1,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 1,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 2,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 2,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 3,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 3,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 4,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 4,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 5,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 5,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 6,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 6,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 7,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 7,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 8,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 8,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 9,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 9,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 10,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 10,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 11,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 11,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 12,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 12,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 13,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 13,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 14,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 14,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 15,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 15,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 16,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 16,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 17,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 17,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 18,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 18,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 19,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 19,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 20,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 20,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 21,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 21,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 22,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 22,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 23,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 23,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 24,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 24,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 25,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 25,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 26,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 26,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 27,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 27,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 28,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 28,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 29,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 29,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 30,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 30,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 31,
+          "model": "delay_set",
+          "instruction": {
+            "Op": "set",
+            "Dst": "schedule_marker",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 31,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 32,
+          "model": "S invoke_commit",
+          "instruction": {
+            "Op": "emit",
+            "Dst": "peer_pending",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": {
+              "Kind": "invocation",
+              "Target": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "a6bfb72f823541b21e8780faf1eaab779254f5a563e5352cd631521c7ab6c61c",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Generation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "int",
+                  "Number": 1,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Obligation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "peer",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Payload": {
+                "id": {
+                  "Ref": "request_id",
+                  "Literal": null,
+                  "Offset": null
+                },
+                "value": {
+                  "Ref": "request_value",
+                  "Literal": null,
+                  "Offset": null
+                }
+              }
+            },
+            "Updates": {},
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 33,
+          "model": "S original outcome_consume",
+          "instruction": {
+            "Op": "receive",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": {
+              "Kind": "invocation",
+              "Provenance": "runtime-invocation",
+              "Source": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "a6bfb72f823541b21e8780faf1eaab779254f5a563e5352cd631521c7ab6c61c",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Generation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "int",
+                  "Number": 1,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Obligation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "peer",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Operation": {
+                "Ref": "peer_pending",
+                "Literal": null,
+                "Offset": null
+              }
+            },
+            "Bind": {
+              "reason": "peer_reason",
+              "response.id": "peer_id",
+              "response.value": "peer_value",
+              "response_present": "peer_present",
+              "status": "peer_status"
+            },
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 34,
+          "model": "finite stutter: copy immutable request id",
+          "instruction": {
+            "Op": "set",
+            "Dst": "report_request_id",
+            "A": {
+              "Ref": "request_id",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 35,
+          "model": "finite stutter: actual consumed presence guard",
+          "instruction": {
+            "Op": "branch",
+            "Dst": "",
+            "A": {
+              "Ref": "peer_present",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "bool",
+                "Number": 0,
+                "Text": "",
+                "Flag": true
+              },
+              "Offset": null
+            },
+            "Target": 36,
+            "Otherwise": 38,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 36,
+          "model": "report_commit present exact payload",
+          "instruction": {
+            "Op": "emit",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": {
+              "Kind": "message",
+              "Target": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "root",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Generation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "int",
+                  "Number": 1,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Obligation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "phase1j_s_join",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Payload": {
+                "reason": {
+                  "Ref": "peer_reason",
+                  "Literal": null,
+                  "Offset": null
+                },
+                "request_id": {
+                  "Ref": "report_request_id",
+                  "Literal": null,
+                  "Offset": null
+                },
+                "response_id": {
+                  "Ref": "peer_id",
+                  "Literal": null,
+                  "Offset": null
+                },
+                "response_present": {
+                  "Ref": "peer_present",
+                  "Literal": null,
+                  "Offset": null
+                },
+                "response_value": {
+                  "Ref": "peer_value",
+                  "Literal": null,
+                  "Offset": null
+                },
+                "s_operation": {
+                  "Ref": "peer_pending",
+                  "Literal": null,
+                  "Offset": null
+                },
+                "status": {
+                  "Ref": "peer_status",
+                  "Literal": null,
+                  "Offset": null
+                }
+              }
+            },
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 37,
+          "model": "finite stutter: jump to peer terminal",
+          "instruction": {
+            "Op": "jump",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 39,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 38,
+          "model": "report_commit absent with zero fillers",
+          "instruction": {
+            "Op": "emit",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": {
+              "Kind": "message",
+              "Target": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "root",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Generation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "int",
+                  "Number": 1,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Obligation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "phase1j_s_join",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Payload": {
+                "reason": {
+                  "Ref": "peer_reason",
+                  "Literal": null,
+                  "Offset": null
+                },
+                "request_id": {
+                  "Ref": "report_request_id",
+                  "Literal": null,
+                  "Offset": null
+                },
+                "response_id": {
+                  "Ref": "",
+                  "Literal": {
+                    "Kind": "int",
+                    "Number": 0,
+                    "Text": "",
+                    "Flag": false
+                  },
+                  "Offset": null
+                },
+                "response_present": {
+                  "Ref": "peer_present",
+                  "Literal": null,
+                  "Offset": null
+                },
+                "response_value": {
+                  "Ref": "",
+                  "Literal": {
+                    "Kind": "int",
+                    "Number": 0,
+                    "Text": "",
+                    "Flag": false
+                  },
+                  "Offset": null
+                },
+                "s_operation": {
+                  "Ref": "peer_pending",
+                  "Literal": null,
+                  "Offset": null
+                },
+                "status": {
+                  "Ref": "peer_status",
+                  "Literal": null,
+                  "Offset": null
+                }
+              }
+            },
+            "Updates": null,
+            "Outcome": ""
+          }
+        },
+        {
+          "pc": 39,
+          "model": "peer_terminal succeeded",
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "succeeded"
+          }
+        }
+      ]
+    }
+  ],
+  "unchanged_baseline_sources": [
+    {
+      "path": "examples/substitution/a/candidate.go",
+      "baseline_sha256": "c98a5c6d16738d98af9140e6edce6d4df0ddcb51c2330ba974e0e51a82005911",
+      "current_sha256": "c98a5c6d16738d98af9140e6edce6d4df0ddcb51c2330ba974e0e51a82005911",
+      "identical": true
+    },
+    {
+      "path": "examples/substitution/b/b.go",
+      "baseline_sha256": "ff813a85585175522e2bf5cc4550caeb6c169c7e507c7ce51ee8bba43ec933e8",
+      "current_sha256": "ff813a85585175522e2bf5cc4550caeb6c169c7e507c7ce51ee8bba43ec933e8",
+      "identical": true
+    },
+    {
+      "path": "examples/substitution/protocol/protocol.go",
+      "baseline_sha256": "18a0019cdc15cfabf253d5e3039f021f5117f0f3e8891d15ca4e6e2a5ea8c49c",
+      "current_sha256": "18a0019cdc15cfabf253d5e3039f021f5117f0f3e8891d15ca4e6e2a5ea8c49c",
+      "identical": true
+    },
+    {
+      "path": "examples/substitution/deployment.go",
+      "baseline_sha256": "37d5b9fa0e3fc2292fa13933f7a012d783055c6a37fa6ba0686472bd96c499a0",
+      "current_sha256": "37d5b9fa0e3fc2292fa13933f7a012d783055c6a37fa6ba0686472bd96c499a0",
+      "identical": true
+    },
+    {
+      "path": "research/substitution/model.go",
+      "baseline_sha256": "1faef47e9ef17401512aba14239fc07ad7031a6db249600844752b35db342ddf",
+      "current_sha256": "1faef47e9ef17401512aba14239fc07ad7031a6db249600844752b35db342ddf",
+      "identical": true
+    },
+    {
+      "path": "research/substitution/candidates.go",
+      "baseline_sha256": "670d0265608ff7c519b6838bd65485427f231591516aaa6f75d8ad42566ade69",
+      "current_sha256": "670d0265608ff7c519b6838bd65485427f231591516aaa6f75d8ad42566ade69",
+      "identical": true
+    },
+    {
+      "path": "research/substitution/runtime_boundary.go",
+      "baseline_sha256": "b22089368f93bea5f3e471292f0b7308419b937508e78942343cdb001d362e44",
+      "current_sha256": "b22089368f93bea5f3e471292f0b7308419b937508e78942343cdb001d362e44",
+      "identical": true
+    }
+  ],
+  "candidate_mapping_reused": "docs/foundational/phase1i/evidence/model/artifact-correspondence.json",
+  "candidate_mapping_justification": "Unchanged compiled A13, B16, helper7 identities and original hand-transcribed model; prior reviewed mappings tested again."
+}

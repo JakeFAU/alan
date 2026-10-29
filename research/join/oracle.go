@@ -1,0 +1,174 @@
+// Package join specifies the bounded J1 context independently of ALAN execution.
+// It imports only the reviewed Phase1I mathematical model and the Go library.
+package join
+
+import (
+	"fmt"
+	"github.com/JakeFAU/alan/research/substitution"
+)
+
+type Outcome struct {
+	Status, Reason string
+	Present        bool
+	ID, Value      int
+}
+type Report struct {
+	RequestID  int
+	SOperation string
+	Outcome    Outcome
+}
+
+// Event is a retained fact. Sequence is the actor's committed execution sequence,
+// not a fabricated total order across runs. Operation names remain consistent.
+type Event struct {
+	Kind, Actor, Operation, Parent, Role, Source, Target, Obligation string
+	Generation, Sequence                                             int64
+	Outcome                                                          Outcome
+	Report                                                           Report
+	Status, Reason                                                   string
+	I, R, E                                                          int
+}
+type Trace struct {
+	Request    substitution.Request
+	Root, Peer string
+	Generation int64
+	Obligation string
+	Events     []Event
+}
+
+func validCandidate(r substitution.Request, o Outcome) bool {
+	return o.Status == "succeeded" && o.Present && o.ID == r.ID && o.Value == 1-r.Value
+}
+func validS(r substitution.Request, o Outcome) bool {
+	return o.Status == "succeeded" && o.Present && o.ID == r.ID && o.Value == 0
+}
+
+// CheckTrace is a prefix safety oracle, never a claim that an incomplete run
+// completes. The adapter must first validate raw provenance/selection identities.
+func CheckTrace(t Trace) []substitution.Violation {
+	var failures []substitution.Violation
+	fail := func(i int, code, detail string) {
+		failures = append(failures, substitution.Violation{Index: i, Code: code, Detail: detail})
+	}
+	consumed := map[string]Event{}
+	reports := map[string]Event{}
+	deliveries := map[string]Event{}
+	var candidate, joined *Event
+	joinCount := 0
+	terminals := map[string]bool{}
+	// Index immutable causal facts first: independent actors need not be sorted.
+	for i, e := range t.Events {
+		if e.Kind == "outcome_consume" {
+			if _, ok := consumed[e.Operation]; ok {
+				fail(i, "duplicate_consumption", e.Operation)
+			}
+			consumed[e.Operation] = e
+			if e.Role == "candidate" && e.Actor == t.Root {
+				x := e
+				candidate = &x
+			}
+		}
+		if e.Kind == "report_commit" {
+			if _, ok := reports[e.Operation]; ok {
+				fail(i, "duplicate_report", e.Operation)
+			}
+			reports[e.Operation] = e
+			if len(reports) > 1 {
+				fail(i, "extra_report", "J1 permits exactly one peer report")
+			}
+		}
+		if e.Kind == "report_consume" {
+			joinCount++
+			x := e
+			joined = &x
+		}
+		if e.Kind == "report_deliver" && e.Status == "accepted" {
+			deliveries[e.Operation] = e
+		}
+	}
+	for i, e := range t.Events {
+		switch e.Kind {
+		case "admit":
+			if e.Status == "accepted" && (e.I != 1 || e.R != 1 || e.E != 0) {
+				fail(i, "charge", "accepted singleton debit is not (1,1,0)")
+			}
+			if e.Status != "accepted" && (e.I != 0 || e.R != 0 || e.E != 0) {
+				fail(i, "refusal_charge", e.Operation)
+			}
+		case "report_commit":
+			s, ok := consumed[e.Report.SOperation]
+			if !ok || s.Role != "s" || s.Actor != t.Peer || s.Sequence >= e.Sequence {
+				fail(i, "premature_report", "report lacks earlier peer consumption of original S outcome")
+			} else if s.Outcome != e.Report.Outcome {
+				fail(i, "report_outcome", "report differs from actually consumed S outcome")
+			}
+			if e.Actor != t.Peer || e.Source != t.Peer || e.Target != t.Root || e.Generation != t.Generation || e.Obligation != t.Obligation {
+				fail(i, "report_provenance", e.Operation)
+			}
+			if e.Report.RequestID != t.Request.ID {
+				fail(i, "request_correlation", e.Operation)
+			}
+			if !e.Report.Outcome.Present && (e.Report.Outcome.ID != 0 || e.Report.Outcome.Value != 0) {
+				fail(i, "absence_fillers", e.Operation)
+			}
+		case "report_consume":
+			if candidate == nil || candidate.Sequence >= e.Sequence {
+				fail(i, "report_before_candidate", "root consumed report before candidate outcome")
+			}
+			if joinCount > 1 {
+				fail(i, "duplicate_report_consumption", e.Operation)
+			}
+			c, ok := reports[e.Operation]
+			d, delivered := deliveries[e.Operation]
+			if !ok || !delivered || c.Report != e.Report || d.Report != e.Report {
+				fail(i, "report_selection", "consumption is not exact delivered original report")
+			}
+			if e.Actor != t.Root || e.Source != t.Peer || e.Target != t.Root || e.Generation != t.Generation || e.Obligation != t.Obligation {
+				fail(i, "report_provenance", e.Operation)
+			}
+		case "root_terminal":
+			if terminals[t.Root] {
+				fail(i, "duplicate_completion", t.Root)
+			}
+			terminals[t.Root] = true
+			// Cancellation is an interruption, not a voluntary J1 decision.
+			if e.Status == "cancelled" {
+				continue
+			}
+			if candidate == nil || candidate.Sequence >= e.Sequence {
+				fail(i, "candidate_join", "root terminal without earlier candidate consumption")
+			}
+			if joined == nil || joined.Sequence >= e.Sequence || joined.Report.RequestID != t.Request.ID {
+				fail(i, "peer_join", "root terminal without earlier correlated report consumption")
+				continue
+			}
+			if candidate != nil {
+				want := "failed"
+				if validCandidate(t.Request, candidate.Outcome) && validS(t.Request, joined.Report.Outcome) {
+					want = "succeeded"
+				}
+				if e.Status != want {
+					fail(i, "decision", fmt.Sprintf("got %s want %s", e.Status, want))
+				}
+			}
+		case "peer_terminal":
+			prior := false
+			for _, report := range reports {
+				if report.Actor == t.Peer && report.Sequence < e.Sequence {
+					prior = true
+				}
+			}
+			if !prior {
+				fail(i, "peer_report", "peer terminated before report commitment")
+			}
+			if terminals[t.Peer] {
+				fail(i, "duplicate_completion", t.Peer)
+			}
+			terminals[t.Peer] = true
+			if e.Status != "succeeded" {
+				fail(i, "peer_terminal", "J1 reporting peer must terminate successfully")
+			}
+		}
+	}
+	return failures
+}

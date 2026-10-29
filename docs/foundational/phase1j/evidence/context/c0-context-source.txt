@@ -1,0 +1,77 @@
+func caller(candidate, peer author.Template, shape string) (author.Artifact, error) {
+	invocations := map[string]author.Template{"candidate": candidate}
+	next := []author.Step{author.Success()}
+	if shape == "sequential" {
+		invocations["peer"] = peer
+		next = peerSteps("answer_id", "answer_value")
+	}
+	return author.Compile(author.Definition{
+		Inputs: requestInputs(), Invocations: invocations,
+		Steps: []author.Step{
+			author.Invoke("pending", "candidate", requestExpressions(), nil),
+			candidateAwait(),
+			onPresentSuccess("child_status", "child_present", next),
+		},
+	})
+}
+
+func candidateAwait() author.Step {
+	return author.AwaitInvocation("candidate", "pending", author.InvocationOutcomeBindings{
+		Status: "child_status", Reason: "child_reason", ResponsePresent: "child_present",
+		Response: map[string]string{"id": "answer_id", "value": "answer_value"},
+	})
+}
+
+func peerSteps(id, value string) []author.Step {
+	return []author.Step{
+		author.Invoke("peer_pending", "peer", map[string]author.Expr{
+			"id": author.Var(id), "value": author.Var(value),
+		}, nil),
+		author.AwaitInvocation("peer", "peer_pending", author.InvocationOutcomeBindings{
+			Status: "peer_status", Reason: "peer_reason", ResponsePresent: "peer_present",
+			Response: map[string]string{"id": "peer_id", "value": "peer_value"},
+		}),
+		onPresentSuccess("peer_status", "peer_present", []author.Step{author.Success()}),
+	}
+}
+
+func DelayedParallel(candidate author.Template, config Config, delay int) (Deployment, error) {
+	config.Shape = "parallel"
+	d, err := New(candidate, config)
+	if err != nil {
+		return d, err
+	}
+	if delay < 1 || delay > 64 {
+		return d, fmt.Errorf("delay outside finite fixture profile")
+	}
+	steps := []author.Step{}
+	for i := 0; i < delay; i++ {
+		steps = append(steps, author.Set("schedule_marker", author.Integer(int64(i))))
+	}
+	steps = append(steps, peerSteps("request_id", "request_value")...)
+	delayed, err := author.Compile(author.Definition{Name: "phase1i-delayed-static-peer", Inputs: schema.Record{"request_id": {Kind: "int"}, "request_value": {Kind: "int"}}, Invocations: map[string]author.Template{"peer": d.Peer}, Steps: steps})
+	if err != nil {
+		return d, err
+	}
+	p, err := (author.Application{"peer": {Artifact: delayed, Inputs: map[string]schema.Value{"request_id": schema.Int(config.Request.ID), "request_value": schema.Int(config.Request.Value)}}}).Provision()
+	if err != nil {
+		return d, err
+	}
+	for _, program := range p.Programs {
+		found := false
+		for _, old := range d.Provision.Programs {
+			if old.ID == program.ID {
+				found = true
+			}
+		}
+		if !found {
+			d.Provision.Programs = append(d.Provision.Programs, program)
+		}
+	}
+	for i, run := range d.Provision.Runs {
+		if run.ID.Subject == "peer" {
+			d.Provision.Runs[i] = p.Runs[0]
+		}
+	}
+	return d, nil
+}

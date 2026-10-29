@@ -1,0 +1,69 @@
+{
+  "integration_base": "5764ec0b5679c72c80e56c44fd9e4198c986b91c",
+  "records": [
+    {
+      "name": "final-vet",
+      "argv": [
+        "go",
+        "vet",
+        "-tags",
+        "integration",
+        "./examples/join/...",
+        "./research/join",
+        "./internal/substitutiontest"
+      ],
+      "exit": 0,
+      "elapsed": 0.511,
+      "log": "final-vet.log"
+    },
+    {
+      "name": "package-discovery",
+      "argv": [
+        "go",
+        "list",
+        "-tags",
+        "integration",
+        "./..."
+      ],
+      "exit": 0,
+      "elapsed": 0.448,
+      "log": "package-discovery.log"
+    },
+    {
+      "name": "diff-check",
+      "argv": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit": 0,
+      "elapsed": 0.02,
+      "log": "diff-check.log"
+    },
+    {
+      "name": "formatting",
+      "argv": [
+        "gofmt",
+        "-l",
+        "examples/join/artifacts_test.go",
+        "examples/join/consumer/main.go",
+        "examples/join/consumer/main_test.go",
+        "examples/join/deployment.go",
+        "examples/join/deployment_test.go",
+        "examples/join/runtime_test.go",
+        "internal/substitutiontest/join_decoder_test.go",
+        "internal/substitutiontest/join_evidence_test.go",
+        "internal/substitutiontest/join_process_test.go",
+        "internal/substitutiontest/join_runtime_test.go",
+        "research/join/correspondence_test.go",
+        "research/join/explorer.go",
+        "research/join/model.go",
+        "research/join/model_test.go",
+        "research/join/oracle.go",
+        "research/join/oracle_test.go"
+      ],
+      "exit": 0,
+      "unformatted_files": []
+    }
+  ]
+}

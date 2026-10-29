@@ -1,0 +1,166 @@
+[
+  {
+    "case": "completion-hypothesis-red",
+    "command": [
+      "go",
+      "test",
+      "-overlay=/tmp/alan-phase1j-model-hypothesis-overlay.json",
+      "-v",
+      "-count=1",
+      "-run",
+      "^TestReferenceCensus$",
+      "./research/join"
+    ],
+    "exit_status": 1,
+    "expected_exit_status": 1,
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOFLAGS": "-mod=readonly",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "output": "completion-hypothesis-red.txt.gz"
+  },
+  {
+    "case": "current-model",
+    "command": [
+      "go",
+      "test",
+      "-v",
+      "-count=1",
+      "-timeout=10m",
+      "./research/join"
+    ],
+    "exit_status": 0,
+    "expected_exit_status": 0,
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOFLAGS": "-mod=readonly",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "output": "current-model.txt.gz"
+  },
+  {
+    "case": "reused-candidate-correspondence",
+    "command": [
+      "go",
+      "test",
+      "-v",
+      "-count=1",
+      "-run",
+      "^TestFrozenInstructionCorrespondenceCoverage$",
+      "./research/substitution"
+    ],
+    "exit_status": 0,
+    "expected_exit_status": 0,
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOFLAGS": "-mod=readonly",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "output": "reused-candidate-correspondence.txt.gz"
+  },
+  {
+    "case": "model-race",
+    "command": [
+      "go",
+      "test",
+      "-race",
+      "-count=1",
+      "-timeout=10m",
+      "./research/join"
+    ],
+    "exit_status": 0,
+    "expected_exit_status": 0,
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOFLAGS": "-mod=readonly",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    },
+    "output": "model-race.txt.gz"
+  },
+  {
+    "case": "current-model-v2",
+    "command": [
+      "go",
+      "test",
+      "-v",
+      "-count=1",
+      "-timeout=10m",
+      "./research/join"
+    ],
+    "exit_status": 0,
+    "expected_exit_status": 0,
+    "output": "current-model-v2.txt.gz",
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOFLAGS": "-mod=readonly",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    }
+  },
+  {
+    "case": "model-race-v2",
+    "command": [
+      "go",
+      "test",
+      "-race",
+      "-count=1",
+      "-timeout=10m",
+      "./research/join"
+    ],
+    "exit_status": 0,
+    "expected_exit_status": 0,
+    "output": "model-race-v2.txt.gz",
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOFLAGS": "-mod=readonly",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    }
+  },
+  {
+    "case": "model-vet",
+    "command": [
+      "go",
+      "vet",
+      "./research/join"
+    ],
+    "exit_status": 0,
+    "expected_exit_status": 0,
+    "output": "model-vet.txt.gz",
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOFLAGS": "-mod=readonly",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    }
+  },
+  {
+    "case": "reproduce-red",
+    "command": [
+      "python3",
+      "docs/foundational/phase1j/evidence/model/reproduce-red.py"
+    ],
+    "exit_status": 1,
+    "expected_exit_status": 1,
+    "output": "reproduce-red.txt.gz",
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOFLAGS": "-mod=readonly",
+      "GOCACHE": "/tmp/alan-phase1f-go-build"
+    }
+  }
+]
