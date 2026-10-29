@@ -1,0 +1,14 @@
+package communication
+
+import (
+ "testing"
+ "github.com/JakeFAU/alan/research/substitution"
+)
+
+// This rejected hypothesis is intentionally false; it is not a normal gate.
+func TestAllMaximalStatesComplete(t *testing.T) {
+ r:=Explore(PrimaryConfig(),substitution.Reference)
+ if r.Successful!=r.MaximalStates {
+  t.Fatalf("all-complete hypothesis falsified: %d of %d maximal states complete; %d ACK-refusal pending",r.Successful,r.MaximalStates,r.Pending)
+ }
+}

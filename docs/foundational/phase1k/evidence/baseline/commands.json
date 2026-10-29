@@ -1,0 +1,48 @@
+[
+  {
+    "name": "preserved-model-negative",
+    "argv": [
+      "go",
+      "test",
+      "-count=1",
+      "-v",
+      "-run",
+      "^TestReportAuthorizationCounterexample$",
+      "./research/join"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOFLAGS": "-mod=readonly",
+      "GOCACHE": "/tmp/alan-phase1k-go-build"
+    },
+    "exit_status": 0,
+    "elapsed_seconds": 3.28,
+    "log": "preserved-model-negative.txt"
+  },
+  {
+    "name": "unchanged-j1-b-sample",
+    "argv": [
+      "go",
+      "test",
+      "-tags",
+      "integration",
+      "-count=1",
+      "-v",
+      "-run",
+      "^TestJoinRuntime$/^b$",
+      "./internal/substitutiontest"
+    ],
+    "environment": {
+      "GOTOOLCHAIN": "local",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "GOFLAGS": "-mod=readonly",
+      "GOCACHE": "/tmp/alan-phase1k-go-build"
+    },
+    "exit_status": 0,
+    "elapsed_seconds": 14.465,
+    "log": "unchanged-j1-b-sample.txt"
+  }
+]

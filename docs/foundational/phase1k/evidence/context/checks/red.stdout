@@ -1,0 +1,45 @@
+--- FAIL: TestCommunicationArtifacts (0.01s)
+    --- FAIL: TestCommunicationArtifacts/a (0.00s)
+        deployment_test.go:74: root name "phase1j-join-root", want "phase1k-ack-root"
+        deployment_test.go:75: root lacks separate context identity
+        deployment_test.go:78: root missing phase1k_s_report
+        deployment_test.go:78: root missing phase1k_s_ack
+        deployment_test.go:74: peer name "phase1j-join-static-peer", want "phase1k-ack-static-peer"
+        deployment_test.go:75: peer lacks separate context identity
+        deployment_test.go:78: peer missing phase1k_s_report
+        deployment_test.go:78: peer missing phase1k_s_ack
+        deployment_test.go:94: report/ACK grants [{message peer root message 1 phase1j_s_join}]
+    --- FAIL: TestCommunicationArtifacts/b (0.00s)
+        deployment_test.go:74: root name "phase1j-join-root", want "phase1k-ack-root"
+        deployment_test.go:75: root lacks separate context identity
+        deployment_test.go:78: root missing phase1k_s_report
+        deployment_test.go:78: root missing phase1k_s_ack
+        deployment_test.go:74: peer name "phase1j-join-static-peer", want "phase1k-ack-static-peer"
+        deployment_test.go:75: peer lacks separate context identity
+        deployment_test.go:78: peer missing phase1k_s_report
+        deployment_test.go:78: peer missing phase1k_s_ack
+        deployment_test.go:94: report/ACK grants [{message peer root message 1 phase1j_s_join}]
+--- FAIL: TestCommunicationPolicy (1.13s)
+    --- FAIL: TestCommunicationPolicy/answer_a (0.11s)
+        runtime_test.go:94: report/ACK intents=0/0 want=1/1
+    --- FAIL: TestCommunicationPolicy/answer_b (0.13s)
+        runtime_test.go:94: report/ACK intents=0/0 want=1/1
+    --- FAIL: TestCommunicationPolicy/candidate_fail (0.09s)
+        runtime_test.go:94: report/ACK intents=0/0 want=1/1
+    --- FAIL: TestCommunicationPolicy/candidate_absent (0.09s)
+        runtime_test.go:94: report/ACK intents=0/0 want=1/1
+    --- FAIL: TestCommunicationPolicy/candidate_pending (0.08s)
+        runtime_test.go:94: report/ACK intents=0/0 want=1/0
+    --- FAIL: TestCommunicationPolicy/s_fail (0.09s)
+        runtime_test.go:94: report/ACK intents=0/0 want=1/1
+    --- FAIL: TestCommunicationPolicy/s_absent (0.09s)
+        runtime_test.go:94: report/ACK intents=0/0 want=1/1
+    --- FAIL: TestCommunicationPolicy/wrong_report_request (0.09s)
+        runtime_test.go:94: report/ACK intents=0/0 want=1/0
+    --- FAIL: TestCommunicationPolicy/wrong_ack_request (0.10s)
+        runtime_test.go:94: report/ACK intents=0/0 want=1/1
+    --- FAIL: TestCommunicationPolicy/wrong_ack_handle (0.10s)
+        runtime_test.go:94: report/ACK intents=0/0 want=1/1
+FAIL
+FAIL	github.com/JakeFAU/alan/examples/communication	1.346s
+FAIL

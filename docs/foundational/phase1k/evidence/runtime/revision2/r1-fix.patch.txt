@@ -1,0 +1,82 @@
+--- r1/communication_decoder_test.go
++++ r2/communication_decoder_test.go
+@@ -156,3 +156,67 @@
+ 		})
+ 	}
+ }
++
++// A lookup miss is a valid prefix only when the independent truth/mapping
++// checks also find no malformed committed report. These are copied-inspection
++// decoder attacks, never authoritative database edits or new protocol histories.
++func TestCommunicationDecoderReportIdentity(t *testing.T) {
++	q := model.Request{ID: 1, Value: 0, Mode: "answer"}
++	path := communicationFixture(t)
++	d := newCommunicationDriver(t, path)
++	if !d.step(runtime.RunID{Subject: "root", Generation: 1}) {
++		t.Fatal("genuine pre-report Invoke was not enabled")
++	}
++	pre := inspect(t, path)
++	t.Run("genuine-pre-report", func(t *testing.T) {
++		if communicationReport(pre).ID != "" {
++			t.Fatal("prefix already contains report")
++		}
++		tr, e := decodeCommunication(pre, q, communication.J1)
++		must(t, e)
++		if len(tr.Messages) != 0 || len(communication.CheckTrace(tr)) != 0 {
++			t.Fatal("genuine pre-report prefix rejected or invented message", tr)
++		}
++		retain(t, "genuine-prefix", map[string]any{"inspection": pre, "trace": tr})
++	})
++	d.toReport()
++	original := inspect(t, path)
++	if !communicationCut(original, "report-no-authorization") {
++		t.Fatal("genuine report prefix missing")
++	}
++	retain(t, "original-no-authorization", original)
++	raw, e := json.Marshal(original)
++	must(t, e)
++	for _, field := range []string{"Target", "Obligation"} {
++		t.Run("wrong-"+field, func(t *testing.T) {
++			var s runtime.Inspection
++			must(t, json.Unmarshal(raw, &s))
++			in := communicationReport(s)
++			editEvidenceJSON(t, communicationRow(s, "intents", "id", in.ID), "descriptor", func(v map[string]any) { v[field] = "foreign-report-context" })
++			for _, h := range s.Tables["history"] {
++				var intents []map[string]any
++				must(t, json.Unmarshal([]byte(h["intents"].(string)), &intents))
++				for _, v := range intents {
++					if v["ID"] == in.ID {
++						v[field] = "foreign-report-context"
++						b, e := json.Marshal(intents)
++						must(t, e)
++						h["intents"] = string(b)
++					}
++				}
++			}
++			if hash(s) == hash(original) || communicationReport(s).ID != "" {
++				t.Fatal("mutation did not exercise strict lookup miss")
++			}
++			tr, e := decodeCommunication(s, q, communication.J1)
++			diagnostic := ""
++			if e != nil {
++				diagnostic = e.Error()
++			}
++			retain(t, "lookup-result", map[string]any{"field": field, "source_hash": hash(original), "mutated_inspection": s, "decoder_error": diagnostic, "returned_trace": tr, "independent_violations": communication.CheckTrace(tr)})
++			if e == nil {
++				t.Fatalf("accepted mismatched original report %s as empty prefix; messages=%d; skipped oracle violations=%v", field, len(tr.Messages), communication.CheckTrace(tr))
++			}
++		})
++	}
++}
+--- r1/communication_evidence_test.go
++++ r2/communication_evidence_test.go
+@@ -64,6 +64,9 @@
+ 	}
+ 	in := communicationReport(s)
+ 	if in.ID == "" {
++		if v := communication.CheckTrace(out); len(v) > 0 {
++			return fail(fmt.Sprint(v))
++		}
+ 		return out, nil
+ 	}
+ 	m := communication.Message{Kind: "report", IntentID: in.ID, Source: in.Run.Subject, Target: in.Target, Obligation: in.Obligation, SourceGeneration: in.Run.Generation, TargetGeneration: in.Generation, CommitSequence: in.Sequence, Payload: communication.Payload{Report: joinReport(in.Payload)}}

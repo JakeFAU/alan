@@ -1,0 +1,431 @@
+{
+  "question": "Frozen J2 construction and lower-level public terminal accessibility",
+  "classification": {
+    "frozen_j2": "concretely tested authoring obstruction",
+    "available_j2_root": "compiled artifact only",
+    "j2_runtime_branch_policy": "unexecuted; construction failed",
+    "j2_model_artifact_correspondence": "unresolved for complete protocol",
+    "terminal_probe": "concretely tested public interface access and selected consumption"
+  },
+  "primary_configuration": {
+    "candidate": "B",
+    "id": 1,
+    "value": 0,
+    "mode": "answer",
+    "max_invocations": 3,
+    "max_created_runs": 3,
+    "max_depth": 2,
+    "max_effects": 0,
+    "max_in_flight": 1
+  },
+  "source_identity": "docs/foundational/phase1k/evidence/context/source-identity.json",
+  "available_artifacts": "docs/foundational/phase1k/evidence/context/frozen/sha256.json",
+  "failed_builder_source": "docs/foundational/phase1k/evidence/context/attempted/j2-builder-first-attempt.go.txt",
+  "desired_unexecuted_runtime_tests": "docs/foundational/phase1k/evidence/context/attempted/desired-runtime-policy-tests.go.txt",
+  "final_terminal_evidence": "docs/foundational/phase1k/evidence/surfaces/terminal-probe-reviewed/sha256.json",
+  "earlier_terminal_evidence": [
+    "docs/foundational/phase1k/evidence/surfaces/terminal-probe/sha256.json",
+    "docs/foundational/phase1k/evidence/surfaces/terminal-probe-final/sha256.json"
+  ],
+  "checks": {
+    "consumer-build-final": {
+      "command": [
+        "go",
+        "build",
+        "-o",
+        "/tmp/alan-phase1k-terminal-consumer",
+        "."
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan/examples/communication/consumer",
+      "exit": 0,
+      "metadata": "docs/foundational/phase1k/evidence/context/checks/consumer-build-final.json",
+      "stdout": "docs/foundational/phase1k/evidence/context/checks/consumer-build-final.stdout",
+      "stderr": "docs/foundational/phase1k/evidence/context/checks/consumer-build-final.stderr"
+    },
+    "consumer-build": {
+      "command": [
+        "go",
+        "build",
+        "-o",
+        "/tmp/alan-phase1k-terminal-consumer",
+        "."
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan/examples/communication/consumer",
+      "exit": 0,
+      "metadata": "docs/foundational/phase1k/evidence/context/checks/consumer-build.json",
+      "stdout": "docs/foundational/phase1k/evidence/context/checks/consumer-build.stdout",
+      "stderr": "docs/foundational/phase1k/evidence/context/checks/consumer-build.stderr"
+    },
+    "consumer-cli-green": {
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "."
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan/examples/communication/consumer",
+      "exit": 0,
+      "metadata": "docs/foundational/phase1k/evidence/context/checks/consumer-cli-green.json",
+      "stdout": "docs/foundational/phase1k/evidence/context/checks/consumer-cli-green.stdout",
+      "stderr": "docs/foundational/phase1k/evidence/context/checks/consumer-cli-green.stderr"
+    },
+    "consumer-cli-red": {
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "-run",
+        "^TestConsumerTerminalProbe$",
+        "."
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan/examples/communication/consumer",
+      "exit": 1,
+      "metadata": "docs/foundational/phase1k/evidence/context/checks/consumer-cli-red.json",
+      "stdout": "docs/foundational/phase1k/evidence/context/checks/consumer-cli-red.stdout",
+      "stderr": "docs/foundational/phase1k/evidence/context/checks/consumer-cli-red.stderr"
+    },
+    "consumer-executable": {
+      "command": [
+        "/tmp/alan-phase1k-terminal-consumer",
+        "-db",
+        "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/alan-phase1k-terminal-cli-5_22n5qq/terminal.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "exit": 0,
+      "metadata": "docs/foundational/phase1k/evidence/context/checks/consumer-executable.json",
+      "stdout": "docs/foundational/phase1k/evidence/context/checks/consumer-executable.stdout",
+      "stderr": "docs/foundational/phase1k/evidence/context/checks/consumer-executable.stderr"
+    },
+    "consumer-normal-final": {
+      "command": [
+        "go",
+        "test",
+        "-tags=integration",
+        "-count=1",
+        "-v",
+        "."
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan/examples/communication/consumer",
+      "exit": 0,
+      "metadata": "docs/foundational/phase1k/evidence/context/checks/consumer-normal-final.json",
+      "stdout": "docs/foundational/phase1k/evidence/context/checks/consumer-normal-final.stdout",
+      "stderr": "docs/foundational/phase1k/evidence/context/checks/consumer-normal-final.stderr"
+    },
+    "consumer-normal-reviewed": {
+      "command": [
+        "go",
+        "test",
+        "-tags=integration",
+        "-count=1",
+        "-v",
+        "."
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan/examples/communication/consumer",
+      "exit": 0,
+      "metadata": "docs/foundational/phase1k/evidence/context/checks/consumer-normal-reviewed.json",
+      "stdout": "docs/foundational/phase1k/evidence/context/checks/consumer-normal-reviewed.stdout",
+      "stderr": "docs/foundational/phase1k/evidence/context/checks/consumer-normal-reviewed.stderr"
+    },
+    "consumer-normal": {
+      "command": [
+        "go",
+        "test",
+        "-tags=integration",
+        "-count=1",
+        "-v",
+        "."
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan/examples/communication/consumer",
+      "exit": 0,
+      "metadata": "docs/foundational/phase1k/evidence/context/checks/consumer-normal.json",
+      "stdout": "docs/foundational/phase1k/evidence/context/checks/consumer-normal.stdout",
+      "stderr": "docs/foundational/phase1k/evidence/context/checks/consumer-normal.stderr"
+    },
+    "consumer-pins": {
+      "command": [
+        "cmp",
+        "examples/join/consumer/go.sum",
+        "examples/communication/consumer/go.sum"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "exit": 0,
+      "metadata": "docs/foundational/phase1k/evidence/context/checks/consumer-pins.json",
+      "stdout": "docs/foundational/phase1k/evidence/context/checks/consumer-pins.stdout",
+      "stderr": "docs/foundational/phase1k/evidence/context/checks/consumer-pins.stderr"
+    },
+    "consumer-race-final": {
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-tags=integration",
+        "-count=1",
+        "-v",
+        "."
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan/examples/communication/consumer",
+      "exit": 0,
+      "metadata": "docs/foundational/phase1k/evidence/context/checks/consumer-race-final.json",
+      "stdout": "docs/foundational/phase1k/evidence/context/checks/consumer-race-final.stdout",
+      "stderr": "docs/foundational/phase1k/evidence/context/checks/consumer-race-final.stderr"
+    },
+    "consumer-race-reviewed": {
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-tags=integration",
+        "-count=1",
+        "-v",
+        "."
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan/examples/communication/consumer",
+      "exit": 0,
+      "metadata": "docs/foundational/phase1k/evidence/context/checks/consumer-race-reviewed.json",
+      "stdout": "docs/foundational/phase1k/evidence/context/checks/consumer-race-reviewed.stdout",
+      "stderr": "docs/foundational/phase1k/evidence/context/checks/consumer-race-reviewed.stderr"
+    },
+    "consumer-race": {
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-tags=integration",
+        "-count=1",
+        "-v",
+        "."
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan/examples/communication/consumer",
+      "exit": 0,
+      "metadata": "docs/foundational/phase1k/evidence/context/checks/consumer-race.json",
+      "stdout": "docs/foundational/phase1k/evidence/context/checks/consumer-race.stdout",
+      "stderr": "docs/foundational/phase1k/evidence/context/checks/consumer-race.stderr"
+    },
+    "context-normal-final": {
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "./examples/communication"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "exit": 0,
+      "metadata": "docs/foundational/phase1k/evidence/context/checks/context-normal-final.json",
+      "stdout": "docs/foundational/phase1k/evidence/context/checks/context-normal-final.stdout",
+      "stderr": "docs/foundational/phase1k/evidence/context/checks/context-normal-final.stderr"
+    },
+    "context-normal": {
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "./examples/communication"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "exit": 0,
+      "metadata": "docs/foundational/phase1k/evidence/context/checks/context-normal.json",
+      "stdout": "docs/foundational/phase1k/evidence/context/checks/context-normal.stdout",
+      "stderr": "docs/foundational/phase1k/evidence/context/checks/context-normal.stderr"
+    },
+    "context-obstruction-freeze": {
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "-run",
+        "^TestCommunication(Artifacts|Policy|Configuration|ArtifactExport)$",
+        "./examples/communication"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "exit": 0,
+      "metadata": "docs/foundational/phase1k/evidence/context/checks/context-obstruction-freeze.json",
+      "stdout": "docs/foundational/phase1k/evidence/context/checks/context-obstruction-freeze.stdout",
+      "stderr": "docs/foundational/phase1k/evidence/context/checks/context-obstruction-freeze.stderr"
+    },
+    "context-race-final": {
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "-v",
+        "./examples/communication"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "exit": 0,
+      "metadata": "docs/foundational/phase1k/evidence/context/checks/context-race-final.json",
+      "stdout": "docs/foundational/phase1k/evidence/context/checks/context-race-final.stdout",
+      "stderr": "docs/foundational/phase1k/evidence/context/checks/context-race-final.stderr"
+    },
+    "context-race": {
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "-v",
+        "./examples/communication"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "exit": 0,
+      "metadata": "docs/foundational/phase1k/evidence/context/checks/context-race.json",
+      "stdout": "docs/foundational/phase1k/evidence/context/checks/context-race.stdout",
+      "stderr": "docs/foundational/phase1k/evidence/context/checks/context-race.stderr"
+    },
+    "first-green": {
+      "command": [
+        "go",
+        "test",
+        "-tags=integration",
+        "-count=1",
+        "-run",
+        "TestCommunication(Artifacts|Configuration|Policy)$",
+        "./examples/communication"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "exit": 1,
+      "metadata": "docs/foundational/phase1k/evidence/context/checks/first-green.json",
+      "stdout": "docs/foundational/phase1k/evidence/context/checks/first-green.stdout",
+      "stderr": "docs/foundational/phase1k/evidence/context/checks/first-green.stderr"
+    },
+    "formatting": {
+      "command": [
+        "gofmt",
+        "-l",
+        "examples/communication/deployment.go",
+        "examples/communication/deployment_test.go",
+        "examples/communication/consumer/main.go",
+        "examples/communication/consumer/main_test.go",
+        "examples/communication/consumer/terminal_test.go"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "exit": 0,
+      "metadata": "docs/foundational/phase1k/evidence/context/checks/formatting.json",
+      "stdout": "docs/foundational/phase1k/evidence/context/checks/formatting.stdout",
+      "stderr": "docs/foundational/phase1k/evidence/context/checks/formatting.stderr"
+    },
+    "preserved-sources": {
+      "command": [
+        "git",
+        "diff",
+        "--exit-code",
+        "--",
+        "author",
+        "runtime",
+        "schema",
+        "internal/executor",
+        "examples/join",
+        "examples/substitution",
+        "go.mod",
+        "go.sum"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "exit": 0,
+      "metadata": "docs/foundational/phase1k/evidence/context/checks/preserved-sources.json",
+      "stdout": "docs/foundational/phase1k/evidence/context/checks/preserved-sources.stdout",
+      "stderr": "docs/foundational/phase1k/evidence/context/checks/preserved-sources.stderr"
+    },
+    "red": {
+      "command": [
+        "go",
+        "test",
+        "-tags=integration",
+        "-count=1",
+        "-run",
+        "TestCommunication(Artifacts|Policy)$",
+        "./examples/communication"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "exit": 1,
+      "metadata": "docs/foundational/phase1k/evidence/context/checks/red.json",
+      "stdout": "docs/foundational/phase1k/evidence/context/checks/red.stdout",
+      "stderr": "docs/foundational/phase1k/evidence/context/checks/red.stderr"
+    },
+    "terminal-external-race": {
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-tags=integration",
+        "-count=1",
+        "-v",
+        "-run",
+        "^TestTerminalObservationPublicConsumer$",
+        "."
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan/examples/communication/consumer",
+      "exit": 0,
+      "metadata": "docs/foundational/phase1k/evidence/context/checks/terminal-external-race.json",
+      "stdout": "docs/foundational/phase1k/evidence/context/checks/terminal-external-race.stdout",
+      "stderr": "docs/foundational/phase1k/evidence/context/checks/terminal-external-race.stderr"
+    },
+    "terminal-external": {
+      "command": [
+        "go",
+        "test",
+        "-tags=integration",
+        "-count=1",
+        "-v",
+        "-run",
+        "^TestTerminalObservationPublicConsumer$",
+        "."
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan/examples/communication/consumer",
+      "exit": 0,
+      "metadata": "docs/foundational/phase1k/evidence/context/checks/terminal-external.json",
+      "stdout": "docs/foundational/phase1k/evidence/context/checks/terminal-external.stdout",
+      "stderr": "docs/foundational/phase1k/evidence/context/checks/terminal-external.stderr"
+    },
+    "terminal-final-freeze": {
+      "command": [
+        "go",
+        "test",
+        "-tags=integration",
+        "-count=1",
+        "-v",
+        "-run",
+        "^TestTerminalObservationPublicConsumer$",
+        "."
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan/examples/communication/consumer",
+      "exit": 0,
+      "metadata": "docs/foundational/phase1k/evidence/context/checks/terminal-final-freeze.json",
+      "stdout": "docs/foundational/phase1k/evidence/context/checks/terminal-final-freeze.stdout",
+      "stderr": "docs/foundational/phase1k/evidence/context/checks/terminal-final-freeze.stderr"
+    },
+    "terminal-probe": {
+      "command": [
+        "go",
+        "version"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "exit": 0,
+      "metadata": "docs/foundational/phase1k/evidence/context/checks/terminal-probe.json",
+      "stdout": "docs/foundational/phase1k/evidence/context/checks/terminal-probe.stdout",
+      "stderr": "docs/foundational/phase1k/evidence/context/checks/terminal-probe.stderr"
+    },
+    "available-artifacts-final": {
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "-run",
+        "^TestCommunicationArtifactExport$",
+        "./examples/communication"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "exit": 0,
+      "metadata": "docs/foundational/phase1k/evidence/context/checks/available-artifacts-final.json",
+      "stdout": "docs/foundational/phase1k/evidence/context/checks/available-artifacts-final.stdout",
+      "stderr": "docs/foundational/phase1k/evidence/context/checks/available-artifacts-final.stderr"
+    }
+  },
+  "current_source_matches_frozen_available_artifacts": "docs/foundational/phase1k/evidence/context/available-artifacts-final.json",
+  "final_source_check": "docs/foundational/phase1k/evidence/context/final-source-check.json"
+}

@@ -1,0 +1,199 @@
+package communication_test
+
+import (
+	"bytes"
+	"encoding/json"
+	"reflect"
+	"testing"
+
+	"github.com/JakeFAU/alan/author"
+	communication "github.com/JakeFAU/alan/examples/communication"
+	join "github.com/JakeFAU/alan/examples/join"
+	"github.com/JakeFAU/alan/examples/substitution"
+	"github.com/JakeFAU/alan/examples/substitution/a"
+	"github.com/JakeFAU/alan/examples/substitution/b"
+	"github.com/JakeFAU/alan/runtime"
+)
+
+func config() substitution.Config {
+	return substitution.Config{Shape: "parallel", Request: substitution.Request{ID: 1, Value: 0, Mode: "answer"}, Limits: runtime.ResourceLimits{MaxInvocations: 3, MaxCreatedRuns: 3, MaxDepth: 2, MaxInFlight: 1}}
+}
+func candidate(t *testing.T, name string) author.Template {
+	t.Helper()
+	var c author.Template
+	var err error
+	if name == "b" {
+		c, err = b.New()
+	} else {
+		c, err = a.New()
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+	return c
+}
+
+type decodedProgram struct {
+	Semantics string
+	Code      []json.RawMessage
+	Author    author.Metadata
+}
+
+func artifact(t *testing.T, d substitution.Deployment, subject string) runtime.Artifact {
+	t.Helper()
+	for _, run := range d.Provision.Runs {
+		if run.ID.Subject != subject {
+			continue
+		}
+		for _, p := range d.Provision.Programs {
+			if p.ID == run.ProgramID {
+				return p
+			}
+		}
+	}
+	t.Fatalf("missing program for %s", subject)
+	return runtime.Artifact{}
+}
+func decodeProgram(t *testing.T, p runtime.Artifact) decodedProgram {
+	t.Helper()
+	var v decodedProgram
+	if err := json.Unmarshal(p.Bytes, &v); err != nil {
+		t.Fatal(err)
+	}
+	return v
+}
+func catalogue(t *testing.T, p runtime.Provision) map[string]runtime.Artifact {
+	t.Helper()
+	out := map[string]runtime.Artifact{}
+	for _, a := range p.Programs {
+		if _, exists := out[a.ID]; exists {
+			t.Fatalf("duplicate artifact %s", a.ID)
+		}
+		out[a.ID] = a
+	}
+	return out
+}
+
+// A changed original template, prefix, topology or grant invalidates the comparison.
+func TestCommunicationArtifacts(t *testing.T) {
+	for _, name := range []string{"a", "b"} {
+		t.Run(name, func(t *testing.T) {
+			c := candidate(t, name)
+			old, err := join.New(c, config(), join.Options{})
+			if err != nil {
+				t.Fatal(err)
+			}
+			got, err := communication.New(c, config(), communication.Options{})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !bytes.Equal(old.Candidate.Bytes(), got.Candidate.Bytes()) || !bytes.Equal(old.Entry.Bytes(), got.Entry.Bytes()) || !bytes.Equal(old.Peer.Bytes(), got.Peer.Bytes()) {
+				t.Fatal("original A/B/S template bytes changed")
+			}
+			if got.FixedRuns != 2 || len(got.Provision.Runs) != 2 || !reflect.DeepEqual(old.Provision.Subjects, got.Provision.Subjects) || !reflect.DeepEqual(old.Provision.Composition, got.Provision.Composition) {
+				t.Fatal("static topology, template declarations or limits changed")
+			}
+			before, after := catalogue(t, old.Provision), catalogue(t, got.Provision)
+			for _, tc := range []struct {
+				subject, name string
+				prefix        int
+			}{{"root", "phase1k-ack-root", 2}, {"peer", "phase1k-ack-static-peer", 34}} {
+				p, q := artifact(t, old, tc.subject), artifact(t, got, tc.subject)
+				op, np := decodeProgram(t, p), decodeProgram(t, q)
+				if np.Author.Name != tc.name {
+					t.Errorf("%s name %q, want %q", tc.subject, np.Author.Name, tc.name)
+				}
+				if q.ID == p.ID || bytes.Equal(q.Bytes, p.Bytes) {
+					t.Errorf("%s lacks separate context identity", tc.subject)
+				}
+				if !reflect.DeepEqual(op.Code[:tc.prefix], np.Code[:tc.prefix]) {
+					t.Errorf("%s ordered invocation prefix changed", tc.subject)
+				}
+				for _, port := range []struct{ name, obligation string }{{"report", "phase1k_s_report"}, {"ack", "phase1k_s_ack"}} {
+					if np.Author.Ports[port.name].Obligation != port.obligation {
+						t.Errorf("%s missing %s", tc.subject, port.obligation)
+					}
+				}
+				if len(np.Author.Effects) != 0 || len(np.Author.Invocations) != 1 {
+					t.Errorf("%s added effect/invocation declaration", tc.subject)
+				}
+				delete(before, p.ID)
+				delete(after, q.ID)
+			}
+			if !reflect.DeepEqual(before, after) {
+				t.Fatal("original programme catalogue changed (comparison by ID)")
+			}
+			for i := range old.Provision.Runs {
+				p, q := old.Provision.Runs[i], got.Provision.Runs[i]
+				p.ProgramID, q.ProgramID = "", ""
+				if !reflect.DeepEqual(p, q) {
+					t.Fatal("initial run inputs or state changed")
+				}
+			}
+			want := map[runtime.Permission]bool{
+				{Kind: "message", Source: "peer", Target: "root", Operation: "message", Revision: 1, Obligation: "phase1k_s_report"}: true,
+				{Kind: "message", Source: "root", Target: "peer", Operation: "message", Revision: 1, Obligation: "phase1k_s_ack"}:    true,
+			}
+			if len(got.Provision.Permissions) != len(want) {
+				t.Fatal("report/ACK grants", got.Provision.Permissions)
+			}
+			for _, p := range got.Provision.Permissions {
+				if !want[p] {
+					t.Fatal("unexpected permission", p)
+				}
+			}
+		})
+	}
+}
+
+func TestCommunicationConfiguration(t *testing.T) {
+	c := candidate(t, "a")
+	for _, mode := range []string{"", "answer", "fail", "absent", "pending"} {
+		t.Run("s_"+mode, func(t *testing.T) {
+			got, err := communication.New(c, config(), communication.Options{SMode: mode})
+			if err != nil {
+				t.Fatal(err)
+			}
+			old, err := join.New(c, config(), join.Options{SMode: mode})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got.Peer.ID() != old.Peer.ID() || !bytes.Equal(got.Peer.Bytes(), old.Peer.Bytes()) {
+				t.Fatal("S not reused from original public builder")
+			}
+		})
+	}
+	for _, tc := range []struct {
+		name    string
+		change  func(*substitution.Config)
+		options communication.Options
+	}{
+		{name: "shape", change: func(c *substitution.Config) { c.Shape = "sequential" }},
+		{name: "id", change: func(c *substitution.Config) { c.Request.ID = 0 }},
+		{name: "value", change: func(c *substitution.Config) { c.Request.Value = 2 }},
+		{name: "s_mode", options: communication.Options{SMode: "unknown"}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			cfg := config()
+			if tc.change != nil {
+				tc.change(&cfg)
+			}
+			if _, err := communication.New(c, cfg, tc.options); err == nil {
+				t.Fatal("accepted invalid configuration")
+			}
+		})
+	}
+	cfg := config()
+	cfg.Shape = ""
+	got, err := communication.New(c, cfg, communication.Options{SMode: "answer"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	want, err := communication.New(c, config(), communication.Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(catalogue(t, got.Provision), catalogue(t, want.Provision)) {
+		t.Fatal("default/answer identities differ")
+	}
+}
