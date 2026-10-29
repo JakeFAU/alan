@@ -1,0 +1,270 @@
+{
+  "status": "Task2b qualification review candidate; no Task3 runtime qualification",
+  "reference_aggregate_sha256": "794c6cc516b04a736a12d757212221e2bd9309f6c33c15282e2819561d7b676b",
+  "reference_files_unchanged": true,
+  "inherited_source_manifest_files_unchanged": 21,
+  "prior_archives_unchanged": true,
+  "bundle": {
+    "path": "qualification.json.gz",
+    "sha256": "faf47c274b4dfe5eda51fea80d4c91df31ca22fd41435b7a12460ecfaa94cca5",
+    "uncompressed_bytes": 416318,
+    "compressed_bytes": 27463
+  },
+  "source_manifest": {
+    "path": "sources.json",
+    "sha256": "10317fccdf0ee4bb90c632d2099df800f93d14cfd5b9584ba5091ab983363ab1",
+    "files": 128
+  },
+  "normal_race_outputs_byte_identical": {
+    "invocation-join-census-K1.json": "36027167445f60f942d38b6ccc9844509a732f0b8227e49d7851f0150590a2eb",
+    "invocation-join-census-helper.json": "032acb0fa97f1683c55bcb2b1cc4222e9d802164a372fed60ce9dbc6bad46b21",
+    "invocation-join-census-local.json": "ebf82fc23bdd829d0da7b9a6e3ab01d933190890bd744924f049fb9776e8d009",
+    "invocation-join-local-subset.json": "e50c7c5bfb4b7c1bd1d234b8f5fce31818414d43573ec99d5b7c6dfa62441610"
+  },
+  "artifact_output_sha256": "cb2a7119d9c0933f063265743df6272418935ae82e9c9c470fdb5ccdadb269e9",
+  "first_artifact_output_sha256": "8c11d784012ef995fc633831b25471760163d636fd5bedf598201a6a3795f3fa",
+  "aggregate_census": {
+    "K1": {
+      "configurations": 4,
+      "States": 1952,
+      "ModelStates": 1952,
+      "Edges": 4276,
+      "Revisits": 2328,
+      "Rejections": 0,
+      "Terminal": 8,
+      "Pending": 0,
+      "Stuck": 0,
+      "Cycles": 0,
+      "Cutoffs": 0,
+      "RankFailures": 0,
+      "StateFailures": 0,
+      "PrefixFailures": 0,
+      "ComponentFailures": 0,
+      "GuaranteeFailures": 0,
+      "maxima": 8,
+      "rank_min": 100,
+      "rank_max": 7800,
+      "rank_cap": 10621,
+      "maxima_charges": [
+        [
+          2,
+          2,
+          0,
+          1
+        ],
+        [
+          3,
+          3,
+          0,
+          1
+        ]
+      ],
+      "counterexamples": 0
+    },
+    "helper": {
+      "configurations": 4,
+      "States": 1706,
+      "ModelStates": 1706,
+      "Edges": 3678,
+      "Revisits": 1976,
+      "Rejections": 0,
+      "Terminal": 4,
+      "Pending": 0,
+      "Stuck": 0,
+      "Cycles": 0,
+      "Cutoffs": 0,
+      "RankFailures": 0,
+      "StateFailures": 0,
+      "PrefixFailures": 0,
+      "ComponentFailures": 0,
+      "GuaranteeFailures": 0,
+      "maxima": 4,
+      "rank_min": 100,
+      "rank_max": 7813,
+      "rank_cap": 10621,
+      "maxima_charges": [
+        [
+          3,
+          3,
+          0,
+          1
+        ]
+      ],
+      "counterexamples": 0
+    },
+    "local": {
+      "configurations": 4,
+      "States": 926,
+      "ModelStates": 926,
+      "Edges": 2006,
+      "Revisits": 1084,
+      "Rejections": 0,
+      "Terminal": 4,
+      "Pending": 0,
+      "Stuck": 0,
+      "Cycles": 0,
+      "Cutoffs": 0,
+      "RankFailures": 0,
+      "StateFailures": 0,
+      "PrefixFailures": 0,
+      "ComponentFailures": 0,
+      "GuaranteeFailures": 0,
+      "maxima": 4,
+      "rank_min": 100,
+      "rank_max": 5706,
+      "rank_cap": 10621,
+      "maxima_charges": [
+        [
+          2,
+          2,
+          0,
+          1
+        ]
+      ],
+      "counterexamples": 0
+    }
+  },
+  "commands": {
+    "artifact-extraction.json": {
+      "sha256": "1795d620591781e2d001e52089e5b2d85bf3d40e0b1bda140cf100482e4db81b",
+      "argv": [
+        "go",
+        "run",
+        "/tmp/alan-phase1l-task2b/extract_artifacts.go",
+        "/tmp/alan-phase1l-task2b/artifacts.json"
+      ],
+      "utc": "2026-10-29T20:32:39.403129+00:00",
+      "exit_code": 0,
+      "selected_leaf_count": 0
+    },
+    "artifact-input-extraction.json": {
+      "sha256": "48f14f4055babb8f789304e33a0647edfb39e481a372cfa82939e04a1e60aea5",
+      "argv": [
+        "go",
+        "run",
+        "/tmp/alan-phase1l-task2b/extract_inputs.go",
+        "/tmp/alan-phase1l-task2b/artifacts-inputs.json"
+      ],
+      "utc": "2026-10-29T20:36:57.862778+00:00",
+      "exit_code": 0,
+      "selected_leaf_count": 0
+    },
+    "correspondence.json": {
+      "sha256": "969a3d1bb8320952a41d33473ed7c03591498a5f3172b5302a03bccea5c055ef",
+      "argv": [
+        "python3",
+        "/tmp/alan-phase1l-task2b/check_correspondence.py",
+        "/tmp/alan-phase1l-task2b/artifacts-inputs.json",
+        "/tmp/alan-phase1l-task2b/correspondence.json"
+      ],
+      "utc": "2026-10-29T20:38:05.204847+00:00",
+      "exit_code": 0,
+      "selected_leaf_count": 0
+    },
+    "local-normal.json": {
+      "sha256": "f4c1457861a7f1da1ef9b881ae0d9d1aeb95cef6c78cfaacfb0a90baccfe8d9d",
+      "argv": [
+        "go",
+        "test",
+        "-run",
+        "^(TestInvocationJoinLocalRefinementSubset|TestFrozenInstructionCorrespondenceCoverage)$",
+        "-count=1",
+        "-v",
+        "-timeout=10m",
+        "./research/substitution"
+      ],
+      "utc": "2026-10-29T20:31:24.977400+00:00",
+      "exit_code": 0,
+      "selected_leaf_count": 11
+    },
+    "qualification-race.json": {
+      "sha256": "406dc993d1902e9a02293adcde0e56e5e2ef258ac590c64f61bc79d0ee50f3a2",
+      "argv": [
+        "go",
+        "test",
+        "-race",
+        "-run",
+        "^(TestInvocationJoin.*|TestFrozenInstructionCorrespondenceCoverage)$",
+        "-count=1",
+        "-v",
+        "-timeout=10m",
+        "./research/substitution"
+      ],
+      "utc": "2026-10-29T20:35:39.924381+00:00",
+      "exit_code": 0,
+      "selected_leaf_count": 23
+    },
+    "reference-normal.json": {
+      "sha256": "b1555d9aee589a7c04171cba1fdfa5ff9577c0e38bf337f2bed300876cdff433",
+      "argv": [
+        "go",
+        "test",
+        "-run",
+        "^TestInvocationJoinReferenceQualification$",
+        "-count=1",
+        "-v",
+        "-timeout=10m",
+        "./research/substitution"
+      ],
+      "utc": "2026-10-29T20:30:35.676572+00:00",
+      "exit_code": 0,
+      "selected_leaf_count": 4
+    },
+    "replacements-normal.json": {
+      "sha256": "dead3035279503cf0a0175a89694935ebf90d6a9635ddb2f43b8a8b3426f7d70",
+      "argv": [
+        "go",
+        "test",
+        "-run",
+        "^TestInvocationJoinReplacementQualification$",
+        "-count=1",
+        "-v",
+        "-timeout=10m",
+        "./research/substitution"
+      ],
+      "utc": "2026-10-29T20:31:24.055946+00:00",
+      "exit_code": 0,
+      "selected_leaf_count": 8
+    },
+    "toolchain.json": {
+      "sha256": "049fc5aa31336fad1228fa83f3991552556d46504176f28a9276f056f7d13738",
+      "argv": [
+        "go",
+        "env",
+        "-json",
+        "GOVERSION",
+        "GOOS",
+        "GOARCH",
+        "CGO_ENABLED",
+        "GOMOD",
+        "GOWORK",
+        "GOTOOLCHAIN",
+        "GOPROXY",
+        "GOSUMDB",
+        "GOFLAGS",
+        "GOCACHE"
+      ],
+      "utc": "2026-10-29T20:39:00.490229+00:00",
+      "exit_code": 0,
+      "selected_leaf_count": 0
+    },
+    "vet.json": {
+      "sha256": "5a21969f8b7b431667dd6554589fe24ad758469109968d331835f367ea8fb8f3",
+      "argv": [
+        "go",
+        "vet",
+        "./research/substitution"
+      ],
+      "utc": "2026-10-29T20:36:24.089337+00:00",
+      "exit_code": 0,
+      "selected_leaf_count": 0
+    }
+  },
+  "reproducer_sources": {
+    "bundle_evidence.py": "95f821f39cd828f6459c7879a972b8aa4ea9131f24f164002a077cb4e1aaaf58",
+    "capture_check.py": "575b71f222efd82b5923004896f9a2a8e9ad4727155f6e4cd1dd4f365abfa7bb",
+    "check_correspondence.py": "c134506575e6aa833219fae007402d21e6088befd4e853106ba56940c950c0a2",
+    "extract_artifacts.go.txt": "d4d32121a04d085952d2106b690884030722652574c52f9ffcf95ba3cf7222b9",
+    "extract_inputs.go.txt": "91221cc53d25a1b76221d66229a51d67cb9124d2601e9c1ff666dc76d2f61439"
+  }
+}
