@@ -1,0 +1,78 @@
+package main
+
+import (
+	"bytes"
+	"crypto/sha256"
+	"encoding/json"
+	"fmt"
+	"os"
+
+	"github.com/JakeFAU/alan/author"
+	"github.com/JakeFAU/alan/examples/invocationjoin"
+	"github.com/JakeFAU/alan/examples/substitution"
+	"github.com/JakeFAU/alan/examples/substitution/a"
+	"github.com/JakeFAU/alan/examples/substitution/b"
+	"github.com/JakeFAU/alan/runtime"
+)
+
+type record struct {
+	CandidateID, SuccessorID, ParentID             string
+	CandidateSHA256, SuccessorSHA256, ParentSHA256 string
+	Candidate, Successor, Parent                   json.RawMessage
+	Provision                                      runtime.Provision
+	ProgramSHA256                                  map[string]string
+	FrozenTemplateExact, FrozenTemplateTrimmed     map[string]bool
+}
+
+func digest(raw []byte) string { return fmt.Sprintf("%x", sha256.Sum256(raw)) }
+
+func run() error {
+	if len(os.Args) != 2 {
+		return fmt.Errorf("expected output path")
+	}
+	out := map[string]record{}
+	for _, candidate := range []struct {
+		name  string
+		build func() (author.Template, error)
+	}{{"a", a.New}, {"b", b.New}} {
+		template, err := candidate.build()
+		if err != nil {
+			return err
+		}
+		config := substitution.Config{Request: substitution.Request{ID: 1, Value: 0, Mode: "answer"}, Limits: runtime.ResourceLimits{MaxInvocations: 3, MaxCreatedRuns: 3, MaxDepth: 2, MaxEffects: 0, MaxInFlight: 1}}
+		d, err := invocationjoin.New(template, config, invocationjoin.Options{})
+		if err != nil {
+			return err
+		}
+		r := record{CandidateID: d.Candidate.ID(), SuccessorID: d.Successor.ID(), ParentID: d.Parent.ID(), CandidateSHA256: digest(d.Candidate.Bytes()), SuccessorSHA256: digest(d.Successor.Bytes()), ParentSHA256: digest(d.Parent.Bytes()), Candidate: d.Candidate.Bytes(), Successor: d.Successor.Bytes(), Parent: d.Parent.Bytes(), Provision: d.Provision, ProgramSHA256: map[string]string{}, FrozenTemplateExact: map[string]bool{}, FrozenTemplateTrimmed: map[string]bool{}}
+		for _, p := range d.Provision.Programs {
+			r.ProgramSHA256[p.ID] = digest(p.Bytes)
+		}
+		for name, raw := range map[string][]byte{"candidate": d.Candidate.Bytes(), "s": d.Successor.Bytes()} {
+			path := "docs/foundational/phase1k/evidence/context/frozen/" + candidate.name + "-" + name + "-template.json"
+			frozen, err := os.ReadFile(path)
+			if err != nil {
+				return err
+			}
+			r.FrozenTemplateExact[name] = bytes.Equal(raw, frozen)
+			r.FrozenTemplateTrimmed[name] = bytes.Equal(raw, bytes.TrimSpace(frozen))
+		}
+		out[candidate.name] = r
+	}
+	raw, err := json.MarshalIndent(out, "", "  ")
+	if err != nil {
+		return err
+	}
+	if err = os.WriteFile(os.Args[1], append(raw, '\n'), 0644); err != nil {
+		return err
+	}
+	fmt.Printf("bindings=%d output_sha256=%s\n", len(out), digest(append(raw, '\n')))
+	return nil
+}
+
+func main() {
+	if err := run(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+}

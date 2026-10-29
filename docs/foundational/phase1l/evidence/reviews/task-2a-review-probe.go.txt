@@ -1,0 +1,61 @@
+
+// Source-only independent reviewer probe; no graph exploration or runtime sample.
+func reviewHelperHistory(helperFailure, candidateReply bool) (JoinConfig, []JoinEvent) {
+ c, original := joinOracleFixture(false, "answer")
+ if !helperFailure {c.I,c.R=2,2}
+ events:=[]JoinEvent{}
+ var sAdmission JoinEvent
+ for _,e:=range original {if e.Fact.Operation=="s" && e.Fact.Kind=="admit" {sAdmission=e}}
+ hf:=func(kind string) Observation {return Observation{Kind:kind,Operation:"h",Parent:"e",Role:"helper",Request:c.Request}}
+ for _,e:=range original {
+  f:=&e.Fact
+  if f.Operation=="s" && f.Kind=="admit" {continue}
+  if f.Operation=="e" {
+   if !candidateReply && (f.Kind=="reply_commit" || f.Kind=="reply_authorize" || f.Kind=="reply_admit") {continue}
+   if f.Kind=="terminal_freeze" || f.Kind=="publish" || f.Kind=="outcome_deliver" || f.Kind=="outcome_consume" {
+    f.Status="failed"
+    if f.Kind!="terminal_freeze" {
+     f.Reason="member_failed"
+     if !candidateReply {f.Present,f.ID,f.Value=false,0,0}
+    }
+   }
+  }
+  if f.Operation=="root" {f.Status="failed";if f.Kind=="root_publish" {f.Reason="member_failed"}}
+  events=append(events,e)
+  if f.Operation=="e" && f.Kind=="request_consume" {
+   events=append(events,sAdmission,JoinEvent{Fact:hf("invoke_commit")})
+   a:=hf("invoke_authorize");a.Status,a.Reason="allowed","authorized"
+   events=append(events,JoinEvent{Fact:a,SourceOpen:true,RevisionMatches:true,GenerationMatches:true})
+   a=hf("admit")
+   if helperFailure {
+    a.Status,a.I,a.R="accepted",1,1
+    events=append(events,JoinEvent{Fact:a},JoinEvent{Fact:hf("request_consume")})
+    a=hf("terminal_freeze");a.Status="failed";events=append(events,JoinEvent{Fact:a})
+   } else {
+    a.Status,a.Reason="rejected","invocation_limit";events=append(events,JoinEvent{Fact:a})
+   }
+   for _,kind:=range []string{"publish","outcome_deliver","outcome_consume"} {
+    a=hf(kind);a.Status,a.Reason="rejected","invocation_limit"
+    if helperFailure {a.Status,a.Reason="failed","member_failed"}
+    events=append(events,JoinEvent{Fact:a})
+   }
+  }
+ }
+ return c,events
+}
+func TestReviewRefusedHelperNoReplyControl(t *testing.T) {
+ c,events:=reviewHelperHistory(false,false)
+ if bad:=CheckJoinPrefix(c,events);len(bad)!=0 {t.Fatalf("honest control prefix: %+v",bad)}
+ if bad:=CheckJoinComponent(c,events);len(bad)!=0 {t.Fatalf("legitimate K1 refusal control: %+v",bad)}
+ if bad:=CheckJoinGuarantee(c,events);len(bad)==0 {t.Fatal("failed scarce control claimed G")}
+}
+func TestReviewRefusedHelperReply(t *testing.T) {
+ c,events:=reviewHelperHistory(false,true)
+ if bad:=CheckJoinPrefix(c,events);len(bad)!=0 {t.Fatalf("honest attack prefix: %+v",bad)}
+ if bad:=CheckJoinComponent(c,events);len(bad)==0 {t.Fatal("K1 checker accepted a candidate reply after consumed helper refusal")}
+}
+func TestReviewAcceptedHelperFailure(t *testing.T) {
+ c,events:=reviewHelperHistory(true,false)
+ if bad:=CheckJoinPrefix(c,events);len(bad)!=0 {t.Fatalf("honest attack prefix: %+v",bad)}
+ if bad:=CheckJoinComponent(c,events);len(bad)==0 {t.Fatal("K1 checker accepted an admitted helper failing without its required reply")}
+}
