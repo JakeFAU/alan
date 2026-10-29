@@ -1,7 +1,5 @@
 \documentclass[11pt,a4paper]{article}
 
-\usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
 \usepackage[margin=1in]{geometry}
 \usepackage{amsmath,amssymb,amsthm,mathtools}
 \usepackage{booktabs,array,longtable}
@@ -15,6 +13,9 @@
   citecolor=green!50!black,
   urlcolor=blue!70!black
 }
+
+% Allow slight inter-word stretch before overflowing right margin on inline code/math
+\emergencystretch=1.5em
 
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{lemma}[theorem]{Lemma}
@@ -36,6 +37,10 @@
 \newcommand{\Conf}{\mathsf{Conf}}
 \newcommand{\ITree}{\mathsf{ITree}}
 \newcommand{\JITree}{\mathsf{JITree}}
+
+% Semantic evaluation brackets (zero external font dependencies)
+\newcommand{\llbracket}{\left[\!\left[}
+\newcommand{\rrbracket}{\right]\!\right]}
 
 \lstdefinestyle{alancode}{
   basicstyle=\ttfamily\footnotesize,
@@ -90,7 +95,7 @@ Even industrial ``durable execution'' engines (such as Temporal) address process
 \begin{table}[ht]
 \centering
 \small
-\begin{tabular}{@{}p{0.28\textwidth}p{0.33\textwidth}p{0.33\textwidth}@{}}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.28\textwidth}>{\raggedright\arraybackslash}p{0.33\textwidth}>{\raggedright\arraybackslash}p{0.33\textwidth}@{}}
 \toprule
 \textbf{Foundational Work} & \textbf{Fundamental Contribution} & \textbf{Connection to ALAN} \\
 \midrule
@@ -127,7 +132,7 @@ To situate this work precisely for a programming-languages audience, we distingu
 \subsection{Beyond the Turing Tarpit}
 Church \cite{church1936unsolvable}, Turing \cite{turing1936computable}, and Minsky's Theorem Ia \cite{minsky1961recursive} establish that two unbounded integer registers with increment-and-jump and decrement-and-branch-on-zero suffice to compute any partial recursive function. In an open, durable agent system, however, appealing to Turing completeness obscures two critical realities:
 \begin{enumerate}
-  \item \textbf{Bounded Realizability:} Practical durable deployments enforce explicit resource ceilings $\mathcal{L} = (\mathit{MaxProgramBytes}, \mathit{MaxDataBytes}, \mathit{MaxObservationBytes}, \mathit{MaxOutputBytes})$ (each $1\text{ MiB}$ by default in \texttt{internal/executor/program.go}) and checked 64-bit integer arithmetic (\texttt{int64} overflow trapping to \texttt{ErrLimit}). Unbounded host callbacks violate finite-step scheduling.
+  \item \textbf{Bounded Realizability:} Practical durable deployments enforce explicit resource ceilings $\mathcal{L} = (\mathit{MaxProgramBytes}, \mathit{MaxDataBytes}, \mathit{MaxObservationBytes}, \mathit{MaxOutputBytes})$ (each $1\text{ MiB}$ by default in \path{internal/executor/program.go}) and checked 64-bit integer arithmetic (\texttt{int64} overflow trapping to \texttt{ErrLimit}). Unbounded host callbacks violate finite-step scheduling.
   \item \textbf{Computability vs.\ Macro-Expressiveness:} Following Felleisen \cite{felleisen1991expressive}, whole-program simulation via Gödel numbering is vacuous for language design because it destroys concurrency, local state isolation, and observational equivalence in contexts.
 \end{enumerate}
 
@@ -150,7 +155,7 @@ By structural induction on $M \in \mathsf{Syn}_{\mathcal{L}_{\text{fixed}}}$, to
 In ALAN's core instruction calculus $\mathcal{L}_{\text{ALAN}}$ (\texttt{set}, \texttt{add}, \texttt{branch}, \texttt{jump}, \texttt{receive}, \texttt{emit}, \texttt{end}), a bounded supervisor $\mathsf{Supervise}(a_{\text{child}}, B_{\text{retry}}, \mathit{obl}, P_{\text{init}}, P_{\text{succ}})$ is locally macro-expressible without any privileged supervisor opcode or runtime role dispatch, \emph{if and only if} the runtime boundary admits typed terminal observations ($\mathit{kind}=\mathtt{"terminal"}, \mathit{prov}=\mathtt{"runtime\text{-}terminal"}$) and correlated lifecycle intents/settlements ($\mathit{kind}=\mathtt{"lifecycle"}$).
 \end{theorem}
 \begin{proof}
-The constructive macro-expansion $\Phi_{\mathsf{Supervise}}$ is given by the 15-instruction inner supervisor in \texttt{internal/executor/examples.go} (\texttt{NestedProvision}, lines 52--69):
+The constructive macro-expansion $\Phi_{\mathsf{Supervise}}$ is given by the 15-instruction inner supervisor in \path{internal/executor/examples.go} (\texttt{NestedProvision}, lines 52--69):
 \begin{lstlisting}[style=alancode]
 pc  0: receive(kind="message", prov="ordinary-message", src=Outer, gen=1, obl="inner-start") -> [started]
 pc  1: emit(kind="message", target=Worker, gen=Ref("expected"), obl="worker-work", payload=P_init)
@@ -171,43 +176,44 @@ pc 12: jump(target=2)
 pc 13: end(outcome="succeeded")
 pc 14: end(outcome="failed")
 \end{lstlisting}
-At \texttt{pc = 6}, \texttt{emit} atomically commits the \texttt{Retry} intent, stores its canonical ID into \texttt{pending}, and increments \texttt{spent} by $+1$. Conversely, in the initial Phase 1 model where \texttt{DeliverTerminal} updated an external ledger without inserting a typed \texttt{"terminal"} inbox observation (Phase 1C regression in \texttt{docs/foundational/05-decisions.md}), no ordinary instruction at \texttt{pc = 2} could observe child failure, proving that typed outcome admission is an essential expressive boundary.
+At \texttt{pc = 6}, \texttt{emit} atomically commits the \texttt{Retry} intent, stores its canonical ID into \texttt{pending}, and increments \texttt{spent} by $+1$. Conversely, in the initial Phase 1 model where \texttt{DeliverTerminal} updated an external ledger without inserting a typed \texttt{"terminal"} inbox observation (Phase 1C regression in \path{docs/foundational/05-decisions.md}), no ordinary instruction at \texttt{pc = 2} could observe child failure, proving that typed outcome admission is an essential expressive boundary.
 \end{proof}
 
 \subsection{Bounded Data-Dependent Iteration and Snapshot Cursors (Phase 1G)}
 
 \begin{theorem}[Laminar Cursor Conservation and Strong Termination]
 \label{thm:loops}
-Let $P$ be any program passing \texttt{validateProgram(P)} under \texttt{CollectionSemanticVersion} (\texttt{internal/executor/collections.go}), with code length $L = |P.\mathtt{Code}|$, list capacity bound $M = \max_c c.\mathtt{MaxItems}$, and loop nesting depth $d \le \mathtt{MaxNesting}$. For any valid open projection $\sigma_0$:
+Let $P$ be any program passing \texttt{validateProgram(P)} under \allowbreak\texttt{CollectionSemanticVersion} (\path{internal/executor/collections.go}), with code length $L = |P.\mathtt{Code}|$, list capacity bound $M = \max_c c.\mathtt{MaxItems}$, and loop nesting depth $d \le \mathtt{MaxNesting}$. For any valid open projection $\sigma_0$:
 \begin{enumerate}
   \item \textbf{Snapshot Invariance:} Mutations to $\rho[\mathtt{items}]$ inside a loop body leave the active cursor's cloned $\kappa[\mathit{pc}_{\text{start}}].\mathit{Snapshot}$ invariant.
-  \item \textbf{Cursor Well-Bracketedness:} $\kappa[\mathit{pc}_{\text{start}}]$ exists in $\sigma$ iff $\mathit{pc}_{\text{start}} < \sigma.\mathit{pc} < P.\mathtt{Code}[\mathit{pc}_{\text{start}}].\mathtt{Otherwise}$.
+  \item \textbf{Cursor Well-Bracketedness:} $\kappa[\mathit{pc}_{\text{start}}]$ exists in $\sigma$ iff $\mathit{pc}_{\text{start}} < \sigma.\mathit{pc} < \allowbreak P.\mathtt{Code}[\mathit{pc}_{\text{start}}].\mathtt{Otherwise}$.
   \item \textbf{Strong Termination:} Every local reduction sequence without \texttt{receive} terminates in at most $L \cdot (M+2)^d$ steps.
 \end{enumerate}
 \end{theorem}
 \begin{proof}
-\texttt{validateCollections} enforces that all \texttt{foreach}--\texttt{loop} intervals are strictly nested or disjoint (laminar), forbids any backward \texttt{jump} or \texttt{branch} ($\mathit{target} \le \mathit{pc}$), and forbids external jumps into a loop body. Thus the tuple of remaining snapshot elements $(|\kappa[\mathit{pc}_1].\mathit{Snapshot}| - \kappa[\mathit{pc}_1].\mathit{Index}, \dots, \sigma.\mathit{pc})$ strictly decreases in the well-founded lexicographic order on $\mathbb{N}^{d+1}$ at every step.
+\texttt{validateCollections} enforces that all \texttt{foreach}--\texttt{loop} intervals are strictly nested or disjoint (laminar), forbids any backward \texttt{jump} or \texttt{branch} ($\mathit{target} \le \mathit{pc}$), and forbids external jumps into a loop body. Thus the tuple of remaining snapshot elements $(\vert{}\kappa[\mathit{pc}_1].\mathit{Snapshot}\vert{} - \kappa[\mathit{pc}_1].\mathit{Index}, \dots, \sigma.\mathit{pc})$ strictly decreases in the well-founded lexicographic order on $\mathbb{N}^{d+1}$ at every step.
 \end{proof}
 
-\paragraph{Bounded adaptive application (Phase 1H).} \texttt{examples/adaptive} uses the existing public authoring operations to accept seed work after initialization and derive each ordered successor frontier from the preceding round's returned outcomes. A single retained three-token \texttt{ForEach} controls at most three rounds, with at most eight application-accepted leaf items across the obligation. Each round emits its item invocations, consumes all required outcomes through their original operation handles, checks the complete candidate frontier for identity collisions and remaining capacity, and retains a one-row decision before emitting successor work. Application work IDs are distinct from runtime operation identities. The full accepted-frontier count is retained before its first item intent; runtime invocation, created-run and external-attempt charges remain separate facts.
+\paragraph{Bounded adaptive application (Phase 1H).} \path{examples/adaptive} uses the existing public authoring operations to accept seed work after initialization and derive each ordered successor frontier from the preceding round's returned outcomes. A single retained three-token \texttt{ForEach} controls at most three rounds, with at most eight application-accepted leaf items across the obligation. Each round emits its item invocations, consumes all required outcomes through their original operation handles, checks the complete candidate frontier for identity collisions and remaining capacity, and retains a one-row decision before emitting successor work. Application work IDs are distinct from runtime operation identities. The full accepted-frontier count is retained before its first item intent; runtime invocation, created-run and external-attempt charges remain separate facts.
 
 The scalar policy maps returned observations 0/1/2 to zero/one/two ordered children, using the finite integer identity scheme in the application contract. The historical paired controlled cases used the same request and retained artifacts: changing only gamma's returned observation from 2 to 0 changed frontiers \texttt{[1,2,3] / [7,10,11] / [31]} into \texttt{[1,2,3] / [7]}. Direct and wrapped deployment use the identical adaptive artifact at maximum leaf depths 2 and 3. Additional rounds do not increase invocation depth. Request round/work limits persist under the shared root envelope of 32 accepted invocations, 64 created runs and 96 external reservations, with physical capacity 1 or 2; the fixed root run is separate provisioning cost.
 
 Protocol success does not mean exhaustive application completion. Work- or round-limit stops return \texttt{complete=false} with the entire unperformed frontier; only exhaustion returns \texttt{complete=true}. A required unknown outcome blocks the round barrier and remains spent, even if a sibling has a known failure. Neither an unknown outcome nor an absent response is converted into observation zero or permission for replacement work. Root closure may prevent any application reply. The effectful profile directly reuses the existing two-member evidence helper, accepts questions of at most 512 UTF-8 bytes, and consumes only its returned disposition for branching; complete answers and citations remain inspectable in the original retained outcomes. It establishes no answer-quality or semantic-completeness claim.
 
-These are bounded implementation results, not a general expressiveness or recovery proof. The source-bound Task2 report records passing controlled direct/nested and paired-result cases and byte/profile checks at manifest \texttt{fd7ab336\ldots{}}; those results predate the rebase onto \texttt{56892cb\ldots{}} and do not qualify the rebased source. Process recovery, unknown/closure schedules, isolated replay, independent faulty-application rejection, final suites and review are qualified separately by source-tagged records under \texttt{docs/foundational/phase1h}; only records matching the relevant source establish that source's tested status. Replay checks retained protocol consistency; the independent expected-work ledger checks whether the application follows the intended frontier policy.
+These are bounded implementation results, not a general expressiveness or recovery proof. The source-bound Task2 report records passing controlled direct/nested and paired-result cases and byte/profile checks at manifest \path{fd7ab336...}; those results predate the rebase onto \path{56892cb...} and do not qualify the rebased source. Process recovery, unknown/closure schedules, isolated replay, independent faulty-application rejection, final suites and review are qualified separately by source-tagged records under \path{docs/foundational/phase1h}; only records matching the relevant source establish that source's tested status. Replay checks retained protocol consistency; the independent expected-work ledger checks whether the application follows the intended frontier policy.
 
 \section{Pillar II: Structural and Mathematical Operational Semantics}
 
-\subsection{Small-Step Operational Semantics of Pure Local Reduction ($\delta_v$)}
-Let $x = (a, g) \in \RunID$ be a logical execution identity, $n \in \mathbb{N}^+$ the next commit sequence, and $\sigma = \langle \mathit{pc}, \rho, \mathit{status}, \kappa \rangle$ an open projection ($\mathit{status} = \mathtt{"open"}$). The pure single-step reducer $\delta_v$ (\texttt{executor.Reduce} in \texttt{internal/executor/program.go}) defines the judgment $P, x, n, \mathcal{L} \vdash \langle \sigma, o_{\text{opt}} \rangle \xrightarrow{\delta_v} \langle \sigma', \vec{\iota} \rangle$:
+\subsection{Small-Step Operational Semantics of Pure Local Reduction (\texorpdfstring{$\delta_v$}{delta\_v})}
+Let $x = (a, g) \in \RunID$ be a logical execution identity, $n \in \mathbb{N}^+$ the next commit sequence, and $\sigma = \langle \mathit{pc}, \rho, \mathit{status}, \kappa \rangle$ an open projection ($\mathit{status} = \mathtt{"open"}$). The pure single-step reducer $\delta_v$ (\texttt{executor.Reduce} in \path{internal/executor/program.go}) defines the judgment $P, x, n, \mathcal{L} \vdash \langle \sigma, o_{\text{opt}} \rangle \xrightarrow{\delta_v} \langle \sigma', \vec{\iota} \rangle$:
 
 \[
 \textbf{(R-Receive)} \quad
 \frac{
   \begin{array}{c}
     I_{\mathit{pc}} = \mathsf{Receive}(\mathcal{M}, \beta) \quad o_{\text{opt}} = \mathsf{Some}(o) \quad o.\mathit{Run} = x \quad \|o\|_{\text{json}} \le \mathcal{L}.\mathit{MaxObs} \\
-    \langle o.\mathit{Kind}, o.\mathit{Prov}, o.\mathit{Src}, o.\mathit{SrcGen}, o.\mathit{Obl}, o.\mathit{Op} \rangle = \langle \mathcal{M}.\mathit{kind}, \mathcal{M}.\mathit{prov}, \llbracket \mathcal{M}.e_{\text{src}} \rrbracket_\rho, \llbracket \mathcal{M}.e_{\text{gen}} \rrbracket_\rho, \llbracket \mathcal{M}.e_{\text{obl}} \rrbracket_\rho, \llbracket \mathcal{M}.e_{\text{op}} \rrbracket_\rho \rangle \\
+    \langle o.\mathit{Kind}, o.\mathit{Prov}, o.\mathit{Src}, o.\mathit{SrcGen}, o.\mathit{Obl}, o.\mathit{Op} \rangle = \\
+    \langle \mathcal{M}.\mathit{kind}, \mathcal{M}.\mathit{prov}, \llbracket \mathcal{M}.e_{\text{src}} \rrbracket_\rho, \llbracket \mathcal{M}.e_{\text{gen}} \rrbracket_\rho, \llbracket \mathcal{M}.e_{\text{obl}} \rrbracket_\rho, \llbracket \mathcal{M}.e_{\text{op}} \rrbracket_\rho \rangle \\
     \mathsf{schemaValid}_P(\mathit{pc}, o.\mathit{Payload}) \quad \rho' = \mathsf{bindPayload}(\rho, \beta, o.\mathit{Payload})
   \end{array}
 }{
@@ -220,8 +226,10 @@ Let $x = (a, g) \in \RunID$ be a logical execution identity, $n \in \mathbb{N}^+
 \frac{
   \begin{array}{c}
     I_{\mathit{pc}} = \mathsf{Emit}(\mathit{dst}_{\text{opt}}, \mathcal{E}, \Upsilon) \quad o_{\text{opt}} = \mathsf{None} \quad \mathit{id} = \mathtt{json}([a, g, n, 0]) \\
-    \iota = \langle \mathit{ID}: \mathit{id},\; \mathit{Run}: x,\; \mathit{Seq}: n,\; \mathit{Ord}: 0,\; \mathit{Kind}: \mathcal{E}.\mathit{kind},\; \mathit{Target}: \llbracket \mathcal{E}.e_{\text{target}} \rrbracket_\rho,\; \mathit{Gen}: \llbracket \mathcal{E}.e_{\text{gen}} \rrbracket_\rho,\; \mathit{Obl}: \llbracket \mathcal{E}.e_{\text{obl}} \rrbracket_\rho,\; \mathit{Payload}: \llbracket \Pi \rrbracket_\rho \rangle \\
-    \mathsf{authorIntentValid}_P(\iota) \quad \rho_1 = \rho[\forall (k \mapsto e_u) \in \Upsilon : k \mapsto \llbracket e_u \rrbracket_\rho] \quad \rho_2 = \rho_1[\mathit{dst}_{\text{opt}} \mapsto \mathsf{Str}(\mathit{id})] \quad \|[\iota]\|_{\text{json}} \le \mathcal{L}.\mathit{MaxOut}
+    \iota = \langle \mathit{ID}: \mathit{id},\; \mathit{Run}: x,\; \mathit{Seq}: n,\; \mathit{Ord}: 0,\; \mathit{Kind}: \mathcal{E}.\mathit{kind}, \\
+    \mathit{Target}: \llbracket \mathcal{E}.e_{\text{target}} \rrbracket_\rho,\; \mathit{Gen}: \llbracket \mathcal{E}.e_{\text{gen}} \rrbracket_\rho,\; \mathit{Obl}: \llbracket \mathcal{E}.e_{\text{obl}} \rrbracket_\rho,\; \mathit{Payload}: \llbracket \Pi \rrbracket_\rho \rangle \\
+    \mathsf{authorIntentValid}_P(\iota) \quad \rho_1 = \rho[\forall (k \mapsto e_u) \in \Upsilon : k \mapsto \llbracket e_u \rrbracket_\rho] \\
+    \rho_2 = \rho_1[\mathit{dst}_{\text{opt}} \mapsto \mathsf{Str}(\mathit{id})] \quad \|[\iota]\|_{\text{json}} \le \mathcal{L}.\mathit{MaxOut}
   \end{array}
 }{
   P, x, n, \mathcal{L} \vdash \langle \sigma, \mathsf{None} \rangle \xrightarrow{\;\delta_v\;} \langle \mathsf{clean}_P(\langle \mathit{pc}+1, \rho_2, \mathtt{"open"}, \kappa \rangle), [\iota] \rangle
@@ -236,11 +244,11 @@ For any valid program $P$, run identity $x = (a,g)$, sequence $n \in \mathbb{N}^
 \subsection{Global Transition Rules at the Runtime Boundary}
 Embedding $\delta_v$ into a global configuration $\Gamma$ yields the atomic commit and authorization transitions:
 \[
-\textbf{(G-Commit)} \quad
-\frac{
+\small\textbf{(G-Commit)} \; \frac{
   \begin{array}{c}
     p = \langle x=(a,g), e, n+1, o_{\text{opt}}, \sigma', \vec{\iota} \rangle \in \Gamma.\mathsf{Prop} \quad \Gamma.\Subj[a] = \langle g_{\text{curr}}, \mathit{owner}, w, \mathit{retired} \rangle \\
-    g = g_{\text{curr}} \quad \neg \mathit{retired} \quad \Gamma.\mathsf{Runs}[x] = \langle P_v, e_{\text{curr}}, n_{\text{curr}}, \sigma \rangle \quad e = e_{\text{curr}} \quad n = n_{\text{curr}} \quad \sigma.\mathit{status} = \mathtt{"open"} \\
+    g = g_{\text{curr}} \quad \neg \mathit{retired} \quad \Gamma.\mathsf{Runs}[x] = \langle P_v, e_{\text{curr}}, n_{\text{curr}}, \sigma \rangle \\
+    e = e_{\text{curr}} \quad n = n_{\text{curr}} \quad \sigma.\mathit{status} = \mathtt{"open"} \\
     (o_{\text{opt}} = \mathsf{Some}(o) \implies o \in \Gamma.\Obs[x] \land o.\mathit{consumed} = \bot) \quad \neg \mathsf{scopeClosed}(\Gamma, x)
   \end{array}
 }{
@@ -248,12 +256,12 @@ Embedding $\delta_v$ into a global configuration $\Gamma$ yields the atomic comm
 }
 \]
 \[
-\textbf{(G-Authorize)} \quad
-\frac{
+\small\textbf{(G-Authorize)} \; \frac{
   \begin{array}{c}
     \iota \in \Gamma.\mathsf{Int} \quad \iota.\mathit{ID} \notin \operatorname{dom}(\Gamma.\mathsf{Att}) \quad x = \iota.\mathit{Run} = (a, g) \\
     \Gamma.\Subj[a] = \langle g_{\text{curr}}, \mathit{owner}, w_{\text{curr}}, \mathit{retired} \rangle \quad \Gamma.\mathsf{Runs}[x] = \langle P_v, e, n, \sigma \rangle \\
-    \mathit{allowed} \iff (g = g_{\text{curr}} \land \neg \mathit{retired} \land w_{\text{curr}} = \iota.\mathit{revision} \land \sigma.\mathit{status} = \mathtt{"open"} \land \neg \mathsf{scopeClosed}(\Gamma, x) \land \mathsf{grant}(\Gamma.\mathsf{Perm}, \iota))
+    \mathit{allowed} \iff (g = g_{\text{curr}} \land \neg \mathit{retired} \land w_{\text{curr}} = \iota.\mathit{revision} \land \sigma.\mathit{status} = \mathtt{"open"} \\
+    \land \neg \mathsf{scopeClosed}(\Gamma, x) \land \mathsf{grant}(\Gamma.\mathsf{Perm}, \iota))
   \end{array}
 }{
   \Gamma \xrightarrow{\;\mathsf{Authorize}(\iota.\mathit{ID})\;} \Gamma\big[\mathsf{Att}[\iota.\mathit{ID}] \leftarrow \langle \mathit{Allowed}: \mathit{allowed},\; \mathit{Reason}: \mathit{reason} \rangle\big]
@@ -273,7 +281,8 @@ In ALAN's operational semantics, the provenance graph $\mathcal{G}_{\text{prov}}
 \subsection{Two-Tier Injective Identity Algebra}
 To eliminate receipt spoofing, transport domain shadowing, and cross-store operation key collisions, ALAN defines:
 \begin{align}
-  \mathsf{AdmKey}(d, \tau_{\text{raw}}) &\triangleq \mathtt{json}\big([\mathtt{"admission"},\; d,\; \tau_{\text{raw}}]\big), \quad d \in \{\mathtt{input},\mathtt{message},\mathtt{terminal},\mathtt{lifecycle},\mathtt{external},\mathtt{adapter}\}, \\
+  \mathsf{AdmKey}(d, \tau_{\text{raw}}) &\triangleq \mathtt{json}\big([\mathtt{"admission"},\; d,\; \tau_{\text{raw}}]\big), \nonumber\\
+  &\qquad d \in \{\mathtt{input},\mathtt{message},\mathtt{terminal},\mathtt{lifecycle},\mathtt{external},\mathtt{adapter}\}, \\
   \mathsf{ExtKey}(\mathcal{N}_{256}, (a,g), n, k) &\triangleq \mathtt{json}\big([\mathtt{"alan/external/v2"},\; \mathcal{N}_{256},\; a,\; g,\; n,\; k]\big), \quad \mathcal{N}_{256} \in \{0,1\}^{256}.
 \end{align}
 
@@ -281,7 +290,7 @@ To eliminate receipt spoofing, transport domain shadowing, and cross-store opera
 
 \begin{theorem}[Root Resource Conservation and Waiting-Parent Slot Freedom]
 \label{thm:conservation}
-Let $r$ be a composition root with envelope $\mathcal{B}(r) = \langle D_{\max}, I_{\max}, R_{\max}, E_{\max}, C_{\text{phys}} \rangle$ (\texttt{internal/executor/invocation.go}). Across arbitrary interleavings of local steps, template invocations, external adapter calls, root closures, and \texttt{SIGKILL} recoveries: (1)~total created runs in $r$'s tree never exceed $R_{\max}$, invocations never exceed $I_{\max}$, effect reservations never exceed $E_{\max}$, and depth never exceeds $D_{\max}$; and (2)~a parent run suspended at \texttt{AwaitInvocation} occupies zero physical transport slots in $C_{\text{phys}}$.
+Let $r$ be a composition root with envelope $\mathcal{B}(r) = \langle D_{\max}, I_{\max}, R_{\max}, E_{\max}, C_{\text{phys}} \rangle$ (\path{internal/executor/invocation.go}). Across arbitrary interleavings of local steps, template invocations, external adapter calls, root closures, and \texttt{SIGKILL} recoveries: (1)~total created runs in $r$'s tree never exceed $R_{\max}$, invocations never exceed $I_{\max}$, effect reservations never exceed $E_{\max}$, and depth never exceeds $D_{\max}$; and (2)~a parent run suspended at \texttt{AwaitInvocation} occupies zero physical transport slots in $C_{\text{phys}}$.
 \end{theorem}
 
 \begin{definition}[Admissible Contexts, Dual Readiness, and Budget-Indexed Bisimulation $\approx^{\Delta}_{I,\mathcal{B}}$]
@@ -313,7 +322,7 @@ For a finite workload while \texttt{Store.Run} continues without cancellation, o
 \label{thm:congruence}
 The proposed implication is: for every context $C[\cdot]\in\mathcal{C}_{\text{adm}}$, $\Gamma_A\approx^{\Delta}_{I_A,\mathcal{B}}\Gamma_{A'}$ implies $C[\Gamma_A]\approx^{\Delta}_{I_C,\mathcal{B}}C[\Gamma_{A'}]$, under the originally stated hypotheses: (H1)~private namespace separation, declared-port interaction and non-extrusion; (H2)~root-correlated external provenance and equal matched debits; (H3)~exact six-field correlation routing; (H4)~nonblocking peer progress under explicit scheduling/environment assumptions; and (H5)~a valid well-founded rank for relevant hidden interaction cycles.
 \end{theorem}
-\paragraph{Status: unproved over the stated grammar.} The label preserves the historical claim, not a certification. The former proof is retained in \texttt{docs/foundational/phase1i/evidence/manuscript/original-excerpts.md}. Missing arguments are:
+\paragraph{Status: unproved over the stated grammar.} The label preserves the historical claim, not a certification. The former proof is retained in \path{docs/foundational/phase1i/evidence/manuscript/original-excerpts.md}. Missing arguments are:
 \begin{enumerate}
 \item \textbf{Parallel interference:} equal pre-step residual budgets do not prove that the component relation survives a peer debit, closure or authority change. Readiness, outstanding obligations and shared world-response coupling must also be preserved.
 \item \textbf{Invocation:} admission/refusal, depth, member creation and charges require a separate induction case. A singleton wrapper costs one invocation, one created run and another depth; rejection creates no child/debit. It is not cost-free parallel/hiding syntax, and child/wrapper outcomes differ.
@@ -323,13 +332,13 @@ The proposed implication is: for every context $C[\cdot]\in\mathcal{C}_{\text{ad
 
 \paragraph{Bounded behavioral contracts (Phase 1I).} The frozen K1 contract separates schema compatibility, asymmetric local refinement and symmetric equivalence. Independently authored local and one-helper candidates preserve a request id and compute a Boolean complement, with explicit failure, missing-reply and pending modes. Five named templates (bare, sequential, parallel, hidden and one wrapper), finite payloads and residual allowances define 3,840 configurations per reference/candidate graph and 84 contract-fixed completion-entitled answer configurations. The reference $C[K1]$, local component relation and candidate products are checked separately. Artifact correspondence inspection, finite model checking, sampled runtime behavior and replay are distinct evidence categories.
 
-\paragraph{Bounded negative result: root success fences a peer.} An executed independent model extension reflecting \texttt{compositionScopeClosed} (\texttt{invocation.go:165--177}) exposes a missing assumption in the frozen parallel reference product. At request id 1/value 0, answer mode, invocation/run limits 3 and depth 2, a correct candidate result lets the root caller succeed before peer S admission; S is then refused with \texttt{scope\_closed}. Initial completion entitlement is retained and no external \texttt{close\_root} event occurs. This happens for K1 and both candidate graphs. It falsifies the frozen parallel completion premise/runtime correspondence, not an implication requiring a valid $C[K1]$ premise or the stronger exact-debit congruence premise. The source-specific boundary-extension census records all eight initially entitled parallel configurations failing and the other 76 completing in those finite graphs; the failures remain in scope. Earlier positive reference results used optimistic semantics omitting this ordinary-root-terminal guard. This is bounded model evidence; concrete runtime confirmation and final review are separately qualified.
+\paragraph{Bounded negative result: root success fences a peer.} An executed independent model extension reflecting \texttt{compositionScopeClosed} (\path{invocation.go:165--177}) exposes a missing assumption in the frozen parallel reference product. At request id 1/value 0, answer mode, invocation/run limits 3 and depth 2, a correct candidate result lets the root caller succeed before peer S admission; S is then refused with \texttt{scope\_closed}. Initial completion entitlement is retained and no external \texttt{close\_root} event occurs. This happens for K1 and both candidate graphs. It falsifies the frozen parallel completion premise/runtime correspondence, not an implication requiring a valid $C[K1]$ premise or the stronger exact-debit congruence premise. The source-specific boundary-extension census records all eight initially entitled parallel configurations failing and the other 76 completing in those finite graphs; the failures remain in scope. Earlier positive reference results used optimistic semantics omitting this ordinary-root-terminal guard. This is bounded model evidence; concrete runtime confirmation and final review are separately qualified.
 
-Reference-model corrections preserve their original failures: collapsed helper/wrapper failure consumption and terminal freeze, and later premature payload visibility. Corrected graph results supersede those versions without rewriting their evidence. Preliminary source-specific checks live under \texttt{docs/foundational/phase1i/evidence/model}; they are neither a general theorem nor final runtime qualification. Weak-contract resource and equal-charge scheduling probes retain separate premises and traces. Phase1I qualification/review records govern the executed scope. Acyclic witnesses avoid the general loop-ranking obligation; pure own-state recovery does not establish effectful substitution. Replacing code beneath retained continuations is excluded.
+Reference-model corrections preserve their original failures: collapsed helper/wrapper failure consumption and terminal freeze, and later premature payload visibility. Corrected graph results supersede those versions without rewriting their evidence. Preliminary source-specific checks live under \path{docs/foundational/phase1i/evidence/model}; they are neither a general theorem nor final runtime qualification. Weak-contract resource and equal-charge scheduling probes retain separate premises and traces. Phase1I qualification/review records govern the executed scope. Acyclic witnesses avoid the general loop-ranking obligation; pure own-state recovery does not establish effectful substitution. Replacing code beneath retained continuations is excluded.
 
 \section{Pillar IV: Algebraic Effects, Split-Phase Operational Handlers, and the Epistemic Effect Lattice}
 
-\subsection{Split-Phase $\ITree$ Lowering versus the Asynchronous Handler Algebra}
+\subsection{Split-Phase \texorpdfstring{$\ITree$}{ITree} Lowering versus the Asynchronous Handler Algebra}
 At the pure syntax and local reduction level ($\delta_v$), factoring $\mathsf{Vis}(e : E(A), k : A \to X)$ into \texttt{emit} and \texttt{receive} is a syntactic bimorphism $\mathcal{S} : \ITree_{E,R} \to \ITree_{E_{\text{split}}, R}$ over $E_{\text{split}} = \mathsf{Emit} \uplus \mathsf{Receive}$:
 \[
   \mathcal{S}\big(\mathsf{Vis}(e, k)\big) \;\triangleq\; \mathsf{Vis}\Big(\mathsf{Emit}(e),\; \lambda \mathit{id}.\; \mathsf{Vis}\big(\mathsf{Receive}(\mathit{id}),\; \lambda a.\; \mathcal{S}(k(a))\big)\Big).
@@ -340,7 +349,7 @@ ALAN's mathematical contribution in Pillar IV is therefore the \emph{Split-Phase
 \[
   \mathbb{O}_{\text{eff}}^{\text{cons}} \;\triangleq\; \{\bot_{\text{unauth}}\} \;\uplus\; \big\{\mathsf{Suppressed}(r) \mid r \in \mathsf{Reason}_{\text{deny}}\big\} \;\uplus\; \{\mathsf{Unknown}\} \;\uplus\; \big\{\mathsf{Known}(v) \mid v \in \Val\big\},
 \]
-with covering relations $\bot_{\text{unauth}} \sqsubset_{\text{info}} \mathsf{Suppressed}(r)$ and $\bot_{\text{unauth}} \sqsubset_{\text{info}} \mathsf{Unknown} \sqsubset_{\text{info}} \mathsf{Known}(v)$. Crucially, $\mathsf{Suppressed}(r)$ and $\mathsf{Known}(v)$ are \emph{strictly incomparable} in $\mathbb{O}_{\text{eff}}^{\text{cons}}$. Adjoining an improper top fault element $\top_{\text{conflict}}$ completes $\mathbb{O}_{\text{eff}}^{\text{cons}}$ into the five-kind bounded algebraic lattice $\widehat{\mathbb{O}}_{\text{eff}} = \mathbb{O}_{\text{eff}}^{\text{cons}} \uplus \{\top_{\text{conflict}}\}$, where $\mathsf{Suppressed}(r) \sqcup \mathsf{Known}(v) = \top_{\text{conflict}}$ (\texttt{corrupt("receipt without authorization")} at \texttt{external.go:496}) and $\mathsf{Known}(v_1) \sqcup \mathsf{Known}(v_2) = \top_{\text{conflict}}$ for $v_1 \ne v_2$ (\texttt{ErrConflict} at \texttt{external.go:322}).
+with covering relations $\bot_{\text{unauth}} \sqsubset_{\text{info}} \mathsf{Suppressed}(r)$ and $\bot_{\text{unauth}} \sqsubset_{\text{info}} \mathsf{Unknown} \sqsubset_{\text{info}} \mathsf{Known}(v)$. Crucially, $\mathsf{Suppressed}(r)$ and $\mathsf{Known}(v)$ are \emph{strictly incomparable} in $\mathbb{O}_{\text{eff}}^{\text{cons}}$. Adjoining an improper top fault element $\top_{\text{conflict}}$ completes $\mathbb{O}_{\text{eff}}^{\text{cons}}$ into the five-kind bounded algebraic lattice $\widehat{\mathbb{O}}_{\text{eff}} = \mathbb{O}_{\text{eff}}^{\text{cons}} \uplus \{\top_{\text{conflict}}\}$, where $\mathsf{Suppressed}(r) \sqcup \mathsf{Known}(v) = \top_{\text{conflict}}$ (\texttt{corrupt("receipt without authorization")} at \path{external.go:496}) and $\mathsf{Known}(v_1) \sqcup \mathsf{Known}(v_2) = \top_{\text{conflict}}$ for $v_1 \ne v_2$ (\texttt{ErrConflict} at \path{external.go:322}).
 
 \begin{theorem}[The Cancellation--Authorization Dichotomy]
 \label{thm:dichotomy}
@@ -352,12 +361,12 @@ For any committed intent $\iota \in \Gamma.\mathsf{Int}$ of run $x=(a,g)$ and co
 \end{theorem}
 
 \subsection{Separating Probabilistic Intelligence from Deterministic Execution}
-In \texttt{examples/evidence/evidence.go} and \texttt{examples/investigation/investigation.go}, LLM invocations (\texttt{evidence-model}) are compiled into split-phase \texttt{author.Request} and \texttt{author.Await} steps surrounded by pure deterministic guards: budget enforcement (\texttt{model\_spent < model\_limit}), tool-name verification (\texttt{plan\_tool == "lookup"}), deterministic span-exclusion copying across revision rounds, and byte-exact citation provenance verification across \texttt{document}, \texttt{version}, \texttt{snippet}, \texttt{start}, and \texttt{end}.
+In \path{examples/evidence/evidence.go} and \path{examples/investigation/investigation.go}, LLM invocations (\texttt{evidence-model}) are compiled into split-phase \texttt{author.Request} and \texttt{author.Await} steps surrounded by pure deterministic guards: budget enforcement (\texttt{model\_spent < model\_limit}), tool-name verification (\texttt{plan\_tool == "lookup"}), deterministic span-exclusion copying across revision rounds, and byte-exact citation provenance verification across \texttt{document}, \texttt{version}, \texttt{snippet}, \texttt{start}, and \texttt{end}.
 
 \section{Pillar V: Crash-Consistent Operational Semantics and the Two-Regime Fundamental Theorem}
 
-\subsection{Two-Tier Configurations, the Recovery Operator, and the Window-$W_3$ Impossibility Theorem}
-We decompose a single-host ALAN configuration into $\Gamma = \langle \mathcal{D}, \mathcal{V}, \mathcal{W} \rangle$, where $\mathcal{D}$ is the durable SQLite WAL/FULL store, $\mathcal{V}$ is the volatile activation state, and $\mathcal{W}$ is the external world state. Let $\mathsf{Commit}(\langle \mathcal{D}, \mathcal{V}, \mathcal{W} \rangle) = \langle \mathcal{D}, \emptyset_{\mathcal{V}}, \mathcal{W} \rangle$ and $\mathsf{Crash}(\Gamma) \ni \langle \mathcal{D}, \emptyset_{\mathcal{V}}, \mathcal{W}' \rangle$. Upon recovery, $\mathsf{Recover}$ validates ledger integrity and increments activation epochs $e \mapsto e+1$ for open runs. When an authorized non-idempotent external attempt or adapter attempt has no recorded receipt ($\iota \in \mathsf{Unresolved}_{\text{non-idem}}(\mathcal{D})$), ALAN \emph{neither re-transmits the request nor fabricates a synthetic inbox observation} (\texttt{"unknown outcome has no result"} at \texttt{adapters.go:314}); instead, the waiting run remains quiescently suspended at \texttt{receive} while $\iota.\mathit{ID}$ is surfaced in \texttt{RunReport.UnknownExternal} / \texttt{UnknownAdapters} (\texttt{external\_test.go:175--226}).
+\subsection{Two-Tier Configurations, the Recovery Operator, and the Window-\texorpdfstring{$W_3$}{W3} Impossibility Theorem}
+We decompose a single-host ALAN configuration into $\Gamma = \langle \mathcal{D}, \mathcal{V}, \mathcal{W} \rangle$, where $\mathcal{D}$ is the durable SQLite WAL/FULL store, $\mathcal{V}$ is the volatile activation state, and $\mathcal{W}$ is the external world state. Let $\mathsf{Commit}(\langle \mathcal{D}, \mathcal{V}, \mathcal{W} \rangle) = \langle \mathcal{D}, \emptyset_{\mathcal{V}}, \mathcal{W} \rangle$ and $\mathsf{Crash}(\Gamma) \ni \langle \mathcal{D}, \emptyset_{\mathcal{V}}, \mathcal{W}' \rangle$. Upon recovery, $\mathsf{Recover}$ validates ledger integrity and increments activation epochs $e \mapsto e+1$ for open runs. When an authorized non-idempotent external attempt or adapter attempt has no recorded receipt ($\iota \in \mathsf{Unresolved}_{\text{non-idem}}(\mathcal{D})$), ALAN \emph{neither re-transmits the request nor fabricates a synthetic inbox observation} (\texttt{"unknown outcome has no result"} at \path{adapters.go:314}); instead, the waiting run remains quiescently suspended at \texttt{receive} while $\iota.\mathit{ID}$ is surfaced in \texttt{RunReport.UnknownExternal} / \texttt{UnknownAdapters} (\path{external_test.go:175--226}).
 
 \begin{proposition}[Impossibility of Unconditional Symmetric Crash Bisimulation in Non-Idempotent Window $W_3$]
 \label{prop:impossibility}
