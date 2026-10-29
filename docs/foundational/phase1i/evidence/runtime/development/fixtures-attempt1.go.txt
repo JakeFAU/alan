@@ -1,0 +1,69 @@
+//go:build integration
+package substitutiontest
+
+import (
+ "compress/gzip"
+ "crypto/sha256"
+ "encoding/hex"
+ "encoding/json"
+ "fmt"
+ "os"
+ "path/filepath"
+ "reflect"
+ "testing"
+ "github.com/JakeFAU/alan/author"
+ app "github.com/JakeFAU/alan/examples/substitution"
+ "github.com/JakeFAU/alan/examples/substitution/a"
+ "github.com/JakeFAU/alan/examples/substitution/b"
+ model "github.com/JakeFAU/alan/research/substitution"
+ "github.com/JakeFAU/alan/runtime"
+ "github.com/JakeFAU/alan/schema"
+)
+func must(t *testing.T,e error){t.Helper();if e!=nil{t.Fatal(e)}}
+func decode[T any](r map[string]any,k string)T{var v T;if e:=json.Unmarshal([]byte(r[k].(string)),&v);e!=nil{panic(e)};return v}
+func hash(v any)string{b,_:=json.Marshal(v);s:=sha256.Sum256(b);return hex.EncodeToString(s[:])}
+func retain(t *testing.T,name string,v any){t.Helper();dir:=os.Getenv("ALAN_I_ARTIFACTS");if dir==""{dir=t.TempDir()};dir=filepath.Join(dir,hash(t.Name())[:12]);must(t,os.MkdirAll(dir,0755));p:=filepath.Join(dir,name+".json.gz");f,e:=os.OpenFile(p,os.O_CREATE|os.O_EXCL|os.O_WRONLY,0644);must(t,e);z:=gzip.NewWriter(f);must(t,json.NewEncoder(z).Encode(v));must(t,z.Close());must(t,f.Close());t.Logf("artifact %s value_sha256=%s",p,hash(v))}
+func limits(i,r,d int)runtime.ResourceLimits{return runtime.ResourceLimits{MaxInvocations:int64(i),MaxCreatedRuns:int64(r),MaxDepth:int64(d),MaxInFlight:1}}
+func candidate(t *testing.T,name string)author.Template{var c author.Template;var e error;switch name{case "a":c,e=a.New();case "b":c,e=b.New();default:c,e=app.Probe(name)};must(t,e);return c}
+func provision(t *testing.T,name,shape string,q app.Request,l runtime.ResourceLimits)(app.Deployment,string){t.Helper();d,e:=app.New(candidate(t,name),app.Config{Shape:shape,Request:q,Limits:l});must(t,e);return d,filepath.Join(t.TempDir(),"retained.db")}
+func create(t *testing.T,d app.Deployment,p string){s,e:=runtime.Create(t.Context(),p,d.Provision,runtime.DefaultLimits());must(t,e);must(t,s.Close())}
+func inspect(t *testing.T,p string)runtime.Inspection{t.Helper();s,e:=runtime.Inspect(t.Context(),p,runtime.DefaultLimits());must(t,e);return s}
+func run(t *testing.T,p string)runtime.RunReport{t.Helper();s,e:=runtime.Open(t.Context(),p,runtime.DefaultLimits());must(t,e);defer s.Close();r,e:=s.Run(t.Context(),runtime.RunOptions{MaxSteps:200,MaxDispatch:200,MaxInFlight:1});must(t,e);if !r.Quiescent{t.Fatal("watchdog exhausted",r)};return r}
+func projection(s runtime.Inspection,subject string)runtime.Projection{for _,r:=range s.Tables["runs"]{if r["subject"]==subject{return decode[runtime.Projection](r,"projection")}};return runtime.Projection{}}
+type intent struct{ID,Kind,Target string;Run runtime.RunID;Sequence int64;Payload map[string]schema.Value}
+type observation struct{ID,Kind,Operation string;Run runtime.RunID;Payload map[string]schema.Value}
+type fact struct{Kind,OperationID string;Run runtime.RunID;Sequence int64}
+type reply struct{InvocationID string;Intent intent;Accepted bool;Reason string}
+type operation struct{Operation,Invocation,Parent,Role,Template string;Members []runtime.RunID}
+type normalized struct{Operations map[string]operation;Trace []model.Observation;Context model.ContextObservation;Violations []model.Violation;ModelMembership string}
+// The decoder supplies retained facts; the independent model chooses expectations.
+func normalize(s runtime.Inspection,d app.Deployment,q app.Request)normalized{
+ n:=normalized{Operations:map[string]operation{}};ads:=map[string]runtime.InvocationAdmission{};byInv:=map[string]string{}
+ for _,r:=range s.Tables["composition_admission_decisions"]{a:=decode[runtime.InvocationAdmission](r,"descriptor");ads[a.Invocation.OperationID]=a;byInv[a.Invocation.ID]=a.Invocation.OperationID}
+ for op,a:=range ads{role:="helper";switch a.Invocation.TemplateID{case d.Candidate.ID():role="candidate";case d.Entry.ID():role="wrapper";case d.Peer.ID():role="sibling"};n.Operations[op]=operation{op,a.Invocation.ID,byInv[a.Invocation.ParentInvocationID],role,a.Invocation.TemplateID,a.Members}}
+ for _,r:=range s.Tables["intents"]{in:=decode[intent](r,"descriptor");if in.Kind!="invocation"{continue};if _,ok:=n.Operations[in.ID];ok{continue};role,parent:="helper","";for op,o:=range n.Operations{for _,m:=range o.Members{if m==in.Run{parent=op}}};if in.Run.Subject=="root"{role="candidate";if d.Entry.ID()!=d.Candidate.ID(){role="wrapper"}};if in.Run.Subject=="peer"{role="sibling"};n.Operations[in.ID]=operation{Operation:in.ID,Parent:parent,Role:role}}
+ hs:=map[string]map[string]any{};for _,r:=range s.Tables["history"]{hs[fmt.Sprint(r["subject"],"/",r["sequence"])]=r}
+ os:=map[string]observation{};for _,r:=range s.Tables["observations"]{o:=decode[observation](r,"descriptor");os[o.ID]=o}
+ rs:=map[string]reply{};for _,r:=range s.Tables["composition_replies"]{rs[r["operation_id"].(string)]=decode[reply](r,"descriptor")}
+ ps:=map[string]runtime.InvocationOutcome{};for _,r:=range s.Tables["composition_publications"]{p:=decode[runtime.InvocationOutcome](r,"descriptor");ps[p.OperationID]=p}
+ outcome:=func(kind string,p runtime.InvocationOutcome){o:=n.Operations[p.OperationID];n.Trace=append(n.Trace,model.Observation{Kind:kind,Operation:p.OperationID,Parent:o.Parent,Role:o.Role,Status:p.Status,Reason:p.Reason,Present:p.ResponsePresent,ID:int(p.Response["id"].Number),Value:int(p.Response["value"].Number)})}
+ for _,r:=range s.Tables["composition_facts"]{f:=decode[fact](r,"descriptor");switch f.Kind{case "execution":h:=hs[fmt.Sprint(f.Run.Subject,"/",f.Sequence)];if h==nil{continue};var ins []intent;_ = json.Unmarshal([]byte(h["intents"].(string)),&ins);for _,in:=range ins{if in.Kind=="invocation"{o:=n.Operations[in.ID];n.Trace=append(n.Trace,model.Observation{Kind:"invoke_commit",Operation:in.ID,Parent:o.Parent,Role:o.Role})}};if id,ok:=h["selected_observation"].(string);ok{o:=os[id];if o.Kind=="invocation_outcome"{if p,ok:=ps[o.Operation];ok{outcome("outcome_consume",p)}}}
+ case "admission":a:=ads[f.OperationID];o:=n.Operations[f.OperationID];v:=model.Observation{Kind:"admit",Operation:f.OperationID,Parent:o.Parent,Role:o.Role,Status:"rejected",Reason:a.Reason};if a.Accepted{v.Status="accepted";v.I=1;v.R=len(a.Members)};n.Trace=append(n.Trace,v)
+ case "reply":r:=rs[f.OperationID];op:=byInv[r.InvocationID];o:=n.Operations[op];status:="rejected";if r.Accepted{status="accepted"};n.Trace=append(n.Trace,model.Observation{Kind:"reply_admit",Operation:op,Parent:o.Parent,Role:o.Role,Status:status,Reason:r.Reason,Present:r.Accepted,ID:int(r.Intent.Payload["id"].Number),Value:int(r.Intent.Payload["value"].Number)})
+ case "outcome":if p,ok:=ps[f.OperationID];ok{outcome("publish",p)}
+ }}
+ n.Context.RootStatus=projection(s,"root").Status;n.Context.PeerStatus=projection(s,"peer").Status;n.Context.Closed=len(s.Tables["composition_closures"])>0
+ for op,o:=range n.Operations{if o.Role!="candidate"{continue};if p,ok:=ps[op];ok{n.Context.CandidateStatus=p.Status;n.Context.CandidateReason=p.Reason;n.Context.CandidatePresent=p.ResponsePresent;n.Context.CandidateID=int(p.Response["id"].Number);n.Context.CandidateValue=int(p.Response["value"].Number)}else{for _,m:=range o.Members{if projection(s,m.Subject).Status=="open"{n.Context.Pending=true}}}}
+ if n.Context.CandidateStatus==""&&!n.Context.Pending{for op,o:=range n.Operations{if o.Role=="wrapper"{if p,ok:=ps[op];ok{n.Context.CandidateStatus=p.Status;n.Context.CandidateReason=p.Reason}}}}
+ if len(s.Roots)==1{n.Context.I=int(s.Roots[0].Charges.Invocations);n.Context.R=int(s.Roots[0].Charges.CreatedRuns);n.Context.E=int(s.Roots[0].Charges.Effects)}
+ n.Violations=model.CheckTrace(model.Request{ID:int(q.ID),Value:int(q.Value),Mode:q.Mode},n.Trace);return n
+}
+func checked(t *testing.T,s runtime.Inspection,d app.Deployment,q app.Request,shape,name string,l runtime.ResourceLimits)normalized{t.Helper();n:=normalize(s,d,q);if len(n.Violations)>0{retain(t,"failed-monitor",n);t.Fatal(n.Violations)};v:=model.Local;if name=="b"{v=model.Helper};e:=model.CheckCandidateContext(model.Config{Shape:shape,Request:model.Request{ID:int(q.ID),Value:int(q.Value),Mode:q.Mode},I:int(l.MaxInvocations),R:int(l.MaxCreatedRuns),Depth:int(l.MaxDepth)},v,n.Context);if e!=nil{n.ModelMembership=e.Error();retain(t,"failed-membership",map[string]any{"normalized":n,"inspection":s});t.Fatal(e)};n.ModelMembership="accepted";return n}
+func replayUnchanged(t *testing.T,p string){t.Helper();before:=inspect(t,p);r,e:=runtime.Replay(t.Context(),p,runtime.DefaultLimits());must(t,e);if !reflect.DeepEqual(before,inspect(t,p)){t.Fatal("replay mutation")};retain(t,"replay",r)}
+func witness(t *testing.T,name,shape string,q app.Request,l runtime.ResourceLimits){d,p:=provision(t,name,shape,q,l);create(t,d,p);r:=run(t,p);s:=inspect(t,p);n:=checked(t,s,d,q,shape,name,l);retain(t,"result",map[string]any{"request":q,"limits":l,"candidate":d.Candidate.ID(),"entry":d.Entry.ID(),"fixed_runs":d.FixedRuns,"report":r,"inspection":s,"normalized":n});replayUnchanged(t,p)}
+func runMatrix(t *testing.T){for _,name:=range []string{"a","b"}{for _,shape:=range []string{"bare","sequential","parallel","hidden","wrapped"}{for id:=int64(1);id<=2;id++{for value:=int64(0);value<=1;value++{for _,mode:=range []string{"answer","fail","absent","pending"}{t.Run(fmt.Sprintf("%s/%s/id%d-value%d-%s",name,shape,id,value,mode),func(t *testing.T){witness(t,name,shape,app.Request{ID:id,Value:value,Mode:mode},limits(3,3,3))})}}};for _,l:=range []runtime.ResourceLimits{limits(0,3,3),limits(3,0,3),limits(3,3,0)}{t.Run(fmt.Sprintf("%s/%s/refusal-I%d-R%d-D%d",name,shape,l.MaxInvocations,l.MaxCreatedRuns,l.MaxDepth),func(t *testing.T){witness(t,name,shape,app.Request{ID:1,Value:0,Mode:"answer"},l)})}}}}
+func runProbes(t *testing.T){
+ for _,name:=range []string{"weak-a","weak-b"}{for _,l:=range []runtime.ResourceLimits{limits(1,1,2),limits(2,2,2),limits(3,3,2),limits(3,2,2)}{t.Run(fmt.Sprintf("%s-I%d-R%d",name,l.MaxInvocations,l.MaxCreatedRuns),func(t *testing.T){q:=app.Request{ID:1,Value:0,Mode:"answer"};d,p:=provision(t,name,"sequential",q,l);create(t,d,p);r:=run(t,p);s:=inspect(t,p);status:=projection(s,"root").Status;want:="failed";if (name=="weak-a"&&l.MaxInvocations>=2&&l.MaxCreatedRuns>=2)||(l.MaxInvocations>=3&&l.MaxCreatedRuns>=3){want="succeeded"};if status!=want{t.Fatal(status,want)};retain(t,"result",map[string]any{"report":r,"inspection":s,"decoded":normalize(s,d,q),"separate_weak_contract":"same-id constant-zero at sufficient resource"});replayUnchanged(t,p)})}}
+ for _,name:=range []string{"p","q"}{for sample:=0;sample<8;sample++{t.Run(fmt.Sprintf("%s/sample%d",name,sample),func(t *testing.T){q:=app.Request{ID:1,Value:0,Mode:"answer"};d,p:=provision(t,name,"parallel",q,limits(2,2,2));create(t,d,p);r:=run(t,p);s:=inspect(t,p);if s.Roots[0].Charges.Invocations!=2||s.Roots[0].Charges.CreatedRuns!=2{t.Fatal("ledger unsaturated")};retain(t,"result",map[string]any{"report":r,"inspection":s,"normalized":normalize(s,d,q),"sample_only":true})})}}
+ for _,name:=range []string{"wrong-id","extra-helper"}{t.Run(name,func(t *testing.T){q:=app.Request{ID:1,Value:0,Mode:"answer"};d,p:=provision(t,name,"bare",q,limits(3,3,3));create(t,d,p);r:=run(t,p);s:=inspect(t,p);n:=normalize(s,d,q);if projection(s,"root").Status!="succeeded"{t.Fatal("negative did not succeed")};reason:="application_id";if name=="extra-helper"{reason="extra_helper";if s.Roots[0].Charges.Invocations!=3{t.Fatal("extra charge absent")}};found:=false;for _,v:=range n.Violations{if v.Code==reason{found=true}};if !found{t.Fatal("monitor missed",reason,n)};retain(t,"negative",map[string]any{"required_rejection":reason,"inspection":s,"normalized":n,"report":r});replayUnchanged(t,p)})}
+}
