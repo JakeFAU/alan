@@ -1,0 +1,39 @@
+import gzip, hashlib, json, os, pathlib, platform, subprocess, time
+
+root = pathlib.Path('/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan')
+out = root / 'docs/foundational/phase1i/evidence/final'
+out.mkdir(parents=True, exist_ok=True)
+env = os.environ.copy()
+env.pop('OPENAI_API_KEY', None)
+settings = dict(GOTOOLCHAIN='local', GOPROXY='off', GOSUMDB='off', GOFLAGS='-mod=readonly', GOCACHE='/tmp/alan-phase1f-go-build')
+env.update(settings)
+files = sorted(p for p in root.rglob('*') if p.is_file() and (p.suffix == '.go' or p.name in ('go.mod', 'go.sum', 'AGENTS.md')) and '.git' not in p.parts and 'docs' not in p.relative_to(root).parts)
+entries = {str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest() for p in files}
+identity = hashlib.sha256(''.join(f'{h}  {p}\n' for p,h in entries.items()).encode()).hexdigest()
+source = dict(algorithm='SHA-256 over sorted UTF-8 lines: digest + two spaces + path + LF', source_id=identity, files=entries)
+(out/'gate-source-manifest.json').write_text(json.dumps(source,indent=2)+'\n')
+integration = json.loads((root/'docs/foundational/phase1i/evidence/baseline/integration.json').read_text())['Command']
+commands = [
+ ('existing-default', ['go','test','-json','-count=1','-timeout=10m','./author','./schema','./research/semantics']),
+ ('existing-integration', integration),
+ ('candidate-context', ['go','test','-json','-count=1','-timeout=10m','-tags','integration','./examples/substitution/...']),
+ ('vet', ['go','vet','-tags','integration','./research/substitution','./examples/substitution/...','./internal/substitutiontest']),
+ ('build', ['go','build','./examples/substitution/...','./research/substitution']),
+ ('dependency-verify', ['go','mod','verify']),
+ ('format', ['gofmt','-l']+[str(p.relative_to(root)) for p in files if p.suffix=='.go' and str(p.relative_to(root)).startswith(('research/substitution/','examples/substitution/','internal/substitutiontest/'))]),
+ ('diff-check', ['git','diff','--check'])
+]
+for name,cmd in commands:
+ started=time.monotonic(); p=subprocess.run(cmd,cwd=root,env=env,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+ events=[]
+ for line in p.stdout.splitlines():
+  try: events.append(json.loads(line))
+  except (ValueError,TypeError): pass
+ passed=[e['Test'] for e in events if e.get('Action')=='pass' and 'Test' in e]
+ skipped=[e['Test'] for e in events if e.get('Action')=='skip' and 'Test' in e]
+ failed=[e for e in events if e.get('Action')=='fail']
+ record=dict(name=name,command=cmd,directory=str(root),environment=settings,credential_absent='OPENAI_API_KEY' not in env,platform=platform.platform(),source_id=identity,exit_code=p.returncode,seconds=round(time.monotonic()-started,3),passed_tests=passed,skipped_tests=skipped,failures=failed,stdout_sha256=hashlib.sha256(p.stdout).hexdigest(),stderr_sha256=hashlib.sha256(p.stderr).hexdigest())
+ for kind,raw in [('stdout',p.stdout),('stderr',p.stderr)]: (out/(name+'.'+kind+'.gz')).write_bytes(gzip.compress(raw,mtime=0))
+ (out/(name+'.json')).write_text(json.dumps(record,indent=2)+'\n')
+ print(json.dumps(dict(name=name,exit_code=p.returncode,passes=len(passed),skips=len(skipped),seconds=record['seconds'])),flush=True)
+ if p.returncode or (name=='format' and p.stdout.strip()): raise SystemExit('gate failed; evidence retained')
