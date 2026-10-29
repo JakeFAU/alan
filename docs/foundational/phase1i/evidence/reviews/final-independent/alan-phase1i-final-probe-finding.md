@@ -1,0 +1,13 @@
+# Independent final review finding — probe correspondence
+
+Status: actionable P2, awaiting correction/review. This is not a final whole-branch verdict.
+
+`research/substitution/probes.go: equalGraph` invokes `CandidateGraph(Helper)`, whose private control is the 16-instruction frozen B entry and 7-instruction B helper. `examples/substitution/probes.go: Probe("p"/"q")` actually constructs different retained artifacts: no mode dispatch, only a helper-status branch, and a different complement-helper branch. `TestFrozenInstructionCorrespondenceCoverage` admits exactly three A/B records; there is no inspected complete probe instruction mapping.
+
+Thus the reported CheckEqualLocal/CompareLanguages results describe B-derived model surrogates, while 16 concrete samples execute P/Q. Claiming local relation/language equality for the concrete P/Q pair requires an actual transcription or a source/hash-bound abstraction mapping covering all reachable instructions, refusal paths, response presence/values, and environment readiness. Q's extra Set must map separately; ordinary stutters cannot suppress peer debit or closure service. Fixed input id1/value0/answer and capacities1..3 define the selected domain.
+
+Related weak profile issue: weakGraph(Helper) changes only candidate reply value to0; the underlying helper replies complement1. Actual Probe("weak-b") calls probeHelper(true), whose helper reply is0. The final candidate0 budget distinction may remain valid, but full model/runtime trace correspondence is not supported by that surrogate. Preserve prior source/results and explicitly reconcile the helper payload.
+
+Inspected commands: cat research/substitution/{probes.go,probes_test.go,candidates.go,correspondence_test.go,README.md}; cat examples/substitution/probes.go; rg model/runtime reports for P/Q/transcription claims. No executions support a new contrary runtime outcome. This is a source/model evidence-boundary finding, not a production runtime defect.
+
+Integration follow-up: `internal/substitutiontest/fixtures_test.go: runProbes` currently only retains `normalize(...)` for the eight weak and sixteen P/Q samples. It never asserts `EvidenceChecked` or rejects `retained_evidence` errors. P/Q checks only saturated aggregate charges; weak checks only root status. A decoder consistency failure can therefore coexist with a passed probe leaf. Require successful raw evidence validation and the appropriate profile-specific monitor/membership checks before recording a successful result; weak complement0 must remain its declared separate contract, not be forced through K1 complement1.

@@ -1,0 +1,34 @@
+{
+  "status": "frozen-before-execution",
+  "reason": "controller-directed concrete allowed pure-stutter schedule for independently found root-success fence discrepancy",
+  "candidates": [
+    "a",
+    "b"
+  ],
+  "context": "parallel-with-explicit-delayed-static-peer",
+  "peer_pure_sets": 32,
+  "request": {
+    "ID": 1,
+    "Value": 0,
+    "Mode": "answer"
+  },
+  "limits": {
+    "I": 3,
+    "R": 3,
+    "Depth": 2,
+    "E": 0,
+    "MaxInFlight": 1
+  },
+  "run_bounds": {
+    "MaxSteps": 200,
+    "MaxDispatch": 200
+  },
+  "preserve_original_parallel": true,
+  "forbidden": [
+    "scheduler change",
+    "identity forcing",
+    "state mutation",
+    "sleep placement"
+  ],
+  "expected_negative": "frozen K1 candidate product membership rejects; root-terminal-fence extension membership checked separately"
+}

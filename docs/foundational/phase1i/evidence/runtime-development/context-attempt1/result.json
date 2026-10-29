@@ -1,0 +1,33 @@
+{
+  "Command": [
+    "go",
+    "test",
+    "-json",
+    "-count=1",
+    "-timeout=10m",
+    "./examples/substitution"
+  ],
+  "ExitCode": 1,
+  "Passed": [
+    "TestDeploymentContexts/bare/present",
+    "TestDeploymentContexts/bare/absent",
+    "TestDeploymentContexts/hidden/present",
+    "TestDeploymentContexts/hidden/absent"
+  ],
+  "Failures": [
+    "TestDeploymentContexts/sequential/present",
+    "TestDeploymentContexts/sequential/absent",
+    "TestDeploymentContexts/parallel/present",
+    "TestDeploymentContexts/parallel/absent",
+    "TestDeploymentContexts/wrapped/present",
+    "TestDeploymentContexts/wrapped/absent",
+    "TestDeploymentContexts",
+    "package"
+  ],
+  "Comment": "Six context construction errors: wrapper/S template Initial.Data nil. Fixed explicit empty Inputs map; no runtime change.",
+  "Files": {
+    "deployment.go.txt": "43ac80e3239fde9121cb2c8edd68737ba3ff53b118cd3ea434f81a766215c5c3",
+    "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout.jsonl": "44dd896553c55bd2139b9fc716373cb55d222ec9fd75663722b0acd579353fd4"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "source_identity": "fixtures-qualification-v1.json",
+  "observed_tool_results": [
+    {
+      "cwd": "examples/substitution/consumer",
+      "command": "env -u OPENAI_API_KEY GOTOOLCHAIN=local GOPROXY=off GOSUMDB=off GOFLAGS=-mod=readonly GOCACHE=/tmp/alan-phase1f-go-build go test -count=1 -v ./...",
+      "exit": 0,
+      "selected_leaves": [
+        "TestConsumerInitRunInspectReplay/a",
+        "TestConsumerInitRunInspectReplay/b"
+      ],
+      "output": "ok example.com/alan-substitution-consumer 0.348s"
+    },
+    {
+      "cwd": "examples/substitution/consumer",
+      "command": "same offline environment go test -race -count=1 -timeout=10m ./...",
+      "exit": 0,
+      "output": "ok example.com/alan-substitution-consumer 4.018s"
+    },
+    {
+      "cwd": ".",
+      "command": "same offline environment go vet -tags integration ./internal/substitutiontest ./examples/substitution/...",
+      "exit": 0
+    },
+    {
+      "cwd": "examples/substitution/consumer",
+      "command": "same offline environment go vet ./...",
+      "exit": 0
+    },
+    {
+      "cwd": "examples/substitution/consumer",
+      "command": "go mod verify",
+      "exit": 0,
+      "output": "all modules verified"
+    }
+  ]
+}

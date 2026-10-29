@@ -1,0 +1,217 @@
+{
+  "status": "frozen-before-runtime-execution",
+  "bounds": {
+    "MaxSteps": 200,
+    "MaxDispatch": 200,
+    "MaxInFlight": 1,
+    "normal_watchdog": "10m",
+    "race_watchdog": "30m",
+    "normal_child_timeout": "100s",
+    "race_child_timeout": "600s"
+  },
+  "environment": {
+    "OPENAI_API_KEY": "removed",
+    "GOTOOLCHAIN": "local",
+    "GOPROXY": "off",
+    "GOSUMDB": "off",
+    "GOFLAGS": "-mod=readonly",
+    "GOCACHE": "/tmp/alan-phase1f-go-build"
+  },
+  "families": {
+    "matrix": {
+      "candidates": [
+        "a",
+        "b"
+      ],
+      "contexts": [
+        "bare",
+        "sequential",
+        "parallel",
+        "hidden",
+        "wrapped"
+      ],
+      "ids": [
+        1,
+        2
+      ],
+      "values": [
+        0,
+        1
+      ],
+      "modes": [
+        "answer",
+        "fail",
+        "absent",
+        "pending"
+      ],
+      "limits": {
+        "sufficient": [
+          3,
+          3,
+          3
+        ],
+        "invocation_refusal": [
+          0,
+          3,
+          3
+        ],
+        "run_refusal": [
+          3,
+          0,
+          3
+        ],
+        "depth_refusal": [
+          3,
+          3,
+          0
+        ]
+      }
+    },
+    "weak": {
+      "candidates": [
+        "weak-a",
+        "weak-b"
+      ],
+      "context": "sequential",
+      "request": [
+        1,
+        0,
+        "answer"
+      ],
+      "limits": [
+        [
+          1,
+          1,
+          2
+        ],
+        [
+          2,
+          2,
+          2
+        ],
+        [
+          3,
+          3,
+          2
+        ],
+        [
+          3,
+          2,
+          2
+        ]
+      ]
+    },
+    "equal-charge": {
+      "candidates": [
+        "p",
+        "q"
+      ],
+      "context": "parallel",
+      "request": [
+        1,
+        0,
+        "answer"
+      ],
+      "limits": [
+        2,
+        2,
+        2
+      ],
+      "fresh_samples_each": 8
+    },
+    "negatives": {
+      "candidates": [
+        "wrong-id",
+        "extra-helper"
+      ],
+      "context": "bare",
+      "request": [
+        1,
+        0,
+        "answer"
+      ],
+      "limits": [
+        3,
+        3,
+        3
+      ],
+      "required_rejection": [
+        "application_id",
+        "extra_helper"
+      ]
+    },
+    "pure-recovery": {
+      "candidates": [
+        "a",
+        "b"
+      ],
+      "context": "bare",
+      "request": [
+        2,
+        1,
+        "answer"
+      ],
+      "limits": [
+        3,
+        3,
+        3
+      ],
+      "cuts": [
+        "entry-commit",
+        "outcome-retained"
+      ]
+    },
+    "closure": {
+      "candidates": [
+        "a",
+        "b"
+      ],
+      "context": "bare",
+      "request": [
+        1,
+        0,
+        "answer"
+      ],
+      "limits": [
+        3,
+        3,
+        3
+      ],
+      "cuts": [
+        "entry-commit",
+        "entry-admitted",
+        "helper-commit",
+        "reply-commit",
+        "published"
+      ],
+      "a_helper_commit": "inapplicable"
+    },
+    "effects": {
+      "candidate": "k1e",
+      "limit": [
+        1,
+        1,
+        2,
+        1
+      ],
+      "profiles": [
+        "known",
+        "unknown-applied-reopen",
+        "closure-before-reservation",
+        "reserved-then-closure",
+        "late-authentic-receipt"
+      ],
+      "endpoint": "controlled-loopback-separate-from-executor-process"
+    },
+    "replay": {
+      "registry": "absent",
+      "credentials": "absent",
+      "network": "sandbox-exec deny network* when available",
+      "before_after": [
+        "all tables",
+        "root charges",
+        "endpoint ledger"
+      ]
+    }
+  }
+}

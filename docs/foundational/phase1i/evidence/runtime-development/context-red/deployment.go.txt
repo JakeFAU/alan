@@ -1,0 +1,32 @@
+// Package substitution builds the five finite Phase 1I experimental contexts.
+// It is an ordinary public-API consumer, not a runtime orchestration facility.
+package substitution
+
+import (
+	"fmt"
+
+	"github.com/JakeFAU/alan/author"
+	"github.com/JakeFAU/alan/runtime"
+)
+
+type Request struct {
+	ID, Value int64
+	Mode      string
+}
+
+type Config struct {
+	Shape   string
+	Request Request
+	Limits  runtime.ResourceLimits
+}
+
+type Deployment struct {
+	Provision             runtime.Provision
+	Candidate, Entry, Peer author.Template
+	FixedRuns             int
+}
+
+// New provisions a fresh context; recovery only opens its retained store.
+func New(candidate author.Template, config Config) (Deployment, error) {
+	return Deployment{}, fmt.Errorf("Phase 1I context constructor not implemented")
+}

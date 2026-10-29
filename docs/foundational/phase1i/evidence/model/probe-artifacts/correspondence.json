@@ -1,0 +1,2007 @@
+{
+  "scope": "Actual retained W_A/W_B/P/Q and both helpers; read-only public-constructor byte extraction, no artifact execution to derive expectations; JSON decoding trusted; independent hand transcription in probe_graph.go. Not a compiler proof.",
+  "domain": "Product/local relation id1/value0/answer; capacities1..3/depth2; weak alsoI3/R2. Both helper branch arms are structurally transcribed; value1 arm has an instruction unit check only, not a wider product census.",
+  "source_path": "examples/substitution/probes.go",
+  "source_sha256": "8cb5b258962f921a8968aa713ca7db143a00f698a3c2219cdad86daf4741ce67",
+  "source_snapshot_path": "docs/foundational/phase1i/evidence/model/probe-artifacts/probes.go.txt",
+  "templates": {
+    "p-template.json": "b8d07102e34ec12bbf5078eec323918a72309181cca7335a6ae5f683fe8823c3",
+    "q-template.json": "e8cae7879815439ae80cf4b8baada5afccceec114673ec55f71cd4ba66fe15fb",
+    "weak-a-template.json": "29605267f767680dacf96ca69331dd44e411c91d658c8e9b30e77c11b57872c4",
+    "weak-b-template.json": "97d63f6768afbd6aba2f4a4a91e94a20a725d2daa6efc84881b1590ccc124f7f"
+  },
+  "q_pc_mapping": "Q actualPC0 is canonical0. Before Set, actualPC1 is canonical1/flag7=0. After Set, actualPC=canonicalPC+1 and flag7=1. scratch value is0; flag encodes definedness only. P has flag7=0. Local weak relation hides this private definedness bit only.",
+  "records": [
+    {
+      "name": "phase1i-probe-weak-a",
+      "artifact_path": "docs/foundational/phase1i/evidence/model/probe-artifacts/4722fa77507c4495a7f78ffdd1bd34c1ccbe765e2248cc7ec6d0bde24578d1db.program.json",
+      "artifact_bytes_sha256": "4722fa77507c4495a7f78ffdd1bd34c1ccbe765e2248cc7ec6d0bde24578d1db",
+      "instructions": [
+        {
+          "pc": 0,
+          "position": "steps/0:receive:public",
+          "instruction": {
+            "Op": "receive",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": {
+              "Kind": "message",
+              "Provenance": "ordinary-message",
+              "Source": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "caller",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Generation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "int",
+                  "Number": 1,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Obligation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "substitution",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Operation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              }
+            },
+            "Bind": {
+              "id": "id",
+              "mode": "mode",
+              "value": "value"
+            },
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          },
+          "model": "request_consume: registers0/1=id/value; mode received but not used"
+        },
+        {
+          "pc": 1,
+          "position": "steps/1:set:result_id",
+          "instruction": {
+            "Op": "set",
+            "Dst": "result_id",
+            "A": {
+              "Ref": "id",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          },
+          "model": "private_step register5(result_id)=register0(id)"
+        },
+        {
+          "pc": 2,
+          "position": "steps/2:set:result_value",
+          "instruction": {
+            "Op": "set",
+            "Dst": "result_value",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 0,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          },
+          "model": "private_step register6(result_value)=0"
+        },
+        {
+          "pc": 3,
+          "position": "steps/3:send:public",
+          "instruction": {
+            "Op": "emit",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": {
+              "Kind": "message",
+              "Target": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "caller",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Generation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "int",
+                  "Number": 1,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Obligation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "substitution",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Payload": {
+                "id": {
+                  "Ref": "result_id",
+                  "Literal": null,
+                  "Offset": null
+                },
+                "value": {
+                  "Ref": "result_value",
+                  "Literal": null,
+                  "Offset": null
+                }
+              }
+            },
+            "Updates": null,
+            "Outcome": ""
+          },
+          "model": "reply_commit registers5/6=result_id/result_value"
+        },
+        {
+          "pc": 4,
+          "position": "steps/4:end:",
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "succeeded"
+          },
+          "model": "terminal_freeze succeeded"
+        }
+      ]
+    },
+    {
+      "name": "phase1i-probe-weak-b",
+      "artifact_path": "docs/foundational/phase1i/evidence/model/probe-artifacts/a145ddec2f982a755fe2e0747b3343df864128200efe01de0183340523c4f036.program.json",
+      "artifact_bytes_sha256": "a145ddec2f982a755fe2e0747b3343df864128200efe01de0183340523c4f036",
+      "instructions": [
+        {
+          "pc": 0,
+          "position": "steps/0:receive:public",
+          "instruction": {
+            "Op": "receive",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": {
+              "Kind": "message",
+              "Provenance": "ordinary-message",
+              "Source": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "caller",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Generation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "int",
+                  "Number": 1,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Obligation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "substitution",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Operation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              }
+            },
+            "Bind": {
+              "id": "id",
+              "mode": "mode",
+              "value": "value"
+            },
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          },
+          "model": "request_consume: registers0/1=id/value; receive mode retained but never branched"
+        },
+        {
+          "pc": 1,
+          "position": "steps/1:invoke:helperhelper_handle",
+          "instruction": {
+            "Op": "emit",
+            "Dst": "helper_handle",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": {
+              "Kind": "invocation",
+              "Target": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "9d739d7df2af1171a3516e6eec8009d283e4ed2aac7e0779c9932238a0231319",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Generation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "int",
+                  "Number": 1,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Obligation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "helper",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Payload": {
+                "id": {
+                  "Ref": "id",
+                  "Literal": null,
+                  "Offset": null
+                },
+                "mode": {
+                  "Ref": "",
+                  "Literal": {
+                    "Kind": "string",
+                    "Number": 0,
+                    "Text": "answer",
+                    "Flag": false
+                  },
+                  "Offset": null
+                },
+                "value": {
+                  "Ref": "value",
+                  "Literal": null,
+                  "Offset": null
+                }
+              }
+            },
+            "Updates": {},
+            "Outcome": ""
+          },
+          "model": "invoke_commit h: id/value registers0/1; mode answer; exact helper_handle"
+        },
+        {
+          "pc": 2,
+          "position": "steps/2:await-invocation:helper",
+          "instruction": {
+            "Op": "receive",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": {
+              "Kind": "invocation",
+              "Provenance": "runtime-invocation",
+              "Source": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "9d739d7df2af1171a3516e6eec8009d283e4ed2aac7e0779c9932238a0231319",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Generation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "int",
+                  "Number": 1,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Obligation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "helper",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Operation": {
+                "Ref": "helper_handle",
+                "Literal": null,
+                "Offset": null
+              }
+            },
+            "Bind": {
+              "reason": "helper_reason",
+              "response.id": "result_id",
+              "response.value": "result_value",
+              "response_present": "helper_present",
+              "status": "helper_status"
+            },
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          },
+          "model": "outcome_consume h: exact helper_handle; registers3/4/5/6=status-is-succeeded,presence,result_id,result_value"
+        },
+        {
+          "pc": 3,
+          "position": "steps/3:if",
+          "instruction": {
+            "Op": "branch",
+            "Dst": "",
+            "A": {
+              "Ref": "helper_status",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "string",
+                "Number": 0,
+                "Text": "succeeded",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "Target": 4,
+            "Otherwise": 5,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          },
+          "model": "private_step status==succeeded =>4 else5; no presence or mode branch"
+        },
+        {
+          "pc": 4,
+          "position": "steps/3:if/join",
+          "instruction": {
+            "Op": "jump",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 6,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          },
+          "model": "private_step jump6"
+        },
+        {
+          "pc": 5,
+          "position": "steps/3:if/else/0:end:",
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "failed"
+          },
+          "model": "terminal_freeze failed"
+        },
+        {
+          "pc": 6,
+          "position": "steps/4:send:public",
+          "instruction": {
+            "Op": "emit",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": {
+              "Kind": "message",
+              "Target": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "caller",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Generation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "int",
+                  "Number": 1,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Obligation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "substitution",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Payload": {
+                "id": {
+                  "Ref": "result_id",
+                  "Literal": null,
+                  "Offset": null
+                },
+                "value": {
+                  "Ref": "result_value",
+                  "Literal": null,
+                  "Offset": null
+                }
+              }
+            },
+            "Updates": null,
+            "Outcome": ""
+          },
+          "model": "reply_commit registers5/6=result_id/result_value"
+        },
+        {
+          "pc": 7,
+          "position": "steps/5:end:",
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "succeeded"
+          },
+          "model": "terminal_freeze succeeded"
+        }
+      ]
+    },
+    {
+      "name": "phase1i-probe-helper-zero-false",
+      "artifact_path": "docs/foundational/phase1i/evidence/model/probe-artifacts/a8ab54a6b354bffab9ab61c71cc2d1cfc3989a028c01084a6d0b0a3092968558.program.json",
+      "artifact_bytes_sha256": "a8ab54a6b354bffab9ab61c71cc2d1cfc3989a028c01084a6d0b0a3092968558",
+      "instructions": [
+        {
+          "pc": 0,
+          "position": "steps/0:receive:public",
+          "instruction": {
+            "Op": "receive",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": {
+              "Kind": "message",
+              "Provenance": "ordinary-message",
+              "Source": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "caller",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Generation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "int",
+                  "Number": 1,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Obligation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "substitution",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Operation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              }
+            },
+            "Bind": {
+              "id": "id",
+              "value": "value"
+            },
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          },
+          "model": "request_consume: registers0/1=id/value; mode not bound"
+        },
+        {
+          "pc": 1,
+          "position": "steps/1:if",
+          "instruction": {
+            "Op": "branch",
+            "Dst": "",
+            "A": {
+              "Ref": "value",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 0,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "Target": 2,
+            "Otherwise": 4,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          },
+          "model": "private_step value==0 =>2 else4 (else outside fixed input0 census, transcribed and unit checked)"
+        },
+        {
+          "pc": 2,
+          "position": "steps/1:if/then/0:set:result",
+          "instruction": {
+            "Op": "set",
+            "Dst": "result",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 1,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          },
+          "model": "private_step register2(result)=1"
+        },
+        {
+          "pc": 3,
+          "position": "steps/1:if/join",
+          "instruction": {
+            "Op": "jump",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 5,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          },
+          "model": "private_step jump5"
+        },
+        {
+          "pc": 4,
+          "position": "steps/1:if/else/0:set:result",
+          "instruction": {
+            "Op": "set",
+            "Dst": "result",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 0,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          },
+          "model": "private_step register2(result)=0"
+        },
+        {
+          "pc": 5,
+          "position": "steps/2:send:public",
+          "instruction": {
+            "Op": "emit",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": {
+              "Kind": "message",
+              "Target": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "caller",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Generation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "int",
+                  "Number": 1,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Obligation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "substitution",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Payload": {
+                "id": {
+                  "Ref": "id",
+                  "Literal": null,
+                  "Offset": null
+                },
+                "value": {
+                  "Ref": "result",
+                  "Literal": null,
+                  "Offset": null
+                }
+              }
+            },
+            "Updates": null,
+            "Outcome": ""
+          },
+          "model": "reply_commit register0(id),register2(result)"
+        },
+        {
+          "pc": 6,
+          "position": "steps/3:end:",
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "succeeded"
+          },
+          "model": "terminal_freeze succeeded"
+        }
+      ]
+    },
+    {
+      "name": "phase1i-probe-helper-zero-true",
+      "artifact_path": "docs/foundational/phase1i/evidence/model/probe-artifacts/b972d19e45d8e2e60f50c3c7c8dcd0cdb0cb68c8b7ec54023272957fcf340f0f.program.json",
+      "artifact_bytes_sha256": "b972d19e45d8e2e60f50c3c7c8dcd0cdb0cb68c8b7ec54023272957fcf340f0f",
+      "instructions": [
+        {
+          "pc": 0,
+          "position": "steps/0:receive:public",
+          "instruction": {
+            "Op": "receive",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": {
+              "Kind": "message",
+              "Provenance": "ordinary-message",
+              "Source": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "caller",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Generation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "int",
+                  "Number": 1,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Obligation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "substitution",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Operation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              }
+            },
+            "Bind": {
+              "id": "id",
+              "value": "value"
+            },
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          },
+          "model": "request_consume: registers0/1=id/value; mode not bound"
+        },
+        {
+          "pc": 1,
+          "position": "steps/1:set:result",
+          "instruction": {
+            "Op": "set",
+            "Dst": "result",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 0,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          },
+          "model": "private_step register2(result)=0"
+        },
+        {
+          "pc": 2,
+          "position": "steps/2:send:public",
+          "instruction": {
+            "Op": "emit",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": {
+              "Kind": "message",
+              "Target": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "caller",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Generation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "int",
+                  "Number": 1,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Obligation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "substitution",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Payload": {
+                "id": {
+                  "Ref": "id",
+                  "Literal": null,
+                  "Offset": null
+                },
+                "value": {
+                  "Ref": "result",
+                  "Literal": null,
+                  "Offset": null
+                }
+              }
+            },
+            "Updates": null,
+            "Outcome": ""
+          },
+          "model": "reply_commit register0(id),register2(result)"
+        },
+        {
+          "pc": 3,
+          "position": "steps/3:end:",
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "succeeded"
+          },
+          "model": "terminal_freeze succeeded"
+        }
+      ]
+    },
+    {
+      "name": "phase1i-probe-q",
+      "artifact_path": "docs/foundational/phase1i/evidence/model/probe-artifacts/d1f2147536cc29d96473fb69192f9c8cbcaee8245c3a38925a6422523325610e.program.json",
+      "artifact_bytes_sha256": "d1f2147536cc29d96473fb69192f9c8cbcaee8245c3a38925a6422523325610e",
+      "instructions": [
+        {
+          "pc": 0,
+          "position": "steps/0:receive:public",
+          "instruction": {
+            "Op": "receive",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": {
+              "Kind": "message",
+              "Provenance": "ordinary-message",
+              "Source": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "caller",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Generation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "int",
+                  "Number": 1,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Obligation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "substitution",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Operation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              }
+            },
+            "Bind": {
+              "id": "id",
+              "mode": "mode",
+              "value": "value"
+            },
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          },
+          "model": "request_consume: registers0/1=id/value; receive mode retained but never branched"
+        },
+        {
+          "pc": 1,
+          "position": "steps/1:set:scratch",
+          "instruction": {
+            "Op": "set",
+            "Dst": "scratch",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "int",
+                "Number": 0,
+                "Text": "",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          },
+          "model": "private_step scratch=0; flag7 records presence of value0; canonicalPC1 remains1"
+        },
+        {
+          "pc": 2,
+          "position": "steps/2:invoke:helperhelper_handle",
+          "instruction": {
+            "Op": "emit",
+            "Dst": "helper_handle",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": {
+              "Kind": "invocation",
+              "Target": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "75a102f68e3d4f00c8fac23f6fe5a24906c7551469d70b73a16f54093303de09",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Generation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "int",
+                  "Number": 1,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Obligation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "helper",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Payload": {
+                "id": {
+                  "Ref": "id",
+                  "Literal": null,
+                  "Offset": null
+                },
+                "mode": {
+                  "Ref": "",
+                  "Literal": {
+                    "Kind": "string",
+                    "Number": 0,
+                    "Text": "answer",
+                    "Flag": false
+                  },
+                  "Offset": null
+                },
+                "value": {
+                  "Ref": "value",
+                  "Literal": null,
+                  "Offset": null
+                }
+              }
+            },
+            "Updates": {},
+            "Outcome": ""
+          },
+          "model": "invoke_commit h: id/value registers0/1; mode answer; exact helper_handle"
+        },
+        {
+          "pc": 3,
+          "position": "steps/3:await-invocation:helper",
+          "instruction": {
+            "Op": "receive",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": {
+              "Kind": "invocation",
+              "Provenance": "runtime-invocation",
+              "Source": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "75a102f68e3d4f00c8fac23f6fe5a24906c7551469d70b73a16f54093303de09",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Generation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "int",
+                  "Number": 1,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Obligation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "helper",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Operation": {
+                "Ref": "helper_handle",
+                "Literal": null,
+                "Offset": null
+              }
+            },
+            "Bind": {
+              "reason": "helper_reason",
+              "response.id": "result_id",
+              "response.value": "result_value",
+              "response_present": "helper_present",
+              "status": "helper_status"
+            },
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          },
+          "model": "outcome_consume h: exact helper_handle; registers3/4/5/6=status-is-succeeded,presence,result_id,result_value"
+        },
+        {
+          "pc": 4,
+          "position": "steps/4:if",
+          "instruction": {
+            "Op": "branch",
+            "Dst": "",
+            "A": {
+              "Ref": "helper_status",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "string",
+                "Number": 0,
+                "Text": "succeeded",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "Target": 5,
+            "Otherwise": 6,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          },
+          "model": "private_step status==succeeded =>5 else6; no presence or mode branch"
+        },
+        {
+          "pc": 5,
+          "position": "steps/4:if/join",
+          "instruction": {
+            "Op": "jump",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 7,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          },
+          "model": "private_step jump7"
+        },
+        {
+          "pc": 6,
+          "position": "steps/4:if/else/0:end:",
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "failed"
+          },
+          "model": "terminal_freeze failed"
+        },
+        {
+          "pc": 7,
+          "position": "steps/5:send:public",
+          "instruction": {
+            "Op": "emit",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": {
+              "Kind": "message",
+              "Target": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "caller",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Generation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "int",
+                  "Number": 1,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Obligation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "substitution",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Payload": {
+                "id": {
+                  "Ref": "result_id",
+                  "Literal": null,
+                  "Offset": null
+                },
+                "value": {
+                  "Ref": "result_value",
+                  "Literal": null,
+                  "Offset": null
+                }
+              }
+            },
+            "Updates": null,
+            "Outcome": ""
+          },
+          "model": "reply_commit registers5/6=result_id/result_value"
+        },
+        {
+          "pc": 8,
+          "position": "steps/6:end:",
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "succeeded"
+          },
+          "model": "terminal_freeze succeeded"
+        }
+      ]
+    },
+    {
+      "name": "phase1i-probe-p",
+      "artifact_path": "docs/foundational/phase1i/evidence/model/probe-artifacts/d3e3d98fcc271507795fcc9b7e3ff1eac09880e0ed592a0cb8c0c17fe265b3f8.program.json",
+      "artifact_bytes_sha256": "d3e3d98fcc271507795fcc9b7e3ff1eac09880e0ed592a0cb8c0c17fe265b3f8",
+      "instructions": [
+        {
+          "pc": 0,
+          "position": "steps/0:receive:public",
+          "instruction": {
+            "Op": "receive",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": {
+              "Kind": "message",
+              "Provenance": "ordinary-message",
+              "Source": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "caller",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Generation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "int",
+                  "Number": 1,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Obligation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "substitution",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Operation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              }
+            },
+            "Bind": {
+              "id": "id",
+              "mode": "mode",
+              "value": "value"
+            },
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          },
+          "model": "request_consume: registers0/1=id/value; receive mode retained but never branched"
+        },
+        {
+          "pc": 1,
+          "position": "steps/1:invoke:helperhelper_handle",
+          "instruction": {
+            "Op": "emit",
+            "Dst": "helper_handle",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": {
+              "Kind": "invocation",
+              "Target": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "75a102f68e3d4f00c8fac23f6fe5a24906c7551469d70b73a16f54093303de09",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Generation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "int",
+                  "Number": 1,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Obligation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "helper",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Payload": {
+                "id": {
+                  "Ref": "id",
+                  "Literal": null,
+                  "Offset": null
+                },
+                "mode": {
+                  "Ref": "",
+                  "Literal": {
+                    "Kind": "string",
+                    "Number": 0,
+                    "Text": "answer",
+                    "Flag": false
+                  },
+                  "Offset": null
+                },
+                "value": {
+                  "Ref": "value",
+                  "Literal": null,
+                  "Offset": null
+                }
+              }
+            },
+            "Updates": {},
+            "Outcome": ""
+          },
+          "model": "invoke_commit h: id/value registers0/1; mode answer; exact helper_handle"
+        },
+        {
+          "pc": 2,
+          "position": "steps/2:await-invocation:helper",
+          "instruction": {
+            "Op": "receive",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": {
+              "Kind": "invocation",
+              "Provenance": "runtime-invocation",
+              "Source": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "75a102f68e3d4f00c8fac23f6fe5a24906c7551469d70b73a16f54093303de09",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Generation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "int",
+                  "Number": 1,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Obligation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "helper",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Operation": {
+                "Ref": "helper_handle",
+                "Literal": null,
+                "Offset": null
+              }
+            },
+            "Bind": {
+              "reason": "helper_reason",
+              "response.id": "result_id",
+              "response.value": "result_value",
+              "response_present": "helper_present",
+              "status": "helper_status"
+            },
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          },
+          "model": "outcome_consume h: exact helper_handle; registers3/4/5/6=status-is-succeeded,presence,result_id,result_value"
+        },
+        {
+          "pc": 3,
+          "position": "steps/3:if",
+          "instruction": {
+            "Op": "branch",
+            "Dst": "",
+            "A": {
+              "Ref": "helper_status",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "string",
+                "Number": 0,
+                "Text": "succeeded",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "Target": 4,
+            "Otherwise": 5,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          },
+          "model": "private_step status==succeeded =>4 else5; no presence or mode branch"
+        },
+        {
+          "pc": 4,
+          "position": "steps/3:if/join",
+          "instruction": {
+            "Op": "jump",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 6,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          },
+          "model": "private_step jump6"
+        },
+        {
+          "pc": 5,
+          "position": "steps/3:if/else/0:end:",
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "failed"
+          },
+          "model": "terminal_freeze failed"
+        },
+        {
+          "pc": 6,
+          "position": "steps/4:send:public",
+          "instruction": {
+            "Op": "emit",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": {
+              "Kind": "message",
+              "Target": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "caller",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Generation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "int",
+                  "Number": 1,
+                  "Text": "",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Obligation": {
+                "Ref": "",
+                "Literal": {
+                  "Kind": "string",
+                  "Number": 0,
+                  "Text": "substitution",
+                  "Flag": false
+                },
+                "Offset": null
+              },
+              "Payload": {
+                "id": {
+                  "Ref": "result_id",
+                  "Literal": null,
+                  "Offset": null
+                },
+                "value": {
+                  "Ref": "result_value",
+                  "Literal": null,
+                  "Offset": null
+                }
+              }
+            },
+            "Updates": null,
+            "Outcome": ""
+          },
+          "model": "reply_commit registers5/6=result_id/result_value"
+        },
+        {
+          "pc": 7,
+          "position": "steps/5:end:",
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "succeeded"
+          },
+          "model": "terminal_freeze succeeded"
+        }
+      ]
+    }
+  ]
+}

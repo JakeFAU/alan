@@ -1,0 +1,42 @@
+package substitution
+
+import "testing"
+
+func TestRootSuccessClosesParallelAdmissionCounterexample(t *testing.T) {
+	c := Config{Shape: "parallel", Request: Request{1, 0, "answer"}, I: 3, R: 3, Depth: 2}
+	if !Entitled(c) {
+		t.Fatal("frozen initial entitlement unexpectedly removed")
+	}
+	for _, v := range []Variant{Reference, Local, Helper} {
+		t.Run(string(v), func(t *testing.T) {
+			graph := CandidateGraph(v)
+			if v == Reference {
+				graph = func(c Config, s State) []Edge { return Successors(c, Reference, s) }
+			}
+			result := ExploreGraph(c, RootTerminalFence(graph))
+			found := false
+			for _, failure := range result.Counterexamples {
+				if failure.Code == "completion" {
+					found = true
+					closed := false
+					scope := false
+					for _, e := range failure.Trace {
+						if e.Kind == "close_root" {
+							closed = true
+						}
+						if e.Kind == "admit" && e.Role == "s" && e.Reason == "scope_closed" {
+							scope = true
+						}
+					}
+					if closed || !scope {
+						t.Fatalf("counterexample does not isolate ordinary root success: %+v", failure)
+					}
+				}
+			}
+			if !found {
+				t.Fatal("expected Gc counterexample missing")
+			}
+			emit(t, "root-success-parallel-counterexample-"+string(v), result)
+		})
+	}
+}

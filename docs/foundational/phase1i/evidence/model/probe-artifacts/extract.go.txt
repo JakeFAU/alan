@@ -1,0 +1,3 @@
+package main
+import("os";"path/filepath";"fmt";fixtures "github.com/JakeFAU/alan/examples/substitution")
+func main(){for _,name:=range []string{"weak-a","weak-b","p","q"}{t,err:=fixtures.Probe(name);if err!=nil {panic(err)};p:=filepath.Join(os.Args[1],name+"-template.json");if err:=os.WriteFile(p,t.Bytes(),0644);err!=nil {panic(err)};fmt.Println(name,t.ID())}}

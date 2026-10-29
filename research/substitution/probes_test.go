@@ -1,0 +1,138 @@
+package substitution
+
+import "testing"
+
+func TestWeakBudgetProfiles(t *testing.T) {
+	var results []ProbeResult
+	for _, limits := range [][2]int{{1, 1}, {2, 2}, {3, 3}, {3, 2}} {
+		for _, v := range []Variant{Local, Helper} {
+			c := Config{Shape: "sequential", Request: Request{1, 0, "answer"}, I: limits[0], R: limits[1], Depth: 2}
+			r := Probe(c, weakGraph(v), true)
+			r.Name = "weak/" + string(v) + "/" + r.Name
+			results = append(results, r)
+			if r.Stuck != 0 || r.RankFailures != 0 || len(r.Counterexamples) > 0 {
+				t.Fatalf("%+v", r)
+			}
+			want := "failed"
+			required := 2
+			if v == Helper {
+				required = 3
+			}
+			if c.I >= required && c.R >= required {
+				want = "succeeded"
+			}
+			for _, o := range r.Outcomes {
+				if o.RootStatus != want {
+					t.Fatalf("%s got%+v want%s", r.Name, o, want)
+				}
+			}
+		}
+	}
+	emit(t, "weak-probes", results)
+}
+func TestEqualChargeLocalThenContext(t *testing.T) {
+	var relations []WeakRelationResult
+	var languages []LanguageResult
+	var products []ProbeResult
+	for limit := 1; limit <= 3; limit++ {
+		c := Config{Shape: "local", Request: Request{1, 0, "answer"}, I: limit, R: limit, Depth: 2, EntryDepth: 1, Local: true, Peer: true, Closure: true}
+		rel := CheckEqualLocal(c)
+		relations = append(relations, rel)
+		if rel.Failures != 0 {
+			t.Fatalf("local weak relation %+v", rel)
+		}
+	}
+	for limit := 1; limit <= 3; limit++ {
+		c := Config{Shape: "parallel", Request: Request{1, 0, "answer"}, I: limit, R: limit, Depth: 2}
+		c.Local = false
+		c.Peer = false
+		c.Closure = false
+		c.Shape = "parallel"
+		language := CompareLanguages(c, equalGraph(false), equalGraph(true))
+		languages = append(languages, language)
+		if !language.Equal {
+			t.Fatalf("language difference %+v", language)
+		}
+		for _, extra := range []bool{false, true} {
+			p := Probe(c, equalGraph(extra), false)
+			if p.Stuck != 0 || p.RankFailures != 0 {
+				t.Fatalf("%+v", p)
+			}
+			products = append(products, p)
+		}
+	}
+	emit(t, "equal-local-relations", relations)
+	emit(t, "equal-context-languages", languages)
+	emit(t, "equal-products", products)
+}
+func TestGraphFaultControls(t *testing.T) {
+	c := Config{Shape: "bare", Request: Request{1, 0, "answer"}, I: 3, R: 3, Depth: 2}
+	wrong := func(c Config, s State) []Edge {
+		edges := CandidateGraph(Local)(c, s)
+		for i := range edges {
+			if edges[i].Event.Kind == "reply_commit" && edges[i].Event.Role == "candidate" {
+				edges[i].Next.Ops[entry].ReplyID = 2
+				edges[i].Event.ID = 2
+			}
+		}
+		return edges
+	}
+	r := ExploreGraph(c, wrong)
+	found := false
+	for _, v := range r.Counterexamples {
+		if v.Code == "application_id" {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatal("unchanged checker did not reject wrong id")
+	}
+	emit(t, "wrong-id-model-counterexample", r)
+	extra := func(c Config, s State) []Edge {
+		edges := CandidateGraph(Helper)(c, s)
+		for i := range edges {
+			if edges[i].Event.Kind == "reply_commit" && edges[i].Event.Operation == "s" && s.Ops[sibling].Role == "helper" {
+				edges[i].Next.Ops[sibling].ReplyValue = 1
+				edges[i].Event.Value = 1
+			}
+		}
+		if s.Ops[helper].Consumed && s.Ops[sibling].Ticket == excluded {
+			var kept []Edge
+			for _, e := range edges {
+				if e.Environment {
+					kept = append(kept, e)
+				}
+			}
+			n := s
+			n.Ops[sibling] = Operation{Enabled: true, Role: "helper", Source: entry, Depth: 2, Input: Request{1, 0, "answer"}, Ticket: committed}
+			return append(kept, Edge{Observation{Kind: "invoke_commit", Operation: "s", Parent: "e", Role: "helper", Request: Request{1, 0, "answer"}}, n, false})
+		}
+		return edges
+	}
+	r = ExploreGraph(c, extra)
+	found = false
+	charged := false
+	for _, v := range r.Counterexamples {
+		if v.Code == "extra_helper" {
+			found = true
+		}
+	}
+	for _, o := range r.Outcomes {
+		if o.I == 3 && o.R == 3 {
+			charged = true
+		}
+	}
+	if !found || !charged {
+		t.Fatalf("extra helper detection=%v actual charge3=%v", found, charged)
+	}
+	emit(t, "extra-helper-model-counterexample", r)
+	local := c
+	local.Local = true
+	local.Shape = "local"
+	local.EntryDepth = 1
+	rejected := CheckLocalRelation(local, wrong)
+	if rejected.Failures == 0 {
+		t.Fatal("local relation accepted wrong payload")
+	}
+	emit(t, "wrong-id-local-rejection", rejected)
+}

@@ -1,0 +1,45 @@
+from pathlib import Path
+import hashlib
+import json
+
+root = Path(__file__).resolve().parent
+manifest = json.loads((root / 'first-version-sha256.json').read_text())
+for name, expected in manifest['files'].items():
+    actual = (root / name).read_bytes()
+    assert hashlib.sha256(actual).hexdigest() == expected['sha256'], name
+for name in ('b.go', 'b_test.go'):
+    source = root.parents[5] / 'examples/substitution/b' / name
+    assert source.read_bytes() == (root / (name + '.txt')).read_bytes(), source
+samples = sorted((root / 'samples').glob('*.json'))
+assert len(samples) == 28
+results = []
+for sample in samples:
+    retained = json.loads(sample.read_text())
+    tables = retained['Inspection']['Tables']
+    admissions = [json.loads(row['descriptor']) for row in tables['composition_admission_decisions']]
+    entry = next(a for a in admissions if a['Invocation']['ParentInvocationID'] == '')
+    helper = next(a for a in admissions if a['Invocation']['ParentInvocationID'] == entry['Invocation']['ID'])
+    member = entry['Members'][0]
+    consumed = [row for row in tables['observations']
+                if row['subject'] == member['Subject']
+                and json.loads(row['descriptor'])['Operation'] == helper['Invocation']['OperationID']]
+    assert len(consumed) == 1 and consumed[0]['consumed_sequence'] is not None, sample
+    observation = json.loads(consumed[0]['descriptor'])
+    assert observation['Provenance'] == 'runtime-invocation', sample
+    assert observation['Source'] == helper['Invocation']['TemplateID'], sample
+    assert observation['Obligation'] == 'complement', sample
+    sends = [json.loads(row['descriptor']) for row in tables['intents']
+             if row['subject'] == member['Subject']
+             and json.loads(row['descriptor'])['Kind'] == 'message']
+    assert all(send['Sequence'] > consumed[0]['consumed_sequence'] for send in sends), sample
+    report = retained['Report']
+    assert report['Quiescent'] and report['Steps'] < 200 and report['Dispatches'] < 100, sample
+    results.append({'name': sample.stem, 'helper_outcome_consumed_sequence': consumed[0]['consumed_sequence'],
+                    'steps': report['Steps'], 'dispatches': report['Dispatches']})
+summary = {'sample_count': len(samples), 'source_and_artifact_hashes_match': True,
+           'original_helper_outcome_consumed_in_all_samples': True,
+           'every_candidate_send_follows_helper_consumption': True,
+           'max_steps': max(r['steps'] for r in results),
+           'max_dispatches': max(r['dispatches'] for r in results), 'samples': results}
+(root / 'qualification-summary.json').write_text(json.dumps(summary, indent=2) + '\n')
+print(json.dumps({key: value for key, value in summary.items() if key != 'samples'}, indent=2))

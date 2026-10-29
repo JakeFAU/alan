@@ -1,0 +1,64 @@
+{
+  "status": "development qualification; controller final source freeze remains separate",
+  "focused_selectors": {
+    "root": "^TestSubstitution(Runtime|Probes|Recovery|Closure|Effects|RootSuccessFence)$",
+    "consumer": "^TestConsumerInitRunInspectReplay$"
+  },
+  "expected_leaf_counts": {
+    "root": 236,
+    "consumer": 2
+  },
+  "commands": [
+    "env -u OPENAI_API_KEY GOTOOLCHAIN=local GOPROXY=off GOSUMDB=off GOFLAGS=-mod=readonly GOCACHE=/tmp/alan-phase1f-go-build ALAN_I_ARTIFACTS=<fresh-directory> go test -tags integration -run ^TestSubstitution(Runtime|Probes|Recovery|Closure|Effects|RootSuccessFence)$ -count=1 -json -timeout=10m ./internal/substitutiontest",
+    "same selector with -race and -timeout=30m",
+    "nested consumer go test -race -count=1 -timeout=10m ./...",
+    "go vet -tags integration ./internal/substitutiontest ./examples/substitution/...",
+    "nested consumer go vet ./..."
+  ],
+  "fixture_manifests": [
+    "fixtures.json",
+    "fixtures-supplement-root-fence.json"
+  ],
+  "source_sha256": {
+    "examples/substitution/a/candidate.go": "c98a5c6d16738d98af9140e6edce6d4df0ddcb51c2330ba974e0e51a82005911",
+    "examples/substitution/a/candidate_test.go": "033373ad1e384b32b6b9597faa2ed23a3f74b8f8015371d17b4c2df9d3503710",
+    "examples/substitution/b/b.go": "ff813a85585175522e2bf5cc4550caeb6c169c7e507c7ce51ee8bba43ec933e8",
+    "examples/substitution/b/b_test.go": "8e845090cb8d05fbd3d352f3c9572e546de2a1d3c3527608e2a8e849a657c391",
+    "examples/substitution/consumer/main.go": "38685cba4434ee6b57eb4f2644143f9ac347f733232abd9c3c65f4c4c8201181",
+    "examples/substitution/consumer/main_test.go": "23ff9d306fb96f8c0f8845cc49c82c102539314bf05b07a9fa25fb486468ab99",
+    "examples/substitution/deployment.go": "37d5b9fa0e3fc2292fa13933f7a012d783055c6a37fa6ba0686472bd96c499a0",
+    "examples/substitution/effect.go": "61aa0377a859bf6083f941d4cd86a2bec8b5b15f1074a023e17dc83329a79b9a",
+    "examples/substitution/probes.go": "8cb5b258962f921a8968aa713ca7db143a00f698a3c2219cdad86daf4741ce67",
+    "internal/substitutiontest/closure_test.go": "4883838f68efedc8c91c1b02b430ef63054cba68047ab7a7fbbee3468e916436",
+    "internal/substitutiontest/effects_test.go": "a72479e0cb4840e91e5df306de388811c6c0a5eba48b45fe0633ba7fd47bd6d3",
+    "internal/substitutiontest/fixtures_test.go": "2c5bec796eaba5e7ddcfcf8d46314e8f41fc085c5dc9a39d3a51983013898607",
+    "internal/substitutiontest/live_effects_test.go": "a1c90abe7097cfe6ded48535b4f5a6eddda96082e6ca4470a8dc7c91a9aea2b9",
+    "internal/substitutiontest/process_test.go": "e19ae3d06ece8aa58fb21bce9139c28624e8003d25a9e8f30318be37dac0146e",
+    "internal/substitutiontest/race_off_test.go": "2e1f2ca533ad060302c7ed966f9d36c610cb0b6986bf1d72399d004afec317ed",
+    "internal/substitutiontest/race_on_test.go": "f9b998e47bb7471b7a9f4b6f0269d3b57fc1454befbc04948a6e13d14ecf9f7d",
+    "internal/substitutiontest/root_fence_test.go": "1390d96b0bc6142fefb78ba534b0493c5f8a959377a71e73a4eeb2ff79a1dfc1",
+    "internal/substitutiontest/runtime_test.go": "f22b9072326c6ad50bfe49f3cc565780f8c8e3be8b48ca237102001fa45545e6",
+    "research/substitution/auxiliary_test.go": "aa011e6ba661ea658c1bcd3931159034904b6dd856cd214fda8269296a2bcea6",
+    "research/substitution/candidates.go": "670d0265608ff7c519b6838bd65485427f231591516aaa6f75d8ad42566ade69",
+    "research/substitution/candidates_test.go": "008b15c4c5c4a2aa9e2a3e94a3fcff76e8dfa91c0de8c52f96e8d542e9171c2c",
+    "research/substitution/correspondence_test.go": "986e23925e702f061a4f9b0606bb45a11befcbb6109a854fe3579c60bfee1464",
+    "research/substitution/effect.go": "b1f65b5cb9189536ccca746089321b0cd22dc1133d62fc73d74e22ba204f8f33",
+    "research/substitution/effect_test.go": "b417d30e8d719777b10b99aea29b8a8b511d1f171774fae97171ca930c38b019",
+    "research/substitution/envelope_test.go": "e20d5b7c9024a1a90b8787ab07d71aaf7a010c5564a52a3a943d79c38eb67ff4",
+    "research/substitution/explorer.go": "9e8dc11ec95c8a14510aea483ffc6495a2c5fb12273ebaca25cbc57a997cb5f9",
+    "research/substitution/model.go": "1faef47e9ef17401512aba14239fc07ad7031a6db249600844752b35db342ddf",
+    "research/substitution/model_test.go": "497324ee87d21aca53ccf6307c29c0ecc4c334d3e2d0b24471314050bf94fc7b",
+    "research/substitution/oracle.go": "9f7f5f59414c439392ab813759c6ed1c99f4be21aaa44f03a24cf953eb3899ad",
+    "research/substitution/oracle_test.go": "1094aa0a03fb27124b9f581e0cf33d80b1ff2dad8fd99383ce0f5d79872b2332",
+    "research/substitution/probes.go": "5d398ecfa3dbf3a2b02348a06fcc2b688eeaa4916a9da0a17e69aa39fd5dca73",
+    "research/substitution/probes_test.go": "42aa8dd20aa68997298d71436f6824124d79ccc221ab5186ee055e2f3ba069f1",
+    "research/substitution/relation.go": "4d4977eb96432269fbff9b550c74fd59527b3d3df5833d46f0cda1e77961a6be",
+    "research/substitution/runtime_boundary.go": "b22089368f93bea5f3e471292f0b7308419b937508e78942343cdb001d362e44",
+    "research/substitution/runtime_boundary_test.go": "2d6b7e153f98ecad9ed6a49f749902032920070b645271c188370fc3808e8591"
+  },
+  "child_timeout_seconds": {
+    "normal": 100,
+    "race": 600
+  },
+  "child_binary": "same parent test executable; race tag true requires race build"
+}

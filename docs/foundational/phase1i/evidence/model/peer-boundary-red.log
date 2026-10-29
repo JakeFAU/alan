@@ -1,0 +1,86 @@
+=== RUN   TestNamedClosureReferenceBoundaries
+--- PASS: TestNamedClosureReferenceBoundaries (0.00s)
+=== RUN   TestCandidateProducts
+=== RUN   TestCandidateProducts/local
+    candidates_test.go:34: {Name:local Configurations:3840 Entitled:84 States:95264 Transitions:146926 Revisits:55502 Rejections:10240 Terminal:3616 Pending:464 Stuck:0 Cycles:0 RankFailures:0 Cutoffs:0 Counterexamples:[] Outcomes:[]}
+=== RUN   TestCandidateProducts/helper
+    candidates_test.go:34: {Name:helper Configurations:3840 Entitled:84 States:128616 Transitions:201920 Revisits:77144 Rejections:16912 Terminal:4044 Pending:132 Stuck:0 Cycles:0 RankFailures:0 Cutoffs:0 Counterexamples:[] Outcomes:[]}
+--- PASS: TestCandidateProducts (1.18s)
+    --- PASS: TestCandidateProducts/local (0.48s)
+    --- PASS: TestCandidateProducts/helper (0.70s)
+=== RUN   TestCandidateLocalRelations
+=== RUN   TestCandidateLocalRelations/local
+    candidates_test.go:74: {Initials:3072 Pairs:81260 ComponentChecks:30092 EnvironmentChecks:143936 Stutters:9900 Failures:0 Counterexamples:[]}
+=== RUN   TestCandidateLocalRelations/helper
+    candidates_test.go:74: {Initials:3072 Pairs:118408 ComponentChecks:44856 EnvironmentChecks:205088 Stutters:10680 Failures:0 Counterexamples:[]}
+--- PASS: TestCandidateLocalRelations (0.90s)
+    --- PASS: TestCandidateLocalRelations/local (0.37s)
+    --- PASS: TestCandidateLocalRelations/helper (0.54s)
+=== RUN   TestSeparateK1EProfiles
+=== RUN   TestSeparateK1EProfiles/known
+=== RUN   TestSeparateK1EProfiles/unknown-reopen
+=== RUN   TestSeparateK1EProfiles/closure-before-reservation
+=== RUN   TestSeparateK1EProfiles/reserved-then-closure
+=== RUN   TestSeparateK1EProfiles/late-live
+--- PASS: TestSeparateK1EProfiles (0.00s)
+    --- PASS: TestSeparateK1EProfiles/known (0.00s)
+    --- PASS: TestSeparateK1EProfiles/unknown-reopen (0.00s)
+    --- PASS: TestSeparateK1EProfiles/closure-before-reservation (0.00s)
+    --- PASS: TestSeparateK1EProfiles/reserved-then-closure (0.00s)
+    --- PASS: TestSeparateK1EProfiles/late-live (0.00s)
+=== RUN   TestModeResponseAbsenceIndependent
+=== RUN   TestModeResponseAbsenceIndependent/fail
+=== RUN   TestModeResponseAbsenceIndependent/absent
+=== RUN   TestModeResponseAbsenceIndependent/pending
+--- PASS: TestModeResponseAbsenceIndependent (0.00s)
+    --- PASS: TestModeResponseAbsenceIndependent/fail (0.00s)
+    --- PASS: TestModeResponseAbsenceIndependent/absent (0.00s)
+    --- PASS: TestModeResponseAbsenceIndependent/pending (0.00s)
+=== RUN   TestReferenceProducts
+    model_test.go:58: reference census: {Name:K1 Configurations:3840 Entitled:84 States:141760 Transitions:224564 Revisits:86644 Rejections:17284 Terminal:5436 Pending:596 Stuck:0 Cycles:0 RankFailures:0 Cutoffs:0 Counterexamples:[] Outcomes:[]}
+--- PASS: TestReferenceProducts (0.68s)
+=== RUN   TestReferenceBoundaries
+--- PASS: TestReferenceBoundaries (0.00s)
+=== RUN   TestReferenceOpenEnvironment
+    model_test.go:123: open census: {Name:K1-open-environment Configurations:3072 Entitled:60 States:127088 Transitions:160904 Revisits:36888 Rejections:9200 Terminal:21456 Pending:0 Stuck:0 Cycles:0 RankFailures:0 Cutoffs:0 Counterexamples:[] Outcomes:[]}
+--- PASS: TestReferenceOpenEnvironment (0.84s)
+=== RUN   TestReferenceLocalProgressWithoutClosure
+    model_test.go:146: local progress: {Name:K1-local-no-closure Configurations:3072 Entitled:60 States:48656 Transitions:52532 Revisits:6948 Rejections:3504 Terminal:4600 Pending:456 Stuck:0 Cycles:0 RankFailures:0 Cutoffs:0 Counterexamples:[] Outcomes:[]}
+--- PASS: TestReferenceLocalProgressWithoutClosure (0.14s)
+=== RUN   TestIndependentFaultControls
+=== RUN   TestIndependentFaultControls/wrong-id
+=== RUN   TestIndependentFaultControls/extra-helper
+--- PASS: TestIndependentFaultControls (0.00s)
+    --- PASS: TestIndependentFaultControls/wrong-id (0.00s)
+    --- PASS: TestIndependentFaultControls/extra-helper (0.00s)
+=== RUN   TestWeakBudgetProfiles
+--- PASS: TestWeakBudgetProfiles (0.00s)
+=== RUN   TestEqualChargeLocalThenContext
+--- PASS: TestEqualChargeLocalThenContext (0.02s)
+=== RUN   TestGraphFaultControls
+--- PASS: TestGraphFaultControls (0.00s)
+=== RUN   TestRootSuccessClosesParallelAdmissionCounterexample
+=== RUN   TestRootSuccessClosesParallelAdmissionCounterexample/K1
+=== RUN   TestRootSuccessClosesParallelAdmissionCounterexample/local
+=== RUN   TestRootSuccessClosesParallelAdmissionCounterexample/helper
+--- PASS: TestRootSuccessClosesParallelAdmissionCounterexample (0.01s)
+    --- PASS: TestRootSuccessClosesParallelAdmissionCounterexample/K1 (0.00s)
+    --- PASS: TestRootSuccessClosesParallelAdmissionCounterexample/local (0.00s)
+    --- PASS: TestRootSuccessClosesParallelAdmissionCounterexample/helper (0.00s)
+=== RUN   TestRuntimeBoundaryFullCensus
+=== RUN   TestRuntimeBoundaryFullCensus/K1
+    runtime_boundary_test.go:100: {Variant:K1 Total:{Name: Configurations:3840 Entitled:84 States:142688 Transitions:225260 Revisits:86412 Rejections:17516 Terminal:5668 Pending:596 Stuck:0 Cycles:0 RankFailures:0 Cutoffs:0 Counterexamples:[] Outcomes:[]} FailedConfigurations:8 FailedEntitled:8 UnaffectedEntitled:76 UnaffectedCompleted:76 FailedByShape:map[parallel:8]}
+=== RUN   TestRuntimeBoundaryFullCensus/local
+    runtime_boundary_test.go:100: {Variant:local Total:{Name: Configurations:3840 Entitled:84 States:95840 Transitions:147358 Revisits:55358 Rejections:10384 Terminal:3760 Pending:464 Stuck:0 Cycles:0 RankFailures:0 Cutoffs:0 Counterexamples:[] Outcomes:[]} FailedConfigurations:8 FailedEntitled:8 UnaffectedEntitled:76 UnaffectedCompleted:76 FailedByShape:map[parallel:8]}
+=== RUN   TestRuntimeBoundaryFullCensus/helper
+    runtime_boundary_test.go:100: {Variant:helper Total:{Name: Configurations:3840 Entitled:84 States:128968 Transitions:202184 Revisits:77056 Rejections:17000 Terminal:4132 Pending:132 Stuck:0 Cycles:0 RankFailures:0 Cutoffs:0 Counterexamples:[] Outcomes:[]} FailedConfigurations:8 FailedEntitled:8 UnaffectedEntitled:76 UnaffectedCompleted:76 FailedByShape:map[parallel:8]}
+--- PASS: TestRuntimeBoundaryFullCensus (1.90s)
+    --- PASS: TestRuntimeBoundaryFullCensus/K1 (0.69s)
+    --- PASS: TestRuntimeBoundaryFullCensus/local (0.49s)
+    --- PASS: TestRuntimeBoundaryFullCensus/helper (0.72s)
+=== RUN   TestRootCancellationDoesNotCancelStaticPeer
+    runtime_boundary_test.go:133: bad closed scope denial {Kind:admit Operation:s Parent:peer Role:s Request:{ID:1 Value:0 Mode:answer} ID:0 Value:0 Status:rejected Reason:source_closed Present:false I:0 R:0 E:0}
+--- FAIL: TestRootCancellationDoesNotCancelStaticPeer (0.00s)
+FAIL
+FAIL	github.com/JakeFAU/alan/research/substitution	5.780s
+FAIL

@@ -1,0 +1,39 @@
+package substitution
+
+// RootTerminalFence is an adversarial runtime-boundary interpretation kept
+// separate from the frozen K1 contract. Code inspection of
+// internal/executor/invocation.go:165-177 shows that ANY non-open root projection
+// closes final admission, including successful root termination. This adapter
+// changes neither initial entitlement nor the external-cancellation bit.
+// Its counterexample falsifies correspondence of K1's parallel Gc premise to
+// that boundary; it does not falsify an implication whose C[K1] premise fails.
+func RootTerminalFence(graph Graph) Graph {
+	return func(c Config, s State) []Edge {
+		edges := graph(c, s)
+		for index := range edges {
+			e := &edges[index]
+			if e.Event.Kind != "admit" || e.Event.Status != "accepted" || s.RootStatus == "" {
+				continue
+			}
+			i := -1
+			for j := range s.Ops {
+				if name(j) == e.Event.Operation {
+					i = j
+				}
+			}
+			if i < 0 {
+				continue
+			}
+			n := s
+			n.Ops[i].Admission = 2
+			n.Ops[i].AdmissionReason = "scope_closed"
+			exclude(&n, i)
+			e.Next = n
+			e.Event.Status = "rejected"
+			e.Event.Reason = "scope_closed"
+			e.Event.I = 0
+			e.Event.R = 0
+		}
+		return edges
+	}
+}

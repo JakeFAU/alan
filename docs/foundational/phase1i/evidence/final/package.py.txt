@@ -1,0 +1,65 @@
+import gzip, hashlib, json, pathlib, platform, subprocess
+
+root = pathlib.Path('/Users/jacob/.codex/worktrees/alan-phase1d1-dispatch/alan')
+phase = root / 'docs/foundational/phase1i'
+def sha(p): return hashlib.sha256(p.read_bytes()).hexdigest()
+def read(p): return json.loads(p.read_text())
+paths = {p for p in root.rglob('*') if p.is_file() and 'docs' not in p.relative_to(root).parts and '.git' not in p.relative_to(root).parts and (p.suffix=='.go' or p.name in ('go.mod','go.sum','AGENTS.md'))}
+paths.update(root/p for p in ['paper/alan-dissertation.md','paper/alan-dissertation.tex','paper/references.bib'])
+paths.add(phase/'01-substitution-contract.md')
+for p in [phase/'evidence/model/artifact-correspondence.json', phase/'evidence/model/probe-artifacts/correspondence.json']:
+ paths.add(p)
+ for rec in read(p)['records']:
+  paths.add(root/rec['artifact_path'])
+paths.update(phase/'evidence/model/probe-artifacts'/name for name in read(phase/'evidence/model/probe-artifacts/correspondence.json')['templates'])
+for profile in ['normal-v1','race-v1']:
+ for candidate in ['a','b']:
+  for cut in ['entry-commit','entry-admitted','helper-commit','reply-commit','published']:
+   if candidate=='a' and cut=='helper-commit': continue
+   name=f'TestSubstitutionClosure/{candidate}/{cut}'
+   key=hashlib.sha256(json.dumps(name,separators=(',',':')).encode()).hexdigest()[:12]
+   paths.add(phase/'evidence/runtime'/profile/key/'after.json.gz')
+files={str(p.relative_to(root)):sha(p) for p in sorted(paths,key=lambda p: str(p.relative_to(root)).encode('utf-8'))}
+identity=hashlib.sha256(''.join(f'{h}  {p}\n' for p,h in files.items()).encode()).hexdigest()
+manifest=dict(base_commit='82573b1eaf349f9567dc34d91f6d8ddcbb6a3177',base_tree='158d2a24ece0b14f99018921797a7f6f6a45a465',algorithm='SHA-256 of file SHA256 + two spaces + repository-relative path + LF records, ordered by repository-relative UTF-8 path bytes (the files object insertion order)',source_id=identity,scope='All repository Go/module/AGENTS files outside docs, affected manuscript and bibliography, frozen K1 and instruction mappings/artifacts, and the 18 archived closure inputs read by decoder regressions. Narrative reports and generated outputs excluded to avoid recursive identity. Each test command retains its own execution-time source record.',files=files,platform=platform.platform(),go_version=subprocess.check_output(['go','version'],cwd=root,text=True).strip())
+(phase/'source-manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
+records=[dict(kind='source',manifest='source-manifest.json',sha256=sha(phase/'source-manifest.json'),source_id=identity)]
+def artifact(kind,p,**fields):
+ records.append(dict(kind=kind,path=str(p.relative_to(phase)),sha256=sha(p),**fields))
+for v in ['K1','local','helper']:
+ p=phase/f'evidence/model/boundary-extension-summary-{v}.json'
+ artifact('bounded-model-boundary',p,result=read(p))
+for v in ['local','helper']:
+ p=phase/f'evidence/model/local-relation-{v}.json'
+ artifact('bounded-model-local',p,result=read(p))
+for p in [phase/'evidence/model/probe-artifacts/probe-summary.json',phase/'evidence/model/probe-artifacts/final-source-manifest.json']:
+ artifact('actual-probe-model',p)
+for p in [phase/'evidence/runtime/fixtures-qualification-v2.json',phase/'evidence/runtime/review-fix/final-gates-v2.json',phase/'evidence/runtime/consumer-gates.json',phase/'evidence/final/archive-source-isolation.json',phase/'evidence/final/staged-whitespace-check.json']:
+ artifact('qualification-metadata',p)
+for profile in ['normal-v2','race-v2']:
+ p=phase/f'evidence/runtime/{profile}.jsonl.gz'
+ if not p.exists():
+  p=phase/f'evidence/runtime/{profile}.jsonl'
+ if not p.exists(): continue
+ raw=gzip.decompress(p.read_bytes()) if p.suffix=='.gz' else p.read_bytes()
+ events=[json.loads(x) for x in raw.splitlines() if x]
+ passed=[e['Test'] for e in events if e.get('Action')=='pass' and 'Test' in e]
+ leaves=[x for x in passed if not any(y.startswith(x+'/') for y in passed)]
+ failed=[e for e in events if e.get('Action')=='fail']
+ skipped=[e.get('Test',e.get('Package')) for e in events if e.get('Action')=='skip']
+ packages=[e for e in events if e.get('Action')=='pass' and 'Test' not in e]
+ artifact('runtime-final',p,profile=profile,passed_leaves=len(leaves),families={n:sum(x.split('/')[0]==n for x in leaves) for n in sorted({x.split('/')[0] for x in leaves})},failures=failed,skips=skipped,package_results=packages,source_manifest='evidence/runtime/fixtures-qualification-v2.json')
+for p in sorted((phase/'evidence/final').glob('*.json')):
+ if all(k in read(p) for k in ('command','exit_code','passed_tests','source_id')): artifact('command',p,command=read(p)['command'],exit_code=read(p)['exit_code'],passed_events=len(read(p)['passed_tests']),source_id=read(p)['source_id'])
+for p in sorted((phase/'evidence/final/publish').glob('*.json')):
+ if all(k in read(p) for k in ('command','exit_code','passed_tests','source_id')): artifact('command-final',p,command=read(p)['command'],exit_code=read(p)['exit_code'],passed_events=len(read(p)['passed_tests']),source_id=read(p)['source_id'])
+for p in sorted((phase/'evidence/model').glob('root-success-parallel-counterexample-*.json')): artifact('retained-counterexample',p)
+for name in ['contract-review-v0.md','contract-rereview-v1.md','candidate-context-review.md','model-review-v1.md','runtime-review-v1.md','decoder-rereview-v2.md','final-review.md','postcommit-review.md']:
+ p=phase/'evidence/reviews'/name
+ if p.exists(): artifact('independent-review',p)
+for name in ['identity.json','tests.json','integration.json','historical-h-preservation.json','historical-model-comparison.json','conformance-projection-comparison.json']:
+ p=phase/'evidence/baseline'/name
+ artifact('historical-baseline',p)
+records.append(dict(kind='limits',claims=['finite named contexts only','sampled single-host process-crash behavior','original 84 entitlements retained; eight parallel failures per boundary graph','original-protocol P/Q language equality separate from boundary membership','no compiler proof or general congruence','no full historical Phase1H rerun','no production changes or paid calls']))
+(phase/'qualification.jsonl').write_text(''.join(json.dumps(r,separators=(',',':'))+'\n' for r in records))
+print(json.dumps(dict(source_id=identity,files=len(files),index_records=len(records))))
