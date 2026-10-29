@@ -1,0 +1,409 @@
+--- c0-b-peer-program.json
++++ join-b-peer-program.json
+@@ -53,12 +53,70 @@
+       }
+     },
+     "Labels": {},
+-    "Name": "phase1i-delayed-static-peer",
++    "Name": "phase1j-join-static-peer",
+     "Outputs": {
+       "ID": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+       "Record": {}
+     },
+-    "Ports": {},
++    "Ports": {
++      "join": {
++        "Local": false,
++        "Obligation": "phase1j_s_join",
++        "Peer": "root",
++        "Receive": {
++          "ID": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
++          "Record": {}
++        },
++        "ReceiveUsed": false,
++        "Send": {
++          "ID": "ba919d26d9cb7db5cefdcb19d2c11e82897e864cdf91af39592e4064fa084440",
++          "Record": {
++            "reason": {
++              "Enum": null,
++              "Kind": "string",
++              "MaxBytes": 4096
++            },
++            "request_id": {
++              "Enum": null,
++              "Kind": "int",
++              "MaxBytes": 0
++            },
++            "response_id": {
++              "Enum": null,
++              "Kind": "int",
++              "MaxBytes": 0
++            },
++            "response_present": {
++              "Enum": null,
++              "Kind": "bool",
++              "MaxBytes": 0
++            },
++            "response_value": {
++              "Enum": null,
++              "Kind": "int",
++              "MaxBytes": 0
++            },
++            "s_operation": {
++              "Enum": null,
++              "Kind": "string",
++              "MaxBytes": 256
++            },
++            "status": {
++              "Enum": [
++                "abandoned",
++                "cancelled",
++                "failed",
++                "rejected",
++                "succeeded"
++              ],
++              "Kind": "string",
++              "MaxBytes": 20
++            }
++          }
++        },
++        "SendUsed": true
++      }
++    },
+     "Positions": [
+       "steps/0:set:schedule_marker",
+       "steps/1:set:schedule_marker",
+@@ -94,11 +152,12 @@
+       "steps/31:set:schedule_marker",
+       "steps/32:invoke:peerpeer_pending",
+       "steps/33:await-invocation:peer",
+-      "steps/34:if",
+-      "steps/34:if/then/0:if",
+-      "steps/34:if/then/0:if/then/0:end:",
+-      "steps/34:if/then/0:if/else/0:end:",
+-      "steps/34:if/else/0:end:"
++      "steps/34:set:report_request_id",
++      "steps/35:if",
++      "steps/35:if/then/0:send:join",
++      "steps/35:if/join",
++      "steps/35:if/else/0:send:join",
++      "steps/36:end:"
+     ],
+     "Receives": {
+       "33": {
+@@ -1107,26 +1166,21 @@
+       "A": {
+         "Literal": null,
+         "Offset": null,
+-        "Ref": "peer_status"
+-      },
+-      "B": {
+-        "Literal": {
+-          "Flag": false,
+-          "Kind": "string",
+-          "Number": 0,
+-          "Text": "succeeded"
+-        },
+-        "Offset": null,
+-        "Ref": ""
+-      },
+-      "Bind": null,
+-      "Dst": "",
+-      "Effect": null,
+-      "Match": null,
+-      "Op": "branch",
+-      "Otherwise": 38,
+-      "Outcome": "",
+-      "Target": 35,
++        "Ref": "request_id"
++      },
++      "B": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": ""
++      },
++      "Bind": null,
++      "Dst": "report_request_id",
++      "Effect": null,
++      "Match": null,
++      "Op": "set",
++      "Otherwise": 0,
++      "Outcome": "",
++      "Target": 0,
+       "Updates": null
+     },
+     {
+@@ -1150,7 +1204,7 @@
+       "Effect": null,
+       "Match": null,
+       "Op": "branch",
+-      "Otherwise": 37,
++      "Otherwise": 38,
+       "Outcome": "",
+       "Target": 36,
+       "Updates": null
+@@ -1168,53 +1222,222 @@
+       },
+       "Bind": null,
+       "Dst": "",
++      "Effect": {
++        "Generation": {
++          "Literal": {
++            "Flag": false,
++            "Kind": "int",
++            "Number": 1,
++            "Text": ""
++          },
++          "Offset": null,
++          "Ref": ""
++        },
++        "Kind": "message",
++        "Obligation": {
++          "Literal": {
++            "Flag": false,
++            "Kind": "string",
++            "Number": 0,
++            "Text": "phase1j_s_join"
++          },
++          "Offset": null,
++          "Ref": ""
++        },
++        "Payload": {
++          "reason": {
++            "Literal": null,
++            "Offset": null,
++            "Ref": "peer_reason"
++          },
++          "request_id": {
++            "Literal": null,
++            "Offset": null,
++            "Ref": "report_request_id"
++          },
++          "response_id": {
++            "Literal": null,
++            "Offset": null,
++            "Ref": "peer_id"
++          },
++          "response_present": {
++            "Literal": null,
++            "Offset": null,
++            "Ref": "peer_present"
++          },
++          "response_value": {
++            "Literal": null,
++            "Offset": null,
++            "Ref": "peer_value"
++          },
++          "s_operation": {
++            "Literal": null,
++            "Offset": null,
++            "Ref": "peer_pending"
++          },
++          "status": {
++            "Literal": null,
++            "Offset": null,
++            "Ref": "peer_status"
++          }
++        },
++        "Target": {
++          "Literal": {
++            "Flag": false,
++            "Kind": "string",
++            "Number": 0,
++            "Text": "root"
++          },
++          "Offset": null,
++          "Ref": ""
++        }
++      },
++      "Match": null,
++      "Op": "emit",
++      "Otherwise": 0,
++      "Outcome": "",
++      "Target": 0,
++      "Updates": null
++    },
++    {
++      "A": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": ""
++      },
++      "B": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": ""
++      },
++      "Bind": null,
++      "Dst": "",
++      "Effect": null,
++      "Match": null,
++      "Op": "jump",
++      "Otherwise": 0,
++      "Outcome": "",
++      "Target": 39,
++      "Updates": null
++    },
++    {
++      "A": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": ""
++      },
++      "B": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": ""
++      },
++      "Bind": null,
++      "Dst": "",
++      "Effect": {
++        "Generation": {
++          "Literal": {
++            "Flag": false,
++            "Kind": "int",
++            "Number": 1,
++            "Text": ""
++          },
++          "Offset": null,
++          "Ref": ""
++        },
++        "Kind": "message",
++        "Obligation": {
++          "Literal": {
++            "Flag": false,
++            "Kind": "string",
++            "Number": 0,
++            "Text": "phase1j_s_join"
++          },
++          "Offset": null,
++          "Ref": ""
++        },
++        "Payload": {
++          "reason": {
++            "Literal": null,
++            "Offset": null,
++            "Ref": "peer_reason"
++          },
++          "request_id": {
++            "Literal": null,
++            "Offset": null,
++            "Ref": "report_request_id"
++          },
++          "response_id": {
++            "Literal": {
++              "Flag": false,
++              "Kind": "int",
++              "Number": 0,
++              "Text": ""
++            },
++            "Offset": null,
++            "Ref": ""
++          },
++          "response_present": {
++            "Literal": null,
++            "Offset": null,
++            "Ref": "peer_present"
++          },
++          "response_value": {
++            "Literal": {
++              "Flag": false,
++              "Kind": "int",
++              "Number": 0,
++              "Text": ""
++            },
++            "Offset": null,
++            "Ref": ""
++          },
++          "s_operation": {
++            "Literal": null,
++            "Offset": null,
++            "Ref": "peer_pending"
++          },
++          "status": {
++            "Literal": null,
++            "Offset": null,
++            "Ref": "peer_status"
++          }
++        },
++        "Target": {
++          "Literal": {
++            "Flag": false,
++            "Kind": "string",
++            "Number": 0,
++            "Text": "root"
++          },
++          "Offset": null,
++          "Ref": ""
++        }
++      },
++      "Match": null,
++      "Op": "emit",
++      "Otherwise": 0,
++      "Outcome": "",
++      "Target": 0,
++      "Updates": null
++    },
++    {
++      "A": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": ""
++      },
++      "B": {
++        "Literal": null,
++        "Offset": null,
++        "Ref": ""
++      },
++      "Bind": null,
++      "Dst": "",
+       "Effect": null,
+       "Match": null,
+       "Op": "end",
+       "Otherwise": 0,
+       "Outcome": "succeeded",
+-      "Target": 0,
+-      "Updates": null
+-    },
+-    {
+-      "A": {
+-        "Literal": null,
+-        "Offset": null,
+-        "Ref": ""
+-      },
+-      "B": {
+-        "Literal": null,
+-        "Offset": null,
+-        "Ref": ""
+-      },
+-      "Bind": null,
+-      "Dst": "",
+-      "Effect": null,
+-      "Match": null,
+-      "Op": "end",
+-      "Otherwise": 0,
+-      "Outcome": "failed",
+-      "Target": 0,
+-      "Updates": null
+-    },
+-    {
+-      "A": {
+-        "Literal": null,
+-        "Offset": null,
+-        "Ref": ""
+-      },
+-      "B": {
+-        "Literal": null,
+-        "Offset": null,
+-        "Ref": ""
+-      },
+-      "Bind": null,
+-      "Dst": "",
+-      "Effect": null,
+-      "Match": null,
+-      "Op": "end",
+-      "Otherwise": 0,
+-      "Outcome": "failed",
+       "Target": 0,
+       "Updates": null
+     }

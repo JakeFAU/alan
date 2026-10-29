@@ -1,0 +1,73 @@
+package join
+
+import (
+	"github.com/JakeFAU/alan/research/substitution"
+	"testing"
+)
+
+func oracleTrace() Trace {
+	good := Outcome{Status: "succeeded", Reason: "member_succeeded", Present: true, ID: 1, Value: 0}
+	report := Report{RequestID: 1, SOperation: "s-original", Outcome: good}
+	e := Event{Actor: "peer", Operation: "report-original", Source: "peer", Target: "root", Generation: 1, Obligation: Obligation, Report: report}
+	commit := e
+	commit.Kind = "report_commit"
+	commit.Sequence = 34
+	deliver := e
+	deliver.Kind = "report_deliver"
+	deliver.Status = "accepted"
+	consume := e
+	consume.Kind = "report_consume"
+	consume.Actor = "root"
+	consume.Sequence = 3
+	return Trace{Request: substitution.Request{ID: 1, Value: 0, Mode: "answer"}, Root: "root", Peer: "peer", Generation: 1, Obligation: Obligation, Events: []Event{
+		{Kind: "outcome_consume", Actor: "peer", Operation: "s-original", Role: "s", Sequence: 33, Outcome: good}, commit, deliver,
+		{Kind: "outcome_consume", Actor: "root", Operation: "e-original", Role: "candidate", Sequence: 2, Outcome: Outcome{Status: "succeeded", Reason: "member_succeeded", Present: true, ID: 1, Value: 1}}, consume,
+		{Kind: "root_terminal", Actor: "root", Sequence: 4, Status: "succeeded"},
+	}}
+}
+func TestOracleAdverseReports(t *testing.T) {
+	cases := []struct {
+		name, code string
+		mutate     func(*Trace)
+	}{
+		{"premature", "premature_report", func(t *Trace) { t.Events[1].Sequence = 32 }},
+		{"wrong_request", "request_correlation", func(t *Trace) { t.Events[1].Report.RequestID = 2 }},
+		{"wrong_s_handle", "premature_report", func(t *Trace) { t.Events[1].Report.SOperation = "other-s" }},
+		{"changed_outcome", "report_outcome", func(t *Trace) { t.Events[1].Report.Outcome.Reason = "invented" }},
+		{"wrong_selected_payload", "report_selection", func(t *Trace) { t.Events[4].Report.Outcome.Value = 1 }},
+		{"wrong_selected_identity", "report_selection", func(t *Trace) { t.Events[4].Operation = "other-report" }},
+		{"stale_generation", "report_provenance", func(t *Trace) { t.Events[4].Generation = 0 }},
+		{"early_root_terminal", "peer_join", func(t *Trace) { t.Events[5].Sequence = 2 }},
+		{"report_before_candidate", "report_before_candidate", func(t *Trace) { t.Events[4].Sequence = 1 }},
+		{"extra_report", "extra_report", func(t *Trace) { e := t.Events[1]; e.Operation = "second-report"; t.Events = append(t.Events, e) }},
+		{"wrong_decision", "decision", func(t *Trace) { t.Events[5].Status = "failed" }},
+	}
+	if f := CheckTrace(oracleTrace()); len(f) > 0 {
+		t.Fatal(f)
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			trace := oracleTrace()
+			c.mutate(&trace)
+			found := false
+			for _, f := range CheckTrace(trace) {
+				if f.Code == c.code {
+					found = true
+				}
+			}
+			if !found {
+				t.Fatalf("missing %s", c.code)
+			}
+		})
+	}
+}
+
+func TestOracleIndependentActorOrdering(t *testing.T) {
+	trace := oracleTrace()
+	for i, j := 0, len(trace.Events)-1; i < j; i, j = i+1, j-1 {
+		trace.Events[i], trace.Events[j] = trace.Events[j], trace.Events[i]
+	}
+	if f := CheckTrace(trace); len(f) > 0 {
+		t.Fatal(f)
+	}
+}

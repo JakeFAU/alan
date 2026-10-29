@@ -1,0 +1,68 @@
+{
+  "environment": {
+    "GOTOOLCHAIN": "local",
+    "GOPROXY": "off",
+    "GOSUMDB": "off",
+    "GOFLAGS": "-mod=readonly",
+    "GOCACHE": "/tmp/alan-phase1j-go-build"
+  },
+  "records": [
+    {
+      "name": "unchanged-core",
+      "argv": [
+        "go",
+        "test",
+        "-count=1",
+        "-timeout=10m",
+        "./author",
+        "./schema",
+        "./research/semantics"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 6.614,
+      "log": "unchanged-core.log",
+      "log_sha256": "6ca0623a522c164e463f0f8a84aef79be4fb59d6f6888e4b38bd47b29347ab00"
+    },
+    {
+      "name": "unchanged-closure",
+      "argv": [
+        "go",
+        "test",
+        "-count=1",
+        "-timeout=10m",
+        "-run",
+        "^(TestInvocationRootClosureSerializesWithAdmission|TestInvocationReplyExceptionDoesNotAuthorizeOtherEffects|TestInvocationFailureFreezeIsAtomicAndIgnoresLateReply|TestInvocationSuccessWaitsForCommittedUnadmittedChild|TestReplayRejectsChangedSelectedObservation)$",
+        "./internal/executor"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 2.532,
+      "log": "unchanged-closure.log",
+      "log_sha256": "ce00f8a87d37f50466b8025a66f0d342fcb8879c73e211d35de8ea5fd2055176"
+    },
+    {
+      "name": "modules",
+      "argv": [
+        "go",
+        "mod",
+        "verify"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 0.099,
+      "log": "modules.log",
+      "log_sha256": "b4537ed75f533f993f371954de47e42a793b8e5b0587577de7e27fb3e50696bd"
+    },
+    {
+      "name": "unchanged-substitution",
+      "argv": [
+        "go",
+        "test",
+        "-count=1",
+        "-timeout=10m",
+        "./research/substitution"
+      ],
+      "exit": 0,
+      "log": "unchanged-substitution.log",
+      "log_sha256": "fd7e8e14b9de3e0aab8c860b6e7cf021e8f6f0b648b4667e573541bb24afdd3c"
+    }
+  ]
+}

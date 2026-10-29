@@ -1,0 +1,15 @@
+{
+  "recorded_utc": "2026-10-29T13:47:26.908198+00:00",
+  "finding": "General *.log ignore excluded32 requested archived evidence logs from initial staging. Staged whitespace check also flagged three unified-diff context lines whose required space prefix precedes original Go tabs.",
+  "correction": "Explicitly stage all required archived logs; retain exact patch bytes and scope whitespace=-space-before-tab to only context-source.patch via adjacent .gitattributes. All other checks and application/model sources unchanged.",
+  "initial_staged_diff_check_exit": 2,
+  "final_staged_diff_check_command": [
+    "git",
+    "diff",
+    "--cached",
+    "--check"
+  ],
+  "final_staged_diff_check_exit": 0,
+  "before_log": "staged-diff-before.txt",
+  "after_log": "staged-diff-after.txt"
+}

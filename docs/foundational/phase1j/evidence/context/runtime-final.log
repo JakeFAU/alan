@@ -1,0 +1,59 @@
+=== RUN   TestJoinArtifactExport
+    artifacts_test.go:23: ALAN_JOIN_EXPORT is unset
+--- SKIP: TestJoinArtifactExport (0.00s)
+=== RUN   TestJoinPreservesPrimaryArtifactsAndPrefixes
+--- PASS: TestJoinPreservesPrimaryArtifactsAndPrefixes (0.00s)
+=== RUN   TestJoinConfigurationControls
+=== RUN   TestJoinConfigurationControls/sequential
+=== RUN   TestJoinConfigurationControls/invalid_id
+=== RUN   TestJoinConfigurationControls/invalid_value
+=== RUN   TestJoinConfigurationControls/invalid_s
+--- PASS: TestJoinConfigurationControls (0.00s)
+    --- PASS: TestJoinConfigurationControls/sequential (0.00s)
+    --- PASS: TestJoinConfigurationControls/invalid_id (0.00s)
+    --- PASS: TestJoinConfigurationControls/invalid_value (0.00s)
+    --- PASS: TestJoinConfigurationControls/invalid_s (0.00s)
+=== RUN   TestJoinRuntimeControls
+=== RUN   TestJoinRuntimeControls/answer
+    runtime_test.go:55: root=succeeded peer=succeeded steps=65 dispatches=7 candidate=succeeded/member_succeeded S=succeeded/member_succeeded report_request=1
+=== RUN   TestJoinRuntimeControls/candidate_fail
+    runtime_test.go:55: root=failed peer=succeeded steps=56 dispatches=6 candidate=failed/member_failed S=succeeded/member_succeeded report_request=1
+=== RUN   TestJoinRuntimeControls/candidate_absent
+    runtime_test.go:55: root=failed peer=succeeded steps=57 dispatches=6 candidate=failed/missing_reply S=succeeded/member_succeeded report_request=1
+=== RUN   TestJoinRuntimeControls/s_fail
+    runtime_test.go:55: root=failed peer=succeeded steps=60 dispatches=6 candidate=succeeded/member_succeeded S=failed/member_failed report_request=1
+=== RUN   TestJoinRuntimeControls/s_absent
+    runtime_test.go:55: root=failed peer=succeeded steps=60 dispatches=6 candidate=succeeded/member_succeeded S=failed/missing_reply report_request=1
+=== RUN   TestJoinRuntimeControls/candidate_pending
+    runtime_test.go:55: root=open peer=succeeded steps=47 dispatches=5 candidate=/ S=/ report_request=0
+=== RUN   TestJoinRuntimeControls/candidate_failed_s_pending
+    runtime_test.go:55: root=open peer=open steps=40 dispatches=3 candidate=failed/member_failed S=/ report_request=0
+=== RUN   TestJoinRuntimeControls/s_pending
+    runtime_test.go:55: root=open peer=open steps=42 dispatches=4 candidate=succeeded/member_succeeded S=/ report_request=0
+=== RUN   TestJoinRuntimeControls/wrong_request
+    runtime_test.go:55: root=open peer=succeeded steps=55 dispatches=7 candidate=succeeded/member_succeeded S=succeeded/member_succeeded report_request=2
+=== RUN   TestJoinRuntimeControls/premature_report
+    runtime_test.go:55: root=succeeded peer=succeeded steps=70 dispatches=7 candidate=succeeded/member_succeeded S=succeeded/ report_request=1
+--- PASS: TestJoinRuntimeControls (1.45s)
+    --- PASS: TestJoinRuntimeControls/answer (0.21s)
+    --- PASS: TestJoinRuntimeControls/candidate_fail (0.18s)
+    --- PASS: TestJoinRuntimeControls/candidate_absent (0.18s)
+    --- PASS: TestJoinRuntimeControls/s_fail (0.16s)
+    --- PASS: TestJoinRuntimeControls/s_absent (0.16s)
+    --- PASS: TestJoinRuntimeControls/candidate_pending (0.15s)
+    --- PASS: TestJoinRuntimeControls/candidate_failed_s_pending (0.09s)
+    --- PASS: TestJoinRuntimeControls/s_pending (0.08s)
+    --- PASS: TestJoinRuntimeControls/wrong_request (0.12s)
+    --- PASS: TestJoinRuntimeControls/premature_report (0.11s)
+=== RUN   TestJoinOriginalNegativeAndAccounting
+=== RUN   TestJoinOriginalNegativeAndAccounting/a/original
+=== RUN   TestJoinOriginalNegativeAndAccounting/a/join
+=== RUN   TestJoinOriginalNegativeAndAccounting/b/original
+=== RUN   TestJoinOriginalNegativeAndAccounting/b/join
+--- PASS: TestJoinOriginalNegativeAndAccounting (0.95s)
+    --- PASS: TestJoinOriginalNegativeAndAccounting/a/original (0.05s)
+    --- PASS: TestJoinOriginalNegativeAndAccounting/a/join (0.24s)
+    --- PASS: TestJoinOriginalNegativeAndAccounting/b/original (0.27s)
+    --- PASS: TestJoinOriginalNegativeAndAccounting/b/join (0.38s)
+PASS
+ok  	github.com/JakeFAU/alan/examples/join	2.562s
