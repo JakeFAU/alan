@@ -172,7 +172,7 @@ BibTeX changes only if new verified primary references are used.
 - [x] Reconcile Lemma4.7/Theorem4.8 premises and dependent §6 claims with evidence;
   keep unrelated theorem/representation obligations explicitly open.
 - [x] Retain concise reproduction/source identity; no recursive archive copying.
-- [ ] Independent whole-branch review, resolve actionable findings, commit/push
+- [x] Independent whole-branch review, resolve actionable findings, commit/push
   and open a draft PR against verified main. Leave merge to owner.
 
 ## Progress and exclusions
@@ -183,8 +183,10 @@ root success fences its still-open peer. All original entitlement/configurations
 remain. Independent model/runtime reviews found decoder defects after the first
 236 normal/race witnesses; the correction passed scoped rereview and 295 final
 normal/race cases. Actual probe transcription replaced the reviewed surrogates.
-Whole-working-tree review returned APPROVE; exact postcommit verification and
-draft publication remain the final steps.
+Whole-working-tree and exact postcommit reviews returned APPROVE.
+[Draft PR #18](https://github.com/JakeFAU/alan/pull/18) contains the reviewed increment;
+the final follow-up records review/publication metadata without changing source.
+No merge or release was performed.
 The original baseline and superseded evidence retain their source-specific labels.
 Excluded: arbitrary recursion/context grammar, multiple replacement sites,
 distributed ownership, eventual recovery under infinite interruption, unknown

@@ -3,8 +3,14 @@
 Independent whole-working-tree review returned **APPROVE** at source identity
 `a97e9893e2218a2245953e720de4939c7aca53503b51ab2e9e76a1164ee12c38`.
 The [final report](evidence/reviews/final-review.md) covers the complete source,
-contracts, corrected evidence and affected manuscript claims. Exact postcommit
-identity verification and draft publication follow; approval is not a proof.
+contracts, corrected evidence and affected manuscript claims. The independent
+[postcommit review](evidence/reviews/postcommit-review.md) also returned APPROVE
+for commit `1a1959fd042cc6fe56862f3ab6dc07feaee0726a`, tree
+`97db491e52d8504371c04b8064b1c98da5c6d5fe`, confirming identical qualified bytes.
+[Draft PR #18](https://github.com/JakeFAU/alan/pull/18) targets verified main
+`82573b1eaf349f9567dc34d91f6d8ddcbb6a3177`. The subsequent publication-record commit
+changes metadata only; no qualified source changed. Nothing was merged or released.
+Approval is not a proof.
 
 The independent [claim audit](evidence/reviews/claim-audit.md) distinguished the
 exact-debit relation in Definition 4.6 from a weak schema/result contract, and

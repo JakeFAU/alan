@@ -34,7 +34,7 @@ for v in ['local','helper']:
  artifact('bounded-model-local',p,result=read(p))
 for p in [phase/'evidence/model/probe-artifacts/probe-summary.json',phase/'evidence/model/probe-artifacts/final-source-manifest.json']:
  artifact('actual-probe-model',p)
-for p in [phase/'evidence/runtime/fixtures-qualification-v2.json',phase/'evidence/runtime/review-fix/final-gates-v2.json',phase/'evidence/runtime/consumer-gates.json',phase/'evidence/final/archive-source-isolation.json']:
+for p in [phase/'evidence/runtime/fixtures-qualification-v2.json',phase/'evidence/runtime/review-fix/final-gates-v2.json',phase/'evidence/runtime/consumer-gates.json',phase/'evidence/final/archive-source-isolation.json',phase/'evidence/final/staged-whitespace-check.json']:
  artifact('qualification-metadata',p)
 for profile in ['normal-v2','race-v2']:
  p=phase/f'evidence/runtime/{profile}.jsonl.gz'
@@ -50,11 +50,11 @@ for profile in ['normal-v2','race-v2']:
  packages=[e for e in events if e.get('Action')=='pass' and 'Test' not in e]
  artifact('runtime-final',p,profile=profile,passed_leaves=len(leaves),families={n:sum(x.split('/')[0]==n for x in leaves) for n in sorted({x.split('/')[0] for x in leaves})},failures=failed,skips=skipped,package_results=packages,source_manifest='evidence/runtime/fixtures-qualification-v2.json')
 for p in sorted((phase/'evidence/final').glob('*.json')):
- if 'command' in read(p): artifact('command',p,command=read(p)['command'],exit_code=read(p)['exit_code'],passed_events=len(read(p)['passed_tests']),source_id=read(p)['source_id'])
+ if all(k in read(p) for k in ('command','exit_code','passed_tests','source_id')): artifact('command',p,command=read(p)['command'],exit_code=read(p)['exit_code'],passed_events=len(read(p)['passed_tests']),source_id=read(p)['source_id'])
 for p in sorted((phase/'evidence/final/publish').glob('*.json')):
- if 'command' in read(p): artifact('command-final',p,command=read(p)['command'],exit_code=read(p)['exit_code'],passed_events=len(read(p)['passed_tests']),source_id=read(p)['source_id'])
+ if all(k in read(p) for k in ('command','exit_code','passed_tests','source_id')): artifact('command-final',p,command=read(p)['command'],exit_code=read(p)['exit_code'],passed_events=len(read(p)['passed_tests']),source_id=read(p)['source_id'])
 for p in sorted((phase/'evidence/model').glob('root-success-parallel-counterexample-*.json')): artifact('retained-counterexample',p)
-for name in ['contract-review-v0.md','contract-rereview-v1.md','candidate-context-review.md','model-review-v1.md','runtime-review-v1.md','decoder-rereview-v2.md','final-review.md']:
+for name in ['contract-review-v0.md','contract-rereview-v1.md','candidate-context-review.md','model-review-v1.md','runtime-review-v1.md','decoder-rereview-v2.md','final-review.md','postcommit-review.md']:
  p=phase/'evidence/reviews'/name
  if p.exists(): artifact('independent-review',p)
 for name in ['identity.json','tests.json','integration.json','historical-h-preservation.json','historical-model-comparison.json','conformance-projection-comparison.json']:
