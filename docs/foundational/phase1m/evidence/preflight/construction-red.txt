@@ -1,0 +1,17 @@
+Initial RED gate before implementation. Scaffold NewSFirst returned error
+"S-first construction not implemented" for every input. Command environment:
+GOTOOLCHAIN=local GOPROXY=off GOSUMDB=off GOFLAGS=-mod=readonly
+GOCACHE=/private/tmp/alan-phase1l-go-build
+Command: go test -count=1 ./examples/consumingpolicy
+Output follows. The wrapper printed the log using cat and exited0; the inner Go
+exit number was not separately captured. Go reports FAIL for the intended missing
+construction, not a compile/import error.
+
+--- FAIL: TestSFirstOriginalBindings (0.00s)
+    --- FAIL: TestSFirstOriginalBindings/a (0.00s)
+        deployment_test.go:24: S-first construction not implemented
+    --- FAIL: TestSFirstOriginalBindings/b (0.00s)
+        deployment_test.go:24: S-first construction not implemented
+FAIL
+FAIL	github.com/JakeFAU/alan/examples/consumingpolicy	0.129s
+FAIL

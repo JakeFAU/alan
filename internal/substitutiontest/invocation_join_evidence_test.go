@@ -91,7 +91,20 @@ func invocationJoinEnvelope(o *model.Observation, p map[string]schema.Value) err
 
 // Raw validation precedes every return that supplies normalized events. The pure
 // checkers remain independent verdicts; a truthful wrong-id history is not corrupt.
-func decodeInvocationJoin(s runtime.Inspection, c model.JoinConfig) (out invocationJoinTrace, err error) {
+func decodeInvocationJoin(s runtime.Inspection, c model.JoinConfig) (invocationJoinTrace, error) {
+	out, err := decodeInvocationJoinRaw(s, c)
+	if err != nil {
+		return out, err
+	}
+	out.Prefix = model.CheckJoinPrefix(c, out.Events)
+	out.Component = model.CheckJoinComponent(c, out.Events)
+	out.Guarantee = model.CheckJoinGuarantee(c, out.Events)
+	return out, nil
+}
+
+// The raw pass authenticates original records without imposing a parent's
+// consumption policy. Historical and S-first wrappers apply separate verdicts.
+func decodeInvocationJoinRaw(s runtime.Inspection, c model.JoinConfig) (out invocationJoinTrace, err error) {
 	out.Handles = map[string]string{}
 	fail := func(f string, a ...any) (invocationJoinTrace, error) {
 		return invocationJoinTrace{}, fmt.Errorf(f, a...)
@@ -797,9 +810,6 @@ func decodeInvocationJoin(s runtime.Inspection, c model.JoinConfig) (out invocat
 		}
 	}
 	out.RawValid = true
-	out.Prefix = model.CheckJoinPrefix(c, out.Events)
-	out.Component = model.CheckJoinComponent(c, out.Events)
-	out.Guarantee = model.CheckJoinGuarantee(c, out.Events)
 	return out, nil
 }
 

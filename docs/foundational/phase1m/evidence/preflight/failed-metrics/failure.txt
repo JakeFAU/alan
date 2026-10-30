@@ -1,0 +1,6 @@
+Capture revision failed after successful Go checks and A execution/replay.
+Exit1: KeyError: 'projection' in operational_metrics history-row byte measurement.
+Actual history projection column is successor. No program/runtime defect.
+Preserved records include all commands completed before the capture exception;
+empty samples is the result of failure before assigning the A sample.
+Fix: measure history successor bytes, rerun final capture.

@@ -59,6 +59,12 @@ func joinPrefixCorrect(c JoinConfig, s joinPrefixState) bool {
 }
 
 func advanceJoinPrefix(c JoinConfig, s joinPrefixState, event JoinEvent, index int) (joinPrefixState, []Violation) {
+	return advanceJoinPolicyPrefix(c, s, event, index, consumeCandidateFirst)
+}
+
+func advanceJoinPolicyPrefix(
+	c JoinConfig, s joinPrefixState, event JoinEvent, index int, order joinConsumption,
+) (joinPrefixState, []Violation) {
 	f := event.Fact
 	bad := func(code, detail string) (joinPrefixState, []Violation) {
 		return s, []Violation{{Index: index, Code: code, Detail: detail}}
@@ -268,11 +274,22 @@ func advanceJoinPrefix(c JoinConfig, s joinPrefixState, event JoinEvent, index i
 		if !o.Delivered || o.Consumed || !openSource || !joinSameEnvelope(f, o.Outcome) {
 			return bad("outcome_consumption", "selection lacks original delivered unconsumed envelope")
 		}
-		if i == entry && !s.Ops[sibling].Committed {
-			return bad("both_committed", "first await precedes S commit")
-		}
-		if i == sibling && !s.Ops[entry].Consumed {
-			return bad("consume_order", "S selected before candidate")
+		// The oracle states each fixed order independently of the model's
+		// stage-to-operation mapping; no trace or consumed flags are rewritten.
+		if order == consumeSFirst {
+			if i == sibling && !s.Ops[entry].Committed {
+				return bad("both_committed", "first await precedes candidate commit")
+			}
+			if i == entry && !s.Ops[sibling].Consumed {
+				return bad("consume_order", "candidate selected before S")
+			}
+		} else {
+			if i == entry && !s.Ops[sibling].Committed {
+				return bad("both_committed", "first await precedes S commit")
+			}
+			if i == sibling && !s.Ops[entry].Consumed {
+				return bad("consume_order", "S selected before candidate")
+			}
 		}
 		n.Ops[i].Consumed = true
 	default:
@@ -282,13 +299,17 @@ func advanceJoinPrefix(c JoinConfig, s joinPrefixState, event JoinEvent, index i
 }
 
 func checkJoinPrefix(c JoinConfig, events []JoinEvent) (joinPrefixState, []Violation) {
+	return checkJoinPolicyPrefix(c, events, consumeCandidateFirst)
+}
+
+func checkJoinPolicyPrefix(c JoinConfig, events []JoinEvent, order joinConsumption) (joinPrefixState, []Violation) {
 	state := joinPrefixState{}
 	if err := ValidateJoinConfig(c); err != nil {
 		return state, []Violation{{Index: -1, Code: "config", Detail: err.Error()}}
 	}
 	violations := []Violation{}
 	for index, event := range events {
-		next, found := advanceJoinPrefix(c, state, event, index)
+		next, found := advanceJoinPolicyPrefix(c, state, event, index, order)
 		violations = append(violations, found...)
 		state = next
 	}
@@ -378,7 +399,11 @@ func CheckJoinComponent(c JoinConfig, events []JoinEvent) []Violation {
 // CheckJoinGuarantee requires completed evidence. It does not silently include
 // component conformance in G: callers report CheckJoinComponent independently.
 func CheckJoinGuarantee(c JoinConfig, events []JoinEvent) []Violation {
-	s, violations := checkJoinPrefix(c, events)
+	return checkJoinPolicyGuarantee(c, events, consumeCandidateFirst)
+}
+
+func checkJoinPolicyGuarantee(c JoinConfig, events []JoinEvent, order joinConsumption) []Violation {
+	s, violations := checkJoinPolicyPrefix(c, events, order)
 	if !JoinEntitled(c) {
 		violations = append(violations, Violation{Index: len(events), Code: "positive_profile", Detail: "G requires answer,I=R3,depth2"})
 	}

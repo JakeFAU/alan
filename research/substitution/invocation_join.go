@@ -22,8 +22,9 @@ type JoinEvent struct {
 }
 
 // JoinState retains the old component representation but replaces its caller.
-// ParentStage: 0 commit e, 1 commit s, 2 await e, 3 await s, 4 decide, 5 End,
-// 6 terminal. Root publication is an independent transition after End.
+// ParentStage: 0 commit e, 1 commit s, 2 first await, 3 second await, 4 decide,
+// 5 End, 6 terminal. JoinSuccessors retains the historical e-then-s policy;
+// ConsumerPolicySuccessors selects s then e. Root publication follows End.
 // Authorization: 0 unresolved, 1 allowed, 2 refused; first dispositions persist.
 type JoinState struct {
 	Component                                   State
@@ -109,6 +110,16 @@ func joinCorrect(c JoinConfig, e, s Operation) bool {
 // caller transitions and splitting authorization from admission. It neither
 // explores the product nor suppresses a failure/refusal transition.
 func JoinSuccessors(c JoinConfig, v Variant, s JoinState) []JoinEdge {
+	return joinSuccessors(c, v, s, consumeCandidateFirst)
+}
+
+// joinSuccessors shares protocol mechanics across the two fixed parents.
+// Only original-outcome receive gates depend on their consumption order.
+func joinSuccessors(c JoinConfig, v Variant, s JoinState, order joinConsumption) []JoinEdge {
+	first, second := entry, sibling
+	if order == consumeSFirst {
+		first, second = sibling, entry
+	}
 	out := []JoinEdge{}
 	for _, i := range []int{entry, helper, sibling} {
 		o := s.Component.Ops[i]
@@ -199,13 +210,13 @@ func JoinSuccessors(c JoinConfig, v Variant, s JoinState) []JoinEdge {
 				f.Status = "failed"
 			}
 		case "outcome_consume":
-			if i == entry {
+			if i == first {
 				if s.ParentStage != 2 {
 					continue
 				}
 				n.ParentStage = 3
 			}
-			if i == sibling {
+			if i == second {
 				if s.ParentStage != 3 {
 					continue
 				}
@@ -259,6 +270,10 @@ func JoinRank(s JoinState) int {
 // CheckJoinState checks representation/resource invariants, not K1 payload
 // conformance or G. Keeping these apart permits honest faulty-component traces.
 func CheckJoinState(c JoinConfig, s JoinState) error {
+	return checkJoinState(c, s, consumeCandidateFirst)
+}
+
+func checkJoinState(c JoinConfig, s JoinState, order joinConsumption) error {
 	if err := ValidateJoinConfig(c); err != nil {
 		return err
 	}
@@ -321,7 +336,11 @@ func CheckJoinState(c JoinConfig, s JoinState) error {
 	if JoinEntitled(c) && (core.I+demand > c.I || core.R+demand > c.R) {
 		return fmt.Errorf("spent plus remaining demand exceeds entitlement")
 	}
-	if s.ParentStage >= 2 && core.Ops[sibling].Ticket == possible || s.ParentStage >= 3 && !core.Ops[entry].Consumed || s.ParentStage >= 4 && !core.Ops[sibling].Consumed {
+	first, second := entry, sibling
+	if order == consumeSFirst {
+		first, second = sibling, entry
+	}
+	if s.ParentStage >= 2 && core.Ops[sibling].Ticket == possible || s.ParentStage >= 3 && !core.Ops[first].Consumed || s.ParentStage >= 4 && !core.Ops[second].Consumed {
 		return fmt.Errorf("parent skipped commitment/consumption")
 	}
 	if s.ParentStage < 5 && s.Decision != "" || s.ParentStage >= 5 && s.Decision != "succeeded" && s.Decision != "failed" || s.ParentStage < 6 && s.ParentStatus != "" || s.ParentStage == 6 && s.ParentStatus != s.Decision || s.RootPublished && s.ParentStage != 6 {
