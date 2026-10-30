@@ -82,11 +82,17 @@ func joinSearchPath(nodes []joinSearchNode, index int, last *JoinEvent) []JoinEv
 }
 
 func joinMaximalKind(s JoinState) string {
+	return joinPolicyMaximalKind(s, consumeCandidateFirst)
+}
+
+func joinPolicyMaximalKind(s JoinState, order joinConsumption) string {
 	if s.ParentStage == 6 && s.RootPublished {
 		return "terminal"
 	}
 	if s.ParentStatus == "" && s.Component.Ops[entry].PC == pending && !s.Component.Ops[entry].Published && s.Component.Ops[sibling].Published && s.Component.Ops[sibling].Delivered {
-		return "pending"
+		if order == consumeCandidateFirst || s.ParentStage == 3 && s.Component.Ops[sibling].Consumed {
+			return "pending"
+		}
 	}
 	return "stuck"
 }
@@ -97,6 +103,10 @@ func joinMaximalKind(s JoinState) string {
 // Idle, idempotent retry and physical restart are stutters of this retained state;
 // eventual eligible service excludes an infinite suffix containing only stutters.
 func ExploreJoin(c JoinConfig, variant Variant) (JoinCensus, error) {
+	return exploreJoinPolicy(c, variant, consumeCandidateFirst)
+}
+
+func exploreJoinPolicy(c JoinConfig, variant Variant, order joinConsumption) (JoinCensus, error) {
 	result := JoinCensus{Config: c, Variant: variant, Entitled: JoinEntitled(c), RankCap: JoinRankCap, Maxima: []JoinMaximum{}, Counterexamples: []JoinCounterexample{}}
 	if err := ValidateJoinConfig(c); err != nil {
 		return result, err
@@ -116,16 +126,16 @@ func ExploreJoin(c JoinConfig, variant Variant) (JoinCensus, error) {
 			result.Counterexamples = append(result.Counterexamples, JoinCounterexample{Code: code, Detail: detail, Trace: joinSearchPath(nodes, index, last)})
 		}
 	}
-	if err := CheckJoinState(c, initial); err != nil {
+	if err := checkJoinState(c, initial, order); err != nil {
 		result.StateFailures++
 		report("state", err.Error(), 0, nil)
 	}
 	for index := 0; index < len(nodes); index++ {
 		node := nodes[index]
 		state := node.Key.State
-		edges := JoinSuccessors(c, variant, state)
+		edges := joinSuccessors(c, variant, state, order)
 		if len(edges) == 0 {
-			kind := joinMaximalKind(state)
+			kind := joinPolicyMaximalKind(state, order)
 			switch kind {
 			case "terminal":
 				result.Terminal++
@@ -136,7 +146,7 @@ func ExploreJoin(c JoinConfig, variant Variant) (JoinCensus, error) {
 				report("stuck", "maximal state is neither completed nor declared pending", index, nil)
 			}
 			trace := joinSearchPath(nodes, index, nil)
-			guarantee := CheckJoinGuarantee(c, trace)
+			guarantee := checkJoinPolicyGuarantee(c, trace, order)
 			if result.Entitled && len(guarantee) != 0 {
 				result.GuaranteeFailures++
 				report("guarantee", fmt.Sprint(guarantee), index, nil)
@@ -159,12 +169,12 @@ func ExploreJoin(c JoinConfig, variant Variant) (JoinCensus, error) {
 			if rank > result.RankMaximum {
 				result.RankMaximum = rank
 			}
-			if err := CheckJoinState(c, edge.Next); err != nil {
+			if err := checkJoinState(c, edge.Next, order); err != nil {
 				result.StateFailures++
 				report("state", err.Error(), index, &edge.Event)
 			}
 			trace := joinSearchPath(nodes, index, &edge.Event)
-			prefix, violations := advanceJoinPrefix(c, node.Key.Prefix, edge.Event, len(trace)-1)
+			prefix, violations := advanceJoinPolicyPrefix(c, node.Key.Prefix, edge.Event, len(trace)-1, order)
 			for _, violation := range violations {
 				result.PrefixFailures++
 				report("prefix:"+violation.Code, violation.Detail, index, &edge.Event)

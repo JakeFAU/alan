@@ -1,0 +1,58 @@
+Final capture command log follows. After Python completed, the enclosing zsh
+wrapper failed with: zsh:8: read-only variable: status. Composite wrapper exit1.
+The shell variable assignment was outside capture.py, after its final bundle
+write. A subsequent independent Python check confirmed A/B bundle completeness,
+all captured command exits0, current source hashes, original sources unchanged
+and no traceback in this log. That corrective verification exited0.
+
+RUN go version
+EXIT 0 0.006
+RUN go env GOOS GOARCH CGO_ENABLED GOVERSION GOTOOLCHAIN GOPROXY GOSUMDB GOFLAGS GOCACHE
+EXIT 0 0.006
+RUN go test -list . ./examples/consumingpolicy
+EXIT 0 0.477
+RUN go test -json -count=1 ./examples/consumingpolicy
+EXIT 0 0.419
+RUN go test -json -count=1 -race ./examples/consumingpolicy
+EXIT 0 1.898
+RUN go -C examples/consumingpolicy/consumer test -tags integration -list . ./...
+EXIT 0 0.47
+RUN go -C examples/consumingpolicy/consumer test -json -count=1 -tags integration ./...
+EXIT 0 1.053
+RUN go -C examples/consumingpolicy/consumer test -json -count=1 -race -tags integration ./...
+EXIT 0 9.933
+RUN go vet ./examples/consumingpolicy
+EXIT 0 0.114
+RUN go -C examples/consumingpolicy/consumer vet -tags integration ./...
+EXIT 0 0.108
+RUN go mod verify
+EXIT 0 0.062
+RUN go -C examples/consumingpolicy/consumer mod verify
+EXIT 0 0.054
+RUN gofmt -l examples/consumingpolicy/deployment.go examples/consumingpolicy/deployment_test.go examples/consumingpolicy/consumer/main.go examples/consumingpolicy/consumer/main_test.go examples/consumingpolicy/consumer/main_integration_test.go
+EXIT 0 0.011
+RUN go -C examples/consumingpolicy/consumer build -o /private/tmp/alan-phase1m-preflight-hql6_be7/consumer .
+EXIT 0 1.059
+RUN go -C examples/consumingpolicy/consumer list -f {{join .Imports "\n"}} .
+EXIT 0 0.124
+RUN /private/tmp/alan-phase1m-preflight-hql6_be7/consumer artifacts -policy s-first -candidate a
+EXIT 0 0.148
+RUN /private/tmp/alan-phase1m-preflight-hql6_be7/consumer init -db /private/tmp/alan-phase1m-preflight-hql6_be7/a.db -policy s-first -candidate a -id 1 -value 0 -mode answer
+EXIT 0 0.015
+RUN /private/tmp/alan-phase1m-preflight-hql6_be7/consumer run -db /private/tmp/alan-phase1m-preflight-hql6_be7/a.db
+EXIT 0 0.041
+RUN /private/tmp/alan-phase1m-preflight-hql6_be7/consumer inspect -db /private/tmp/alan-phase1m-preflight-hql6_be7/a.db
+EXIT 0 0.017
+RUN /private/tmp/alan-phase1m-preflight-hql6_be7/consumer replay -db /private/tmp/alan-phase1m-preflight-hql6_be7/a.db
+EXIT 0 0.016
+RUN /private/tmp/alan-phase1m-preflight-hql6_be7/consumer artifacts -policy s-first -candidate b
+EXIT 0 0.009
+RUN /private/tmp/alan-phase1m-preflight-hql6_be7/consumer init -db /private/tmp/alan-phase1m-preflight-hql6_be7/b.db -policy s-first -candidate b -id 1 -value 0 -mode answer
+EXIT 0 0.015
+RUN /private/tmp/alan-phase1m-preflight-hql6_be7/consumer run -db /private/tmp/alan-phase1m-preflight-hql6_be7/b.db
+EXIT 0 0.057
+RUN /private/tmp/alan-phase1m-preflight-hql6_be7/consumer inspect -db /private/tmp/alan-phase1m-preflight-hql6_be7/b.db
+EXIT 0 0.022
+RUN /private/tmp/alan-phase1m-preflight-hql6_be7/consumer replay -db /private/tmp/alan-phase1m-preflight-hql6_be7/b.db
+EXIT 0 0.021
+Evidence saved: /Users/jacob/.codex/worktrees/phase1j-retained-joins/alan/docs/foundational/phase1m/evidence/preflight/evidence-index.json

@@ -1,0 +1,838 @@
+{
+  "purpose": "C_se construction feasibility only; not independent oracle",
+  "base_commit": "f5b52853ce3cf2b93563eed5eb8268234386e691",
+  "source_hashes": {
+    "author/application.go": "29bdf9453b603293337d50e1bfaaf3c7bb2ec46a642fcf903aa7d09d297ab740",
+    "author/application_test.go": "f26b43931540580abd108fe9b1adcf01fe15fb03df58055643a3e2386f724778",
+    "author/author.go": "92db0faa7441fc1e4dd8864651627fbc478bc14251078cca225324aeb9d86662",
+    "author/collections_test.go": "673289e2b198b7d86b7204700932df5e6fc10480d9a644a455cd75f273231e4f",
+    "author/compile.go": "45e5ede143a60159d3beeb970c2e17adf1989f5c788fb4107e506034fbf58307",
+    "author/compile_test.go": "6f3c8591a4d8d10bb147102f1f71bf614a98f3d5458468dec914aa473e290e6f",
+    "author/external_test.go": "3176dab484f965f6a78c8333b8741ef552f1c057ef5102e23ea6be49faa122d8",
+    "author/identifiers.go": "feac498c9c4956cadd63d6042a45a3d6513fbdd864360ac9ad19054045ff04c6",
+    "author/invocations.go": "3e1a8592fedc3ab95e4a58f2ce12fd535027929b96d4b9a9852847ae59797e35",
+    "author/invocations_test.go": "72a183fce9374aa9286d6aa48134ed5840b902ff6a41d48fa1935dba7686a004",
+    "author/race_off_test.go": "093c516ec49d3c124562757338f525652ea20162079e58ef73be0002f8aa9296",
+    "author/race_on_test.go": "28d3a1666a54317419cee90d32fedb7d5c2189e25f4816cce8b62f07e7d65893",
+    "author/retained_handles_runtime_test.go": "3750a08ad94045ccad670b72ebdda2722b796ac28ce3f7d29fadc5b5f75c8e1f",
+    "author/retained_handles_test.go": "808a890fa4649faed356f0a399f164b55ba6a9b2b7a64a9e0a16a563b3190640",
+    "author/testdata/consumer.go": "0742f5a30a180f41b29429afc082bc8100096fe4ab1446458b09fe3d838476a2",
+    "compose/collection.go": "cf705deaf5831fe07f9013f413c4b03d605757b37f01435dbc1588f9a7383e85",
+    "compose/collection_test.go": "365bb9e145e929bd93a7a4a2ab2778a15800811bb924e466e58a18b800cf9aa4",
+    "docs/foundational/phase1l/evidence/preflight/capture.py": "c5ec3b16e5ea4383ff1c2045c01f43e3c775c72160d4e2452098ad26b03e22c9",
+    "docs/foundational/phase1m/evidence/preflight/capture.py": "3ce22a990ef7b283cf1d948c8517d78a9ee72b670e35dc732e9915cafa88747f",
+    "docs/foundational/phase1m/evidence/preflight/expectations.md": "04635df4b03e0eaca9491a8285a787bfe08f3340253d514f538f72c308ab588a",
+    "effects/collections_test.go": "61333b023f5612fd2d448faea53e8bb41f751f35bbbbab8d2be9c66ac9ae2178",
+    "effects/effects.go": "7333e6a0e2409c2f8229ce430545c1518b600000a7ca1374c76968b80fd0d4b7",
+    "effects/effects_test.go": "f0f78ab08cfab44e32679ed2af5e0dde294331c5e772fcb2c4b4aec1dfdc0f9f",
+    "examples/consumingpolicy/README.md": "c0255d82fbc63a23bcea29f62a14f3ddce0a542d9a83756cad79ff5d1b21037e",
+    "examples/consumingpolicy/consumer/go.mod": "975bafab6394040ab8090e8291cd957b23cc5d4106375de1a32480c18d7c99ac",
+    "examples/consumingpolicy/consumer/go.sum": "9eb975c181ebee792e06f732fc13ef81acad0779d94731f75133ad2bba52c5ca",
+    "examples/consumingpolicy/consumer/main.go": "dd01a5ef827d5571ac38346ab69ddcc079a3089c3efda84c8c8d42c6def0f658",
+    "examples/consumingpolicy/consumer/main_integration_test.go": "7d8dbc64f92cc56b61590dfdda25b8eaf6e76e75c3e5d83c7df5b506a4c1080a",
+    "examples/consumingpolicy/consumer/main_test.go": "5486b62b519905c4dcdd19656497e3b39a17a29edf1a4a00a3b6581568d1a5b8",
+    "examples/consumingpolicy/deployment.go": "c08984d705872d544e5f3a916020cf83fd46809c1f52a8d9434542219309406c",
+    "examples/consumingpolicy/deployment_test.go": "55ed471ed2151d16bee2a3fb13531574c4af0825cb2d1aed2cddbead82e371a5",
+    "examples/invocationjoin/consumer/main.go": "65d888416f30c8b55a31e328701abcc79ab934189f0689be48d4f1aef0ccf22c",
+    "examples/invocationjoin/deployment.go": "23e5463e25f8a21094758ed55a1410525e5e27481aa73259befa8f600a1fe280",
+    "examples/join/deployment.go": "0bcbff9113b9e11b148f076e839b5279b28c833e77fbe0069fab14902ce3249e",
+    "examples/substitution/a/candidate.go": "c98a5c6d16738d98af9140e6edce6d4df0ddcb51c2330ba974e0e51a82005911",
+    "examples/substitution/b/b.go": "ff813a85585175522e2bf5cc4550caeb6c169c7e507c7ce51ee8bba43ec933e8",
+    "examples/substitution/deployment.go": "37d5b9fa0e3fc2292fa13933f7a012d783055c6a37fa6ba0686472bd96c499a0",
+    "examples/substitution/probes.go": "8cb5b258962f921a8968aa713ca7db143a00f698a3c2219cdad86daf4741ce67",
+    "examples/substitution/protocol/protocol.go": "18a0019cdc15cfabf253d5e3039f021f5117f0f3e8891d15ca4e6e2a5ea8c49c",
+    "go.mod": "1d8b5c8939d1422813ed2b004c6560e3ec3f262709d57e9b957f6994ffd9bdeb",
+    "go.sum": "9eb975c181ebee792e06f732fc13ef81acad0779d94731f75133ad2bba52c5ca",
+    "internal/boundary/boundary.go": "7064a8b7afdf279a9c49065b865ca476e8d7f375d40ee140c8394e968ea52d8e",
+    "internal/boundary/boundary_test.go": "101c018522bdb4a3f724a22725b736c30af232801dfdc8d25d165ef2ce6a9d66",
+    "internal/executor/adapters.go": "fbcbb22c35949a60ffeaa94ac9fc656db40425dbe7f5a091d4002b11b69c30a2",
+    "internal/executor/adapters_test.go": "16d926e1284353a7efd3a55efb202bca1c8a90d2ea4efb27dfb6e164a59c17bc",
+    "internal/executor/async_limits_test.go": "5782b73e8a531d0bed964e983569e75d8360f6f1b058388b309e8d9f3816c249",
+    "internal/executor/async_reporting_test.go": "3ae4dff271bd19a71b2b5db994c7c5723909375a74516590f74793b06063f303",
+    "internal/executor/async_test.go": "f2b774327a9a5a791c3caf57a96fa503c4cf89d610a38bf1138275e637af9947",
+    "internal/executor/author_metadata.go": "2eef28b7fc1b281648d10024c528564cc2ebcb4d1d217978f018bdfa6b3f5c51",
+    "internal/executor/author_metadata_test.go": "1b0a5a5ab6617b7833ba23b00f049effacdc064b8fde1bc46d664a256b08d59b",
+    "internal/executor/cancellation_regression_test.go": "f429027693ef5690a15e0ebb3cc09e928fb987c85112dcb8896071b22d4f5450",
+    "internal/executor/collections.go": "a3ead48f26379383a54734b2288225c3a9a64ed0a826d89de8af966c99b861c7",
+    "internal/executor/composition_binding.go": "7f079bca7f04ca057ba391208d6ce2e4b686d05bd2fbbd2af005292c486e27b5",
+    "internal/executor/composition_binding_test.go": "b8a7355a2b32188ebc9d9d422c1c99f2a3e87bc80f7beb85222b986dc198c83d",
+    "internal/executor/composition_consumption_test.go": "1519dfbf212171b1ed3ab7b4789a68164ea3bbc6c6ea64ec155056b0a2453e23",
+    "internal/executor/composition_dispatch_test.go": "5c2b10f9a4e6260f489d92090b4d09438f0841044a7a81a0f1f3f99fdb4470a2",
+    "internal/executor/composition_facts.go": "883a150eab80c32206f81efa69b9cc6f13453626ddbcb13360328c389e68c090",
+    "internal/executor/composition_facts_test.go": "061eb7fb5af87a17061022a0a931697a306e9a4ed4df47c8d9b7328efd53901f",
+    "internal/executor/composition_inspect.go": "99370b0bfb8c74cc9f6d36b6b84a0b168022a054aceac62a22d7006f707a38d8",
+    "internal/executor/composition_integration_test.go": "52d1b5fb2ca98ee12c3e56104f3897a054a10398c7903fe59239211d732a1e9e",
+    "internal/executor/composition_limits_integration_test.go": "1eac794b84618105815854029b73da9b265c54ef1a12672e42307e89094c6180",
+    "internal/executor/composition_prefix.go": "ac7c6dded25770f1adc0d73c829d8c3306cbc97e041fecd11f60a1e5732c5b48",
+    "internal/executor/composition_replay.go": "21b7c4cfd97654b5eb1a139be1d74f9ceadec5b1bcd44b4c3462beead0d10642",
+    "internal/executor/composition_reservation.go": "d02dd0156798570ec72a254e16cdc8b7c393ad24e129efff5e490db1ec52926a",
+    "internal/executor/composition_root.go": "a0e04ee2b1713caacc8b48cf648d783a60365c2b020a1513aa6b7a22000cc2cf",
+    "internal/executor/composition_source.go": "70140b8f46a9c63fca177a7320d94dd4e0afef9c2f91057e81a29c65655c5c9f",
+    "internal/executor/composition_store.go": "ee012a957601c40d4afe915461e7a06fff2d8400d628c028cc8df4aeb85830f6",
+    "internal/executor/composition_store_test.go": "9c8765df44e69231afb3ad0e85cd09102ee976dc048d690e38935f059c9e1d1f",
+    "internal/executor/composition_types.go": "f8235c62d157985bee482eeb2d3f1fbddb3eb717b8e191225ffce4a28210782e",
+    "internal/executor/crash_test.go": "a5c137ea76a731c03f9f8ceb169ebb56aaee3819a938057c7cfabbd2893ec77e",
+    "internal/executor/examples.go": "3ddf43a7c0403da00c09996c940c9794c1042f9120cb27d044d0c47ff42498d2",
+    "internal/executor/external.go": "ca49d952917a5c8c201c817f7a11eae978913dfec9cdb18d4efb03d6b96f83a7",
+    "internal/executor/external_example.go": "888e5d86555ffd4a5f33c44496581141417d06d23f0d78539af973bff82eab0f",
+    "internal/executor/external_test.go": "c6c97aa7571bea1aec4ab7ae8dc006ae1449ead141e36c95719403c0f569a609",
+    "internal/executor/fault_process_test.go": "2dcd53230193b339da8ee033dd3252cf1d5064a22238a5aaa07c3bb61122918e",
+    "internal/executor/inspect.go": "ef642165e9ba6731d1ad892116ac17e055b0bac586707bd28a3044eee96822aa",
+    "internal/executor/inspect_test.go": "6c6e01b105c69845c9e7bc668402e826b31a2b920faeb5712e3d1bdb349e5755",
+    "internal/executor/invocation.go": "b40c1edc17249a31ccff84408a7855098e3a51ad28579ea856efc34bf4fa6746",
+    "internal/executor/invocation_catalogue.go": "4cf72697ef5064311783476439891711cb625d91393bd56f6da652530fa89b38",
+    "internal/executor/invocation_closure.go": "4aa89061a6749f16ac2ef4f66a50b7c0bcf5ad1a998bda768d26ed1276f3dc5c",
+    "internal/executor/invocation_outcome.go": "adeaba4f04843867c5405a6bfb5a8716e64654a3e96bc58ad190ec23cbfcb53d",
+    "internal/executor/invocation_payload.go": "652a5861e3dca171688b211d515fcd633f533b4cbb3e229f85787789f6b9c413",
+    "internal/executor/invocation_retirement_test.go": "fb7f5b55a6eced4a3ed9a9a13213b55f944a5b7eb9343deae62df286ff8bda3e",
+    "internal/executor/invocation_test.go": "bb43fc21e69994c4ba82d1916a63f274a8ba8ae9b1f60d1c875245617a0b15ea",
+    "internal/executor/lifecycle.go": "0de0f51e3fd7c0b89a0db279dfc3d7ab7079e6640ae3693bc2312f7cbf802a51",
+    "internal/executor/lifecycle_replay.go": "86f7e8b7c42362f1c5710693a5dc6350a6e200ea11230ab92ebe152782387265",
+    "internal/executor/lifecycle_test.go": "8fe290f6c80411fece9b4c2b1da627c4cdc92f1a9fca41998e757a526203c27b",
+    "internal/executor/messages.go": "1186fd9220d44352dcfd77ec5e7209dadd78d9956304a931593b5de6c6b8ae39",
+    "internal/executor/messages_test.go": "f60ff88cd62af2a94b06b517b3385403f068e441d3704c5d6b6f69cf26937778",
+    "internal/executor/program.go": "4a6813c69d509dff545c75a05410919e182e73c9f06e5fd359112e64df568374",
+    "internal/executor/program_test.go": "61f2e7d3004812c9ad3ba40e582120c512e69b73052e663c22900493fa1d12a6",
+    "internal/executor/replay.go": "c9560f815df0523366c6a439588e95731eef12f250e06bf4c82ae9f950273f84",
+    "internal/executor/runner.go": "ad9fe52c4f17adb4c528b9397fb2e90338f9f9e63c5015160946daa593c1b2f4",
+    "internal/executor/runner_test.go": "e06c2815ce1dd3b4be42e977271219808737f10fb989cb9b97073138876095e1",
+    "internal/executor/store.go": "4100327b3d95b44c061dad51f656fd193f26bc28c58093ecd2b385f9f76895bb",
+    "internal/executor/store_namespace_test.go": "ca6c87a6d5e46c07328d6091f779619cf5917175ebde2613827a6afb47b606f6",
+    "internal/executor/store_test.go": "dd2e468ef4988bdb1da08f2f2ac545d80820a6fe819982005016af3db037a577",
+    "internal/executor/supervision_test.go": "197d32b16d2fd1076a1d86bf1017bc57e58e8100679d1affec8bdf7e3dbc4da3",
+    "internal/executor/transport_domains_test.go": "5f191194cce482b0122b21a4bb16e6413facb106fb42b97c26eb21b2e9bb0f16",
+    "runtime/adapter_protocol_test.go": "91b5ea688965856d8faca7c29cddfaa33f422498a6cd3458e9187c9a28c43146",
+    "runtime/adapters_test.go": "6f07113b1af3ddc701e8316073674abc64b0a793b7c877fa8d2ca1a12d03a726",
+    "runtime/review_adapters_test.go": "61ce73999fe0349e4b0375cb00c48124cb898e0111f911393afb5e0317d7ab03",
+    "runtime/runtime.go": "01af8ad5279bde9b6fe5d51158edd492452a3235ec1d2372d6f36996a48d6a4d",
+    "runtime/runtime_test.go": "5f2cad3d52091c13dc27c2a7ba91982b0fd593d3b74b18784a10dd4104cb639c",
+    "schema/collections.go": "20448c6b88d54cfedd8abf7cb4da33bba1a31122c02bc480fe162266921ed52b",
+    "schema/collections_test.go": "521af47a7200a63b4b59ce570b90ae5b8ea5fe20c196d55f6fbde729cd4d1ce8",
+    "schema/schema.go": "fd0c78d375e12d03d4a08c99c2ecd30db404ed1093ee09a009a9549538f50a31",
+    "schema/schema_test.go": "1ff4c247a3e7d618fd7278bea8154e537e0ff69de7b8d0d5d143d9bc51c2b9d3"
+  },
+  "source_manifest_sha256": "ce93fdffdf390ad7356aa42bd6a23d964f36f8c9fb8668437a7d824965fc5763",
+  "original_source_unchanged_from_base": {
+    "examples/substitution/a/candidate.go": true,
+    "examples/substitution/b/b.go": true,
+    "examples/substitution/deployment.go": true,
+    "examples/substitution/probes.go": true,
+    "examples/substitution/protocol/protocol.go": true,
+    "examples/join/deployment.go": true,
+    "author/invocations.go": true,
+    "author/compile.go": true,
+    "compose/collection.go": true,
+    "go.mod": true,
+    "go.sum": true,
+    "examples/invocationjoin/deployment.go": true,
+    "examples/invocationjoin/consumer/main.go": true,
+    "docs/foundational/phase1l/evidence/preflight/capture.py": true
+  },
+  "records": {
+    "file": "records.json.gz",
+    "sha256": "e389dda446d2cf76ede45ecc7b5432220383de7d932f925bd714e047bd67414c"
+  },
+  "commands": [
+    {
+      "argv": [
+        "go",
+        "version"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "exit": 0,
+      "seconds": 0.006
+    },
+    {
+      "argv": [
+        "go",
+        "env",
+        "GOOS",
+        "GOARCH",
+        "CGO_ENABLED",
+        "GOVERSION",
+        "GOTOOLCHAIN",
+        "GOPROXY",
+        "GOSUMDB",
+        "GOFLAGS",
+        "GOCACHE"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "exit": 0,
+      "seconds": 0.006
+    },
+    {
+      "argv": [
+        "go",
+        "test",
+        "-list",
+        ".",
+        "./examples/consumingpolicy"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "exit": 0,
+      "seconds": 0.477
+    },
+    {
+      "argv": [
+        "go",
+        "test",
+        "-json",
+        "-count=1",
+        "./examples/consumingpolicy"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "exit": 0,
+      "seconds": 0.419
+    },
+    {
+      "argv": [
+        "go",
+        "test",
+        "-json",
+        "-count=1",
+        "-race",
+        "./examples/consumingpolicy"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "exit": 0,
+      "seconds": 1.898
+    },
+    {
+      "argv": [
+        "go",
+        "-C",
+        "examples/consumingpolicy/consumer",
+        "test",
+        "-tags",
+        "integration",
+        "-list",
+        ".",
+        "./..."
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "exit": 0,
+      "seconds": 0.47
+    },
+    {
+      "argv": [
+        "go",
+        "-C",
+        "examples/consumingpolicy/consumer",
+        "test",
+        "-json",
+        "-count=1",
+        "-tags",
+        "integration",
+        "./..."
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "exit": 0,
+      "seconds": 1.053
+    },
+    {
+      "argv": [
+        "go",
+        "-C",
+        "examples/consumingpolicy/consumer",
+        "test",
+        "-json",
+        "-count=1",
+        "-race",
+        "-tags",
+        "integration",
+        "./..."
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "exit": 0,
+      "seconds": 9.933
+    },
+    {
+      "argv": [
+        "go",
+        "vet",
+        "./examples/consumingpolicy"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "exit": 0,
+      "seconds": 0.114
+    },
+    {
+      "argv": [
+        "go",
+        "-C",
+        "examples/consumingpolicy/consumer",
+        "vet",
+        "-tags",
+        "integration",
+        "./..."
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "exit": 0,
+      "seconds": 0.108
+    },
+    {
+      "argv": [
+        "go",
+        "mod",
+        "verify"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "exit": 0,
+      "seconds": 0.062
+    },
+    {
+      "argv": [
+        "go",
+        "-C",
+        "examples/consumingpolicy/consumer",
+        "mod",
+        "verify"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "exit": 0,
+      "seconds": 0.054
+    },
+    {
+      "argv": [
+        "gofmt",
+        "-l",
+        "examples/consumingpolicy/deployment.go",
+        "examples/consumingpolicy/deployment_test.go",
+        "examples/consumingpolicy/consumer/main.go",
+        "examples/consumingpolicy/consumer/main_test.go",
+        "examples/consumingpolicy/consumer/main_integration_test.go"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "exit": 0,
+      "seconds": 0.011
+    },
+    {
+      "argv": [
+        "go",
+        "-C",
+        "examples/consumingpolicy/consumer",
+        "build",
+        "-o",
+        "/private/tmp/alan-phase1m-preflight-hql6_be7/consumer",
+        "."
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "exit": 0,
+      "seconds": 1.059
+    },
+    {
+      "argv": [
+        "go",
+        "-C",
+        "examples/consumingpolicy/consumer",
+        "list",
+        "-f",
+        "{{join .Imports \"\\n\"}}",
+        "."
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "exit": 0,
+      "seconds": 0.124
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-preflight-hql6_be7/consumer",
+        "artifacts",
+        "-policy",
+        "s-first",
+        "-candidate",
+        "a"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "exit": 0,
+      "seconds": 0.148
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-preflight-hql6_be7/consumer",
+        "init",
+        "-db",
+        "/private/tmp/alan-phase1m-preflight-hql6_be7/a.db",
+        "-policy",
+        "s-first",
+        "-candidate",
+        "a",
+        "-id",
+        "1",
+        "-value",
+        "0",
+        "-mode",
+        "answer"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "exit": 0,
+      "seconds": 0.015
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-preflight-hql6_be7/consumer",
+        "run",
+        "-db",
+        "/private/tmp/alan-phase1m-preflight-hql6_be7/a.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "exit": 0,
+      "seconds": 0.041
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-preflight-hql6_be7/consumer",
+        "inspect",
+        "-db",
+        "/private/tmp/alan-phase1m-preflight-hql6_be7/a.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "exit": 0,
+      "seconds": 0.017
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-preflight-hql6_be7/consumer",
+        "replay",
+        "-db",
+        "/private/tmp/alan-phase1m-preflight-hql6_be7/a.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "exit": 0,
+      "seconds": 0.016
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-preflight-hql6_be7/consumer",
+        "artifacts",
+        "-policy",
+        "s-first",
+        "-candidate",
+        "b"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "exit": 0,
+      "seconds": 0.009
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-preflight-hql6_be7/consumer",
+        "init",
+        "-db",
+        "/private/tmp/alan-phase1m-preflight-hql6_be7/b.db",
+        "-policy",
+        "s-first",
+        "-candidate",
+        "b",
+        "-id",
+        "1",
+        "-value",
+        "0",
+        "-mode",
+        "answer"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "exit": 0,
+      "seconds": 0.015
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-preflight-hql6_be7/consumer",
+        "run",
+        "-db",
+        "/private/tmp/alan-phase1m-preflight-hql6_be7/b.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "exit": 0,
+      "seconds": 0.057
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-preflight-hql6_be7/consumer",
+        "inspect",
+        "-db",
+        "/private/tmp/alan-phase1m-preflight-hql6_be7/b.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "exit": 0,
+      "seconds": 0.022
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-preflight-hql6_be7/consumer",
+        "replay",
+        "-db",
+        "/private/tmp/alan-phase1m-preflight-hql6_be7/b.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "exit": 0,
+      "seconds": 0.021
+    }
+  ],
+  "samples": {
+    "a": {
+      "identities": {
+        "candidate": "a03135203f8b728a6aa7b732d06952cc87b70b3aced2c0833293e333760eece5",
+        "fixed_runs": 1,
+        "parent": "34e225b0678bcb069c5a9a75a95a8caaff443a559bfb00211d8070ce4d05631a",
+        "successor": "a6bfb72f823541b21e8780faf1eaab779254f5a563e5352cd631521c7ab6c61c"
+      },
+      "root": {
+        "RootID": "1a40cd51e115cbe24d2ad9cc02d28fedb70e2c1620744fab029995020c034193",
+        "Run": {
+          "Subject": "root",
+          "Generation": 1
+        },
+        "LocalStatus": "succeeded",
+        "Limits": {
+          "MaxInvocations": 3,
+          "MaxCreatedRuns": 3,
+          "MaxDepth": 2,
+          "MaxEffects": 0,
+          "MaxInFlight": 1
+        },
+        "Charges": {
+          "RootID": "1a40cd51e115cbe24d2ad9cc02d28fedb70e2c1620744fab029995020c034193",
+          "OperationID": "",
+          "Kind": "",
+          "Invocations": 2,
+          "CreatedRuns": 2,
+          "Effects": 0,
+          "DecisionOrder": 0
+        },
+        "Outcome": {
+          "ID": "1d7d5a84fbfe8cebffe9a91d8467fcec7fd6b68e14fc962896fd7a90b5278d3c",
+          "InvocationID": "root:1a40cd51e115cbe24d2ad9cc02d28fedb70e2c1620744fab029995020c034193",
+          "OperationID": "root:1a40cd51e115cbe24d2ad9cc02d28fedb70e2c1620744fab029995020c034193",
+          "TemplateID": "",
+          "Caller": {
+            "Subject": "root",
+            "Generation": 1
+          },
+          "Status": "succeeded",
+          "Reason": "member_succeeded",
+          "ResponsePresent": false,
+          "Response": null,
+          "DecisionOrder": 39
+        },
+        "Pending": "",
+        "PendingInvocations": [],
+        "UnresolvedExternal": [],
+        "UnknownExternal": []
+      },
+      "operational_metrics": {
+        "code_instructions": [
+          25,
+          13,
+          3
+        ],
+        "acyclic_instruction_path_upper": 25,
+        "finite_dispatch_bound": 6,
+        "program_bytes": 11719,
+        "projection_bytes": 1171,
+        "observation_bytes": 676,
+        "all_intent_descriptor_bytes": 1581,
+        "steps": 25,
+        "dispatches": 6
+      },
+      "original_joins": {
+        "candidate": {
+          "handle": "[\"root\",1,1,0]",
+          "commit_sequence": 1,
+          "consumed_sequence": 4,
+          "selected_observation": "dcd6d88413b1f5ee3cf43fc5db81617fcba303043250a2e6ea8d14728f01748f"
+        },
+        "s": {
+          "handle": "[\"root\",1,2,0]",
+          "commit_sequence": 2,
+          "consumed_sequence": 3,
+          "selected_observation": "fd5f9b4b9055abc88f74c52deef6c395a591c4b3862fb08066b85c64084a4431"
+        }
+      },
+      "program_sha256": {
+        "34e225b0678bcb069c5a9a75a95a8caaff443a559bfb00211d8070ce4d05631a": "34e225b0678bcb069c5a9a75a95a8caaff443a559bfb00211d8070ce4d05631a",
+        "74152796cc6bb845eee44cc19813210a85ee26173629dd76e446fd042a85d5b7": "74152796cc6bb845eee44cc19813210a85ee26173629dd76e446fd042a85d5b7",
+        "d19cc8d312c2d1f16e10fe71d9b891400bf49b5d31f0d63226c77521efe63cf8": "d19cc8d312c2d1f16e10fe71d9b891400bf49b5d31f0d63226c77521efe63cf8"
+      }
+    },
+    "b": {
+      "identities": {
+        "candidate": "2e10975004e0351d07b237e0360a2b96b50d5884b651cfa5bfc8e88af62da266",
+        "fixed_runs": 1,
+        "parent": "30614a673022dbdb3badc2313d3817bd05316c5180cff7b358d51e65fbaff098",
+        "successor": "a6bfb72f823541b21e8780faf1eaab779254f5a563e5352cd631521c7ab6c61c"
+      },
+      "root": {
+        "RootID": "cb2b93c42b5de460706c7a523ac4250e43d61b3cd383146cabefa1445b8f463a",
+        "Run": {
+          "Subject": "root",
+          "Generation": 1
+        },
+        "LocalStatus": "succeeded",
+        "Limits": {
+          "MaxInvocations": 3,
+          "MaxCreatedRuns": 3,
+          "MaxDepth": 2,
+          "MaxEffects": 0,
+          "MaxInFlight": 1
+        },
+        "Charges": {
+          "RootID": "cb2b93c42b5de460706c7a523ac4250e43d61b3cd383146cabefa1445b8f463a",
+          "OperationID": "",
+          "Kind": "",
+          "Invocations": 3,
+          "CreatedRuns": 3,
+          "Effects": 0,
+          "DecisionOrder": 0
+        },
+        "Outcome": {
+          "ID": "c4c9d6c9a26789fb2c8989789a8ac64d235465c4f94e8498f0ba810c12d48ca9",
+          "InvocationID": "root:cb2b93c42b5de460706c7a523ac4250e43d61b3cd383146cabefa1445b8f463a",
+          "OperationID": "root:cb2b93c42b5de460706c7a523ac4250e43d61b3cd383146cabefa1445b8f463a",
+          "TemplateID": "",
+          "Caller": {
+            "Subject": "root",
+            "Generation": 1
+          },
+          "Status": "succeeded",
+          "Reason": "member_succeeded",
+          "ResponsePresent": false,
+          "Response": null,
+          "DecisionOrder": 52
+        },
+        "Pending": "",
+        "PendingInvocations": [],
+        "UnresolvedExternal": [],
+        "UnknownExternal": []
+      },
+      "operational_metrics": {
+        "code_instructions": [
+          25,
+          7,
+          16,
+          3
+        ],
+        "acyclic_instruction_path_upper": 35,
+        "finite_dispatch_bound": 9,
+        "program_bytes": 11719,
+        "projection_bytes": 1171,
+        "observation_bytes": 797,
+        "all_intent_descriptor_bytes": 2585,
+        "steps": 32,
+        "dispatches": 9
+      },
+      "original_joins": {
+        "candidate": {
+          "handle": "[\"root\",1,1,0]",
+          "commit_sequence": 1,
+          "consumed_sequence": 4,
+          "selected_observation": "62c93e92585c27602f656575f314e489e0a3edc65c07c29db3ef59e5e0f48571"
+        },
+        "s": {
+          "handle": "[\"root\",1,2,0]",
+          "commit_sequence": 2,
+          "consumed_sequence": 3,
+          "selected_observation": "97867c6b7c6b4b112b7f614057d7d80da351e66ae47df702f5fe2e62e7892920"
+        }
+      },
+      "program_sha256": {
+        "30614a673022dbdb3badc2313d3817bd05316c5180cff7b358d51e65fbaff098": "30614a673022dbdb3badc2313d3817bd05316c5180cff7b358d51e65fbaff098",
+        "698256075f67b360cacb0b20e16c5aeafc561c76255aeb3fd1ca7481ef9e9a6b": "698256075f67b360cacb0b20e16c5aeafc561c76255aeb3fd1ca7481ef9e9a6b",
+        "ca5ab7efdb73587e2664e02f9cea2928fde178190768aa844a2c88e14c90aa67": "ca5ab7efdb73587e2664e02f9cea2928fde178190768aa844a2c88e14c90aa67",
+        "d19cc8d312c2d1f16e10fe71d9b891400bf49b5d31f0d63226c77521efe63cf8": "d19cc8d312c2d1f16e10fe71d9b891400bf49b5d31f0d63226c77521efe63cf8"
+      }
+    }
+  },
+  "bound_parent_differences": [
+    {
+      "path": "/Code/0/Effect/Target/Literal/Text",
+      "a": "a03135203f8b728a6aa7b732d06952cc87b70b3aced2c0833293e333760eece5",
+      "b": "2e10975004e0351d07b237e0360a2b96b50d5884b651cfa5bfc8e88af62da266"
+    },
+    {
+      "path": "/Code/3/Match/Source/Literal/Text",
+      "a": "a03135203f8b728a6aa7b732d06952cc87b70b3aced2c0833293e333760eece5",
+      "b": "2e10975004e0351d07b237e0360a2b96b50d5884b651cfa5bfc8e88af62da266"
+    },
+    {
+      "path": "/Author/Invocations/candidate/TemplateID",
+      "a": "a03135203f8b728a6aa7b732d06952cc87b70b3aced2c0833293e333760eece5",
+      "b": "2e10975004e0351d07b237e0360a2b96b50d5884b651cfa5bfc8e88af62da266"
+    }
+  ]
+}

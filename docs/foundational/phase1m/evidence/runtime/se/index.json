@@ -1,0 +1,401 @@
+{
+  "scope": "C_se runtime qualification and affected C_es regression; no C_reason or new crash campaign.",
+  "commands": [
+    {
+      "label": "wrapper-before",
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-tags",
+        "integration",
+        "-run",
+        "^TestConsumerPolicyHistoricalWrapper$",
+        "-count=1",
+        "-timeout=10m",
+        "./internal/substitutiontest"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 1.881099375,
+      "selected_leaves": [
+        "TestConsumerPolicyHistoricalWrapper"
+      ],
+      "source_aggregate_sha256": "78dc7710f8362ba2041a36a21e01f41ad9db53ad0c5d7d717ae0419da1c34784"
+    },
+    {
+      "label": "red-order",
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-tags",
+        "integration",
+        "-run",
+        "^TestConsumerPolicyRuntime$/^a$/^id1-value0$",
+        "-count=1",
+        "-timeout=10m",
+        "./internal/substitutiontest"
+      ],
+      "exit": 1,
+      "elapsed_seconds": 2.206339292,
+      "selected_leaves": [
+        "TestConsumerPolicyRuntime/a/id1-value0"
+      ],
+      "source_aggregate_sha256": "78dc7710f8362ba2041a36a21e01f41ad9db53ad0c5d7d717ae0419da1c34784"
+    },
+    {
+      "label": "se-normal",
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-tags",
+        "integration",
+        "-run",
+        "^TestConsumerPolicy(Runtime|Controls|Orders|Decoder|HistoricalWrapper)$",
+        "-count=1",
+        "-timeout=10m",
+        "./internal/substitutiontest"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 4.368970334,
+      "selected_leaves": [
+        "TestConsumerPolicyDecoder/historical-es",
+        "TestConsumerPolicyDecoder/s-first-se",
+        "TestConsumerPolicyDecoder/swapped-selected-outcomes",
+        "TestConsumerPolicyDecoder/delivery-is-not-consumption",
+        "TestConsumerPolicyRuntime/a/id1-value0",
+        "TestConsumerPolicyRuntime/a/id1-value1",
+        "TestConsumerPolicyRuntime/a/id2-value0",
+        "TestConsumerPolicyRuntime/a/id2-value1",
+        "TestConsumerPolicyRuntime/b/id1-value0",
+        "TestConsumerPolicyRuntime/b/id1-value1",
+        "TestConsumerPolicyRuntime/b/id2-value0",
+        "TestConsumerPolicyRuntime/b/id2-value1",
+        "TestConsumerPolicyControls/candidate-pending",
+        "TestConsumerPolicyControls/s-pending",
+        "TestConsumerPolicyControls/wrong-id",
+        "TestConsumerPolicyControls/budget2",
+        "TestConsumerPolicyOrders/s-first",
+        "TestConsumerPolicyOrders/candidate-first",
+        "TestConsumerPolicyHistoricalWrapper"
+      ],
+      "source_aggregate_sha256": "ab2db041175840a7dea8c6175aeb7bc24cedcb44555d7aefad0e125f64a6ecbf"
+    },
+    {
+      "label": "historical-normal",
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-tags",
+        "integration",
+        "-run",
+        "^TestInvocationJoin(Runtime|Controls|Orders|Decoder|IncompletePrefixes|Recovery)$",
+        "-count=1",
+        "-timeout=10m",
+        "./internal/substitutiontest"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 4.8572915420000005,
+      "selected_leaves": [
+        "TestInvocationJoinDecoder/coherent-revision",
+        "TestInvocationJoinDecoder/orphan-intent",
+        "TestInvocationJoinDecoder/unadmitted-revision",
+        "TestInvocationJoinDecoder/original-handle",
+        "TestInvocationJoinDecoder/selected-identity",
+        "TestInvocationJoinDecoder/selected-payload",
+        "TestInvocationJoinDecoder/missing-delivery",
+        "TestInvocationJoinDecoder/missing-request",
+        "TestInvocationJoinDecoder/request-source",
+        "TestInvocationJoinDecoder/authorization-sequence",
+        "TestInvocationJoinDecoder/reply-authorization",
+        "TestInvocationJoinDecoder/duplicate-selection",
+        "TestInvocationJoinDecoder/extra-charge",
+        "TestInvocationJoinDecoder/fact-order",
+        "TestInvocationJoinDecoder/program-hash",
+        "TestInvocationJoinDecoder/duplicate-program",
+        "TestInvocationJoinDecoder/parent-pure-path",
+        "TestInvocationJoinDecoder/request-bound-payload",
+        "TestInvocationJoinDecoder/unconsumed-request-obligation",
+        "TestInvocationJoinIncompletePrefixes",
+        "TestInvocationJoinRecovery",
+        "TestInvocationJoinRuntime/a/id1-value0",
+        "TestInvocationJoinRuntime/a/id1-value1",
+        "TestInvocationJoinRuntime/a/id2-value0",
+        "TestInvocationJoinRuntime/a/id2-value1",
+        "TestInvocationJoinRuntime/b/id1-value0",
+        "TestInvocationJoinRuntime/b/id1-value1",
+        "TestInvocationJoinRuntime/b/id2-value0",
+        "TestInvocationJoinRuntime/b/id2-value1",
+        "TestInvocationJoinControls/wrong-id",
+        "TestInvocationJoinControls/budget2",
+        "TestInvocationJoinControls/candidate-fail",
+        "TestInvocationJoinControls/candidate-absent",
+        "TestInvocationJoinControls/candidate-pending",
+        "TestInvocationJoinControls/s-fail",
+        "TestInvocationJoinControls/s-absent",
+        "TestInvocationJoinControls/s-pending",
+        "TestInvocationJoinOrders/candidate-first",
+        "TestInvocationJoinOrders/s-first"
+      ],
+      "source_aggregate_sha256": "ab2db041175840a7dea8c6175aeb7bc24cedcb44555d7aefad0e125f64a6ecbf"
+    },
+    {
+      "label": "se-race",
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-race",
+        "-tags",
+        "integration",
+        "-run",
+        "^TestConsumerPolicy(Runtime|Controls|Orders|Decoder|HistoricalWrapper)$",
+        "-count=1",
+        "-timeout=15m",
+        "./internal/substitutiontest"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 46.377489958,
+      "selected_leaves": [
+        "TestConsumerPolicyDecoder/historical-es",
+        "TestConsumerPolicyDecoder/s-first-se",
+        "TestConsumerPolicyDecoder/swapped-selected-outcomes",
+        "TestConsumerPolicyDecoder/delivery-is-not-consumption",
+        "TestConsumerPolicyRuntime/a/id1-value0",
+        "TestConsumerPolicyRuntime/a/id1-value1",
+        "TestConsumerPolicyRuntime/a/id2-value0",
+        "TestConsumerPolicyRuntime/a/id2-value1",
+        "TestConsumerPolicyRuntime/b/id1-value0",
+        "TestConsumerPolicyRuntime/b/id1-value1",
+        "TestConsumerPolicyRuntime/b/id2-value0",
+        "TestConsumerPolicyRuntime/b/id2-value1",
+        "TestConsumerPolicyControls/candidate-pending",
+        "TestConsumerPolicyControls/s-pending",
+        "TestConsumerPolicyControls/wrong-id",
+        "TestConsumerPolicyControls/budget2",
+        "TestConsumerPolicyOrders/s-first",
+        "TestConsumerPolicyOrders/candidate-first",
+        "TestConsumerPolicyHistoricalWrapper"
+      ],
+      "source_aggregate_sha256": "ab2db041175840a7dea8c6175aeb7bc24cedcb44555d7aefad0e125f64a6ecbf"
+    },
+    {
+      "label": "historical-race",
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-race",
+        "-tags",
+        "integration",
+        "-run",
+        "^TestInvocationJoin(Runtime|Controls|Orders|Decoder|IncompletePrefixes|Recovery)$",
+        "-count=1",
+        "-timeout=15m",
+        "./internal/substitutiontest"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 67.316797958,
+      "selected_leaves": [
+        "TestInvocationJoinDecoder/coherent-revision",
+        "TestInvocationJoinDecoder/orphan-intent",
+        "TestInvocationJoinDecoder/unadmitted-revision",
+        "TestInvocationJoinDecoder/original-handle",
+        "TestInvocationJoinDecoder/selected-identity",
+        "TestInvocationJoinDecoder/selected-payload",
+        "TestInvocationJoinDecoder/missing-delivery",
+        "TestInvocationJoinDecoder/missing-request",
+        "TestInvocationJoinDecoder/request-source",
+        "TestInvocationJoinDecoder/authorization-sequence",
+        "TestInvocationJoinDecoder/reply-authorization",
+        "TestInvocationJoinDecoder/duplicate-selection",
+        "TestInvocationJoinDecoder/extra-charge",
+        "TestInvocationJoinDecoder/fact-order",
+        "TestInvocationJoinDecoder/program-hash",
+        "TestInvocationJoinDecoder/duplicate-program",
+        "TestInvocationJoinDecoder/parent-pure-path",
+        "TestInvocationJoinDecoder/request-bound-payload",
+        "TestInvocationJoinDecoder/unconsumed-request-obligation",
+        "TestInvocationJoinIncompletePrefixes",
+        "TestInvocationJoinRecovery",
+        "TestInvocationJoinRuntime/a/id1-value0",
+        "TestInvocationJoinRuntime/a/id1-value1",
+        "TestInvocationJoinRuntime/a/id2-value0",
+        "TestInvocationJoinRuntime/a/id2-value1",
+        "TestInvocationJoinRuntime/b/id1-value0",
+        "TestInvocationJoinRuntime/b/id1-value1",
+        "TestInvocationJoinRuntime/b/id2-value0",
+        "TestInvocationJoinRuntime/b/id2-value1",
+        "TestInvocationJoinControls/wrong-id",
+        "TestInvocationJoinControls/budget2",
+        "TestInvocationJoinControls/candidate-fail",
+        "TestInvocationJoinControls/candidate-absent",
+        "TestInvocationJoinControls/candidate-pending",
+        "TestInvocationJoinControls/s-fail",
+        "TestInvocationJoinControls/s-absent",
+        "TestInvocationJoinControls/s-pending",
+        "TestInvocationJoinOrders/candidate-first",
+        "TestInvocationJoinOrders/s-first"
+      ],
+      "source_aggregate_sha256": "ab2db041175840a7dea8c6175aeb7bc24cedcb44555d7aefad0e125f64a6ecbf"
+    },
+    {
+      "label": "discovery",
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-tags",
+        "integration",
+        "-list",
+        "^(TestConsumerPolicy|TestInvocationJoin)",
+        "./internal/substitutiontest"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 1.084247,
+      "selected_leaves": [],
+      "source_aggregate_sha256": "ab2db041175840a7dea8c6175aeb7bc24cedcb44555d7aefad0e125f64a6ecbf"
+    },
+    {
+      "label": "vet",
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "vet",
+        "-tags",
+        "integration",
+        "./internal/substitutiontest"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 0.319508583,
+      "selected_leaves": [],
+      "source_aggregate_sha256": "ab2db041175840a7dea8c6175aeb7bc24cedcb44555d7aefad0e125f64a6ecbf"
+    },
+    {
+      "label": "toolchain",
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "env",
+        "-json",
+        "GOVERSION",
+        "GOOS",
+        "GOARCH",
+        "CGO_ENABLED",
+        "GOTOOLCHAIN",
+        "GOFLAGS",
+        "GOPROXY",
+        "GOSUMDB",
+        "GOCACHE"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 0.006809416999999998,
+      "selected_leaves": [],
+      "source_aggregate_sha256": "ab2db041175840a7dea8c6175aeb7bc24cedcb44555d7aefad0e125f64a6ecbf"
+    },
+    {
+      "label": "format",
+      "argv": [
+        "/opt/homebrew/bin/gofmt",
+        "-l",
+        "internal/substitutiontest/invocation_join_evidence_test.go",
+        "internal/substitutiontest/consumer_policy_runtime_test.go",
+        "internal/substitutiontest/consumer_policy_decoder_test.go"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 0.013070208,
+      "selected_leaves": [],
+      "source_aggregate_sha256": "ab2db041175840a7dea8c6175aeb7bc24cedcb44555d7aefad0e125f64a6ecbf"
+    },
+    {
+      "label": "module-verify",
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "mod",
+        "verify"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 0.101179667,
+      "selected_leaves": [],
+      "source_aggregate_sha256": "ab2db041175840a7dea8c6175aeb7bc24cedcb44555d7aefad0e125f64a6ecbf"
+    }
+  ],
+  "files": {
+    "README.md": {
+      "sha256": "7def7ee81f1148f317ee6824bd71d84a17a09c59e4ac8119c47fc5cdef9ea8fd",
+      "bytes": 6615
+    },
+    "audit-command-1.json.gz": {
+      "sha256": "e63662579f55befc74158b6eeacdfdb6f252fe46e288f7c327f82de4d20d42d8",
+      "bytes": 6447
+    },
+    "audit.json": {
+      "sha256": "5055b4e3f23ab783e3ca37bf7895fafef2ebf1ba4c547637a84a67b0fef1fd32",
+      "bytes": 20460
+    },
+    "audit.py": {
+      "sha256": "dfdca160a8875109468a134e35ab9e4cc29552a6aebd145222dbf192fb67b6c8",
+      "bytes": 21052
+    },
+    "capture.py": {
+      "sha256": "a420af0062cdaf28532a0e11d6a8459fcb6340b664ed4ebca2f806bfb5ea08ac",
+      "bytes": 3847
+    },
+    "discovery.json.gz": {
+      "sha256": "ea32930de6155be2919b6b3154cf96206676779627a574bef5a526fa6343d7e3",
+      "bytes": 30633
+    },
+    "format.json.gz": {
+      "sha256": "3a42ed2257703d9e1a374f78df4cd6b638cec33f780d5043b3400dd0b2727dcc",
+      "bytes": 30500
+    },
+    "historical-normal.json.gz": {
+      "sha256": "ed81050783b8b9219bfe4a11ed2c030ba7108bf4723af52200f2b5be463d55a9",
+      "bytes": 394701
+    },
+    "historical-race.json.gz": {
+      "sha256": "3a7456ec20c86a73efa1020abea8106ad24cbce30e6828bd4c8f0a7a2df1fd62",
+      "bytes": 395121
+    },
+    "module-verify.json.gz": {
+      "sha256": "51f7fcc24684eadbf71c0725a9e9490b57608e2261eed2cf223025df77b3e368",
+      "bytes": 30485
+    },
+    "red-order.json.gz": {
+      "sha256": "20616901cdcbf2a2fdfccaa432f3cdd7a1ea0af279cb217bf2637cd4cc5c832e",
+      "bytes": 42994
+    },
+    "se-normal.json.gz": {
+      "sha256": "6cfccbc21349397d764c49bcf194f3ec5cdaffaf6f825c34317878661adc979f",
+      "bytes": 343155
+    },
+    "se-race.json.gz": {
+      "sha256": "bb3d03d1add8626ba0b035eadb4ffeba3d8b0a2fc804ff998c31113e3a158e43",
+      "bytes": 343315
+    },
+    "toolchain.json.gz": {
+      "sha256": "3e9bcf261cf9e54b224496abe302e837beec94dee646bfa976942a3d4f415807",
+      "bytes": 30594
+    },
+    "vet.json.gz": {
+      "sha256": "a63d1197e292e449351fbf691cba8da5035edb63fdd0851bf3f661a4fded97f5",
+      "bytes": 30485
+    },
+    "wrapper-before.json.gz": {
+      "sha256": "35dfc8e286984eb9abdacc2cc13654c0dc5522c5d6085beabca9ba65902d2b4d",
+      "bytes": 32636
+    }
+  },
+  "audit": {
+    "path": "audit.json",
+    "sha256": "5055b4e3f23ab783e3ca37bf7895fafef2ebf1ba4c547637a84a67b0fef1fd32"
+  },
+  "audit_command": {
+    "path": "audit-command-1.json.gz",
+    "argv": [
+      "/Library/Developer/CommandLineTools/usr/bin/python3",
+      "docs/foundational/phase1m/evidence/runtime/se/audit.py"
+    ],
+    "exit": 0,
+    "source_sha256": "dfdca160a8875109468a134e35ab9e4cc29552a6aebd145222dbf192fb67b6c8"
+  }
+}
