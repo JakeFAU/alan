@@ -1,0 +1,545 @@
+{
+  "scope": "finite supplied certificates and frozen clause fixtures only; no existence decision or full conformance",
+  "base_commit": "ffd00be531fbb986b86160bd6c22a87345fee14a",
+  "selected_top_level_tests": [
+    "TestWeakRefinementOriginalBranchAccounting",
+    "TestWeakRefinementIllegalMergedHelperPrefix",
+    "TestWeakRefinementRawDemandMap",
+    "TestWeakRefinementF5InvalidAuthorization",
+    "TestWeakRefinementSixAuthorizationAdmissionSchedules",
+    "TestWeakRefinementAuthorizationInvalidControls",
+    "TestWeakRefinementAuthorizationOutsideProfile",
+    "TestWeakRefinementAuthorizationHistoryAndPending",
+    "TestWeakRefinementNormalizationRelations",
+    "TestWeakRefinementNormalizationHelperFork",
+    "TestWeakRefinementNormalizationReadinessMutation",
+    "TestWeakRefinementF1Noncanonical",
+    "TestWeakRefinementF1RejectedPathsRemainOpen",
+    "TestWeakRefinementF2ImmediateReadiness",
+    "TestWeakRefinementF3DivergenceSeparateFromSafety",
+    "TestWeakRefinementF4VisibleOccurrence",
+    "TestWeakRefinementEveryPairAndMove",
+    "TestWeakRefinementOrderedFactsAndGrammar",
+    "TestWeakRefinementUnreachableAndMalformed",
+    "TestWeakRefinementStrongGuardsAndDirectIntegrity",
+    "TestWeakRefinementProgressBoundaries",
+    "TestWeakRefinementGrammarCannotEraseFacts",
+    "TestWeakRefinementSilentInteriorsPreservePublicFacts"
+  ],
+  "normal_and_race_test_events": 69,
+  "final_source_sha256": {
+    "go.mod": "1d8b5c8939d1422813ed2b004c6560e3ec3f262709d57e9b957f6994ffd9bdeb",
+    "go.sum": "9eb975c181ebee792e06f732fc13ef81acad0779d94731f75133ad2bba52c5ca",
+    "docs/foundational/phase1o/01-weak-contract.md": "ac1c0ecbf62bd82c718a7a3ad3dcf000552d14e093868321b0f7dcc4b370b000",
+    "docs/foundational/phase1o/02-arg2.md": "ca3def80b384335694afcd97c68202e6d93821aad414ac305dc701495599e84c",
+    "docs/foundational/phase1o/03-finite-contract.md": "a41c2216caa80d979365e61470dce6fc03c2616ad6f2faeab2e2431b0418a083",
+    "research/substitution/model.go": "1faef47e9ef17401512aba14239fc07ad7031a6db249600844752b35db342ddf",
+    "research/substitution/callable_join.go": "98712edefc1e9dd44f146089c4e3e8d1da2fcac1df5a57421d73ce31c6a07a08",
+    "internal/executor/messages.go": "1186fd9220d44352dcfd77ec5e7209dadd78d9956304a931593b5de6c6b8ae39",
+    "internal/executor/invocation.go": "b40c1edc17249a31ccff84408a7855098e3a51ad28579ea856efc34bf4fa6746",
+    "internal/executor/invocation_outcome.go": "adeaba4f04843867c5405a6bfb5a8716e64654a3e96bc58ad190ec23cbfcb53d",
+    "research/substitution/auxiliary_test.go": "aa011e6ba661ea658c1bcd3931159034904b6dd856cd214fda8269296a2bcea6",
+    "research/substitution/callable_join_artifact_test.go": "022d600520ce0adfd835f8e911e12f224fe89bf1ed74333873ae5c87a05d7040",
+    "research/substitution/callable_join_explorer.go": "34377a3e528c12e6ff5bb803a16337eb434fa5d82120b4bf0888a0d47cdd58cd",
+    "research/substitution/callable_join_local.go": "d918c235822262b0c630d6ce69721036d2b614a5e4020585c3e9b86ed68275fb",
+    "research/substitution/callable_join_oracle.go": "765fafb73477584e65f94f89ef270ffe1c3f4019d9f5ffa6420dc816d406c6b1",
+    "research/substitution/callable_join_qualification_test.go": "646ceba875c36ee4238bf641c6c2729b18ea6105ee3619b8ee609e84dc0c273b",
+    "research/substitution/callable_join_relation.go": "61c61652dd9279147fd524a77e03476a0006d17e2c8e022f0582a29937d6997a",
+    "research/substitution/callable_join_test.go": "51179b5747f84f7faeb97d028d78d61cec794a21f7793a2cf3eca4185600e5b8",
+    "research/substitution/candidates.go": "670d0265608ff7c519b6838bd65485427f231591516aaa6f75d8ad42566ade69",
+    "research/substitution/candidates_test.go": "008b15c4c5c4a2aa9e2a3e94a3fcff76e8dfa91c0de8c52f96e8d542e9171c2c",
+    "research/substitution/consumer_policy.go": "5dd0966224b4dbabeb0b52d140a7b6349889f6c89835b13c302f2b81591a013b",
+    "research/substitution/consumer_policy_qualification_test.go": "1bfc39d6050a510ff1d0636e95b89c7b0d73a5eff9e6b8ea494f0b236aa97459",
+    "research/substitution/consumer_policy_test.go": "06ee3878d04a3cd3804e759643f9b2af5f754afed50d95937757883083fcb318",
+    "research/substitution/consumer_reason.go": "a2afb355e11b08f1d0a9cc302dbf7bcc181f24c7054ae59c4837e3327f00dc79",
+    "research/substitution/consumer_reason_explorer.go": "cf8a194562857bcb00051927b815ffe7f4eb3c00b06aedf4a2ab16be10435d8d",
+    "research/substitution/consumer_reason_local.go": "b4d9a91464e231058dba4fdc1b46cb124a8684a45647ffbd10a6b53ce2d59e16",
+    "research/substitution/consumer_reason_local_test.go": "48a3a9e52f36e55611319f47f1f114cc1c5ea2fb1befaeecc12ce131df093886",
+    "research/substitution/consumer_reason_oracle.go": "2b0571f266a118d78e08fbe267879f9ca173cb5f66daa30753ea54f5ec8a29c0",
+    "research/substitution/consumer_reason_qualification_test.go": "f61ed22b3c0b6c1a68a60ad347c59ea55ecb728593dbd40cf3828f04fe08bcf1",
+    "research/substitution/consumer_reason_test.go": "eca2fc31dfa7f454cf3ceb1f414af3303f25fb834ca097b9cb4aace94fbba087",
+    "research/substitution/correspondence_test.go": "986e23925e702f061a4f9b0606bb45a11befcbb6109a854fe3579c60bfee1464",
+    "research/substitution/effect.go": "b1f65b5cb9189536ccca746089321b0cd22dc1133d62fc73d74e22ba204f8f33",
+    "research/substitution/effect_test.go": "b417d30e8d719777b10b99aea29b8a8b511d1f171774fae97171ca930c38b019",
+    "research/substitution/envelope_test.go": "e20d5b7c9024a1a90b8787ab07d71aaf7a010c5564a52a3a943d79c38eb67ff4",
+    "research/substitution/explorer.go": "9e8dc11ec95c8a14510aea483ffc6495a2c5fb12273ebaca25cbc57a997cb5f9",
+    "research/substitution/invocation_join.go": "dac14d762e71d4db2ae6d920705bcec7d080929275a6425918cf94783cd37dc0",
+    "research/substitution/invocation_join_explorer.go": "5e80dade5f3fa1aa5e8eae7340d4f6950963d0fb261b5f52b6540be270bd083a",
+    "research/substitution/invocation_join_oracle.go": "5c4c914a155569220d3bf648177d2912a9feacadb6f4fa45207deaa98fba4e96",
+    "research/substitution/invocation_join_qualification_test.go": "fdbf0ab5eab64c9b026a1ac14577abf7cfa40cde0347e0ff3484a08e76a5df3c",
+    "research/substitution/invocation_join_test.go": "5b00951ea700ce3f8d2e867dfdd10f3d5bdb5e745c623a7202c3b60818983a01",
+    "research/substitution/model_test.go": "497324ee87d21aca53ccf6307c29c0ecc4c334d3e2d0b24471314050bf94fc7b",
+    "research/substitution/oracle.go": "9f7f5f59414c439392ab813759c6ed1c99f4be21aaa44f03a24cf953eb3899ad",
+    "research/substitution/oracle_test.go": "1094aa0a03fb27124b9f581e0cf33d80b1ff2dad8fd99383ce0f5d79872b2332",
+    "research/substitution/probe_correspondence_test.go": "8567c75a929b9c800dbb3521b909463ff99589dde21a5a729a4e36439d6204ec",
+    "research/substitution/probe_graph.go": "96469bcaa9c3a0ebdcea79c3ebc76c0050c283fd042c1e9e04243f3df0ab901c",
+    "research/substitution/probe_graph_test.go": "21750ec1da0f4d6cb85fe3c5c44417375a7e480e854ccb26e9dd49ac4ab5e974",
+    "research/substitution/probes.go": "5a07acce931125e153ad7fbda536e4f7327056c56deecdb0aaec3c95d94621d0",
+    "research/substitution/probes_test.go": "8ca2d9a532c17072ff0b19cf290ee150ed7b359685d10c37fffc322c90fcd2f3",
+    "research/substitution/relation.go": "4d4977eb96432269fbff9b550c74fd59527b3d3df5833d46f0cda1e77961a6be",
+    "research/substitution/runtime_boundary.go": "b22089368f93bea5f3e471292f0b7308419b937508e78942343cdb001d362e44",
+    "research/substitution/runtime_boundary_test.go": "2d6b7e153f98ecad9ed6a49f749902032920070b645271c188370fc3808e8591",
+    "research/substitution/weak_refinement.go": "6ae6c988afbe5c694323f12c25fe0206214394078b03962aa63f1afda2d65902",
+    "research/substitution/weak_refinement_accounting.go": "d4f46588829a5ac835dd1049e18921a0596c153381a73213d374f0fb5aa5e555",
+    "research/substitution/weak_refinement_accounting_test.go": "55f101fca487936380b271868401e14481de9a2eb4f5386f39a21d7d093e76cb",
+    "research/substitution/weak_refinement_authorization.go": "085daade19fb0d4a0c3ed1fce00524f478c1d9a5d9827ec0deb8e77ddec8de2a",
+    "research/substitution/weak_refinement_authorization_test.go": "43fdf60234b3a8932f3cf0c0a8e0a5bcf8ce124a9771b17196ac9277af259be6",
+    "research/substitution/weak_refinement_normalization_test.go": "1e28ff13a6a7d27f765aa83f4581269eade3cde8939679f8b4371e67a189527b",
+    "research/substitution/weak_refinement_test.go": "503aaf142b81a16a249b996a123a3353b35ddd512e348178f39609811fbb42ea",
+    "internal/executor/composition_types.go": "f8235c62d157985bee482eeb2d3f1fbddb3eb717b8e191225ffce4a28210782e",
+    "internal/executor/store.go": "4100327b3d95b44c061dad51f656fd193f26bc28c58093ecd2b385f9f76895bb",
+    "internal/executor/program.go": "4a6813c69d509dff545c75a05410919e182e73c9f06e5fd359112e64df568374"
+  },
+  "unchanged_HEAD_staticcheck_sources": {
+    "research/substitution/callable_join.go": "98712edefc1e9dd44f146089c4e3e8d1da2fcac1df5a57421d73ce31c6a07a08",
+    "research/substitution/callable_join_local.go": "d918c235822262b0c630d6ce69721036d2b614a5e4020585c3e9b86ed68275fb",
+    "research/substitution/invocation_join_explorer.go": "5e80dade5f3fa1aa5e8eae7340d4f6950963d0fb261b5f52b6540be270bd083a",
+    "research/substitution/invocation_join_oracle.go": "5c4c914a155569220d3bf648177d2912a9feacadb6f4fa45207deaa98fba4e96"
+  },
+  "records": [
+    {
+      "file": "task3-final-normal.json.gz",
+      "sha256": "8ffe146f082afbafe7616d71b58013dc34caba66257074c9597dd6d3198fc8af",
+      "exit": 0,
+      "runs": 69,
+      "passes": 69,
+      "failures": 0,
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-count=1",
+        "-run",
+        "^(TestWeakRefinementOriginalBranchAccounting|TestWeakRefinementIllegalMergedHelperPrefix|TestWeakRefinementRawDemandMap|TestWeakRefinementF5InvalidAuthorization|TestWeakRefinementSixAuthorizationAdmissionSchedules|TestWeakRefinementAuthorizationInvalidControls|TestWeakRefinementAuthorizationOutsideProfile|TestWeakRefinementAuthorizationHistoryAndPending|TestWeakRefinementNormalizationRelations|TestWeakRefinementNormalizationHelperFork|TestWeakRefinementNormalizationReadinessMutation|TestWeakRefinementF1Noncanonical|TestWeakRefinementF1RejectedPathsRemainOpen|TestWeakRefinementF2ImmediateReadiness|TestWeakRefinementF3DivergenceSeparateFromSafety|TestWeakRefinementF4VisibleOccurrence|TestWeakRefinementEveryPairAndMove|TestWeakRefinementOrderedFactsAndGrammar|TestWeakRefinementUnreachableAndMalformed|TestWeakRefinementStrongGuardsAndDirectIntegrity|TestWeakRefinementProgressBoundaries|TestWeakRefinementGrammarCannotEraseFacts|TestWeakRefinementSilentInteriorsPreservePublicFacts)$",
+        "./research/substitution"
+      ]
+    },
+    {
+      "file": "task3-final-race.json.gz",
+      "sha256": "81bd47e97b633ea42e0ac01505d14325c64291964e55ab6266b311b05fbd51f0",
+      "exit": 0,
+      "runs": 69,
+      "passes": 69,
+      "failures": 0,
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-race",
+        "-count=1",
+        "-run",
+        "^(TestWeakRefinementOriginalBranchAccounting|TestWeakRefinementIllegalMergedHelperPrefix|TestWeakRefinementRawDemandMap|TestWeakRefinementF5InvalidAuthorization|TestWeakRefinementSixAuthorizationAdmissionSchedules|TestWeakRefinementAuthorizationInvalidControls|TestWeakRefinementAuthorizationOutsideProfile|TestWeakRefinementAuthorizationHistoryAndPending|TestWeakRefinementNormalizationRelations|TestWeakRefinementNormalizationHelperFork|TestWeakRefinementNormalizationReadinessMutation|TestWeakRefinementF1Noncanonical|TestWeakRefinementF1RejectedPathsRemainOpen|TestWeakRefinementF2ImmediateReadiness|TestWeakRefinementF3DivergenceSeparateFromSafety|TestWeakRefinementF4VisibleOccurrence|TestWeakRefinementEveryPairAndMove|TestWeakRefinementOrderedFactsAndGrammar|TestWeakRefinementUnreachableAndMalformed|TestWeakRefinementStrongGuardsAndDirectIntegrity|TestWeakRefinementProgressBoundaries|TestWeakRefinementGrammarCannotEraseFacts|TestWeakRefinementSilentInteriorsPreservePublicFacts)$",
+        "./research/substitution"
+      ]
+    },
+    {
+      "file": "task3-focused-before-static.json.gz",
+      "sha256": "d797ede61aec9645c39aafa7554e4c597c6e2f851a0f3db1146cf5d418aa6b4f",
+      "exit": 0,
+      "runs": 69,
+      "passes": 69,
+      "failures": 0,
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-count=1",
+        "-run",
+        "^TestWeakRefinement",
+        "./research/substitution"
+      ]
+    },
+    {
+      "file": "task3-format.json.gz",
+      "sha256": "5a0e7d9a368ccca1a08cad6674ab799500781d950837777bd88cef0ce54c1b62",
+      "exit": 0,
+      "runs": 0,
+      "passes": 0,
+      "failures": 0,
+      "argv": [
+        "/opt/homebrew/bin/gofmt",
+        "-d",
+        "research/substitution/weak_refinement.go",
+        "research/substitution/weak_refinement_test.go",
+        "research/substitution/weak_refinement_accounting.go",
+        "research/substitution/weak_refinement_accounting_test.go",
+        "research/substitution/weak_refinement_authorization.go",
+        "research/substitution/weak_refinement_authorization_test.go",
+        "research/substitution/weak_refinement_normalization_test.go"
+      ]
+    },
+    {
+      "file": "task3-green-accounting.json.gz",
+      "sha256": "a6aff18199e45771835b59476a00f42a29c1df8c475be5f59e1fd020063559d1",
+      "exit": 0,
+      "runs": 12,
+      "passes": 12,
+      "failures": 0,
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-count=1",
+        "-run",
+        "^TestWeakRefinement(OriginalBranchAccounting|IllegalMergedHelperPrefix|RawDemandMap)$",
+        "./research/substitution"
+      ]
+    },
+    {
+      "file": "task3-green-authorization.json.gz",
+      "sha256": "206c22385b577c91fdb1e2060c39bcd91c7bcad90c3c8047afe35c711be1e9f4",
+      "exit": 0,
+      "runs": 28,
+      "passes": 28,
+      "failures": 0,
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-count=1",
+        "-run",
+        "^TestWeakRefinement(F5|Six|Authorization)",
+        "./research/substitution"
+      ]
+    },
+    {
+      "file": "task3-green-core-corrected.json.gz",
+      "sha256": "5e157e669bd72ce67b84b911faa16dbc8b0f9fc962f64a763ae64a86c3eb6910",
+      "exit": 0,
+      "runs": 12,
+      "passes": 12,
+      "failures": 0,
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-count=1",
+        "-run",
+        "^TestWeakRefinement",
+        "./research/substitution"
+      ]
+    },
+    {
+      "file": "task3-green-core.json.gz",
+      "sha256": "1ce38285ad22aba951a251604b49e133894e149953dd7f82293225024588ed8c",
+      "exit": 1,
+      "runs": 12,
+      "passes": 11,
+      "failures": 1,
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-count=1",
+        "-run",
+        "^TestWeakRefinement",
+        "./research/substitution"
+      ]
+    },
+    {
+      "file": "task3-green-defensive.json.gz",
+      "sha256": "b3aaf93485bce511a44c3e35ef8c2e0ec208319c22ce1ab9fbbaa4d663285483",
+      "exit": 0,
+      "runs": 68,
+      "passes": 68,
+      "failures": 0,
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-count=1",
+        "-run",
+        "^TestWeakRefinement",
+        "./research/substitution"
+      ]
+    },
+    {
+      "file": "task3-list.json.gz",
+      "sha256": "cec0730142ca2befd09c1122bd224b48a7d261fe729f72678b3c4182dd4a39c9",
+      "exit": 0,
+      "runs": 0,
+      "passes": 0,
+      "failures": 0,
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-list",
+        "^TestWeakRefinement",
+        "./research/substitution"
+      ]
+    },
+    {
+      "file": "task3-modules.json.gz",
+      "sha256": "a122a3a7f8fa6827431777879c0b70f3f53a25f09246bc29db4e3a39ddfb0102",
+      "exit": 0,
+      "runs": 0,
+      "passes": 0,
+      "failures": 0,
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "mod",
+        "verify"
+      ]
+    },
+    {
+      "file": "task3-normalization-first.json.gz",
+      "sha256": "f81ddbf61e349e3151354f9b5fa0e4de30f40e003c6ca9b9e76fd346f14719bb",
+      "exit": 0,
+      "runs": 5,
+      "passes": 5,
+      "failures": 0,
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-count=1",
+        "-run",
+        "^TestWeakRefinementNormalization",
+        "./research/substitution"
+      ]
+    },
+    {
+      "file": "task3-red-accounting.json.gz",
+      "sha256": "52deacc714aafa6ce38b098f63fac5bf5417eb13e42420c6588d71dabb48b468",
+      "exit": 1,
+      "runs": 3,
+      "passes": 0,
+      "failures": 3,
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-count=1",
+        "-run",
+        "^TestWeakRefinement(OriginalBranchAccounting|IllegalMergedHelperPrefix|RawDemandMap)$",
+        "./research/substitution"
+      ]
+    },
+    {
+      "file": "task3-red-authorization.json.gz",
+      "sha256": "a4ad933f6435f919239ec5fde3c3afb57bfc8cb5b05b3c6182f450d08711effb",
+      "exit": 1,
+      "runs": 28,
+      "passes": 11,
+      "failures": 17,
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-count=1",
+        "-run",
+        "^TestWeakRefinement(F5|Six|Authorization)",
+        "./research/substitution"
+      ]
+    },
+    {
+      "file": "task3-red-core-behavior.json.gz",
+      "sha256": "9be80833f618a3fbd6265a1ace7c4f9f48139ae435644db42aa99397577dbf0c",
+      "exit": 1,
+      "runs": 12,
+      "passes": 0,
+      "failures": 12,
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-count=1",
+        "-run",
+        "^TestWeakRefinement",
+        "./research/substitution"
+      ]
+    },
+    {
+      "file": "task3-red-core.json.gz",
+      "sha256": "0b95acd8366c74a05ef2e899930343ece77c7054d1307e258060f740322858e5",
+      "exit": 1,
+      "runs": 0,
+      "passes": 0,
+      "failures": 0,
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-count=1",
+        "-run",
+        "^TestWeakRefinement",
+        "./research/substitution"
+      ]
+    },
+    {
+      "file": "task3-red-defensive.json.gz",
+      "sha256": "9790afa78f35aab73841ca51daa2b00f2398017850d87742f5d6188bc5ea6453",
+      "exit": 1,
+      "runs": 11,
+      "passes": 6,
+      "failures": 5,
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-count=1",
+        "-run",
+        "^TestWeakRefinement(StrongGuardsAndDirectIntegrity|ProgressBoundaries|GrammarCannotEraseFacts|AuthorizationHistoryAndPending)$",
+        "./research/substitution"
+      ]
+    },
+    {
+      "file": "task3-red-private-interior.json.gz",
+      "sha256": "d89edf6158eb3c3bb9db47689b2765e78970002abfa5f228f7ead9d60ae363a4",
+      "exit": 1,
+      "runs": 1,
+      "passes": 0,
+      "failures": 1,
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-count=1",
+        "-run",
+        "^TestWeakRefinementSilentInteriorsPreservePublicFacts$",
+        "./research/substitution"
+      ]
+    },
+    {
+      "file": "task3-staticcheck-version.json.gz",
+      "sha256": "bb02bdd816ca5ab3c5d1b5e06a112b81cdeeff3b6959698004674ed1059b91ad",
+      "exit": 0,
+      "runs": 0,
+      "passes": 0,
+      "failures": 0,
+      "argv": [
+        "/opt/homebrew/bin/staticcheck",
+        "-version"
+      ]
+    },
+    {
+      "file": "task3-staticcheck.json.gz",
+      "sha256": "a7873b5a8b8af82a1372419ecd7e3d985829d7de578f4b5a1e4ff463c459909b",
+      "exit": 1,
+      "runs": 0,
+      "passes": 0,
+      "failures": 0,
+      "argv": [
+        "/opt/homebrew/bin/staticcheck",
+        "./research/substitution"
+      ]
+    },
+    {
+      "file": "task3-toolchain.json.gz",
+      "sha256": "a9e9699d237fb05d838d11b6bb28f425280b4d0ca9d2195b28b00597ab739649",
+      "exit": 0,
+      "runs": 0,
+      "passes": 0,
+      "failures": 0,
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "version"
+      ]
+    },
+    {
+      "file": "task3-verified-format.json.gz",
+      "sha256": "d827cfd071f139b14d8a8648d8ad2625befd9ea2c8f9167ee74369504bb01025",
+      "exit": 0,
+      "runs": 0,
+      "passes": 0,
+      "failures": 0,
+      "argv": [
+        "/opt/homebrew/bin/gofmt",
+        "-d",
+        "research/substitution/weak_refinement.go",
+        "research/substitution/weak_refinement_test.go",
+        "research/substitution/weak_refinement_accounting.go",
+        "research/substitution/weak_refinement_accounting_test.go",
+        "research/substitution/weak_refinement_authorization.go",
+        "research/substitution/weak_refinement_authorization_test.go",
+        "research/substitution/weak_refinement_normalization_test.go"
+      ]
+    },
+    {
+      "file": "task3-verified-modules.json.gz",
+      "sha256": "4720aa061a8ad6a8a8350e84d5d5f727e88544c466c975cb0cf6bfd0106b9f4d",
+      "exit": 0,
+      "runs": 0,
+      "passes": 0,
+      "failures": 0,
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "mod",
+        "verify"
+      ]
+    },
+    {
+      "file": "task3-verified-normal.json.gz",
+      "sha256": "e2ec5266f36963e78ee1ad44467ddb755938f93a76eed7c29fe4c958a15348ad",
+      "exit": 0,
+      "runs": 69,
+      "passes": 69,
+      "failures": 0,
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-count=1",
+        "-run",
+        "^(TestWeakRefinementOriginalBranchAccounting|TestWeakRefinementIllegalMergedHelperPrefix|TestWeakRefinementRawDemandMap|TestWeakRefinementF5InvalidAuthorization|TestWeakRefinementSixAuthorizationAdmissionSchedules|TestWeakRefinementAuthorizationInvalidControls|TestWeakRefinementAuthorizationOutsideProfile|TestWeakRefinementAuthorizationHistoryAndPending|TestWeakRefinementNormalizationRelations|TestWeakRefinementNormalizationHelperFork|TestWeakRefinementNormalizationReadinessMutation|TestWeakRefinementF1Noncanonical|TestWeakRefinementF1RejectedPathsRemainOpen|TestWeakRefinementF2ImmediateReadiness|TestWeakRefinementF3DivergenceSeparateFromSafety|TestWeakRefinementF4VisibleOccurrence|TestWeakRefinementEveryPairAndMove|TestWeakRefinementOrderedFactsAndGrammar|TestWeakRefinementUnreachableAndMalformed|TestWeakRefinementStrongGuardsAndDirectIntegrity|TestWeakRefinementProgressBoundaries|TestWeakRefinementGrammarCannotEraseFacts|TestWeakRefinementSilentInteriorsPreservePublicFacts)$",
+        "./research/substitution"
+      ]
+    },
+    {
+      "file": "task3-verified-race.json.gz",
+      "sha256": "eb4e61a3b7210d59be9fc1af622b1c1a4d11686090cc3ddecb03ccbf8402c72f",
+      "exit": 0,
+      "runs": 69,
+      "passes": 69,
+      "failures": 0,
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-race",
+        "-count=1",
+        "-run",
+        "^(TestWeakRefinementOriginalBranchAccounting|TestWeakRefinementIllegalMergedHelperPrefix|TestWeakRefinementRawDemandMap|TestWeakRefinementF5InvalidAuthorization|TestWeakRefinementSixAuthorizationAdmissionSchedules|TestWeakRefinementAuthorizationInvalidControls|TestWeakRefinementAuthorizationOutsideProfile|TestWeakRefinementAuthorizationHistoryAndPending|TestWeakRefinementNormalizationRelations|TestWeakRefinementNormalizationHelperFork|TestWeakRefinementNormalizationReadinessMutation|TestWeakRefinementF1Noncanonical|TestWeakRefinementF1RejectedPathsRemainOpen|TestWeakRefinementF2ImmediateReadiness|TestWeakRefinementF3DivergenceSeparateFromSafety|TestWeakRefinementF4VisibleOccurrence|TestWeakRefinementEveryPairAndMove|TestWeakRefinementOrderedFactsAndGrammar|TestWeakRefinementUnreachableAndMalformed|TestWeakRefinementStrongGuardsAndDirectIntegrity|TestWeakRefinementProgressBoundaries|TestWeakRefinementGrammarCannotEraseFacts|TestWeakRefinementSilentInteriorsPreservePublicFacts)$",
+        "./research/substitution"
+      ]
+    },
+    {
+      "file": "task3-verified-staticcheck.json.gz",
+      "sha256": "c90f56ebb1db3a9f532820ae307b79037dd84a366ad1d5d1768cbb7659894a65",
+      "exit": 1,
+      "runs": 0,
+      "passes": 0,
+      "failures": 0,
+      "argv": [
+        "/opt/homebrew/bin/staticcheck",
+        "./research/substitution"
+      ]
+    },
+    {
+      "file": "task3-verified-vet.json.gz",
+      "sha256": "54e22ab0817820ea71b451bfa0e404c31951c28eacc4a5a4ee49c59ee54af086",
+      "exit": 0,
+      "runs": 0,
+      "passes": 0,
+      "failures": 0,
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "vet",
+        "./research/substitution"
+      ]
+    },
+    {
+      "file": "task3-vet.json.gz",
+      "sha256": "682fe456e6c31b436ce5746c494297fa3cb79a1d0a11d1c8c4f51eeaf3acd6cf",
+      "exit": 0,
+      "runs": 0,
+      "passes": 0,
+      "failures": 0,
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "vet",
+        "./research/substitution"
+      ]
+    }
+  ]
+}
