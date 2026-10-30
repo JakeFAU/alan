@@ -1,0 +1,889 @@
+{
+  "base_commit": "cb678321324437d9d5c7247c8a139fc5dc401201",
+  "commands": {
+    "audit-attempt1": {
+      "argv": [
+        "python3",
+        "docs/foundational/phase1n/evidence/runtime/audit.py",
+        "implementation-2"
+      ],
+      "changed_during_run": [],
+      "exit": 0,
+      "leaves": 0,
+      "path": "audit-attempt1/command.json.gz",
+      "records": 1,
+      "sha256": "96492e4e292dcbf7d57fb2cd38a0f7f43d80b3ce49245303eb5eafccdcccde5a",
+      "source_snapshot_sha256": "6958b834869e8832bb9df26ed775a1a3853dfb79959f4b9983b168b0cf6c085d"
+    },
+    "audit-final": {
+      "argv": [
+        "python3",
+        "docs/foundational/phase1n/evidence/runtime/audit.py",
+        "normal",
+        "race"
+      ],
+      "changed_during_run": [],
+      "exit": 0,
+      "leaves": 0,
+      "path": "audit-final/command.json.gz",
+      "records": 1,
+      "sha256": "c1b6f9fbd71fa62e76341c1c7a40a097c867531c211c4c2dea95d45cae3de0db",
+      "source_snapshot_sha256": "138b4d0ee6a45e3e76d94619926d1d341d7ce4ffc9c37a79c432b479d5e445d4"
+    },
+    "audit-normal": {
+      "argv": [
+        "python3",
+        "docs/foundational/phase1n/evidence/runtime/audit.py",
+        "normal"
+      ],
+      "changed_during_run": [],
+      "exit": 0,
+      "leaves": 0,
+      "path": "audit-normal/command.json.gz",
+      "records": 1,
+      "sha256": "6bea8742652d301bcedda5c897299e1a7d68ac01c0f60d0720690ef330322e0e",
+      "source_snapshot_sha256": "138b4d0ee6a45e3e76d94619926d1d341d7ce4ffc9c37a79c432b479d5e445d4"
+    },
+    "discovery": {
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-tags",
+        "integration",
+        "-list",
+        "^TestCallableJoin(Runtime|Modes|Controls|LateReply|Decoder|Prefixes|ControlIdentities)$",
+        "./internal/substitutiontest",
+        "./examples/callablejoin"
+      ],
+      "changed_during_run": [],
+      "exit": 0,
+      "leaves": 0,
+      "path": "discovery/command.json.gz",
+      "records": 0,
+      "sha256": "bbd6a0ee149e2422fe2951951d602950ccc525d5ed96e1a3a342abe995c653ec",
+      "source_snapshot_sha256": "138b4d0ee6a45e3e76d94619926d1d341d7ce4ffc9c37a79c432b479d5e445d4"
+    },
+    "historical-normal": {
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-tags",
+        "integration",
+        "-run",
+        "^Test(ConsumerReason(Runtime|Modes|Controls|Decoder|ClassificationCut)|ConsumerPolicy(Runtime|Controls|Orders|Decoder|HistoricalWrapper)|InvocationJoin(Runtime|Controls|Orders|Decoder|IncompletePrefixes))$",
+        "-count=1",
+        "-timeout=5m",
+        "./internal/substitutiontest"
+      ],
+      "changed_during_run": [],
+      "exit": 0,
+      "leaves": 82,
+      "path": "historical-normal/command.json.gz",
+      "records": 186,
+      "sha256": "7b8a2736c774a3a460dc2fd96dc00b44351825a2ec1f30a2229f7988af475ede",
+      "source_snapshot_sha256": "138b4d0ee6a45e3e76d94619926d1d341d7ce4ffc9c37a79c432b479d5e445d4"
+    },
+    "historical-race": {
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-race",
+        "-tags",
+        "integration",
+        "-run",
+        "^Test(ConsumerReason(Runtime|Modes|Controls|Decoder|ClassificationCut)|ConsumerPolicy(Runtime|Controls|Orders|Decoder|HistoricalWrapper)|InvocationJoin(Runtime|Controls|Orders|Decoder|IncompletePrefixes))$",
+        "-count=1",
+        "-timeout=8m",
+        "./internal/substitutiontest"
+      ],
+      "changed_during_run": [],
+      "exit": 0,
+      "leaves": 82,
+      "path": "historical-race/command.json.gz",
+      "records": 186,
+      "sha256": "4ee23efb3e66caa90dae3331727167315abaa34accb347e67c251c0a84d1e95a",
+      "source_snapshot_sha256": "138b4d0ee6a45e3e76d94619926d1d341d7ce4ffc9c37a79c432b479d5e445d4"
+    },
+    "implementation-1": {
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-tags",
+        "integration",
+        "-run",
+        "^TestCallableJoin(Runtime|Modes|Controls|LateReply|ControlIdentities)$",
+        "-count=1",
+        "-timeout=5m",
+        "./internal/substitutiontest",
+        "./examples/callablejoin"
+      ],
+      "changed_during_run": [],
+      "exit": 0,
+      "leaves": 20,
+      "path": "implementation-1/command.json.gz",
+      "records": 47,
+      "sha256": "3ba3cfc54a2c46105126f504c8e4b81bc78b78f87e6cfbbb7968e8d554ad10df",
+      "source_snapshot_sha256": "763a393d6d746230c9e900c7bc3c98e704a23cbe005e3253f5aae8691970a116"
+    },
+    "implementation-2": {
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-tags",
+        "integration",
+        "-run",
+        "^TestCallableJoin(Runtime|Modes|Controls|LateReply|Decoder|Prefixes|ControlIdentities)$",
+        "-count=1",
+        "-timeout=5m",
+        "./internal/substitutiontest",
+        "./examples/callablejoin"
+      ],
+      "changed_during_run": [],
+      "exit": 0,
+      "leaves": 29,
+      "path": "implementation-2/command.json.gz",
+      "records": 68,
+      "sha256": "095cf9b0993ebb31d353cbdac21d1a6016e264e3930fbacae53a96235f709cfb",
+      "source_snapshot_sha256": "6c19eb2c8e4d04aa6a74a8bc4648cfa26a1a3cb9ae3ed7c83786264d70dc9149"
+    },
+    "normal": {
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-tags",
+        "integration",
+        "-run",
+        "^TestCallableJoin(Runtime|Modes|Controls|LateReply|Decoder|Prefixes|ControlIdentities)$",
+        "-count=1",
+        "-timeout=5m",
+        "./internal/substitutiontest",
+        "./examples/callablejoin"
+      ],
+      "changed_during_run": [],
+      "exit": 0,
+      "leaves": 29,
+      "path": "normal/command.json.gz",
+      "records": 68,
+      "sha256": "a676754f06b996aea91055f0ef62040202987c8535c58fa1c7ff7086af2f7922",
+      "source_snapshot_sha256": "138b4d0ee6a45e3e76d94619926d1d341d7ce4ffc9c37a79c432b479d5e445d4"
+    },
+    "race": {
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-race",
+        "-tags",
+        "integration",
+        "-run",
+        "^TestCallableJoin(Runtime|Modes|Controls|LateReply|Decoder|Prefixes|ControlIdentities)$",
+        "-count=1",
+        "-timeout=10m",
+        "./internal/substitutiontest",
+        "./examples/callablejoin"
+      ],
+      "changed_during_run": [],
+      "exit": 0,
+      "leaves": 29,
+      "path": "race/command.json.gz",
+      "records": 68,
+      "sha256": "66702b4ad62280c43bb047b1d617d5b2579bc065492e686ef8848286c9eff08e",
+      "source_snapshot_sha256": "138b4d0ee6a45e3e76d94619926d1d341d7ce4ffc9c37a79c432b479d5e445d4"
+    },
+    "red-controls": {
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-run",
+        "^TestCallableJoinControlIdentities$",
+        "-count=1",
+        "./examples/callablejoin"
+      ],
+      "changed_during_run": [],
+      "exit": 1,
+      "leaves": 0,
+      "path": "red-controls/command.json.gz",
+      "records": 0,
+      "sha256": "bb0253902ecdd0f4de019cc6a1b5d419084b704e9e7b26c4225847f9295f97e3",
+      "source_snapshot_sha256": "55a25d5bfc1bb575cb14cbf7a96814599151b724cd1c864e44b2963d35b9a043"
+    }
+  },
+  "controller_static": {
+    "attribution": "controller executed eight static commands; no Task4 rerun",
+    "path": "../core/final-static.json.gz",
+    "sha256": "a645a99a179067c9a06a8944b2d19a07f98237aa0ee8653b200d73db9d2dba58"
+  },
+  "files": {
+    "README.md": {
+      "bytes": 10166,
+      "sha256": "68d8e590b36735f6aaffc5b487c5df40e945fda0d466e9b42668dc60c0267676"
+    },
+    "audit-attempt1/command.json.gz": {
+      "bytes": 19914,
+      "sha256": "96492e4e292dcbf7d57fb2cd38a0f7f43d80b3ce49245303eb5eafccdcccde5a"
+    },
+    "audit-attempt1/sources.tar.gz": {
+      "bytes": 743568,
+      "sha256": "6958b834869e8832bb9df26ed775a1a3853dfb79959f4b9983b168b0cf6c085d"
+    },
+    "audit-final/command.json.gz": {
+      "bytes": 20194,
+      "sha256": "c1b6f9fbd71fa62e76341c1c7a40a097c867531c211c4c2dea95d45cae3de0db"
+    },
+    "audit-final/sources.tar.gz": {
+      "bytes": 744551,
+      "sha256": "138b4d0ee6a45e3e76d94619926d1d341d7ce4ffc9c37a79c432b479d5e445d4"
+    },
+    "audit-normal/command.json.gz": {
+      "bytes": 19908,
+      "sha256": "6bea8742652d301bcedda5c897299e1a7d68ac01c0f60d0720690ef330322e0e"
+    },
+    "audit-normal/sources.tar.gz": {
+      "bytes": 744551,
+      "sha256": "138b4d0ee6a45e3e76d94619926d1d341d7ce4ffc9c37a79c432b479d5e445d4"
+    },
+    "audit.py": {
+      "bytes": 36425,
+      "sha256": "821a1f70f8f4e5f0d512492f8b48ec865948ca59f96018bfc29601ba84bf1c3f"
+    },
+    "capture.py": {
+      "bytes": 4145,
+      "sha256": "fbe078463ac224fd6ba0376c9e17a50ec3c76e71c47d32c6bc3156a535b66211"
+    },
+    "discovery/command.json.gz": {
+      "bytes": 18305,
+      "sha256": "bbd6a0ee149e2422fe2951951d602950ccc525d5ed96e1a3a342abe995c653ec"
+    },
+    "discovery/sources.tar.gz": {
+      "bytes": 744551,
+      "sha256": "138b4d0ee6a45e3e76d94619926d1d341d7ce4ffc9c37a79c432b479d5e445d4"
+    },
+    "historical-normal/command.json.gz": {
+      "bytes": 1256307,
+      "sha256": "7b8a2736c774a3a460dc2fd96dc00b44351825a2ec1f30a2229f7988af475ede"
+    },
+    "historical-normal/sources.tar.gz": {
+      "bytes": 744551,
+      "sha256": "138b4d0ee6a45e3e76d94619926d1d341d7ce4ffc9c37a79c432b479d5e445d4"
+    },
+    "historical-race/command.json.gz": {
+      "bytes": 1256936,
+      "sha256": "4ee23efb3e66caa90dae3331727167315abaa34accb347e67c251c0a84d1e95a"
+    },
+    "historical-race/sources.tar.gz": {
+      "bytes": 744551,
+      "sha256": "138b4d0ee6a45e3e76d94619926d1d341d7ce4ffc9c37a79c432b479d5e445d4"
+    },
+    "implementation-1/command.json.gz": {
+      "bytes": 764925,
+      "sha256": "3ba3cfc54a2c46105126f504c8e4b81bc78b78f87e6cfbbb7968e8d554ad10df"
+    },
+    "implementation-1/sources.tar.gz": {
+      "bytes": 732572,
+      "sha256": "763a393d6d746230c9e900c7bc3c98e704a23cbe005e3253f5aae8691970a116"
+    },
+    "implementation-2/command.json.gz": {
+      "bytes": 1231535,
+      "sha256": "095cf9b0993ebb31d353cbdac21d1a6016e264e3930fbacae53a96235f709cfb"
+    },
+    "implementation-2/sources.tar.gz": {
+      "bytes": 734254,
+      "sha256": "6c19eb2c8e4d04aa6a74a8bc4648cfa26a1a3cb9ae3ed7c83786264d70dc9149"
+    },
+    "normal/command.json.gz": {
+      "bytes": 1329373,
+      "sha256": "a676754f06b996aea91055f0ef62040202987c8535c58fa1c7ff7086af2f7922"
+    },
+    "normal/sources.tar.gz": {
+      "bytes": 744551,
+      "sha256": "138b4d0ee6a45e3e76d94619926d1d341d7ce4ffc9c37a79c432b479d5e445d4"
+    },
+    "race/command.json.gz": {
+      "bytes": 1330070,
+      "sha256": "66702b4ad62280c43bb047b1d617d5b2579bc065492e686ef8848286c9eff08e"
+    },
+    "race/sources.tar.gz": {
+      "bytes": 744551,
+      "sha256": "138b4d0ee6a45e3e76d94619926d1d341d7ce4ffc9c37a79c432b479d5e445d4"
+    },
+    "red-controls/command.json.gz": {
+      "bytes": 18154,
+      "sha256": "bb0253902ecdd0f4de019cc6a1b5d419084b704e9e7b26c4225847f9295f97e3"
+    },
+    "red-controls/sources.tar.gz": {
+      "bytes": 718172,
+      "sha256": "55a25d5bfc1bb575cb14cbf7a96814599151b724cd1c864e44b2963d35b9a043"
+    }
+  },
+  "final_source_aggregate_sha256": "8b0c3e9b628dfbda57822df8e0005369635831ff99ed76ae9c3d075630d92a7d",
+  "final_source_files": 405,
+  "final_sources_equal": true,
+  "historical_wrapper": {
+    "count": 48,
+    "normal_race_equal": true,
+    "value_sha256": "d0b8826d5f037dfafb18f902f987e3ace0a1233590c6b162fe4a0a14e81ae221"
+  },
+  "metrics": {
+    "normal": {
+      "observed_maxima_not_universal_bounds": {
+        "intent_array_bytes": 605,
+        "observation_bytes": 880,
+        "program_bytes": 25387,
+        "projection_bytes": 1548,
+        "report_bytes": 312
+      },
+      "principal_samples": [
+        {
+          "candidate": "a",
+          "commits": 13,
+          "control": "",
+          "decision": null,
+          "dispatch_transitions": 5,
+          "kind": "mode",
+          "request": {
+            "ID": 1,
+            "Mode": "pending",
+            "Value": 0
+          }
+        },
+        {
+          "candidate": "b",
+          "commits": 74,
+          "control": "",
+          "decision": "candidate_missing_reply",
+          "dispatch_transitions": 11,
+          "kind": "late-reply",
+          "request": {
+            "ID": 1,
+            "Mode": "absent",
+            "Value": 0
+          }
+        },
+        {
+          "candidate": "a",
+          "commits": 22,
+          "control": "no-report-success",
+          "decision": "invalid_join_outcome",
+          "dispatch_transitions": 8,
+          "kind": "control",
+          "request": {
+            "ID": 1,
+            "Mode": "answer",
+            "Value": 0
+          }
+        },
+        {
+          "candidate": "b",
+          "commits": 85,
+          "control": "",
+          "decision": "answer",
+          "dispatch_transitions": 12,
+          "kind": "automatic",
+          "request": {
+            "ID": 1,
+            "Mode": "answer",
+            "Value": 0
+          }
+        },
+        {
+          "candidate": "b",
+          "commits": 67,
+          "control": "false-candidate-failed",
+          "decision": "candidate_failed",
+          "dispatch_transitions": 11,
+          "kind": "control",
+          "request": {
+            "ID": 1,
+            "Mode": "absent",
+            "Value": 0
+          }
+        },
+        {
+          "candidate": "a",
+          "commits": 22,
+          "control": "no-report-failure",
+          "decision": "invalid_join_outcome",
+          "dispatch_transitions": 8,
+          "kind": "control",
+          "request": {
+            "ID": 1,
+            "Mode": "answer",
+            "Value": 0
+          }
+        },
+        {
+          "candidate": "b",
+          "commits": 85,
+          "control": "",
+          "decision": "answer",
+          "dispatch_transitions": 12,
+          "kind": "automatic",
+          "request": {
+            "ID": 2,
+            "Mode": "answer",
+            "Value": 0
+          }
+        },
+        {
+          "candidate": "b",
+          "commits": 22,
+          "control": "",
+          "decision": null,
+          "dispatch_transitions": 8,
+          "kind": "mode",
+          "request": {
+            "ID": 1,
+            "Mode": "pending",
+            "Value": 0
+          }
+        },
+        {
+          "candidate": "b",
+          "commits": 84,
+          "control": "",
+          "decision": "answer",
+          "dispatch_transitions": 12,
+          "kind": "automatic",
+          "request": {
+            "ID": 2,
+            "Mode": "answer",
+            "Value": 1
+          }
+        },
+        {
+          "candidate": "a",
+          "commits": 65,
+          "control": "",
+          "decision": "candidate_missing_reply",
+          "dispatch_transitions": 8,
+          "kind": "mode",
+          "request": {
+            "ID": 1,
+            "Mode": "absent",
+            "Value": 0
+          }
+        },
+        {
+          "candidate": "b",
+          "commits": 84,
+          "control": "",
+          "decision": "answer",
+          "dispatch_transitions": 12,
+          "kind": "automatic",
+          "request": {
+            "ID": 1,
+            "Mode": "answer",
+            "Value": 1
+          }
+        },
+        {
+          "candidate": "a",
+          "commits": 78,
+          "control": "",
+          "decision": "answer",
+          "dispatch_transitions": 9,
+          "kind": "automatic",
+          "request": {
+            "ID": 2,
+            "Mode": "answer",
+            "Value": 0
+          }
+        },
+        {
+          "candidate": "a",
+          "commits": 75,
+          "control": "",
+          "decision": "answer",
+          "dispatch_transitions": 9,
+          "kind": "automatic",
+          "request": {
+            "ID": 1,
+            "Mode": "answer",
+            "Value": 1
+          }
+        },
+        {
+          "candidate": "a",
+          "commits": 60,
+          "control": "absent-deliberate-failure",
+          "decision": "candidate_failed",
+          "dispatch_transitions": 8,
+          "kind": "control",
+          "request": {
+            "ID": 1,
+            "Mode": "absent",
+            "Value": 0
+          }
+        },
+        {
+          "candidate": "b",
+          "commits": 74,
+          "control": "",
+          "decision": "candidate_missing_reply",
+          "dispatch_transitions": 11,
+          "kind": "mode",
+          "request": {
+            "ID": 1,
+            "Mode": "absent",
+            "Value": 0
+          }
+        },
+        {
+          "candidate": "a",
+          "commits": 75,
+          "control": "",
+          "decision": "answer",
+          "dispatch_transitions": 9,
+          "kind": "automatic",
+          "request": {
+            "ID": 2,
+            "Mode": "answer",
+            "Value": 1
+          }
+        },
+        {
+          "candidate": "a",
+          "commits": 78,
+          "control": "",
+          "decision": "answer",
+          "dispatch_transitions": 9,
+          "kind": "automatic",
+          "request": {
+            "ID": 1,
+            "Mode": "answer",
+            "Value": 0
+          }
+        },
+        {
+          "candidate": "b",
+          "commits": 71,
+          "control": "",
+          "decision": "candidate_failed",
+          "dispatch_transitions": 11,
+          "kind": "mode",
+          "request": {
+            "ID": 1,
+            "Mode": "fail",
+            "Value": 0
+          }
+        },
+        {
+          "candidate": "a",
+          "commits": 62,
+          "control": "",
+          "decision": "candidate_failed",
+          "dispatch_transitions": 8,
+          "kind": "mode",
+          "request": {
+            "ID": 1,
+            "Mode": "fail",
+            "Value": 0
+          }
+        }
+      ],
+      "static_mapping_program_pcs": {
+        "1a49ffc3a8178ef55849899226e5962f9b4c0841e5e0703a0ba4d7b20530fab8": 64,
+        "1bcc4e9e36713856fc53595d554a6e459a7d15aef0d49e16f681418d4520059b": 64,
+        "1e1eed664087e2f097eb3f6cea56c6efe59d2b054c23a1372323bae3afc31f76": 33,
+        "272c68dfe7c2b422c9819a8caf80b0277f35fb91859c9ddf80915cf46fdc4725": 64,
+        "276e370e023eb3106e01e82131d4c8742365af07cddfa959fc579822fdd888c0": 2,
+        "473f45487754b65bd4a1cc15019027cf2fffbdb4567c5fd3d52407b0fa11f896": 7,
+        "5e8fee04fd8855c501c1c20b87fdc4c2a1f96d6f4152baba3a7b5a48acb45621": 64,
+        "6503907796c54a0267aebb064366bf8ee2462170975422780b089fe60ef85e3d": 58,
+        "66b0b33b2db837c6ada4cffd605860572bf8d49ac9a9a2288af29521f7cc376c": 64,
+        "698256075f67b360cacb0b20e16c5aeafc561c76255aeb3fd1ca7481ef9e9a6b": 7,
+        "74152796cc6bb845eee44cc19813210a85ee26173629dd76e446fd042a85d5b7": 13,
+        "745546979eb7dc81a47c4b5c8bf4c651b62c323fec390ca49128cbc2554cbc09": 7,
+        "ca5ab7efdb73587e2664e02f9cea2928fde178190768aa844a2c88e14c90aa67": 16,
+        "ce195a97e5680854255746921977b79f16b77862fadfb4d6e7b86b2d0bdb11c5": 64,
+        "d19cc8d312c2d1f16e10fe71d9b891400bf49b5d31f0d63226c77521efe63cf8": 3,
+        "e87d0f268da24f572e9f8fd14a194a8dd96551838708c186dadd9ac5a3b68773": 58,
+        "fd9d3e82946594e8114a84a156f56594d4f9dac6448656ff86e090aadb1b32eb": 58
+      }
+    },
+    "race": {
+      "observed_maxima_not_universal_bounds": {
+        "intent_array_bytes": 605,
+        "observation_bytes": 880,
+        "program_bytes": 25387,
+        "projection_bytes": 1548,
+        "report_bytes": 312
+      },
+      "principal_samples": [
+        {
+          "candidate": "a",
+          "commits": 13,
+          "control": "",
+          "decision": null,
+          "dispatch_transitions": 5,
+          "kind": "mode",
+          "request": {
+            "ID": 1,
+            "Mode": "pending",
+            "Value": 0
+          }
+        },
+        {
+          "candidate": "b",
+          "commits": 74,
+          "control": "",
+          "decision": "candidate_missing_reply",
+          "dispatch_transitions": 11,
+          "kind": "late-reply",
+          "request": {
+            "ID": 1,
+            "Mode": "absent",
+            "Value": 0
+          }
+        },
+        {
+          "candidate": "a",
+          "commits": 22,
+          "control": "no-report-success",
+          "decision": "invalid_join_outcome",
+          "dispatch_transitions": 8,
+          "kind": "control",
+          "request": {
+            "ID": 1,
+            "Mode": "answer",
+            "Value": 0
+          }
+        },
+        {
+          "candidate": "b",
+          "commits": 85,
+          "control": "",
+          "decision": "answer",
+          "dispatch_transitions": 12,
+          "kind": "automatic",
+          "request": {
+            "ID": 1,
+            "Mode": "answer",
+            "Value": 0
+          }
+        },
+        {
+          "candidate": "b",
+          "commits": 67,
+          "control": "false-candidate-failed",
+          "decision": "candidate_failed",
+          "dispatch_transitions": 11,
+          "kind": "control",
+          "request": {
+            "ID": 1,
+            "Mode": "absent",
+            "Value": 0
+          }
+        },
+        {
+          "candidate": "a",
+          "commits": 22,
+          "control": "no-report-failure",
+          "decision": "invalid_join_outcome",
+          "dispatch_transitions": 8,
+          "kind": "control",
+          "request": {
+            "ID": 1,
+            "Mode": "answer",
+            "Value": 0
+          }
+        },
+        {
+          "candidate": "b",
+          "commits": 85,
+          "control": "",
+          "decision": "answer",
+          "dispatch_transitions": 12,
+          "kind": "automatic",
+          "request": {
+            "ID": 2,
+            "Mode": "answer",
+            "Value": 0
+          }
+        },
+        {
+          "candidate": "b",
+          "commits": 22,
+          "control": "",
+          "decision": null,
+          "dispatch_transitions": 8,
+          "kind": "mode",
+          "request": {
+            "ID": 1,
+            "Mode": "pending",
+            "Value": 0
+          }
+        },
+        {
+          "candidate": "b",
+          "commits": 84,
+          "control": "",
+          "decision": "answer",
+          "dispatch_transitions": 12,
+          "kind": "automatic",
+          "request": {
+            "ID": 2,
+            "Mode": "answer",
+            "Value": 1
+          }
+        },
+        {
+          "candidate": "a",
+          "commits": 65,
+          "control": "",
+          "decision": "candidate_missing_reply",
+          "dispatch_transitions": 8,
+          "kind": "mode",
+          "request": {
+            "ID": 1,
+            "Mode": "absent",
+            "Value": 0
+          }
+        },
+        {
+          "candidate": "b",
+          "commits": 84,
+          "control": "",
+          "decision": "answer",
+          "dispatch_transitions": 12,
+          "kind": "automatic",
+          "request": {
+            "ID": 1,
+            "Mode": "answer",
+            "Value": 1
+          }
+        },
+        {
+          "candidate": "a",
+          "commits": 78,
+          "control": "",
+          "decision": "answer",
+          "dispatch_transitions": 9,
+          "kind": "automatic",
+          "request": {
+            "ID": 2,
+            "Mode": "answer",
+            "Value": 0
+          }
+        },
+        {
+          "candidate": "a",
+          "commits": 75,
+          "control": "",
+          "decision": "answer",
+          "dispatch_transitions": 9,
+          "kind": "automatic",
+          "request": {
+            "ID": 1,
+            "Mode": "answer",
+            "Value": 1
+          }
+        },
+        {
+          "candidate": "a",
+          "commits": 60,
+          "control": "absent-deliberate-failure",
+          "decision": "candidate_failed",
+          "dispatch_transitions": 8,
+          "kind": "control",
+          "request": {
+            "ID": 1,
+            "Mode": "absent",
+            "Value": 0
+          }
+        },
+        {
+          "candidate": "b",
+          "commits": 74,
+          "control": "",
+          "decision": "candidate_missing_reply",
+          "dispatch_transitions": 11,
+          "kind": "mode",
+          "request": {
+            "ID": 1,
+            "Mode": "absent",
+            "Value": 0
+          }
+        },
+        {
+          "candidate": "a",
+          "commits": 75,
+          "control": "",
+          "decision": "answer",
+          "dispatch_transitions": 9,
+          "kind": "automatic",
+          "request": {
+            "ID": 2,
+            "Mode": "answer",
+            "Value": 1
+          }
+        },
+        {
+          "candidate": "a",
+          "commits": 78,
+          "control": "",
+          "decision": "answer",
+          "dispatch_transitions": 9,
+          "kind": "automatic",
+          "request": {
+            "ID": 1,
+            "Mode": "answer",
+            "Value": 0
+          }
+        },
+        {
+          "candidate": "b",
+          "commits": 71,
+          "control": "",
+          "decision": "candidate_failed",
+          "dispatch_transitions": 11,
+          "kind": "mode",
+          "request": {
+            "ID": 1,
+            "Mode": "fail",
+            "Value": 0
+          }
+        },
+        {
+          "candidate": "a",
+          "commits": 62,
+          "control": "",
+          "decision": "candidate_failed",
+          "dispatch_transitions": 8,
+          "kind": "mode",
+          "request": {
+            "ID": 1,
+            "Mode": "fail",
+            "Value": 0
+          }
+        }
+      ],
+      "static_mapping_program_pcs": {
+        "1a49ffc3a8178ef55849899226e5962f9b4c0841e5e0703a0ba4d7b20530fab8": 64,
+        "1bcc4e9e36713856fc53595d554a6e459a7d15aef0d49e16f681418d4520059b": 64,
+        "1e1eed664087e2f097eb3f6cea56c6efe59d2b054c23a1372323bae3afc31f76": 33,
+        "272c68dfe7c2b422c9819a8caf80b0277f35fb91859c9ddf80915cf46fdc4725": 64,
+        "276e370e023eb3106e01e82131d4c8742365af07cddfa959fc579822fdd888c0": 2,
+        "473f45487754b65bd4a1cc15019027cf2fffbdb4567c5fd3d52407b0fa11f896": 7,
+        "5e8fee04fd8855c501c1c20b87fdc4c2a1f96d6f4152baba3a7b5a48acb45621": 64,
+        "6503907796c54a0267aebb064366bf8ee2462170975422780b089fe60ef85e3d": 58,
+        "66b0b33b2db837c6ada4cffd605860572bf8d49ac9a9a2288af29521f7cc376c": 64,
+        "698256075f67b360cacb0b20e16c5aeafc561c76255aeb3fd1ca7481ef9e9a6b": 7,
+        "74152796cc6bb845eee44cc19813210a85ee26173629dd76e446fd042a85d5b7": 13,
+        "745546979eb7dc81a47c4b5c8bf4c651b62c323fec390ca49128cbc2554cbc09": 7,
+        "ca5ab7efdb73587e2664e02f9cea2928fde178190768aa844a2c88e14c90aa67": 16,
+        "ce195a97e5680854255746921977b79f16b77862fadfb4d6e7b86b2d0bdb11c5": 64,
+        "d19cc8d312c2d1f16e10fe71d9b891400bf49b5d31f0d63226c77521efe63cf8": 3,
+        "e87d0f268da24f572e9f8fd14a194a8dd96551838708c186dadd9ac5a3b68773": 58,
+        "fd9d3e82946594e8114a84a156f56594d4f9dac6448656ff86e090aadb1b32eb": 58
+      }
+    }
+  },
+  "status": "implementation qualified; independent Task4 review pending"
+}

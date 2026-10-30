@@ -1,0 +1,7 @@
+{
+  "category": "capture-only failure, no inner test verdict claimed",
+  "attempted_labels": ["construction-red", "construction-normal-1"],
+  "known_error": "PermissionError: [Errno 1] Operation not permitted writing evidence/model/construction-normal-1.json.gz",
+  "explanation": "The shell subprocess could not write the worktree evidence path. The initial capture implementation had no durable spool, so its inner test output and exit are unavailable and are not reported as RED or GREEN. The first attempted label likewise produced no record; its outcome is unknown. Neither missing record is behavioral qualification.",
+  "correction": "Stage the complete record under /private/tmp before copying it into authorized evidence/model; use a narrowly authorized shell write for the recorded rerun. Preserve this capture error."
+}

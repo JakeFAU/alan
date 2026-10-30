@@ -1,0 +1,39 @@
+{
+  "qualification": "excluded: verification-scope mistake; interrupted by controller instruction",
+  "argv": [
+    "go",
+    "test",
+    "-json",
+    "-count=1",
+    "./..."
+  ],
+  "cwd": ".",
+  "first_event": "2026-10-30T08:20:35.668231-04:00",
+  "last_event": "2026-10-30T08:22:54.005621-04:00",
+  "exit": 1,
+  "processes": {
+    "capture": 30683,
+    "go_test": 30696,
+    "adaptive_test": 30877
+  },
+  "signals": [
+    "SIGINT to go_test30696",
+    "SIGTERM to adaptive_test30877 after SIGINT did not stop it"
+  ],
+  "unfinished": [
+    {
+      "package": "github.com/JakeFAU/alan/examples/adaptive",
+      "test": "TestScalarAdaptiveValidationAndBounds"
+    },
+    {
+      "package": "github.com/JakeFAU/alan/examples/adaptive",
+      "test": "TestScalarAdaptiveValidationAndBounds/sixteen"
+    }
+  ],
+  "passed_leaves": 1098,
+  "test_failures": [],
+  "package_failures": [
+    "github.com/JakeFAU/alan/examples/adaptive"
+  ],
+  "note": "No completed failing test leaves. Adaptive package exit follows explicit termination during TestScalarAdaptiveValidationAndBounds/sixteen. Broader partial results do not qualify construction and no new reference output was used as a construction input."
+}
