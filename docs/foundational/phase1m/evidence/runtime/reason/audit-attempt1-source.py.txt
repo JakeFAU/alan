@@ -1,0 +1,207 @@
+#!/usr/bin/env python3
+"""Independent raw-row audit; no Go decoder, model classifier or reducer runs."""
+from pathlib import Path
+import ast, copy, gzip, hashlib, json
+
+ROOT=Path(__file__).resolve().parents[6]
+DEST=Path(__file__).resolve().parent
+sha=lambda b:hashlib.sha256(b).hexdigest()
+ns={'json':json}
+reused={}
+for relative,expected,names in [
+ ('docs/foundational/phase1l/evidence/runtime/audit.py','c2a9b4b47cceb132efd5293ebb12f8e901ba1af581f9db1dfaa78baa3d2458cf',['descriptor','links','source_authority']),
+ ('docs/foundational/phase1m/evidence/runtime/se/audit.py','dfdca160a8875109468a134e35ab9e4cc29552a6aebd145222dbf192fb67b6c8',['one','run_identity','root_projection','value','operand','raw_links'])]:
+    raw=(ROOT/relative).read_bytes();assert sha(raw)==expected
+    selected=[n for n in ast.parse(raw).body if isinstance(n,ast.FunctionDef) and n.name in names]
+    assert {n.name for n in selected}==set(names)
+    exec(compile(ast.Module(body=selected,type_ignores=[]),relative,'exec'),ns)
+    reused[relative]=dict(sha256=expected,functions=names)
+one,descriptor,raw_links,operand,value=(ns[n] for n in ['one','descriptor','raw_links','operand','value'])
+
+def read(label):return json.loads(gzip.decompress((DEST/(label+'.json.gz')).read_bytes()))
+def identity(row):return dict(Subject=row['subject'],Generation=row['generation'])
+def key(row):return row['subject'],row['generation'],row['sequence']
+def step(row,program,order,pre,post):
+    return dict(Run=identity(row),Program=program,Sequence=row['sequence'],Order=order,PC=pre['PC'],NextPC=post['PC'])
+
+def expected_tag(request,e,s):
+    # Expected table is independent of the program, Go model and requested mode.
+    if s['status']!=value('string','succeeded') or s['reason']!=value('string','member_succeeded') or s['response_present']!=value('bool',True):return 'invalid_outcome'
+    if s['response.id']!=request['request_id'] or s['response.value']!=value('int',0):return 'invalid_outcome'
+    if e['status']==value('string','succeeded'):
+        if e['reason']==value('string','member_succeeded') and e['response_present']==value('bool',True) and e['response.id']==request['request_id'] and e['response.value']==value('int',1-request['request_value']['Number']):return 'answer'
+    elif e['status']==value('string','failed') and e['response_present']==value('bool',False):
+        if e['reason']==value('string','member_failed'):return 'candidate_failed'
+        if e['reason']==value('string','missing_reply'):return 'candidate_missing_reply'
+    return 'invalid_outcome'
+
+def walk(snapshot,run):
+    """Read and verify actual instructions, including omitted absent payloads."""
+    tables=snapshot['Tables'];pid=run['program_id']
+    program=json.loads(one([r for r in tables['programs'] if r['id']==pid])['bytes'])
+    observations={r['id']:descriptor(r) for r in tables['observations']}
+    facts=[descriptor(r) for r in tables['composition_facts']]
+    rows=sorted([r for r in tables['history'] if identity(r)==identity(run)],key=lambda r:r['sequence'])
+    pre=json.loads(run['initial']);result=[]
+    for sequence,row in enumerate(rows,1):
+        assert row['sequence']==sequence and pre['Status']=='open'
+        instruction=program['Code'][pre['PC']];post=json.loads(row['successor']);data=copy.deepcopy(pre['Data'])
+        pc=pre['PC']+1;status='open';selected=row['selected_observation'];intents=json.loads(row['intents'])
+        op=instruction['Op']
+        if op=='emit':
+            assert len(intents)==1
+            if instruction['Dst']:data[instruction['Dst']]=value('string',intents[0]['ID'])
+        elif op=='receive':
+            assert selected and not intents
+            observed=observations[selected]
+            for field,dst in instruction['Bind'].items():
+                if field in observed['Payload']:data[dst]=observed['Payload'][field]
+        elif op=='set':data[instruction['Dst']]=operand(instruction['A'],data)
+        elif op=='branch':pc=instruction['Target'] if operand(instruction['A'],data)==operand(instruction['B'],data) else instruction['Otherwise']
+        elif op=='jump':pc=instruction['Target']
+        elif op=='end':pc=pre['PC'];status=instruction['Outcome']
+        else:raise AssertionError(op)
+        if op!='receive':assert not selected
+        if op!='emit':assert not intents
+        assert post==dict(PC=pc,Status=status,Data=data),(identity(run),sequence,pre['PC'])
+        fact=one([f for f in facts if f['Kind']=='execution' and f['Run']==identity(run) and f['Sequence']==sequence])
+        result.append(dict(row=row,pre=pre,post=post,instruction=instruction,step=step(row,pid,fact['Order'],pre,post)))
+        pre=post
+    assert pre==json.loads(run['projection']) and len(rows)==run['sequence']
+    return program,result
+
+qualification=json.loads(gzip.decompress((ROOT/'docs/foundational/phase1m/evidence/model/reason-qualification/records.json.gz').read_bytes()))
+qualified_code=qualification['artifact_inputs']['a']['Parent']['Code']
+pending_map={r['program_id']:r for r in qualification['correspondence']['pending_mapping']}
+
+def audit_record(record,compare=True):
+    s=record['inspection'];tables=s['Tables'];causal=raw_links(s)
+    for r in tables['programs']:assert sha(r['bytes'].encode())==r['id']
+    root=one([r for r in tables['runs'] if r['subject']=='root'])
+    program,history=walk(s,root)
+    # All tested bindings/controls use the same authored policy after the joins.
+    assert program['Code'][4:]==qualified_code[4:]
+    observations={r['id']:descriptor(r) for r in tables['observations']}
+    initial=json.loads(root['initial'])['Data'];selected={};classification=None;terminal=None
+    for h in history:
+        seq=h['row']['sequence'];instruction=h['instruction'];post=h['post']
+        if instruction['Op']=='receive':
+            role='s' if h['pre']['PC']==2 else 'e';assert h['pre']['PC'] in [2,3]
+            observation=observations[h['row']['selected_observation']]
+            assert observation['ID']==causal[role]['OutcomeObservation'] and seq==causal[role]['ConsumptionSequence']
+            selected[role]=dict(Step=h['step'],Observation=observation,Bind=instruction['Bind'])
+        for item in selected.values():
+            for field,dst in item['Bind'].items():
+                if field in item['Observation']['Payload']:assert post['Data'][dst]==item['Observation']['Payload'][field]
+                else:assert dst not in post['Data']
+        if instruction['Op']=='set' and instruction['Dst']=='classification':
+            assert classification is None and set(selected)=={'s','e'}
+            assert selected['s']['Step']['Sequence']<selected['e']['Step']['Sequence']<seq
+            actual=post['Data']['classification']['Text']
+            assert actual==instruction['A']['Literal']['Text']==expected_tag(initial,selected['e']['Observation']['Payload'],selected['s']['Observation']['Payload'])
+            end=program['Code'][post['PC']];assert end['Op']=='end' and post['PC']==h['pre']['PC']+1
+            assert end['Outcome']==('succeeded' if actual=='answer' else 'failed')
+            classification=dict(Step=h['step'],Tag=actual,Decision=end['Outcome'],Consumed=copy.deepcopy(selected))
+        if instruction['Op']=='end':
+            assert classification and terminal is None and classification['Step']['Sequence']+1==seq
+            assert h['pre']['PC']==classification['Step']['NextPC'] and post['Status']==classification['Decision']
+            terminal=h['step']
+    pending=None
+    member=causal['e']['Member'];candidate=one([r for r in tables['runs'] if identity(r)==member])
+    cp=json.loads(candidate['projection']);mapping=pending_map.get(candidate['program_id'])
+    if cp['Status']=='open' and mapping and cp['PC']==mapping['unmatched_receive_pc']:
+        code,ch=walk(s,candidate)
+        arrival=ch[-1];assert arrival['step']['PC']==mapping['branch_pc'] and arrival['step']['NextPC']==mapping['unmatched_receive_pc']
+        assert arrival['instruction']['Op']=='branch' and arrival['instruction']['Otherwise']==cp['PC']
+        assert operand(arrival['instruction']['A'],arrival['pre']['Data'])!=operand(arrival['instruction']['B'],arrival['pre']['Data'])
+        assert ch[0]['row']['selected_observation']==causal['e']['RequestObservation']
+        original=code['Code'][cp['PC']]['Match'];assert original==mapping['match']==code['Code'][0]['Match']
+        binding=one([descriptor(r) for r in tables['composition_bindings'] if descriptor(r)['OperationID']==causal['e']['Operation']])
+        resolved=copy.deepcopy(original)
+        resolved['Source']['Literal']=value('string',binding['Caller']['Subject']);resolved['Generation']['Literal']=value('int',binding['Caller']['Generation'])
+        resolved['Operation']['Literal']=value('string',causal['e']['Operation']);resolved['Provenance']='runtime-invocation-request'
+        for row in tables['observations']:
+            o=descriptor(row)
+            matching=o['Run']==member and o['Kind']==resolved['Kind'] and o['Provenance']==resolved['Provenance'] and o['Source']==binding['Caller']['Subject'] and o['SourceGeneration']==binding['Caller']['Generation'] and o['Operation']==causal['e']['Operation'] and o['Obligation']==resolved['Obligation']['Literal']['Text']
+            assert not(matching and row['consumed_sequence'] is None)
+        helper=''
+        if mapping['binding']=='b':
+            helper=causal['h']['OutcomeObservation'];consumed=one([h for h in ch if h['row']['selected_observation']==helper])
+            assert consumed['pre']['PC']==2 and consumed['step']['Order']<arrival['step']['Order']
+            p=observations[helper]['Payload'];assert p['status']==value('string','succeeded') and p['reason']==value('string','member_succeeded') and p['response_present']==value('bool',True)
+            assert p['response.id']==initial['request_id'] and p['response.value']==value('int',1-initial['request_value']['Number'])
+        assert causal['e']['PublicationOrder']==causal['e']['ConsumptionSequence']==0
+        assert not classification and not terminal and 'classification' not in json.loads(root['projection'])['Data']
+        pending=dict(Step=arrival['step'],Operation=causal['e']['Operation'],RequestObservation=causal['e']['RequestObservation'],HelperObservation=helper,ResolvedMatch=resolved)
+    if terminal:
+        assert s['Roots'][0]['Outcome']['Status']==classification['Decision']
+        assert s['Roots'][0]['Outcome']['Reason']=='member_'+classification['Decision']
+    if compare:
+        trace=record['trace'];assert trace['RawValid'] and not trace['Prefix']
+        assert trace['Consumptions']==selected and trace['Classification']==classification and trace['Terminal']==terminal and trace['Pending']==pending
+        events=trace['Events'];classes=[(i,e) for i,e in enumerate(events) if e['Fact']['Kind']=='parent_classify']
+        if classification:
+            index,event=one(classes);assert event['Classification']==classification['Tag']
+            assert events[index+1]['Fact']['Kind']=='parent_decide' and events[index+1]['Fact']['Status']==classification['Decision']
+            assert all(event['Classification']=='' for event in events if event['Fact']['Kind']!='parent_classify')
+        else:assert not classes
+        for role,item in selected.items():
+            event=one([e['Fact'] for e in events if e['Fact']['Kind']=='outcome_consume' and e['Fact']['Operation']==role])
+            payload=item['Observation']['Payload'];assert event['Status']==payload['status']['Text'] and event['Reason']==payload['reason']['Text'] and event['Present']==payload['response_present']['Flag']
+        if pending:
+            index,event=one([(i,e) for i,e in enumerate(events) if e['Fact']['Kind']=='pending_receive'])
+            assert events[index-1]['Fact']['Kind']=='private_step' and event['Fact']['Operation']=='e'
+    return dict(classification=classification['Tag'] if classification else None,pending=bool(pending),terminal=bool(terminal),causality=causal)
+
+def main():
+    summary={}
+    for profile in ['normal','race']:
+        command=read('reason-'+profile);assert command['exit']==0 and command['sources_unchanged']
+        assert not [e for e in command['test_results'] if e['Action'] in ['fail','skip']]
+        assert len(command['selected_leaves'])==25
+        for path,digest in command['sources'].items():assert sha((ROOT/path).read_bytes())==digest,path
+        records=list(command['records'].values());kinds={}
+        for record in records:
+            if not isinstance(record,dict) or 'kind' not in record:continue
+            kind=record['kind'];kinds[kind]=kinds.get(kind,0)+1
+            if kind=='decoder-negative':
+                audit_record(dict(inspection=record['source_inspection']),False)
+                rejected=False
+                try:audit_record(dict(inspection=record['mutated_inspection']),False)
+                except (AssertionError,KeyError,IndexError):rejected=True
+                assert rejected and record['error'],record['mutation']
+                continue
+            result=audit_record(record);trace=record['trace'];control=record.get('control')
+            if kind in ['automatic','mode','classification-cut-completed']:
+                assert not trace['Component'] and not trace['Guarantee']
+                mode=record['config']['Request']['Mode'];want={'answer':'answer','fail':'candidate_failed','absent':'candidate_missing_reply','pending':None}[mode]
+                assert result['classification']==want and result['pending']==(mode=='pending')
+                name=record.get('candidate_name','b');charges=record['inspection']['Roots'][0]['Charges']
+                assert charges['Invocations']==charges['CreatedRuns']==(2 if name=='a' else 3) and charges['Effects']==0
+            elif kind=='classification-cut':
+                assert result['classification']=='candidate_missing_reply' and not result['terminal'] and trace['Guarantee'] and not trace['Component']
+                assert record['inspection']['Roots'][0]['Outcome'] is None
+            elif kind=='control':
+                assert trace['Guarantee'] and bool(trace['Component'])==(control in ['wrong-id','absent-deliberate-failure'])
+                if control=='absent-deliberate-failure':assert result['classification']=='candidate_failed' and trace['Consumptions']['e']['Observation']['Payload']['reason']['Text']=='member_failed' and record['config']['Request']['Mode']=='absent'
+                if control=='wrong-id':assert result['classification']=='invalid_outcome' and trace['Consumptions']['e']['Observation']['Payload']['response.id']['Number']==2
+                if control in ['s-fail','s-absent']:assert result['classification']=='invalid_outcome'
+                if control=='budget2':assert result['classification']=='candidate_failed' and record['inspection']['Roots'][0]['Charges']['Invocations']==2
+        assert kinds==dict(automatic=8,mode=6,control=5,**{'decoder-negative':5,'classification-cut':1,'classification-cut-completed':1})
+        baseline=read('baseline-'+profile);assert baseline['exit']==0 and baseline['sources_unchanged']
+        assert not [e for e in baseline['test_results'] if e['Action'] in ['fail','skip']]
+        equality=one([r for r in baseline['records'].values() if isinstance(r,dict) and r.get('archive')=='../../docs/foundational/phase1l/evidence/runtime/records.json.gz'])
+        assert equality['count']==48
+        # Whole historical trace/handles/verdict hashes match the original C_se capture.
+        prior=json.loads(gzip.decompress((DEST.parent/'se/wrapper-before.json.gz').read_bytes()))
+        prior_equality=one([r for k,r in prior['records'].items() if k.endswith('/equivalence.json.gz')])
+        assert equality==prior_equality
+        summary[profile]=dict(leaves=len(command['selected_leaves']),records=kinds,baseline_leaves=len(baseline['selected_leaves']),historical_exact_inspections=48)
+    output=dict(scope='Independent raw-row/instruction/table audit for the bounded Task6 samples; no universal or new recovery claim.',audit_source_sha256=sha(Path(__file__).read_bytes()),reused=reused,profiles=summary,qualification_archive_sha256=sha((ROOT/'docs/foundational/phase1m/evidence/model/reason-qualification/records.json.gz').read_bytes()))
+    (DEST/'audit.json').write_text(json.dumps(output,indent=2)+'\n')
+    commands={p.stem.removesuffix('.json'):json.loads(gzip.decompress(p.read_bytes())) for p in DEST.glob('*.json.gz')}
+    index=dict(scope=output['scope'],commands={label:{k:r[k] for k in ['argv','environment','exit','elapsed_seconds','selected_leaves','source_aggregate_sha256']} for label,r in commands.items()},files={p.name:dict(sha256=sha(p.read_bytes()),bytes=p.stat().st_size) for p in sorted(DEST.iterdir()) if p.is_file() and p.name!='index.json'},profiles=summary)
+    (DEST/'index.json').write_text(json.dumps(index,indent=2)+'\n')
+    print(json.dumps(summary,indent=2))
+
+if __name__=='__main__':main()

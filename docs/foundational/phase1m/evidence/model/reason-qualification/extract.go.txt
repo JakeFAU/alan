@@ -1,0 +1,108 @@
+package main
+
+import (
+	"bytes"
+	"crypto/sha256"
+	"encoding/json"
+	"fmt"
+	"os"
+	"reflect"
+
+	"github.com/JakeFAU/alan/author"
+	"github.com/JakeFAU/alan/examples/consumingpolicy"
+	"github.com/JakeFAU/alan/examples/substitution"
+	"github.com/JakeFAU/alan/examples/substitution/a"
+	"github.com/JakeFAU/alan/examples/substitution/b"
+	"github.com/JakeFAU/alan/runtime"
+)
+
+type record struct {
+	InputCases                                     []substitution.Request
+	CandidateID, SuccessorID, ParentID             string
+	CandidateSHA256, SuccessorSHA256, ParentSHA256 string
+	Candidate, Successor, Parent                   json.RawMessage
+	Provision                                      runtime.Provision
+	ProgramSHA256                                  map[string]string
+	FrozenTemplateExact, FrozenTemplateTrimmed     map[string]bool
+}
+
+func digest(raw []byte) string { return fmt.Sprintf("%x", sha256.Sum256(raw)) }
+
+func run() error {
+	if len(os.Args) != 2 {
+		return fmt.Errorf("expected output path")
+	}
+	out := map[string]record{}
+	for _, candidate := range []struct {
+		name  string
+		build func() (author.Template, error)
+	}{{"a", a.New}, {"b", b.New}} {
+		template, err := candidate.build()
+		if err != nil {
+			return err
+		}
+		config := substitution.Config{Request: substitution.Request{ID: 1, Value: 0, Mode: "answer"}, Limits: runtime.ResourceLimits{MaxInvocations: 3, MaxCreatedRuns: 3, MaxDepth: 2, MaxEffects: 0, MaxInFlight: 1}}
+		d, err := consumingpolicy.NewReason(template, config, consumingpolicy.Options{})
+		if err != nil {
+			return err
+		}
+		r := record{CandidateID: d.Candidate.ID(), SuccessorID: d.Successor.ID(), ParentID: d.Parent.ID(), CandidateSHA256: digest(d.Candidate.Bytes()), SuccessorSHA256: digest(d.Successor.Bytes()), ParentSHA256: digest(d.Parent.Bytes()), Candidate: d.Candidate.Bytes(), Successor: d.Successor.Bytes(), Parent: d.Parent.Bytes(), Provision: d.Provision, ProgramSHA256: map[string]string{}, FrozenTemplateExact: map[string]bool{}, FrozenTemplateTrimmed: map[string]bool{}}
+		for _, id := range []int64{1, 2} {
+			for _, value := range []int64{0, 1} {
+				for _, mode := range []string{"answer", "fail", "absent", "pending"} {
+				input := substitution.Request{ID: id, Value: value, Mode: mode}
+				otherConfig := config
+				otherConfig.Request = input
+				other, err := consumingpolicy.NewReason(template, otherConfig, consumingpolicy.Options{})
+				if err != nil {
+					return err
+				}
+				if !bytes.Equal(d.Parent.Bytes(), other.Parent.Bytes()) || !bytes.Equal(d.Candidate.Bytes(), other.Candidate.Bytes()) || !bytes.Equal(d.Successor.Bytes(), other.Successor.Bytes()) {
+					return fmt.Errorf("payload changed artifact identity")
+				}
+				if len(other.Provision.Runs) != 1 {
+					return fmt.Errorf("not one fixed parent")
+				}
+				actual := other.Provision.Runs[0].Projection.Data
+				if len(actual) != 3 || actual["request_id"].Number != id || actual["request_value"].Number != value || actual["request_mode"].Text != mode {
+					return fmt.Errorf("initial request changed")
+				}
+				other.Provision.Runs[0].Projection.Data = d.Provision.Runs[0].Projection.Data
+				if !reflect.DeepEqual(d.Provision, other.Provision) {
+					return fmt.Errorf("payload changed non-input provision")
+				}
+				r.InputCases = append(r.InputCases, input)
+				}
+			}
+		}
+		for _, p := range d.Provision.Programs {
+			r.ProgramSHA256[p.ID] = digest(p.Bytes)
+		}
+		for name, raw := range map[string][]byte{"candidate": d.Candidate.Bytes(), "s": d.Successor.Bytes()} {
+			path := "docs/foundational/phase1k/evidence/context/frozen/" + candidate.name + "-" + name + "-template.json"
+			frozen, err := os.ReadFile(path)
+			if err != nil {
+				return err
+			}
+			r.FrozenTemplateExact[name] = bytes.Equal(raw, frozen)
+			r.FrozenTemplateTrimmed[name] = bytes.Equal(raw, bytes.TrimSpace(frozen))
+		}
+		out[candidate.name] = r
+	}
+	raw, err := json.MarshalIndent(out, "", "  ")
+	if err != nil {
+		return err
+	}
+	if err = os.WriteFile(os.Args[1], append(raw, '\n'), 0644); err != nil {
+		return err
+	}
+	fmt.Printf("bindings=%d output_sha256=%s\n", len(out), digest(append(raw, '\n')))
+	return nil
+}
+
+func main() {
+	if err := run(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+}

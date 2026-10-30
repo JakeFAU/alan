@@ -1,6 +1,6 @@
 // Command consumer exposes Phase 1M through public imports in a separate module.
 // CLI/store lifecycle mechanics derive from examples/invocationjoin/consumer;
-// consumingpolicy independently constructs the S-first program.
+// consumingpolicy authors the S-first and explicit reason policies.
 package main
 
 import (
@@ -28,8 +28,8 @@ func execute(ctx context.Context, args []string, out io.Writer) error {
 	flags := flag.NewFlagSet(command, flag.ContinueOnError)
 	flags.SetOutput(io.Discard)
 	path := flags.String("db", "", "retained database")
-	candidate := flags.String("candidate", "a", "a, b or named probe")
-	policy := flags.String("policy", "s-first", "consuming policy: s-first")
+	candidate := flags.String("candidate", "a", "a, b, deliberate-failure or named probe")
+	policy := flags.String("policy", "s-first", "consuming policy: s-first or reason")
 	sMode := flags.String("s-mode", "answer", "answer, fail, absent or pending S")
 	id := flags.Int64("id", 1, "application id")
 	value := flags.Int64("value", 0, "Boolean integer")
@@ -43,7 +43,7 @@ func execute(ctx context.Context, args []string, out io.Writer) error {
 	if flags.NArg() != 0 || (*path == "" && command != "artifacts") {
 		return fmt.Errorf("-db is required; positional arguments are not accepted")
 	}
-	if *policy != "s-first" {
+	if *policy != "s-first" && *policy != "reason" {
 		return fmt.Errorf("unknown consuming policy %q", *policy)
 	}
 	encode := func(v any) error { return json.NewEncoder(out).Encode(v) }
@@ -56,13 +56,19 @@ func execute(ctx context.Context, args []string, out io.Writer) error {
 			c, err = a.New()
 		case "b":
 			c, err = b.New()
+		case "deliberate-failure":
+			c, err = consumingpolicy.DeliberateFailure()
 		default:
 			c, err = substitution.Probe(*candidate)
 		}
 		if err != nil {
 			return err
 		}
-		d, err := consumingpolicy.NewSFirst(c, substitution.Config{Request: substitution.Request{ID: *id, Value: *value, Mode: *mode}, Limits: runtime.ResourceLimits{MaxInvocations: *i, MaxCreatedRuns: *r, MaxDepth: *depth, MaxEffects: 0, MaxInFlight: 1}}, consumingpolicy.Options{SMode: *sMode})
+		build := consumingpolicy.NewSFirst
+		if *policy == "reason" {
+			build = consumingpolicy.NewReason
+		}
+		d, err := build(c, substitution.Config{Request: substitution.Request{ID: *id, Value: *value, Mode: *mode}, Limits: runtime.ResourceLimits{MaxInvocations: *i, MaxCreatedRuns: *r, MaxDepth: *depth, MaxEffects: 0, MaxInFlight: 1}}, consumingpolicy.Options{SMode: *sMode})
 		if err != nil {
 			return err
 		}

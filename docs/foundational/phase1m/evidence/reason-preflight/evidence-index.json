@@ -1,0 +1,5558 @@
+{
+  "started_utc": "2026-10-30T00:39:10.961582+00:00",
+  "purpose": "C_reason public construction preflight; not independent model or full audited domain",
+  "base_commit": "1f71b56148f2fd6ef41261b7caf2996e8eeb2533",
+  "source_hashes": {
+    "author/application.go": "29bdf9453b603293337d50e1bfaaf3c7bb2ec46a642fcf903aa7d09d297ab740",
+    "author/application_test.go": "f26b43931540580abd108fe9b1adcf01fe15fb03df58055643a3e2386f724778",
+    "author/author.go": "92db0faa7441fc1e4dd8864651627fbc478bc14251078cca225324aeb9d86662",
+    "author/collections_test.go": "673289e2b198b7d86b7204700932df5e6fc10480d9a644a455cd75f273231e4f",
+    "author/compile.go": "45e5ede143a60159d3beeb970c2e17adf1989f5c788fb4107e506034fbf58307",
+    "author/compile_test.go": "6f3c8591a4d8d10bb147102f1f71bf614a98f3d5458468dec914aa473e290e6f",
+    "author/external_test.go": "3176dab484f965f6a78c8333b8741ef552f1c057ef5102e23ea6be49faa122d8",
+    "author/identifiers.go": "feac498c9c4956cadd63d6042a45a3d6513fbdd864360ac9ad19054045ff04c6",
+    "author/invocations.go": "3e1a8592fedc3ab95e4a58f2ce12fd535027929b96d4b9a9852847ae59797e35",
+    "author/invocations_test.go": "72a183fce9374aa9286d6aa48134ed5840b902ff6a41d48fa1935dba7686a004",
+    "author/race_off_test.go": "093c516ec49d3c124562757338f525652ea20162079e58ef73be0002f8aa9296",
+    "author/race_on_test.go": "28d3a1666a54317419cee90d32fedb7d5c2189e25f4816cce8b62f07e7d65893",
+    "author/retained_handles_runtime_test.go": "3750a08ad94045ccad670b72ebdda2722b796ac28ce3f7d29fadc5b5f75c8e1f",
+    "author/retained_handles_test.go": "808a890fa4649faed356f0a399f164b55ba6a9b2b7a64a9e0a16a563b3190640",
+    "author/testdata/consumer.go": "0742f5a30a180f41b29429afc082bc8100096fe4ab1446458b09fe3d838476a2",
+    "compose/collection.go": "cf705deaf5831fe07f9013f413c4b03d605757b37f01435dbc1588f9a7383e85",
+    "compose/collection_test.go": "365bb9e145e929bd93a7a4a2ab2778a15800811bb924e466e58a18b800cf9aa4",
+    "docs/foundational/phase1m/evidence/preflight/capture.py": "3ce22a990ef7b283cf1d948c8517d78a9ee72b670e35dc732e9915cafa88747f",
+    "docs/foundational/phase1m/evidence/preflight/evidence-index.json": "45a9cf00c75036a84d3735f7c9dfef573b859bb5fb779bc0b8438844c45b9615",
+    "docs/foundational/phase1m/evidence/preflight/expectations.md": "04635df4b03e0eaca9491a8285a787bfe08f3340253d514f538f72c308ab588a",
+    "docs/foundational/phase1m/evidence/preflight/records.json.gz": "e389dda446d2cf76ede45ecc7b5432220383de7d932f925bd714e047bd67414c",
+    "docs/foundational/phase1m/evidence/reason-preflight/capture.py": "2e8b90ad9fa8547f1aa7de2f435f6f1100ae3a9f96a3065297a179611d4f9d77",
+    "docs/foundational/phase1m/evidence/reason-preflight/construction-attempt1.json": "a9729748b3acfe3380cc6dd7b983729c4ff215f90da987798e5f61353068b4ef",
+    "docs/foundational/phase1m/evidence/reason-preflight/construction-red.json": "afa28deec3147ca9754f63c85641d4e1b597209bbf72f9758f54f1ce71385a54",
+    "docs/foundational/phase1m/evidence/reason-preflight/expectations.md": "c8620e1767eda6692967a484a99de0a2da7732be73b568b8420198b157288e3d",
+    "effects/collections_test.go": "61333b023f5612fd2d448faea53e8bb41f751f35bbbbab8d2be9c66ac9ae2178",
+    "effects/effects.go": "7333e6a0e2409c2f8229ce430545c1518b600000a7ca1374c76968b80fd0d4b7",
+    "effects/effects_test.go": "f0f78ab08cfab44e32679ed2af5e0dde294331c5e772fcb2c4b4aec1dfdc0f9f",
+    "examples/consumingpolicy/README.md": "ff7257960e9d26f31582ad50fa278a365fe32b588ae414e3735520ce2821119c",
+    "examples/consumingpolicy/consumer/go.mod": "975bafab6394040ab8090e8291cd957b23cc5d4106375de1a32480c18d7c99ac",
+    "examples/consumingpolicy/consumer/go.sum": "9eb975c181ebee792e06f732fc13ef81acad0779d94731f75133ad2bba52c5ca",
+    "examples/consumingpolicy/consumer/main.go": "190645589a1d9e1051588924a831d6af63938b4dd46353c46b47575231c1aa69",
+    "examples/consumingpolicy/consumer/main_integration_test.go": "7d8dbc64f92cc56b61590dfdda25b8eaf6e76e75c3e5d83c7df5b506a4c1080a",
+    "examples/consumingpolicy/consumer/main_test.go": "5486b62b519905c4dcdd19656497e3b39a17a29edf1a4a00a3b6581568d1a5b8",
+    "examples/consumingpolicy/consumer/reason_integration_test.go": "0a628276266b54e7d44e2bdc5807174b2f38128cdd7864a991b539168bd910d0",
+    "examples/consumingpolicy/deployment.go": "c08984d705872d544e5f3a916020cf83fd46809c1f52a8d9434542219309406c",
+    "examples/consumingpolicy/deployment_test.go": "55ed471ed2151d16bee2a3fb13531574c4af0825cb2d1aed2cddbead82e371a5",
+    "examples/consumingpolicy/reason.go": "23ca2c03a7b2df875808c44a0570813bdc01fe49c4dd4c31ae1c0d9bfabeb886",
+    "examples/consumingpolicy/reason_test.go": "874c2969a175a4df2db6201e1c417bf837bc331313c573e210f8509bcf2f0261",
+    "examples/invocationjoin/consumer/main.go": "65d888416f30c8b55a31e328701abcc79ab934189f0689be48d4f1aef0ccf22c",
+    "examples/invocationjoin/deployment.go": "23e5463e25f8a21094758ed55a1410525e5e27481aa73259befa8f600a1fe280",
+    "examples/join/artifacts_test.go": "11da7b079891ff15d4f97129a946d77278b56a36f4d07e8bf19a79a0a9445608",
+    "examples/join/consumer/main.go": "9769de9fc4a67fdde1a7437347dfa40e62caac4e0e9cfa9ad96ced94a444c8b6",
+    "examples/join/consumer/main_test.go": "92670c19f81e2ca86c120c978bf1d41fbe529b128758168fd43581bd0668a1b4",
+    "examples/join/deployment.go": "0bcbff9113b9e11b148f076e839b5279b28c833e77fbe0069fab14902ce3249e",
+    "examples/join/deployment_test.go": "b45d7cd59bb11d2464786df332b3107ecd7812b7646eaa87a624f262be28ce34",
+    "examples/join/runtime_test.go": "32fadf174a0f41511ae4b3903844e317264bf047ce22afd286ae9e5862aaf941",
+    "examples/substitution/a/candidate.go": "c98a5c6d16738d98af9140e6edce6d4df0ddcb51c2330ba974e0e51a82005911",
+    "examples/substitution/a/candidate_test.go": "033373ad1e384b32b6b9597faa2ed23a3f74b8f8015371d17b4c2df9d3503710",
+    "examples/substitution/b/b.go": "ff813a85585175522e2bf5cc4550caeb6c169c7e507c7ce51ee8bba43ec933e8",
+    "examples/substitution/b/b_test.go": "8e845090cb8d05fbd3d352f3c9572e546de2a1d3c3527608e2a8e849a657c391",
+    "examples/substitution/consumer/main.go": "38685cba4434ee6b57eb4f2644143f9ac347f733232abd9c3c65f4c4c8201181",
+    "examples/substitution/consumer/main_test.go": "23ff9d306fb96f8c0f8845cc49c82c102539314bf05b07a9fa25fb486468ab99",
+    "examples/substitution/deployment.go": "37d5b9fa0e3fc2292fa13933f7a012d783055c6a37fa6ba0686472bd96c499a0",
+    "examples/substitution/deployment_test.go": "e31635000c42c39688c5a8c9e6b839cfb8b16241a9516f6953833afd1e572e54",
+    "examples/substitution/effect.go": "61aa0377a859bf6083f941d4cd86a2bec8b5b15f1074a023e17dc83329a79b9a",
+    "examples/substitution/probes.go": "8cb5b258962f921a8968aa713ca7db143a00f698a3c2219cdad86daf4741ce67",
+    "examples/substitution/protocol/protocol.go": "18a0019cdc15cfabf253d5e3039f021f5117f0f3e8891d15ca4e6e2a5ea8c49c",
+    "go.mod": "1d8b5c8939d1422813ed2b004c6560e3ec3f262709d57e9b957f6994ffd9bdeb",
+    "go.sum": "9eb975c181ebee792e06f732fc13ef81acad0779d94731f75133ad2bba52c5ca",
+    "internal/boundary/boundary.go": "7064a8b7afdf279a9c49065b865ca476e8d7f375d40ee140c8394e968ea52d8e",
+    "internal/boundary/boundary_test.go": "101c018522bdb4a3f724a22725b736c30af232801dfdc8d25d165ef2ce6a9d66",
+    "internal/executor/adapters.go": "fbcbb22c35949a60ffeaa94ac9fc656db40425dbe7f5a091d4002b11b69c30a2",
+    "internal/executor/adapters_test.go": "16d926e1284353a7efd3a55efb202bca1c8a90d2ea4efb27dfb6e164a59c17bc",
+    "internal/executor/async_limits_test.go": "5782b73e8a531d0bed964e983569e75d8360f6f1b058388b309e8d9f3816c249",
+    "internal/executor/async_reporting_test.go": "3ae4dff271bd19a71b2b5db994c7c5723909375a74516590f74793b06063f303",
+    "internal/executor/async_test.go": "f2b774327a9a5a791c3caf57a96fa503c4cf89d610a38bf1138275e637af9947",
+    "internal/executor/author_metadata.go": "2eef28b7fc1b281648d10024c528564cc2ebcb4d1d217978f018bdfa6b3f5c51",
+    "internal/executor/author_metadata_test.go": "1b0a5a5ab6617b7833ba23b00f049effacdc064b8fde1bc46d664a256b08d59b",
+    "internal/executor/cancellation_regression_test.go": "f429027693ef5690a15e0ebb3cc09e928fb987c85112dcb8896071b22d4f5450",
+    "internal/executor/collections.go": "a3ead48f26379383a54734b2288225c3a9a64ed0a826d89de8af966c99b861c7",
+    "internal/executor/composition_binding.go": "7f079bca7f04ca057ba391208d6ce2e4b686d05bd2fbbd2af005292c486e27b5",
+    "internal/executor/composition_binding_test.go": "b8a7355a2b32188ebc9d9d422c1c99f2a3e87bc80f7beb85222b986dc198c83d",
+    "internal/executor/composition_consumption_test.go": "1519dfbf212171b1ed3ab7b4789a68164ea3bbc6c6ea64ec155056b0a2453e23",
+    "internal/executor/composition_dispatch_test.go": "5c2b10f9a4e6260f489d92090b4d09438f0841044a7a81a0f1f3f99fdb4470a2",
+    "internal/executor/composition_facts.go": "883a150eab80c32206f81efa69b9cc6f13453626ddbcb13360328c389e68c090",
+    "internal/executor/composition_facts_test.go": "061eb7fb5af87a17061022a0a931697a306e9a4ed4df47c8d9b7328efd53901f",
+    "internal/executor/composition_inspect.go": "99370b0bfb8c74cc9f6d36b6b84a0b168022a054aceac62a22d7006f707a38d8",
+    "internal/executor/composition_integration_test.go": "52d1b5fb2ca98ee12c3e56104f3897a054a10398c7903fe59239211d732a1e9e",
+    "internal/executor/composition_limits_integration_test.go": "1eac794b84618105815854029b73da9b265c54ef1a12672e42307e89094c6180",
+    "internal/executor/composition_prefix.go": "ac7c6dded25770f1adc0d73c829d8c3306cbc97e041fecd11f60a1e5732c5b48",
+    "internal/executor/composition_replay.go": "21b7c4cfd97654b5eb1a139be1d74f9ceadec5b1bcd44b4c3462beead0d10642",
+    "internal/executor/composition_reservation.go": "d02dd0156798570ec72a254e16cdc8b7c393ad24e129efff5e490db1ec52926a",
+    "internal/executor/composition_root.go": "a0e04ee2b1713caacc8b48cf648d783a60365c2b020a1513aa6b7a22000cc2cf",
+    "internal/executor/composition_source.go": "70140b8f46a9c63fca177a7320d94dd4e0afef9c2f91057e81a29c65655c5c9f",
+    "internal/executor/composition_store.go": "ee012a957601c40d4afe915461e7a06fff2d8400d628c028cc8df4aeb85830f6",
+    "internal/executor/composition_store_test.go": "9c8765df44e69231afb3ad0e85cd09102ee976dc048d690e38935f059c9e1d1f",
+    "internal/executor/composition_types.go": "f8235c62d157985bee482eeb2d3f1fbddb3eb717b8e191225ffce4a28210782e",
+    "internal/executor/crash_test.go": "a5c137ea76a731c03f9f8ceb169ebb56aaee3819a938057c7cfabbd2893ec77e",
+    "internal/executor/examples.go": "3ddf43a7c0403da00c09996c940c9794c1042f9120cb27d044d0c47ff42498d2",
+    "internal/executor/external.go": "ca49d952917a5c8c201c817f7a11eae978913dfec9cdb18d4efb03d6b96f83a7",
+    "internal/executor/external_example.go": "888e5d86555ffd4a5f33c44496581141417d06d23f0d78539af973bff82eab0f",
+    "internal/executor/external_test.go": "c6c97aa7571bea1aec4ab7ae8dc006ae1449ead141e36c95719403c0f569a609",
+    "internal/executor/fault_process_test.go": "2dcd53230193b339da8ee033dd3252cf1d5064a22238a5aaa07c3bb61122918e",
+    "internal/executor/inspect.go": "ef642165e9ba6731d1ad892116ac17e055b0bac586707bd28a3044eee96822aa",
+    "internal/executor/inspect_test.go": "6c6e01b105c69845c9e7bc668402e826b31a2b920faeb5712e3d1bdb349e5755",
+    "internal/executor/invocation.go": "b40c1edc17249a31ccff84408a7855098e3a51ad28579ea856efc34bf4fa6746",
+    "internal/executor/invocation_catalogue.go": "4cf72697ef5064311783476439891711cb625d91393bd56f6da652530fa89b38",
+    "internal/executor/invocation_closure.go": "4aa89061a6749f16ac2ef4f66a50b7c0bcf5ad1a998bda768d26ed1276f3dc5c",
+    "internal/executor/invocation_outcome.go": "adeaba4f04843867c5405a6bfb5a8716e64654a3e96bc58ad190ec23cbfcb53d",
+    "internal/executor/invocation_payload.go": "652a5861e3dca171688b211d515fcd633f533b4cbb3e229f85787789f6b9c413",
+    "internal/executor/invocation_retirement_test.go": "fb7f5b55a6eced4a3ed9a9a13213b55f944a5b7eb9343deae62df286ff8bda3e",
+    "internal/executor/invocation_test.go": "bb43fc21e69994c4ba82d1916a63f274a8ba8ae9b1f60d1c875245617a0b15ea",
+    "internal/executor/lifecycle.go": "0de0f51e3fd7c0b89a0db279dfc3d7ab7079e6640ae3693bc2312f7cbf802a51",
+    "internal/executor/lifecycle_replay.go": "86f7e8b7c42362f1c5710693a5dc6350a6e200ea11230ab92ebe152782387265",
+    "internal/executor/lifecycle_test.go": "8fe290f6c80411fece9b4c2b1da627c4cdc92f1a9fca41998e757a526203c27b",
+    "internal/executor/messages.go": "1186fd9220d44352dcfd77ec5e7209dadd78d9956304a931593b5de6c6b8ae39",
+    "internal/executor/messages_test.go": "f60ff88cd62af2a94b06b517b3385403f068e441d3704c5d6b6f69cf26937778",
+    "internal/executor/program.go": "4a6813c69d509dff545c75a05410919e182e73c9f06e5fd359112e64df568374",
+    "internal/executor/program_test.go": "61f2e7d3004812c9ad3ba40e582120c512e69b73052e663c22900493fa1d12a6",
+    "internal/executor/replay.go": "c9560f815df0523366c6a439588e95731eef12f250e06bf4c82ae9f950273f84",
+    "internal/executor/runner.go": "ad9fe52c4f17adb4c528b9397fb2e90338f9f9e63c5015160946daa593c1b2f4",
+    "internal/executor/runner_test.go": "e06c2815ce1dd3b4be42e977271219808737f10fb989cb9b97073138876095e1",
+    "internal/executor/store.go": "4100327b3d95b44c061dad51f656fd193f26bc28c58093ecd2b385f9f76895bb",
+    "internal/executor/store_namespace_test.go": "ca6c87a6d5e46c07328d6091f779619cf5917175ebde2613827a6afb47b606f6",
+    "internal/executor/store_test.go": "dd2e468ef4988bdb1da08f2f2ac545d80820a6fe819982005016af3db037a577",
+    "internal/executor/supervision_test.go": "197d32b16d2fd1076a1d86bf1017bc57e58e8100679d1affec8bdf7e3dbc4da3",
+    "internal/executor/transport_domains_test.go": "5f191194cce482b0122b21a4bb16e6413facb106fb42b97c26eb21b2e9bb0f16",
+    "runtime/adapter_protocol_test.go": "91b5ea688965856d8faca7c29cddfaa33f422498a6cd3458e9187c9a28c43146",
+    "runtime/adapters_test.go": "6f07113b1af3ddc701e8316073674abc64b0a793b7c877fa8d2ca1a12d03a726",
+    "runtime/review_adapters_test.go": "61ce73999fe0349e4b0375cb00c48124cb898e0111f911393afb5e0317d7ab03",
+    "runtime/runtime.go": "01af8ad5279bde9b6fe5d51158edd492452a3235ec1d2372d6f36996a48d6a4d",
+    "runtime/runtime_test.go": "5f2cad3d52091c13dc27c2a7ba91982b0fd593d3b74b18784a10dd4104cb639c",
+    "schema/collections.go": "20448c6b88d54cfedd8abf7cb4da33bba1a31122c02bc480fe162266921ed52b",
+    "schema/collections_test.go": "521af47a7200a63b4b59ce570b90ae5b8ea5fe20c196d55f6fbde729cd4d1ce8",
+    "schema/schema.go": "fd0c78d375e12d03d4a08c99c2ecd30db404ed1093ee09a009a9549538f50a31",
+    "schema/schema_test.go": "1ff4c247a3e7d618fd7278bea8154e537e0ff69de7b8d0d5d143d9bc51c2b9d3"
+  },
+  "status": "passed",
+  "binary_sha256": "dc2391a0d6c0c58ef5ff891b2e0e1d9430921d22ab1fa8ccaee9dd05f3aa96de",
+  "source_stable_through_capture": true,
+  "original_source_unchanged_from_base": {
+    "examples/consumingpolicy/deployment.go": true,
+    "examples/consumingpolicy/deployment_test.go": true,
+    "examples/consumingpolicy/consumer/main_test.go": true,
+    "examples/consumingpolicy/consumer/main_integration_test.go": true,
+    "examples/substitution/a/candidate.go": true,
+    "examples/substitution/b/b.go": true,
+    "examples/substitution/deployment.go": true,
+    "examples/substitution/probes.go": true,
+    "examples/substitution/protocol/protocol.go": true,
+    "examples/join/deployment.go": true,
+    "author/invocations.go": true,
+    "author/compile.go": true,
+    "compose/collection.go": true,
+    "go.mod": true,
+    "go.sum": true,
+    "examples/invocationjoin/deployment.go": true,
+    "examples/invocationjoin/consumer/main.go": true,
+    "docs/foundational/phase1m/evidence/preflight/capture.py": true,
+    "docs/foundational/phase1m/evidence/preflight/expectations.md": true,
+    "docs/foundational/phase1m/evidence/preflight/records.json.gz": true,
+    "docs/foundational/phase1m/evidence/preflight/evidence-index.json": true
+  },
+  "bound_parent_differences": [
+    {
+      "path": "/Code/0/Effect/Target/Literal/Text",
+      "a": "a03135203f8b728a6aa7b732d06952cc87b70b3aced2c0833293e333760eece5",
+      "b": "2e10975004e0351d07b237e0360a2b96b50d5884b651cfa5bfc8e88af62da266"
+    },
+    {
+      "path": "/Code/3/Match/Source/Literal/Text",
+      "a": "a03135203f8b728a6aa7b732d06952cc87b70b3aced2c0833293e333760eece5",
+      "b": "2e10975004e0351d07b237e0360a2b96b50d5884b651cfa5bfc8e88af62da266"
+    },
+    {
+      "path": "/Author/Invocations/candidate/TemplateID",
+      "a": "a03135203f8b728a6aa7b732d06952cc87b70b3aced2c0833293e333760eece5",
+      "b": "2e10975004e0351d07b237e0360a2b96b50d5884b651cfa5bfc8e88af62da266"
+    }
+  ],
+  "source_manifest_sha256": "f3cf8a55ca257230d54217655ae6097540c3ef42ae606051e34f9b13a34ef8ed",
+  "records": {
+    "file": "records.json.gz",
+    "sha256": "00a56416238d858dfcc6a46a378fec7c27a8f571d2b2122f384161c32275a22c"
+  },
+  "commands": [
+    {
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "version"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.026,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "env",
+        "GOOS",
+        "GOARCH",
+        "CGO_ENABLED",
+        "GOVERSION",
+        "GOTOOLCHAIN",
+        "GOPROXY",
+        "GOSUMDB",
+        "GOFLAGS",
+        "GOCACHE"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.006,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-list",
+        ".",
+        "./examples/consumingpolicy"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.946,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-count=1",
+        "-timeout=2m",
+        "./examples/consumingpolicy"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.422,
+      "tests": [
+        {
+          "test": "TestSFirstOriginalBindings/a",
+          "action": "pass"
+        },
+        {
+          "test": "TestSFirstOriginalBindings/b",
+          "action": "pass"
+        },
+        {
+          "test": "TestSFirstOriginalBindings",
+          "action": "pass"
+        },
+        {
+          "test": "TestSFirstRejectsInvalidConstruction/id",
+          "action": "pass"
+        },
+        {
+          "test": "TestSFirstRejectsInvalidConstruction/s-mode",
+          "action": "pass"
+        },
+        {
+          "test": "TestSFirstRejectsInvalidConstruction",
+          "action": "pass"
+        },
+        {
+          "test": "TestReasonOriginalBindings/a",
+          "action": "pass"
+        },
+        {
+          "test": "TestReasonOriginalBindings/b",
+          "action": "pass"
+        },
+        {
+          "test": "TestReasonOriginalBindings",
+          "action": "pass"
+        },
+        {
+          "test": "TestReasonRejectsInvalidConstruction/id",
+          "action": "pass"
+        },
+        {
+          "test": "TestReasonRejectsInvalidConstruction/s-mode",
+          "action": "pass"
+        },
+        {
+          "test": "TestReasonRejectsInvalidConstruction",
+          "action": "pass"
+        }
+      ],
+      "test_leaves": [
+        {
+          "test": "TestSFirstOriginalBindings/a",
+          "action": "pass"
+        },
+        {
+          "test": "TestSFirstOriginalBindings/b",
+          "action": "pass"
+        },
+        {
+          "test": "TestSFirstRejectsInvalidConstruction/id",
+          "action": "pass"
+        },
+        {
+          "test": "TestSFirstRejectsInvalidConstruction/s-mode",
+          "action": "pass"
+        },
+        {
+          "test": "TestReasonOriginalBindings/a",
+          "action": "pass"
+        },
+        {
+          "test": "TestReasonOriginalBindings/b",
+          "action": "pass"
+        },
+        {
+          "test": "TestReasonRejectsInvalidConstruction/id",
+          "action": "pass"
+        },
+        {
+          "test": "TestReasonRejectsInvalidConstruction/s-mode",
+          "action": "pass"
+        }
+      ]
+    },
+    {
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-count=1",
+        "-race",
+        "-timeout=3m",
+        "./examples/consumingpolicy"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 2.259,
+      "tests": [
+        {
+          "test": "TestSFirstOriginalBindings/a",
+          "action": "pass"
+        },
+        {
+          "test": "TestSFirstOriginalBindings/b",
+          "action": "pass"
+        },
+        {
+          "test": "TestSFirstOriginalBindings",
+          "action": "pass"
+        },
+        {
+          "test": "TestSFirstRejectsInvalidConstruction/id",
+          "action": "pass"
+        },
+        {
+          "test": "TestSFirstRejectsInvalidConstruction/s-mode",
+          "action": "pass"
+        },
+        {
+          "test": "TestSFirstRejectsInvalidConstruction",
+          "action": "pass"
+        },
+        {
+          "test": "TestReasonOriginalBindings/a",
+          "action": "pass"
+        },
+        {
+          "test": "TestReasonOriginalBindings/b",
+          "action": "pass"
+        },
+        {
+          "test": "TestReasonOriginalBindings",
+          "action": "pass"
+        },
+        {
+          "test": "TestReasonRejectsInvalidConstruction/id",
+          "action": "pass"
+        },
+        {
+          "test": "TestReasonRejectsInvalidConstruction/s-mode",
+          "action": "pass"
+        },
+        {
+          "test": "TestReasonRejectsInvalidConstruction",
+          "action": "pass"
+        }
+      ],
+      "test_leaves": [
+        {
+          "test": "TestSFirstOriginalBindings/a",
+          "action": "pass"
+        },
+        {
+          "test": "TestSFirstOriginalBindings/b",
+          "action": "pass"
+        },
+        {
+          "test": "TestSFirstRejectsInvalidConstruction/id",
+          "action": "pass"
+        },
+        {
+          "test": "TestSFirstRejectsInvalidConstruction/s-mode",
+          "action": "pass"
+        },
+        {
+          "test": "TestReasonOriginalBindings/a",
+          "action": "pass"
+        },
+        {
+          "test": "TestReasonOriginalBindings/b",
+          "action": "pass"
+        },
+        {
+          "test": "TestReasonRejectsInvalidConstruction/id",
+          "action": "pass"
+        },
+        {
+          "test": "TestReasonRejectsInvalidConstruction/s-mode",
+          "action": "pass"
+        }
+      ]
+    },
+    {
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "-C",
+        "examples/consumingpolicy/consumer",
+        "test",
+        "-tags",
+        "integration",
+        "-list",
+        ".",
+        "./..."
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.511,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "-C",
+        "examples/consumingpolicy/consumer",
+        "test",
+        "-json",
+        "-count=1",
+        "-timeout=2m",
+        "-tags",
+        "integration",
+        "./..."
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 2.131,
+      "tests": [
+        {
+          "test": "TestConsumerSFirstOriginalOutcomeJoins/a",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerSFirstOriginalOutcomeJoins/b",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerSFirstOriginalOutcomeJoins",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerNegativeStillConsumesSuccessor/fail",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerNegativeStillConsumesSuccessor/absent",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerNegativeStillConsumesSuccessor",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerSFailureStillJoinsCandidate/fail",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerSFailureStillJoinsCandidate/absent",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerSFailureStillJoinsCandidate",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerSFirstDualPending/a/candidate",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerSFirstDualPending/a/s",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerSFirstDualPending/b/candidate",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerSFirstDualPending/b/s",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerSFirstDualPending",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerWrongIDFailsAfterBothJoins",
+          "action": "pass"
+        },
+        {
+          "test": "TestExecuteRejectsMissingDatabase",
+          "action": "pass"
+        },
+        {
+          "test": "TestExecuteRejectsUnknownPolicy",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/a_answer",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/b_answer",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/a_fail",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/b_fail",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/a_absent",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/b_absent",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/absent_deliberately_fails",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/wrong_id",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/wrong_complement",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/s_fail",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/s_absent",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonPendingHasNoClassification/a_candidate",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonPendingHasNoClassification/b_candidate",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonPendingHasNoClassification/a_s",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonPendingHasNoClassification/b_s",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonPendingHasNoClassification/s_fail_candidate_pending",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonPendingHasNoClassification",
+          "action": "pass"
+        }
+      ],
+      "test_leaves": [
+        {
+          "test": "TestConsumerSFirstOriginalOutcomeJoins/a",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerSFirstOriginalOutcomeJoins/b",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerNegativeStillConsumesSuccessor/fail",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerNegativeStillConsumesSuccessor/absent",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerSFailureStillJoinsCandidate/fail",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerSFailureStillJoinsCandidate/absent",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerSFirstDualPending/a/candidate",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerSFirstDualPending/a/s",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerSFirstDualPending/b/candidate",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerSFirstDualPending/b/s",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerWrongIDFailsAfterBothJoins",
+          "action": "pass"
+        },
+        {
+          "test": "TestExecuteRejectsMissingDatabase",
+          "action": "pass"
+        },
+        {
+          "test": "TestExecuteRejectsUnknownPolicy",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/a_answer",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/b_answer",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/a_fail",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/b_fail",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/a_absent",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/b_absent",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/absent_deliberately_fails",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/wrong_id",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/wrong_complement",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/s_fail",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/s_absent",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonPendingHasNoClassification/a_candidate",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonPendingHasNoClassification/b_candidate",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonPendingHasNoClassification/a_s",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonPendingHasNoClassification/b_s",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonPendingHasNoClassification/s_fail_candidate_pending",
+          "action": "pass"
+        }
+      ]
+    },
+    {
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "-C",
+        "examples/consumingpolicy/consumer",
+        "test",
+        "-json",
+        "-count=1",
+        "-race",
+        "-timeout=3m",
+        "-tags",
+        "integration",
+        "./..."
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 25.714,
+      "tests": [
+        {
+          "test": "TestConsumerSFirstOriginalOutcomeJoins/a",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerSFirstOriginalOutcomeJoins/b",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerSFirstOriginalOutcomeJoins",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerNegativeStillConsumesSuccessor/fail",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerNegativeStillConsumesSuccessor/absent",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerNegativeStillConsumesSuccessor",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerSFailureStillJoinsCandidate/fail",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerSFailureStillJoinsCandidate/absent",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerSFailureStillJoinsCandidate",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerSFirstDualPending/a/candidate",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerSFirstDualPending/a/s",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerSFirstDualPending/b/candidate",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerSFirstDualPending/b/s",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerSFirstDualPending",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerWrongIDFailsAfterBothJoins",
+          "action": "pass"
+        },
+        {
+          "test": "TestExecuteRejectsMissingDatabase",
+          "action": "pass"
+        },
+        {
+          "test": "TestExecuteRejectsUnknownPolicy",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/a_answer",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/b_answer",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/a_fail",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/b_fail",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/a_absent",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/b_absent",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/absent_deliberately_fails",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/wrong_id",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/wrong_complement",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/s_fail",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/s_absent",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonPendingHasNoClassification/a_candidate",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonPendingHasNoClassification/b_candidate",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonPendingHasNoClassification/a_s",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonPendingHasNoClassification/b_s",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonPendingHasNoClassification/s_fail_candidate_pending",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonPendingHasNoClassification",
+          "action": "pass"
+        }
+      ],
+      "test_leaves": [
+        {
+          "test": "TestConsumerSFirstOriginalOutcomeJoins/a",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerSFirstOriginalOutcomeJoins/b",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerNegativeStillConsumesSuccessor/fail",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerNegativeStillConsumesSuccessor/absent",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerSFailureStillJoinsCandidate/fail",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerSFailureStillJoinsCandidate/absent",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerSFirstDualPending/a/candidate",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerSFirstDualPending/a/s",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerSFirstDualPending/b/candidate",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerSFirstDualPending/b/s",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerWrongIDFailsAfterBothJoins",
+          "action": "pass"
+        },
+        {
+          "test": "TestExecuteRejectsMissingDatabase",
+          "action": "pass"
+        },
+        {
+          "test": "TestExecuteRejectsUnknownPolicy",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/a_answer",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/b_answer",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/a_fail",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/b_fail",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/a_absent",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/b_absent",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/absent_deliberately_fails",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/wrong_id",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/wrong_complement",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/s_fail",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonClassifiesConsumedOutcomes/s_absent",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonPendingHasNoClassification/a_candidate",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonPendingHasNoClassification/b_candidate",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonPendingHasNoClassification/a_s",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonPendingHasNoClassification/b_s",
+          "action": "pass"
+        },
+        {
+          "test": "TestConsumerReasonPendingHasNoClassification/s_fail_candidate_pending",
+          "action": "pass"
+        }
+      ]
+    },
+    {
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "vet",
+        "./examples/consumingpolicy"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.12,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "-C",
+        "examples/consumingpolicy/consumer",
+        "vet",
+        "-tags",
+        "integration",
+        "./..."
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.12,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "mod",
+        "verify"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.062,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "-C",
+        "examples/consumingpolicy/consumer",
+        "mod",
+        "verify"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.052,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/opt/homebrew/bin/gofmt",
+        "-l",
+        "examples/consumingpolicy/consumer/main.go",
+        "examples/consumingpolicy/consumer/main_integration_test.go",
+        "examples/consumingpolicy/consumer/main_test.go",
+        "examples/consumingpolicy/consumer/reason_integration_test.go",
+        "examples/consumingpolicy/deployment.go",
+        "examples/consumingpolicy/deployment_test.go",
+        "examples/consumingpolicy/reason.go",
+        "examples/consumingpolicy/reason_test.go"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.009,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--check",
+        "--",
+        "examples/consumingpolicy"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.01,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "-C",
+        "examples/consumingpolicy/consumer",
+        "build",
+        "-o",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "."
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 1.059,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "-C",
+        "examples/consumingpolicy/consumer",
+        "list",
+        "-f",
+        "{{join .Imports \"\\n\"}}",
+        "."
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.119,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "artifacts",
+        "-policy",
+        "reason",
+        "-candidate",
+        "a",
+        "-id",
+        "1",
+        "-value",
+        "0",
+        "-mode",
+        "answer",
+        "-s-mode",
+        "answer"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.172,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "init",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/a-answer.db",
+        "-policy",
+        "reason",
+        "-candidate",
+        "a",
+        "-id",
+        "1",
+        "-value",
+        "0",
+        "-mode",
+        "answer",
+        "-s-mode",
+        "answer"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.016,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "run",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/a-answer.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.047,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "inspect",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/a-answer.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.019,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "replay",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/a-answer.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.017,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "artifacts",
+        "-policy",
+        "reason",
+        "-candidate",
+        "a",
+        "-id",
+        "1",
+        "-value",
+        "0",
+        "-mode",
+        "fail",
+        "-s-mode",
+        "answer"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.008,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "init",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/a-fail.db",
+        "-policy",
+        "reason",
+        "-candidate",
+        "a",
+        "-id",
+        "1",
+        "-value",
+        "0",
+        "-mode",
+        "fail",
+        "-s-mode",
+        "answer"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.014,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "run",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/a-fail.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.042,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "inspect",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/a-fail.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.017,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "replay",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/a-fail.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.016,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "artifacts",
+        "-policy",
+        "reason",
+        "-candidate",
+        "a",
+        "-id",
+        "1",
+        "-value",
+        "0",
+        "-mode",
+        "absent",
+        "-s-mode",
+        "answer"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.008,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "init",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/a-absent.db",
+        "-policy",
+        "reason",
+        "-candidate",
+        "a",
+        "-id",
+        "1",
+        "-value",
+        "0",
+        "-mode",
+        "absent",
+        "-s-mode",
+        "answer"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.015,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "run",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/a-absent.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.044,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "inspect",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/a-absent.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.017,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "replay",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/a-absent.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.016,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "artifacts",
+        "-policy",
+        "reason",
+        "-candidate",
+        "a",
+        "-id",
+        "1",
+        "-value",
+        "0",
+        "-mode",
+        "pending",
+        "-s-mode",
+        "answer"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.008,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "init",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/a-pending.db",
+        "-policy",
+        "reason",
+        "-candidate",
+        "a",
+        "-id",
+        "1",
+        "-value",
+        "0",
+        "-mode",
+        "pending",
+        "-s-mode",
+        "answer"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.015,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "run",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/a-pending.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.025,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "inspect",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/a-pending.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.014,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "replay",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/a-pending.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.013,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "artifacts",
+        "-policy",
+        "reason",
+        "-candidate",
+        "b",
+        "-id",
+        "1",
+        "-value",
+        "0",
+        "-mode",
+        "answer",
+        "-s-mode",
+        "answer"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.008,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "init",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/b-answer.db",
+        "-policy",
+        "reason",
+        "-candidate",
+        "b",
+        "-id",
+        "1",
+        "-value",
+        "0",
+        "-mode",
+        "answer",
+        "-s-mode",
+        "answer"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.016,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "run",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/b-answer.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.063,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "inspect",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/b-answer.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.022,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "replay",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/b-answer.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.02,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "artifacts",
+        "-policy",
+        "reason",
+        "-candidate",
+        "b",
+        "-id",
+        "1",
+        "-value",
+        "0",
+        "-mode",
+        "fail",
+        "-s-mode",
+        "answer"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.008,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "init",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/b-fail.db",
+        "-policy",
+        "reason",
+        "-candidate",
+        "b",
+        "-id",
+        "1",
+        "-value",
+        "0",
+        "-mode",
+        "fail",
+        "-s-mode",
+        "answer"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.016,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "run",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/b-fail.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.06,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "inspect",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/b-fail.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.021,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "replay",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/b-fail.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.019,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "artifacts",
+        "-policy",
+        "reason",
+        "-candidate",
+        "b",
+        "-id",
+        "1",
+        "-value",
+        "0",
+        "-mode",
+        "absent",
+        "-s-mode",
+        "answer"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.009,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "init",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/b-absent.db",
+        "-policy",
+        "reason",
+        "-candidate",
+        "b",
+        "-id",
+        "1",
+        "-value",
+        "0",
+        "-mode",
+        "absent",
+        "-s-mode",
+        "answer"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.016,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "run",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/b-absent.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.063,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "inspect",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/b-absent.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.021,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "replay",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/b-absent.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.019,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "artifacts",
+        "-policy",
+        "reason",
+        "-candidate",
+        "b",
+        "-id",
+        "1",
+        "-value",
+        "0",
+        "-mode",
+        "pending",
+        "-s-mode",
+        "answer"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.009,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "init",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/b-pending.db",
+        "-policy",
+        "reason",
+        "-candidate",
+        "b",
+        "-id",
+        "1",
+        "-value",
+        "0",
+        "-mode",
+        "pending",
+        "-s-mode",
+        "answer"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.016,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "run",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/b-pending.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.043,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "inspect",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/b-pending.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.019,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "replay",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/b-pending.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.017,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "artifacts",
+        "-policy",
+        "reason",
+        "-candidate",
+        "wrong-id",
+        "-id",
+        "1",
+        "-value",
+        "0",
+        "-mode",
+        "answer",
+        "-s-mode",
+        "answer"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.008,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "init",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/wrong-id.db",
+        "-policy",
+        "reason",
+        "-candidate",
+        "wrong-id",
+        "-id",
+        "1",
+        "-value",
+        "0",
+        "-mode",
+        "answer",
+        "-s-mode",
+        "answer"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.016,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "run",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/wrong-id.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.049,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "inspect",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/wrong-id.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.018,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "replay",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/wrong-id.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.017,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "artifacts",
+        "-policy",
+        "reason",
+        "-candidate",
+        "weak-a",
+        "-id",
+        "1",
+        "-value",
+        "0",
+        "-mode",
+        "answer",
+        "-s-mode",
+        "answer"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.007,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "init",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/wrong-complement.db",
+        "-policy",
+        "reason",
+        "-candidate",
+        "weak-a",
+        "-id",
+        "1",
+        "-value",
+        "0",
+        "-mode",
+        "answer",
+        "-s-mode",
+        "answer"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.014,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "run",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/wrong-complement.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.043,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "inspect",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/wrong-complement.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.018,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "replay",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/wrong-complement.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.017,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "artifacts",
+        "-policy",
+        "reason",
+        "-candidate",
+        "deliberate-failure",
+        "-id",
+        "1",
+        "-value",
+        "0",
+        "-mode",
+        "absent",
+        "-s-mode",
+        "answer"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.007,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "init",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/deliberate-failure-absent.db",
+        "-policy",
+        "reason",
+        "-candidate",
+        "deliberate-failure",
+        "-id",
+        "1",
+        "-value",
+        "0",
+        "-mode",
+        "absent",
+        "-s-mode",
+        "answer"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.014,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "run",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/deliberate-failure-absent.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.039,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "inspect",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/deliberate-failure-absent.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.016,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "replay",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/deliberate-failure-absent.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.016,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "artifacts",
+        "-policy",
+        "reason",
+        "-candidate",
+        "a",
+        "-id",
+        "1",
+        "-value",
+        "0",
+        "-mode",
+        "answer",
+        "-s-mode",
+        "fail"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.009,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "init",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/s-fail.db",
+        "-policy",
+        "reason",
+        "-candidate",
+        "a",
+        "-id",
+        "1",
+        "-value",
+        "0",
+        "-mode",
+        "answer",
+        "-s-mode",
+        "fail"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.017,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "run",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/s-fail.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.031,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "inspect",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/s-fail.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.016,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "replay",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/s-fail.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.014,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "artifacts",
+        "-policy",
+        "reason",
+        "-candidate",
+        "a",
+        "-id",
+        "1",
+        "-value",
+        "0",
+        "-mode",
+        "answer",
+        "-s-mode",
+        "absent"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.009,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "init",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/s-absent.db",
+        "-policy",
+        "reason",
+        "-candidate",
+        "a",
+        "-id",
+        "1",
+        "-value",
+        "0",
+        "-mode",
+        "answer",
+        "-s-mode",
+        "absent"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.016,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "run",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/s-absent.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.032,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "inspect",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/s-absent.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.016,
+      "tests": [],
+      "test_leaves": []
+    },
+    {
+      "argv": [
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/consumer",
+        "replay",
+        "-db",
+        "/private/tmp/alan-phase1m-reason-preflight-jr4_8qy0/s-absent.db"
+      ],
+      "cwd": "/Users/jacob/.codex/worktrees/phase1j-retained-joins/alan",
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build"
+      },
+      "removed_environment": [
+        "OPENAI_API_KEY",
+        "ALAN_*"
+      ],
+      "exit": 0,
+      "seconds": 0.014,
+      "tests": [],
+      "test_leaves": []
+    }
+  ],
+  "samples": {
+    "a-answer": {
+      "identities": {
+        "candidate": "a03135203f8b728a6aa7b732d06952cc87b70b3aced2c0833293e333760eece5",
+        "fixed_runs": 1,
+        "parent": "23697f92a4bd055384a8512495b6354e85d95c6df7358bfff782cd3eb52bb10f",
+        "successor": "a6bfb72f823541b21e8780faf1eaab779254f5a563e5352cd631521c7ab6c61c"
+      },
+      "root": {
+        "RootID": "b0910d51c421c3ccb20b6ab68786c3531f830ac5192465c1a5a9e666942af990",
+        "Run": {
+          "Subject": "root",
+          "Generation": 1
+        },
+        "LocalStatus": "succeeded",
+        "Limits": {
+          "MaxInvocations": 3,
+          "MaxCreatedRuns": 3,
+          "MaxDepth": 2,
+          "MaxEffects": 0,
+          "MaxInFlight": 1
+        },
+        "Charges": {
+          "RootID": "b0910d51c421c3ccb20b6ab68786c3531f830ac5192465c1a5a9e666942af990",
+          "OperationID": "",
+          "Kind": "",
+          "Invocations": 2,
+          "CreatedRuns": 2,
+          "Effects": 0,
+          "DecisionOrder": 0
+        },
+        "Outcome": {
+          "ID": "a8512802dbafd99817d51d309440a3c4661fd85a60dc118f7b3779d69a743c70",
+          "InvocationID": "root:b0910d51c421c3ccb20b6ab68786c3531f830ac5192465c1a5a9e666942af990",
+          "OperationID": "root:b0910d51c421c3ccb20b6ab68786c3531f830ac5192465c1a5a9e666942af990",
+          "TemplateID": "",
+          "Caller": {
+            "Subject": "root",
+            "Generation": 1
+          },
+          "Status": "succeeded",
+          "Reason": "member_succeeded",
+          "ResponsePresent": false,
+          "Response": null,
+          "DecisionOrder": 42
+        },
+        "Pending": "",
+        "PendingInvocations": [],
+        "UnresolvedExternal": [],
+        "UnknownExternal": []
+      },
+      "operational_metrics": {
+        "code_instructions": [
+          52,
+          13,
+          3
+        ],
+        "acyclic_instruction_path_upper": 28,
+        "finite_dispatch_bound": 6,
+        "program_bytes": 21703,
+        "provision_json_bytes": 43448,
+        "projection_bytes": 1246,
+        "observation_bytes": 676,
+        "output_array_bytes": 416,
+        "steps": 28,
+        "dispatches": 6
+      },
+      "classification": {
+        "Kind": "string",
+        "Number": 0,
+        "Text": "answer",
+        "Flag": false
+      },
+      "original_joins": {
+        "candidate": {
+          "handle": "[\"root\",1,1,0]",
+          "commit_sequence": 1,
+          "consumed_sequence": 4,
+          "selected_observation": "426275536301697c5490485c93574b08f0a3760b67b972b0c04b0b60172f1f7f",
+          "outcome": {
+            "ID": "69f2ae1af711300a635aee01c1ed1b1f9888795f8f29b37a2ea6b32d5fe9af3e",
+            "InvocationID": "396f54f8e44883babad6340abd5e32dce3a8957937ded40a7a4fec0234cfeaaa",
+            "OperationID": "[\"root\",1,1,0]",
+            "TemplateID": "a03135203f8b728a6aa7b732d06952cc87b70b3aced2c0833293e333760eece5",
+            "Caller": {
+              "Subject": "root",
+              "Generation": 1
+            },
+            "Status": "succeeded",
+            "Reason": "member_succeeded",
+            "ResponsePresent": true,
+            "Response": {
+              "id": {
+                "Kind": "int",
+                "Number": 1,
+                "Text": "",
+                "Flag": false
+              },
+              "value": {
+                "Kind": "int",
+                "Number": 1,
+                "Text": "",
+                "Flag": false
+              }
+            },
+            "DecisionOrder": 24
+          }
+        },
+        "s": {
+          "handle": "[\"root\",1,2,0]",
+          "commit_sequence": 2,
+          "consumed_sequence": 3,
+          "selected_observation": "e4cc070236453306d6a17d4f38e73154b07c943237bbe18a6bb0a07d19291d20",
+          "outcome": {
+            "ID": "cf913a64c6644aa3ce3b913597ec06c03480f640a601a65c1334bc1b72c03083",
+            "InvocationID": "7e999f5bdcf1514e1172c6016efc05aeb599080fb0e7bd74889fd0cf15327629",
+            "OperationID": "[\"root\",1,2,0]",
+            "TemplateID": "a6bfb72f823541b21e8780faf1eaab779254f5a563e5352cd631521c7ab6c61c",
+            "Caller": {
+              "Subject": "root",
+              "Generation": 1
+            },
+            "Status": "succeeded",
+            "Reason": "member_succeeded",
+            "ResponsePresent": true,
+            "Response": {
+              "id": {
+                "Kind": "int",
+                "Number": 1,
+                "Text": "",
+                "Flag": false
+              },
+              "value": {
+                "Kind": "int",
+                "Number": 0,
+                "Text": "",
+                "Flag": false
+              }
+            },
+            "DecisionOrder": 16
+          }
+        }
+      },
+      "classification_writes": [
+        {
+          "pc": 18,
+          "sequence": 18,
+          "instruction": {
+            "Op": "set",
+            "Dst": "classification",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "string",
+                "Number": 0,
+                "Text": "answer",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        }
+      ],
+      "terminal_decisions": [
+        {
+          "pc": 19,
+          "sequence": 19,
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "succeeded"
+          }
+        }
+      ]
+    },
+    "a-fail": {
+      "identities": {
+        "candidate": "a03135203f8b728a6aa7b732d06952cc87b70b3aced2c0833293e333760eece5",
+        "fixed_runs": 1,
+        "parent": "23697f92a4bd055384a8512495b6354e85d95c6df7358bfff782cd3eb52bb10f",
+        "successor": "a6bfb72f823541b21e8780faf1eaab779254f5a563e5352cd631521c7ab6c61c"
+      },
+      "root": {
+        "RootID": "051159a80603314ac55140aaead8c43f878f541cbf9175816b593bdf7e1ce48c",
+        "Run": {
+          "Subject": "root",
+          "Generation": 1
+        },
+        "LocalStatus": "failed",
+        "Limits": {
+          "MaxInvocations": 3,
+          "MaxCreatedRuns": 3,
+          "MaxDepth": 2,
+          "MaxEffects": 0,
+          "MaxInFlight": 1
+        },
+        "Charges": {
+          "RootID": "051159a80603314ac55140aaead8c43f878f541cbf9175816b593bdf7e1ce48c",
+          "OperationID": "",
+          "Kind": "",
+          "Invocations": 2,
+          "CreatedRuns": 2,
+          "Effects": 0,
+          "DecisionOrder": 0
+        },
+        "Outcome": {
+          "ID": "7d4bb951208afc0d898d47a3f4b48e20e180e93ca901db90376e0c0c1d5965f0",
+          "InvocationID": "root:051159a80603314ac55140aaead8c43f878f541cbf9175816b593bdf7e1ce48c",
+          "OperationID": "root:051159a80603314ac55140aaead8c43f878f541cbf9175816b593bdf7e1ce48c",
+          "TemplateID": "",
+          "Caller": {
+            "Subject": "root",
+            "Generation": 1
+          },
+          "Status": "failed",
+          "Reason": "member_failed",
+          "ResponsePresent": false,
+          "Response": null,
+          "DecisionOrder": 37
+        },
+        "Pending": "",
+        "PendingInvocations": [],
+        "UnresolvedExternal": [],
+        "UnknownExternal": []
+      },
+      "operational_metrics": {
+        "code_instructions": [
+          52,
+          13,
+          3
+        ],
+        "acyclic_instruction_path_upper": 28,
+        "finite_dispatch_bound": 6,
+        "program_bytes": 21703,
+        "provision_json_bytes": 43446,
+        "projection_bytes": 1115,
+        "observation_bytes": 676,
+        "output_array_bytes": 414,
+        "steps": 25,
+        "dispatches": 5
+      },
+      "classification": {
+        "Kind": "string",
+        "Number": 0,
+        "Text": "candidate_failed",
+        "Flag": false
+      },
+      "original_joins": {
+        "candidate": {
+          "handle": "[\"root\",1,1,0]",
+          "commit_sequence": 1,
+          "consumed_sequence": 4,
+          "selected_observation": "23be86952e4c4a457de4b4a6c91de01d77f8c68b9e619e5f008d73ec13a271af",
+          "outcome": {
+            "ID": "44b22de51b787df0166ff323ae2275b3a0181028024f3b0f684f3fdf55e151e6",
+            "InvocationID": "425749d4b952c9ea49a1642fbcad38a9ea39a891c31658371206471ff1446660",
+            "OperationID": "[\"root\",1,1,0]",
+            "TemplateID": "a03135203f8b728a6aa7b732d06952cc87b70b3aced2c0833293e333760eece5",
+            "Caller": {
+              "Subject": "root",
+              "Generation": 1
+            },
+            "Status": "failed",
+            "Reason": "member_failed",
+            "ResponsePresent": false,
+            "Response": null,
+            "DecisionOrder": 19
+          }
+        },
+        "s": {
+          "handle": "[\"root\",1,2,0]",
+          "commit_sequence": 2,
+          "consumed_sequence": 3,
+          "selected_observation": "ec65c8561fecb20cbc358107a85171c9d81a3dee15bc8190ae6b14ff46f6ed19",
+          "outcome": {
+            "ID": "a6b9941a8df94b82b33f93f799d5c8162c7de5acea31effbbb761bcf9b421a0b",
+            "InvocationID": "c39a5fdaad9f07d95c21fa0b5bf21f1e2a3e02f962060f24d12ad68f6d31486c",
+            "OperationID": "[\"root\",1,2,0]",
+            "TemplateID": "a6bfb72f823541b21e8780faf1eaab779254f5a563e5352cd631521c7ab6c61c",
+            "Caller": {
+              "Subject": "root",
+              "Generation": 1
+            },
+            "Status": "succeeded",
+            "Reason": "member_succeeded",
+            "ResponsePresent": true,
+            "Response": {
+              "id": {
+                "Kind": "int",
+                "Number": 1,
+                "Text": "",
+                "Flag": false
+              },
+              "value": {
+                "Kind": "int",
+                "Number": 0,
+                "Text": "",
+                "Flag": false
+              }
+            },
+            "DecisionOrder": 16
+          }
+        }
+      },
+      "classification_writes": [
+        {
+          "pc": 31,
+          "sequence": 17,
+          "instruction": {
+            "Op": "set",
+            "Dst": "classification",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "string",
+                "Number": 0,
+                "Text": "candidate_failed",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        }
+      ],
+      "terminal_decisions": [
+        {
+          "pc": 32,
+          "sequence": 18,
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "failed"
+          }
+        }
+      ]
+    },
+    "a-absent": {
+      "identities": {
+        "candidate": "a03135203f8b728a6aa7b732d06952cc87b70b3aced2c0833293e333760eece5",
+        "fixed_runs": 1,
+        "parent": "23697f92a4bd055384a8512495b6354e85d95c6df7358bfff782cd3eb52bb10f",
+        "successor": "a6bfb72f823541b21e8780faf1eaab779254f5a563e5352cd631521c7ab6c61c"
+      },
+      "root": {
+        "RootID": "fecdebdd35ed105daa804b57bc8d0c0b298dc83c235f91c442dbe7c403a72290",
+        "Run": {
+          "Subject": "root",
+          "Generation": 1
+        },
+        "LocalStatus": "failed",
+        "Limits": {
+          "MaxInvocations": 3,
+          "MaxCreatedRuns": 3,
+          "MaxDepth": 2,
+          "MaxEffects": 0,
+          "MaxInFlight": 1
+        },
+        "Charges": {
+          "RootID": "fecdebdd35ed105daa804b57bc8d0c0b298dc83c235f91c442dbe7c403a72290",
+          "OperationID": "",
+          "Kind": "",
+          "Invocations": 2,
+          "CreatedRuns": 2,
+          "Effects": 0,
+          "DecisionOrder": 0
+        },
+        "Outcome": {
+          "ID": "10082a51f0ce68c7c69a85e26f9c3930f2fe08d19a900aeb450175de161ee2ac",
+          "InvocationID": "root:fecdebdd35ed105daa804b57bc8d0c0b298dc83c235f91c442dbe7c403a72290",
+          "OperationID": "root:fecdebdd35ed105daa804b57bc8d0c0b298dc83c235f91c442dbe7c403a72290",
+          "TemplateID": "",
+          "Caller": {
+            "Subject": "root",
+            "Generation": 1
+          },
+          "Status": "failed",
+          "Reason": "member_failed",
+          "ResponsePresent": false,
+          "Response": null,
+          "DecisionOrder": 39
+        },
+        "Pending": "",
+        "PendingInvocations": [],
+        "UnresolvedExternal": [],
+        "UnknownExternal": []
+      },
+      "operational_metrics": {
+        "code_instructions": [
+          52,
+          13,
+          3
+        ],
+        "acyclic_instruction_path_upper": 28,
+        "finite_dispatch_bound": 6,
+        "program_bytes": 21703,
+        "provision_json_bytes": 43448,
+        "projection_bytes": 1124,
+        "observation_bytes": 676,
+        "output_array_bytes": 416,
+        "steps": 27,
+        "dispatches": 5
+      },
+      "classification": {
+        "Kind": "string",
+        "Number": 0,
+        "Text": "candidate_missing_reply",
+        "Flag": false
+      },
+      "original_joins": {
+        "candidate": {
+          "handle": "[\"root\",1,1,0]",
+          "commit_sequence": 1,
+          "consumed_sequence": 4,
+          "selected_observation": "b24ca1941df42ce8ef0126b481b18f46511a4c634362a7a247ea285f2aa119ec",
+          "outcome": {
+            "ID": "052deed04f46f07a7bedea5f49f19108d7d21f5b25e763270afe962f4ece2d10",
+            "InvocationID": "4918689e247f3477af19ce03520f2b34fd5db79054121f05516cacb42e044465",
+            "OperationID": "[\"root\",1,1,0]",
+            "TemplateID": "a03135203f8b728a6aa7b732d06952cc87b70b3aced2c0833293e333760eece5",
+            "Caller": {
+              "Subject": "root",
+              "Generation": 1
+            },
+            "Status": "failed",
+            "Reason": "missing_reply",
+            "ResponsePresent": false,
+            "Response": null,
+            "DecisionOrder": 21
+          }
+        },
+        "s": {
+          "handle": "[\"root\",1,2,0]",
+          "commit_sequence": 2,
+          "consumed_sequence": 3,
+          "selected_observation": "ce11012ff0f83f4e7aa4dfdb4de2d82a43912564a70eda7a0ddb19a45060247e",
+          "outcome": {
+            "ID": "db4ebfe594dfc963c464c01facc4d9565bb33e58df498f762c6127bd762076e1",
+            "InvocationID": "54aa330a3a32d918d77a74934168a08a868803bb8d3eebf6ff718152cf0140b8",
+            "OperationID": "[\"root\",1,2,0]",
+            "TemplateID": "a6bfb72f823541b21e8780faf1eaab779254f5a563e5352cd631521c7ab6c61c",
+            "Caller": {
+              "Subject": "root",
+              "Generation": 1
+            },
+            "Status": "succeeded",
+            "Reason": "member_succeeded",
+            "ResponsePresent": true,
+            "Response": {
+              "id": {
+                "Kind": "int",
+                "Number": 1,
+                "Text": "",
+                "Flag": false
+              },
+              "value": {
+                "Kind": "int",
+                "Number": 0,
+                "Text": "",
+                "Flag": false
+              }
+            },
+            "DecisionOrder": 17
+          }
+        }
+      },
+      "classification_writes": [
+        {
+          "pc": 34,
+          "sequence": 18,
+          "instruction": {
+            "Op": "set",
+            "Dst": "classification",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "string",
+                "Number": 0,
+                "Text": "candidate_missing_reply",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        }
+      ],
+      "terminal_decisions": [
+        {
+          "pc": 35,
+          "sequence": 19,
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "failed"
+          }
+        }
+      ]
+    },
+    "a-pending": {
+      "identities": {
+        "candidate": "a03135203f8b728a6aa7b732d06952cc87b70b3aced2c0833293e333760eece5",
+        "fixed_runs": 1,
+        "parent": "23697f92a4bd055384a8512495b6354e85d95c6df7358bfff782cd3eb52bb10f",
+        "successor": "a6bfb72f823541b21e8780faf1eaab779254f5a563e5352cd631521c7ab6c61c"
+      },
+      "root": {
+        "RootID": "0c4f846b5f71f81e4840d03d8c5f5e6d19a24794738ddac61db93c6fabdd1ecb",
+        "Run": {
+          "Subject": "root",
+          "Generation": 1
+        },
+        "LocalStatus": "open",
+        "Limits": {
+          "MaxInvocations": 3,
+          "MaxCreatedRuns": 3,
+          "MaxDepth": 2,
+          "MaxEffects": 0,
+          "MaxInFlight": 1
+        },
+        "Charges": {
+          "RootID": "0c4f846b5f71f81e4840d03d8c5f5e6d19a24794738ddac61db93c6fabdd1ecb",
+          "OperationID": "",
+          "Kind": "",
+          "Invocations": 2,
+          "CreatedRuns": 2,
+          "Effects": 0,
+          "DecisionOrder": 0
+        },
+        "Outcome": null,
+        "Pending": "members",
+        "PendingInvocations": [
+          "[\"root\",1,1,0]"
+        ],
+        "UnresolvedExternal": [],
+        "UnknownExternal": []
+      },
+      "operational_metrics": {
+        "code_instructions": [
+          52,
+          13,
+          3
+        ],
+        "acyclic_instruction_path_upper": 28,
+        "finite_dispatch_bound": 6,
+        "program_bytes": 21703,
+        "provision_json_bytes": 43449,
+        "projection_bytes": 733,
+        "observation_bytes": 676,
+        "output_array_bytes": 417,
+        "steps": 10,
+        "dispatches": 4
+      },
+      "classification": null,
+      "original_joins": {
+        "candidate": {
+          "handle": "[\"root\",1,1,0]",
+          "commit_sequence": 1,
+          "consumed_sequence": null,
+          "selected_observation": null,
+          "outcome": null
+        },
+        "s": {
+          "handle": "[\"root\",1,2,0]",
+          "commit_sequence": 2,
+          "consumed_sequence": 3,
+          "selected_observation": "2db807ae7e205cff88bc38496f62f9bc10de8021fab4526270bb72fd88cf3159",
+          "outcome": {
+            "ID": "d860ed8f6e87faa036262cf7e7c6a34e73e2073d7f351d8cefd0d8441352308a",
+            "InvocationID": "083a984aff32479dfa9b9a1e6afa8dfcfc541524e65afc1e03f4b56f309f7f7a",
+            "OperationID": "[\"root\",1,2,0]",
+            "TemplateID": "a6bfb72f823541b21e8780faf1eaab779254f5a563e5352cd631521c7ab6c61c",
+            "Caller": {
+              "Subject": "root",
+              "Generation": 1
+            },
+            "Status": "succeeded",
+            "Reason": "member_succeeded",
+            "ResponsePresent": true,
+            "Response": {
+              "id": {
+                "Kind": "int",
+                "Number": 1,
+                "Text": "",
+                "Flag": false
+              },
+              "value": {
+                "Kind": "int",
+                "Number": 0,
+                "Text": "",
+                "Flag": false
+              }
+            },
+            "DecisionOrder": 17
+          }
+        }
+      },
+      "classification_writes": [],
+      "terminal_decisions": []
+    },
+    "b-answer": {
+      "identities": {
+        "candidate": "2e10975004e0351d07b237e0360a2b96b50d5884b651cfa5bfc8e88af62da266",
+        "fixed_runs": 1,
+        "parent": "ae254a67f7bef60e1f3f9285df8835b292f11dc65b7090bdb8b05c806fb8c0ca",
+        "successor": "a6bfb72f823541b21e8780faf1eaab779254f5a563e5352cd631521c7ab6c61c"
+      },
+      "root": {
+        "RootID": "097e392768356462559c79bd054432f91ee6b60eded7c9f689d7fee5bf7c7df2",
+        "Run": {
+          "Subject": "root",
+          "Generation": 1
+        },
+        "LocalStatus": "succeeded",
+        "Limits": {
+          "MaxInvocations": 3,
+          "MaxCreatedRuns": 3,
+          "MaxDepth": 2,
+          "MaxEffects": 0,
+          "MaxInFlight": 1
+        },
+        "Charges": {
+          "RootID": "097e392768356462559c79bd054432f91ee6b60eded7c9f689d7fee5bf7c7df2",
+          "OperationID": "",
+          "Kind": "",
+          "Invocations": 3,
+          "CreatedRuns": 3,
+          "Effects": 0,
+          "DecisionOrder": 0
+        },
+        "Outcome": {
+          "ID": "80123cf6f107a17d2c4c693650bc9c7d2e900c6b62c5d51f6d28fd0682ca4dd3",
+          "InvocationID": "root:097e392768356462559c79bd054432f91ee6b60eded7c9f689d7fee5bf7c7df2",
+          "OperationID": "root:097e392768356462559c79bd054432f91ee6b60eded7c9f689d7fee5bf7c7df2",
+          "TemplateID": "",
+          "Caller": {
+            "Subject": "root",
+            "Generation": 1
+          },
+          "Status": "succeeded",
+          "Reason": "member_succeeded",
+          "ResponsePresent": false,
+          "Response": null,
+          "DecisionOrder": 55
+        },
+        "Pending": "",
+        "PendingInvocations": [],
+        "UnresolvedExternal": [],
+        "UnknownExternal": []
+      },
+      "operational_metrics": {
+        "code_instructions": [
+          52,
+          7,
+          16,
+          3
+        ],
+        "acyclic_instruction_path_upper": 38,
+        "finite_dispatch_bound": 9,
+        "program_bytes": 21703,
+        "provision_json_bytes": 53004,
+        "projection_bytes": 1246,
+        "observation_bytes": 797,
+        "output_array_bytes": 537,
+        "steps": 35,
+        "dispatches": 9
+      },
+      "classification": {
+        "Kind": "string",
+        "Number": 0,
+        "Text": "answer",
+        "Flag": false
+      },
+      "original_joins": {
+        "candidate": {
+          "handle": "[\"root\",1,1,0]",
+          "commit_sequence": 1,
+          "consumed_sequence": 4,
+          "selected_observation": "015e657116093f5e61ad67c4fd35758aa2c250122e92a2e115f1817a2b546ac5",
+          "outcome": {
+            "ID": "d633d6dc16312909ba1a2afef8832300015f7ba94c769936970ee0290ebc82dc",
+            "InvocationID": "4a7fab0f455747e951689b88f8c87445e72e150a2e27a0a28c360335c2e4220c",
+            "OperationID": "[\"root\",1,1,0]",
+            "TemplateID": "2e10975004e0351d07b237e0360a2b96b50d5884b651cfa5bfc8e88af62da266",
+            "Caller": {
+              "Subject": "root",
+              "Generation": 1
+            },
+            "Status": "succeeded",
+            "Reason": "member_succeeded",
+            "ResponsePresent": true,
+            "Response": {
+              "id": {
+                "Kind": "int",
+                "Number": 1,
+                "Text": "",
+                "Flag": false
+              },
+              "value": {
+                "Kind": "int",
+                "Number": 1,
+                "Text": "",
+                "Flag": false
+              }
+            },
+            "DecisionOrder": 37
+          }
+        },
+        "s": {
+          "handle": "[\"root\",1,2,0]",
+          "commit_sequence": 2,
+          "consumed_sequence": 3,
+          "selected_observation": "f2f412a25c5ea4608a34efad2aa0e40a0c03714bc9f830e52e3f552fc892578b",
+          "outcome": {
+            "ID": "fe5908e07307d838005fa8548ae47ef60e2dd655eedd48aafdb43dd26ecd06c5",
+            "InvocationID": "0f89d04c5dab9fa3a7c24444ea4b2d8d1c3a3101b211829a01428846b6ea3c02",
+            "OperationID": "[\"root\",1,2,0]",
+            "TemplateID": "a6bfb72f823541b21e8780faf1eaab779254f5a563e5352cd631521c7ab6c61c",
+            "Caller": {
+              "Subject": "root",
+              "Generation": 1
+            },
+            "Status": "succeeded",
+            "Reason": "member_succeeded",
+            "ResponsePresent": true,
+            "Response": {
+              "id": {
+                "Kind": "int",
+                "Number": 1,
+                "Text": "",
+                "Flag": false
+              },
+              "value": {
+                "Kind": "int",
+                "Number": 0,
+                "Text": "",
+                "Flag": false
+              }
+            },
+            "DecisionOrder": 19
+          }
+        }
+      },
+      "classification_writes": [
+        {
+          "pc": 18,
+          "sequence": 18,
+          "instruction": {
+            "Op": "set",
+            "Dst": "classification",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "string",
+                "Number": 0,
+                "Text": "answer",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        }
+      ],
+      "terminal_decisions": [
+        {
+          "pc": 19,
+          "sequence": 19,
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "succeeded"
+          }
+        }
+      ]
+    },
+    "b-fail": {
+      "identities": {
+        "candidate": "2e10975004e0351d07b237e0360a2b96b50d5884b651cfa5bfc8e88af62da266",
+        "fixed_runs": 1,
+        "parent": "ae254a67f7bef60e1f3f9285df8835b292f11dc65b7090bdb8b05c806fb8c0ca",
+        "successor": "a6bfb72f823541b21e8780faf1eaab779254f5a563e5352cd631521c7ab6c61c"
+      },
+      "root": {
+        "RootID": "00d8bcfdad7a95ead65a9a3e1c7ce223d3205d492846f6bb591339e201f21a9b",
+        "Run": {
+          "Subject": "root",
+          "Generation": 1
+        },
+        "LocalStatus": "failed",
+        "Limits": {
+          "MaxInvocations": 3,
+          "MaxCreatedRuns": 3,
+          "MaxDepth": 2,
+          "MaxEffects": 0,
+          "MaxInFlight": 1
+        },
+        "Charges": {
+          "RootID": "00d8bcfdad7a95ead65a9a3e1c7ce223d3205d492846f6bb591339e201f21a9b",
+          "OperationID": "",
+          "Kind": "",
+          "Invocations": 3,
+          "CreatedRuns": 3,
+          "Effects": 0,
+          "DecisionOrder": 0
+        },
+        "Outcome": {
+          "ID": "54b2d7da2e81706102bfba333a9b954166a6220143af3f0abd082968c56a57fb",
+          "InvocationID": "root:00d8bcfdad7a95ead65a9a3e1c7ce223d3205d492846f6bb591339e201f21a9b",
+          "OperationID": "root:00d8bcfdad7a95ead65a9a3e1c7ce223d3205d492846f6bb591339e201f21a9b",
+          "TemplateID": "",
+          "Caller": {
+            "Subject": "root",
+            "Generation": 1
+          },
+          "Status": "failed",
+          "Reason": "member_failed",
+          "ResponsePresent": false,
+          "Response": null,
+          "DecisionOrder": 52
+        },
+        "Pending": "",
+        "PendingInvocations": [],
+        "UnresolvedExternal": [],
+        "UnknownExternal": []
+      },
+      "operational_metrics": {
+        "code_instructions": [
+          52,
+          7,
+          16,
+          3
+        ],
+        "acyclic_instruction_path_upper": 38,
+        "finite_dispatch_bound": 9,
+        "program_bytes": 21703,
+        "provision_json_bytes": 53002,
+        "projection_bytes": 1115,
+        "observation_bytes": 797,
+        "output_array_bytes": 537,
+        "steps": 34,
+        "dispatches": 8
+      },
+      "classification": {
+        "Kind": "string",
+        "Number": 0,
+        "Text": "candidate_failed",
+        "Flag": false
+      },
+      "original_joins": {
+        "candidate": {
+          "handle": "[\"root\",1,1,0]",
+          "commit_sequence": 1,
+          "consumed_sequence": 4,
+          "selected_observation": "2e155613558fca0aff71e478faac22f825625a54a3df3ce8088571257ce05810",
+          "outcome": {
+            "ID": "c6b5ca9a06ae09afe1fa1fe7af749f52caf490efdb7f676288aacf66750d2b4c",
+            "InvocationID": "77e356bba25ba38b7fbbb8a90b12624eb314313d053bf23d4faf558a5f2e477f",
+            "OperationID": "[\"root\",1,1,0]",
+            "TemplateID": "2e10975004e0351d07b237e0360a2b96b50d5884b651cfa5bfc8e88af62da266",
+            "Caller": {
+              "Subject": "root",
+              "Generation": 1
+            },
+            "Status": "failed",
+            "Reason": "member_failed",
+            "ResponsePresent": false,
+            "Response": null,
+            "DecisionOrder": 35
+          }
+        },
+        "s": {
+          "handle": "[\"root\",1,2,0]",
+          "commit_sequence": 2,
+          "consumed_sequence": 3,
+          "selected_observation": "4af3226e355c62a51ac71de96ccc1b12111bb94446afb3eb045dc90a5ac72132",
+          "outcome": {
+            "ID": "b50c845ba0855827a5abc7ed1cc148940279467fd40ba8f16b14b95654c2d905",
+            "InvocationID": "051971d6abb96b0baeaba0be217a33bfba453bc29c72fcb41fa1b3060f520c74",
+            "OperationID": "[\"root\",1,2,0]",
+            "TemplateID": "a6bfb72f823541b21e8780faf1eaab779254f5a563e5352cd631521c7ab6c61c",
+            "Caller": {
+              "Subject": "root",
+              "Generation": 1
+            },
+            "Status": "succeeded",
+            "Reason": "member_succeeded",
+            "ResponsePresent": true,
+            "Response": {
+              "id": {
+                "Kind": "int",
+                "Number": 1,
+                "Text": "",
+                "Flag": false
+              },
+              "value": {
+                "Kind": "int",
+                "Number": 0,
+                "Text": "",
+                "Flag": false
+              }
+            },
+            "DecisionOrder": 19
+          }
+        }
+      },
+      "classification_writes": [
+        {
+          "pc": 31,
+          "sequence": 17,
+          "instruction": {
+            "Op": "set",
+            "Dst": "classification",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "string",
+                "Number": 0,
+                "Text": "candidate_failed",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        }
+      ],
+      "terminal_decisions": [
+        {
+          "pc": 32,
+          "sequence": 18,
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "failed"
+          }
+        }
+      ]
+    },
+    "b-absent": {
+      "identities": {
+        "candidate": "2e10975004e0351d07b237e0360a2b96b50d5884b651cfa5bfc8e88af62da266",
+        "fixed_runs": 1,
+        "parent": "ae254a67f7bef60e1f3f9285df8835b292f11dc65b7090bdb8b05c806fb8c0ca",
+        "successor": "a6bfb72f823541b21e8780faf1eaab779254f5a563e5352cd631521c7ab6c61c"
+      },
+      "root": {
+        "RootID": "44340053ad20a4b0a1b23addce4ba113c5cfa3b324e4a5f4d7a797ffd6f00d32",
+        "Run": {
+          "Subject": "root",
+          "Generation": 1
+        },
+        "LocalStatus": "failed",
+        "Limits": {
+          "MaxInvocations": 3,
+          "MaxCreatedRuns": 3,
+          "MaxDepth": 2,
+          "MaxEffects": 0,
+          "MaxInFlight": 1
+        },
+        "Charges": {
+          "RootID": "44340053ad20a4b0a1b23addce4ba113c5cfa3b324e4a5f4d7a797ffd6f00d32",
+          "OperationID": "",
+          "Kind": "",
+          "Invocations": 3,
+          "CreatedRuns": 3,
+          "Effects": 0,
+          "DecisionOrder": 0
+        },
+        "Outcome": {
+          "ID": "3d42cf402daf53270e03a347b066dc26b0c4a56bf6c423d9e492e315a4c1036b",
+          "InvocationID": "root:44340053ad20a4b0a1b23addce4ba113c5cfa3b324e4a5f4d7a797ffd6f00d32",
+          "OperationID": "root:44340053ad20a4b0a1b23addce4ba113c5cfa3b324e4a5f4d7a797ffd6f00d32",
+          "TemplateID": "",
+          "Caller": {
+            "Subject": "root",
+            "Generation": 1
+          },
+          "Status": "failed",
+          "Reason": "member_failed",
+          "ResponsePresent": false,
+          "Response": null,
+          "DecisionOrder": 54
+        },
+        "Pending": "",
+        "PendingInvocations": [],
+        "UnresolvedExternal": [],
+        "UnknownExternal": []
+      },
+      "operational_metrics": {
+        "code_instructions": [
+          52,
+          7,
+          16,
+          3
+        ],
+        "acyclic_instruction_path_upper": 38,
+        "finite_dispatch_bound": 9,
+        "program_bytes": 21703,
+        "provision_json_bytes": 53004,
+        "projection_bytes": 1124,
+        "observation_bytes": 797,
+        "output_array_bytes": 537,
+        "steps": 36,
+        "dispatches": 8
+      },
+      "classification": {
+        "Kind": "string",
+        "Number": 0,
+        "Text": "candidate_missing_reply",
+        "Flag": false
+      },
+      "original_joins": {
+        "candidate": {
+          "handle": "[\"root\",1,1,0]",
+          "commit_sequence": 1,
+          "consumed_sequence": 4,
+          "selected_observation": "afb071957a1e2b9864d3c594f9258ac9b0cf2b2a0c71d60b8427f9697d831097",
+          "outcome": {
+            "ID": "05f69f2de837c6b37009368bd26670f5210c19f2c42ffa1278237d7dce6b9f3e",
+            "InvocationID": "2e2fc826e117eb678906e8d41e0c61ccb5fbe59b79be26b4f828ba0ebfe2dc46",
+            "OperationID": "[\"root\",1,1,0]",
+            "TemplateID": "2e10975004e0351d07b237e0360a2b96b50d5884b651cfa5bfc8e88af62da266",
+            "Caller": {
+              "Subject": "root",
+              "Generation": 1
+            },
+            "Status": "failed",
+            "Reason": "missing_reply",
+            "ResponsePresent": false,
+            "Response": null,
+            "DecisionOrder": 36
+          }
+        },
+        "s": {
+          "handle": "[\"root\",1,2,0]",
+          "commit_sequence": 2,
+          "consumed_sequence": 3,
+          "selected_observation": "06921e3700368ca7508d4e92d436aa5914bb7c986c8648875227ca84a0052fb7",
+          "outcome": {
+            "ID": "4355739ce7295246567f3bb9e9f62e540dbcb46e034274ef9b0c7f00813fc0e7",
+            "InvocationID": "2c2c970970d1d46f94b4fe6007b6e99f4c218ea2b3f5baae2632b9c227682a6d",
+            "OperationID": "[\"root\",1,2,0]",
+            "TemplateID": "a6bfb72f823541b21e8780faf1eaab779254f5a563e5352cd631521c7ab6c61c",
+            "Caller": {
+              "Subject": "root",
+              "Generation": 1
+            },
+            "Status": "succeeded",
+            "Reason": "member_succeeded",
+            "ResponsePresent": true,
+            "Response": {
+              "id": {
+                "Kind": "int",
+                "Number": 1,
+                "Text": "",
+                "Flag": false
+              },
+              "value": {
+                "Kind": "int",
+                "Number": 0,
+                "Text": "",
+                "Flag": false
+              }
+            },
+            "DecisionOrder": 19
+          }
+        }
+      },
+      "classification_writes": [
+        {
+          "pc": 34,
+          "sequence": 18,
+          "instruction": {
+            "Op": "set",
+            "Dst": "classification",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "string",
+                "Number": 0,
+                "Text": "candidate_missing_reply",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        }
+      ],
+      "terminal_decisions": [
+        {
+          "pc": 35,
+          "sequence": 19,
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "failed"
+          }
+        }
+      ]
+    },
+    "b-pending": {
+      "identities": {
+        "candidate": "2e10975004e0351d07b237e0360a2b96b50d5884b651cfa5bfc8e88af62da266",
+        "fixed_runs": 1,
+        "parent": "ae254a67f7bef60e1f3f9285df8835b292f11dc65b7090bdb8b05c806fb8c0ca",
+        "successor": "a6bfb72f823541b21e8780faf1eaab779254f5a563e5352cd631521c7ab6c61c"
+      },
+      "root": {
+        "RootID": "b1d7fe344f0d0e845458924e540e5b1025dbf1bf379c0f127140dc019dd68ff8",
+        "Run": {
+          "Subject": "root",
+          "Generation": 1
+        },
+        "LocalStatus": "open",
+        "Limits": {
+          "MaxInvocations": 3,
+          "MaxCreatedRuns": 3,
+          "MaxDepth": 2,
+          "MaxEffects": 0,
+          "MaxInFlight": 1
+        },
+        "Charges": {
+          "RootID": "b1d7fe344f0d0e845458924e540e5b1025dbf1bf379c0f127140dc019dd68ff8",
+          "OperationID": "",
+          "Kind": "",
+          "Invocations": 3,
+          "CreatedRuns": 3,
+          "Effects": 0,
+          "DecisionOrder": 0
+        },
+        "Outcome": null,
+        "Pending": "members",
+        "PendingInvocations": [
+          "[\"root\",1,1,0]"
+        ],
+        "UnresolvedExternal": [],
+        "UnknownExternal": []
+      },
+      "operational_metrics": {
+        "code_instructions": [
+          52,
+          7,
+          16,
+          3
+        ],
+        "acyclic_instruction_path_upper": 38,
+        "finite_dispatch_bound": 9,
+        "program_bytes": 21703,
+        "provision_json_bytes": 53005,
+        "projection_bytes": 740,
+        "observation_bytes": 797,
+        "output_array_bytes": 537,
+        "steps": 19,
+        "dispatches": 7
+      },
+      "classification": null,
+      "original_joins": {
+        "candidate": {
+          "handle": "[\"root\",1,1,0]",
+          "commit_sequence": 1,
+          "consumed_sequence": null,
+          "selected_observation": null,
+          "outcome": null
+        },
+        "s": {
+          "handle": "[\"root\",1,2,0]",
+          "commit_sequence": 2,
+          "consumed_sequence": 3,
+          "selected_observation": "23e4e3be79c16b14f441bf5f9cfbfec67c322fff6912ec53b4fb3eb2a647b032",
+          "outcome": {
+            "ID": "634236106b24cf697ced47f6f3520836727fec6826f125a615f8186140ab14ad",
+            "InvocationID": "a355d387502f426864e84781a2475854f4504954665b45a51b447193b3ccfbc9",
+            "OperationID": "[\"root\",1,2,0]",
+            "TemplateID": "a6bfb72f823541b21e8780faf1eaab779254f5a563e5352cd631521c7ab6c61c",
+            "Caller": {
+              "Subject": "root",
+              "Generation": 1
+            },
+            "Status": "succeeded",
+            "Reason": "member_succeeded",
+            "ResponsePresent": true,
+            "Response": {
+              "id": {
+                "Kind": "int",
+                "Number": 1,
+                "Text": "",
+                "Flag": false
+              },
+              "value": {
+                "Kind": "int",
+                "Number": 0,
+                "Text": "",
+                "Flag": false
+              }
+            },
+            "DecisionOrder": 20
+          }
+        }
+      },
+      "classification_writes": [],
+      "terminal_decisions": []
+    },
+    "wrong-id": {
+      "identities": {
+        "candidate": "ff27abb69d6735a495853df35afa12701397f2718ba801968cdec69db4c04d96",
+        "fixed_runs": 1,
+        "parent": "f18632812660672df71bf6fa45b7c256dfb7695fdc41e961644c31b062b30c4b",
+        "successor": "a6bfb72f823541b21e8780faf1eaab779254f5a563e5352cd631521c7ab6c61c"
+      },
+      "root": {
+        "RootID": "dad270332d53d96e1b0697a232105872d6761996b98f64db8d1e4e52f0bb1338",
+        "Run": {
+          "Subject": "root",
+          "Generation": 1
+        },
+        "LocalStatus": "failed",
+        "Limits": {
+          "MaxInvocations": 3,
+          "MaxCreatedRuns": 3,
+          "MaxDepth": 2,
+          "MaxEffects": 0,
+          "MaxInFlight": 1
+        },
+        "Charges": {
+          "RootID": "dad270332d53d96e1b0697a232105872d6761996b98f64db8d1e4e52f0bb1338",
+          "OperationID": "",
+          "Kind": "",
+          "Invocations": 2,
+          "CreatedRuns": 2,
+          "Effects": 0,
+          "DecisionOrder": 0
+        },
+        "Outcome": {
+          "ID": "ee31aa84e7d2a9e47c1a83c8e8792a6064d961fdfdce5e266482544c9121d5ee",
+          "InvocationID": "root:dad270332d53d96e1b0697a232105872d6761996b98f64db8d1e4e52f0bb1338",
+          "OperationID": "root:dad270332d53d96e1b0697a232105872d6761996b98f64db8d1e4e52f0bb1338",
+          "TemplateID": "",
+          "Caller": {
+            "Subject": "root",
+            "Generation": 1
+          },
+          "Status": "failed",
+          "Reason": "member_failed",
+          "ResponsePresent": false,
+          "Response": null,
+          "DecisionOrder": 45
+        },
+        "Pending": "",
+        "PendingInvocations": [],
+        "UnresolvedExternal": [],
+        "UnknownExternal": []
+      },
+      "operational_metrics": {
+        "code_instructions": [
+          52,
+          12,
+          3
+        ],
+        "acyclic_instruction_path_upper": 32,
+        "finite_dispatch_bound": 6,
+        "program_bytes": 21703,
+        "provision_json_bytes": 41368,
+        "projection_bytes": 1252,
+        "observation_bytes": 676,
+        "output_array_bytes": 416,
+        "steps": 31,
+        "dispatches": 6
+      },
+      "classification": {
+        "Kind": "string",
+        "Number": 0,
+        "Text": "invalid_outcome",
+        "Flag": false
+      },
+      "original_joins": {
+        "candidate": {
+          "handle": "[\"root\",1,1,0]",
+          "commit_sequence": 1,
+          "consumed_sequence": 4,
+          "selected_observation": "cb8eac0b96000ee63f06281a7a9e08143170e7b67ca63c725253b30aece19198",
+          "outcome": {
+            "ID": "db7b7fac0ec92cbac99e9f2c401ed15f508cb51d6983203f1a7a511e9c68538a",
+            "InvocationID": "020403ccfcb5853d1a3e7ae025fccbe8a9149ddb9f2897e4af53d207f3e12e55",
+            "OperationID": "[\"root\",1,1,0]",
+            "TemplateID": "ff27abb69d6735a495853df35afa12701397f2718ba801968cdec69db4c04d96",
+            "Caller": {
+              "Subject": "root",
+              "Generation": 1
+            },
+            "Status": "succeeded",
+            "Reason": "member_succeeded",
+            "ResponsePresent": true,
+            "Response": {
+              "id": {
+                "Kind": "int",
+                "Number": 2,
+                "Text": "",
+                "Flag": false
+              },
+              "value": {
+                "Kind": "int",
+                "Number": 1,
+                "Text": "",
+                "Flag": false
+              }
+            },
+            "DecisionOrder": 28
+          }
+        },
+        "s": {
+          "handle": "[\"root\",1,2,0]",
+          "commit_sequence": 2,
+          "consumed_sequence": 3,
+          "selected_observation": "b5df65dca18c3143a7a2a9690109518b76ae50b1ed3b4ebd31dc79107c2d0d8b",
+          "outcome": {
+            "ID": "431baf791cec15460cbd922e0fc5b069685cf835e5ed1186074883136606f1ad",
+            "InvocationID": "29656e3e9eeff2772068b54b316f3a68e46be6438df209bf9096edf36e12956f",
+            "OperationID": "[\"root\",1,2,0]",
+            "TemplateID": "a6bfb72f823541b21e8780faf1eaab779254f5a563e5352cd631521c7ab6c61c",
+            "Caller": {
+              "Subject": "root",
+              "Generation": 1
+            },
+            "Status": "succeeded",
+            "Reason": "member_succeeded",
+            "ResponsePresent": true,
+            "Response": {
+              "id": {
+                "Kind": "int",
+                "Number": 1,
+                "Text": "",
+                "Flag": false
+              },
+              "value": {
+                "Kind": "int",
+                "Number": 0,
+                "Text": "",
+                "Flag": false
+              }
+            },
+            "DecisionOrder": 17
+          }
+        }
+      },
+      "classification_writes": [
+        {
+          "pc": 22,
+          "sequence": 17,
+          "instruction": {
+            "Op": "set",
+            "Dst": "classification",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "string",
+                "Number": 0,
+                "Text": "invalid_outcome",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        }
+      ],
+      "terminal_decisions": [
+        {
+          "pc": 23,
+          "sequence": 18,
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "failed"
+          }
+        }
+      ]
+    },
+    "wrong-complement": {
+      "identities": {
+        "candidate": "3e843add54fe3fed5d5cadb09312729238ac3a5d3a4eb46f7e1ca16ae87b671b",
+        "fixed_runs": 1,
+        "parent": "923b213012b6b59d11b7cf04a7a2d21ad68a6cc22ae9414243b31e8e582b0b2b",
+        "successor": "a6bfb72f823541b21e8780faf1eaab779254f5a563e5352cd631521c7ab6c61c"
+      },
+      "root": {
+        "RootID": "503b74af980ab9603f4fc9912eebdf82327254c3972b3aefd11f2e4d6a8e9015",
+        "Run": {
+          "Subject": "root",
+          "Generation": 1
+        },
+        "LocalStatus": "failed",
+        "Limits": {
+          "MaxInvocations": 3,
+          "MaxCreatedRuns": 3,
+          "MaxDepth": 2,
+          "MaxEffects": 0,
+          "MaxInFlight": 1
+        },
+        "Charges": {
+          "RootID": "503b74af980ab9603f4fc9912eebdf82327254c3972b3aefd11f2e4d6a8e9015",
+          "OperationID": "",
+          "Kind": "",
+          "Invocations": 2,
+          "CreatedRuns": 2,
+          "Effects": 0,
+          "DecisionOrder": 0
+        },
+        "Outcome": {
+          "ID": "4b9eab8aba128a2e0696e10bba9a9ff9803a3beff1905f4d8862d25932b2ca1b",
+          "InvocationID": "root:503b74af980ab9603f4fc9912eebdf82327254c3972b3aefd11f2e4d6a8e9015",
+          "OperationID": "root:503b74af980ab9603f4fc9912eebdf82327254c3972b3aefd11f2e4d6a8e9015",
+          "TemplateID": "",
+          "Caller": {
+            "Subject": "root",
+            "Generation": 1
+          },
+          "Status": "failed",
+          "Reason": "member_failed",
+          "ResponsePresent": false,
+          "Response": null,
+          "DecisionOrder": 41
+        },
+        "Pending": "",
+        "PendingInvocations": [],
+        "UnresolvedExternal": [],
+        "UnknownExternal": []
+      },
+      "operational_metrics": {
+        "code_instructions": [
+          52,
+          5,
+          3
+        ],
+        "acyclic_instruction_path_upper": 27,
+        "finite_dispatch_bound": 6,
+        "program_bytes": 21703,
+        "provision_json_bytes": 38892,
+        "projection_bytes": 1252,
+        "observation_bytes": 676,
+        "output_array_bytes": 416,
+        "steps": 27,
+        "dispatches": 6
+      },
+      "classification": {
+        "Kind": "string",
+        "Number": 0,
+        "Text": "invalid_outcome",
+        "Flag": false
+      },
+      "original_joins": {
+        "candidate": {
+          "handle": "[\"root\",1,1,0]",
+          "commit_sequence": 1,
+          "consumed_sequence": 4,
+          "selected_observation": "ef66ea58146eaa437e6d891570c9a9a57e8d87b46e587efe932bd9bae87fe536",
+          "outcome": {
+            "ID": "055bcf2ea4994a44817a08e6fc3a014bada6b975d02037845c873df2d75c0041",
+            "InvocationID": "f4208504bda5a066433d50e2670e62d057a4df152995eeac950abae8b1881c9b",
+            "OperationID": "[\"root\",1,1,0]",
+            "TemplateID": "3e843add54fe3fed5d5cadb09312729238ac3a5d3a4eb46f7e1ca16ae87b671b",
+            "Caller": {
+              "Subject": "root",
+              "Generation": 1
+            },
+            "Status": "succeeded",
+            "Reason": "member_succeeded",
+            "ResponsePresent": true,
+            "Response": {
+              "id": {
+                "Kind": "int",
+                "Number": 1,
+                "Text": "",
+                "Flag": false
+              },
+              "value": {
+                "Kind": "int",
+                "Number": 0,
+                "Text": "",
+                "Flag": false
+              }
+            },
+            "DecisionOrder": 23
+          }
+        },
+        "s": {
+          "handle": "[\"root\",1,2,0]",
+          "commit_sequence": 2,
+          "consumed_sequence": 3,
+          "selected_observation": "ff7a5bdee4f1d32eb45924477fa4fc14f6b6e12a3653035ad4563b2b7feeb42b",
+          "outcome": {
+            "ID": "de8613b25a4056f511474b7855243594406e19807e6aa88d12147786eabdf5c9",
+            "InvocationID": "387da14644b21157ff76b0360356fd6ce2ac25876830d4c6deea5fb4b3977aed",
+            "OperationID": "[\"root\",1,2,0]",
+            "TemplateID": "a6bfb72f823541b21e8780faf1eaab779254f5a563e5352cd631521c7ab6c61c",
+            "Caller": {
+              "Subject": "root",
+              "Generation": 1
+            },
+            "Status": "succeeded",
+            "Reason": "member_succeeded",
+            "ResponsePresent": true,
+            "Response": {
+              "id": {
+                "Kind": "int",
+                "Number": 1,
+                "Text": "",
+                "Flag": false
+              },
+              "value": {
+                "Kind": "int",
+                "Number": 0,
+                "Text": "",
+                "Flag": false
+              }
+            },
+            "DecisionOrder": 19
+          }
+        }
+      },
+      "classification_writes": [
+        {
+          "pc": 20,
+          "sequence": 18,
+          "instruction": {
+            "Op": "set",
+            "Dst": "classification",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "string",
+                "Number": 0,
+                "Text": "invalid_outcome",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        }
+      ],
+      "terminal_decisions": [
+        {
+          "pc": 21,
+          "sequence": 19,
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "failed"
+          }
+        }
+      ]
+    },
+    "deliberate-failure-absent": {
+      "identities": {
+        "candidate": "feae9ab0f8be160b65cec893e7646cb5e525f90fc674cf36181c9d254b53e6ed",
+        "fixed_runs": 1,
+        "parent": "509d96b1ee90d70870f76bc8faa13b310caeb02da45e2cc048bf5725333405d8",
+        "successor": "a6bfb72f823541b21e8780faf1eaab779254f5a563e5352cd631521c7ab6c61c"
+      },
+      "root": {
+        "RootID": "d4fef0ba94f26366fed430846e896c3e6bd3127398ee237cc45c8783965a0b8f",
+        "Run": {
+          "Subject": "root",
+          "Generation": 1
+        },
+        "LocalStatus": "failed",
+        "Limits": {
+          "MaxInvocations": 3,
+          "MaxCreatedRuns": 3,
+          "MaxDepth": 2,
+          "MaxEffects": 0,
+          "MaxInFlight": 1
+        },
+        "Charges": {
+          "RootID": "d4fef0ba94f26366fed430846e896c3e6bd3127398ee237cc45c8783965a0b8f",
+          "OperationID": "",
+          "Kind": "",
+          "Invocations": 2,
+          "CreatedRuns": 2,
+          "Effects": 0,
+          "DecisionOrder": 0
+        },
+        "Outcome": {
+          "ID": "4846e9a87e5bf275d864ee8eeda76fc8e4dd17c75add7164876b2a09f3ea56f2",
+          "InvocationID": "root:d4fef0ba94f26366fed430846e896c3e6bd3127398ee237cc45c8783965a0b8f",
+          "OperationID": "root:d4fef0ba94f26366fed430846e896c3e6bd3127398ee237cc45c8783965a0b8f",
+          "TemplateID": "",
+          "Caller": {
+            "Subject": "root",
+            "Generation": 1
+          },
+          "Status": "failed",
+          "Reason": "member_failed",
+          "ResponsePresent": false,
+          "Response": null,
+          "DecisionOrder": 35
+        },
+        "Pending": "",
+        "PendingInvocations": [],
+        "UnresolvedExternal": [],
+        "UnknownExternal": []
+      },
+      "operational_metrics": {
+        "code_instructions": [
+          52,
+          2,
+          3
+        ],
+        "acyclic_instruction_path_upper": 24,
+        "finite_dispatch_bound": 6,
+        "program_bytes": 21703,
+        "provision_json_bytes": 37308,
+        "projection_bytes": 1117,
+        "observation_bytes": 676,
+        "output_array_bytes": 416,
+        "steps": 23,
+        "dispatches": 5
+      },
+      "classification": {
+        "Kind": "string",
+        "Number": 0,
+        "Text": "candidate_failed",
+        "Flag": false
+      },
+      "original_joins": {
+        "candidate": {
+          "handle": "[\"root\",1,1,0]",
+          "commit_sequence": 1,
+          "consumed_sequence": 4,
+          "selected_observation": "1b175f5a29aa8c5609d7cc23fc47be59daeacd81cf238ffc3ec26125c1b0cc33",
+          "outcome": {
+            "ID": "7cff5e250b2594f513fc3de237a869d41ad33d6bc994cd8cf36182285163dcfe",
+            "InvocationID": "9f639d9f21836f7ae0bd6a0eeb3f17fd7e57a7f44bf082ed8acf6fcbaad4e810",
+            "OperationID": "[\"root\",1,1,0]",
+            "TemplateID": "feae9ab0f8be160b65cec893e7646cb5e525f90fc674cf36181c9d254b53e6ed",
+            "Caller": {
+              "Subject": "root",
+              "Generation": 1
+            },
+            "Status": "failed",
+            "Reason": "member_failed",
+            "ResponsePresent": false,
+            "Response": null,
+            "DecisionOrder": 10
+          }
+        },
+        "s": {
+          "handle": "[\"root\",1,2,0]",
+          "commit_sequence": 2,
+          "consumed_sequence": 3,
+          "selected_observation": "6c8ec77ea32756f6594f78011b97df48b3756f98afeb1ef5fb63d7e45c608ca4",
+          "outcome": {
+            "ID": "f2c47f60d8a8a7e004dc8b1bd9b867778be7e52700b7348d0721ad94b415e8fd",
+            "InvocationID": "37aaec759a96304b146ac1dcd722b8a0fd7c1b62d8fe8fad8f3bc65684f9cc00",
+            "OperationID": "[\"root\",1,2,0]",
+            "TemplateID": "a6bfb72f823541b21e8780faf1eaab779254f5a563e5352cd631521c7ab6c61c",
+            "Caller": {
+              "Subject": "root",
+              "Generation": 1
+            },
+            "Status": "succeeded",
+            "Reason": "member_succeeded",
+            "ResponsePresent": true,
+            "Response": {
+              "id": {
+                "Kind": "int",
+                "Number": 1,
+                "Text": "",
+                "Flag": false
+              },
+              "value": {
+                "Kind": "int",
+                "Number": 0,
+                "Text": "",
+                "Flag": false
+              }
+            },
+            "DecisionOrder": 17
+          }
+        }
+      },
+      "classification_writes": [
+        {
+          "pc": 31,
+          "sequence": 17,
+          "instruction": {
+            "Op": "set",
+            "Dst": "classification",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "string",
+                "Number": 0,
+                "Text": "candidate_failed",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        }
+      ],
+      "terminal_decisions": [
+        {
+          "pc": 32,
+          "sequence": 18,
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "failed"
+          }
+        }
+      ]
+    },
+    "s-fail": {
+      "identities": {
+        "candidate": "a03135203f8b728a6aa7b732d06952cc87b70b3aced2c0833293e333760eece5",
+        "fixed_runs": 1,
+        "parent": "eaccdac0c1001570a4f185add763766e0bb91d9aa639070e42c0fb4c24b1da4b",
+        "successor": "9f4b6423a1930a6b207f95ace05ab793b73a1c89ca671229a796d4d569a958b0"
+      },
+      "root": {
+        "RootID": "e1c994f5ca066f3a038c66d24b17b32805e8a3b45bd59a5af09c523844d4c88d",
+        "Run": {
+          "Subject": "root",
+          "Generation": 1
+        },
+        "LocalStatus": "failed",
+        "Limits": {
+          "MaxInvocations": 3,
+          "MaxCreatedRuns": 3,
+          "MaxDepth": 2,
+          "MaxEffects": 0,
+          "MaxInFlight": 1
+        },
+        "Charges": {
+          "RootID": "e1c994f5ca066f3a038c66d24b17b32805e8a3b45bd59a5af09c523844d4c88d",
+          "OperationID": "",
+          "Kind": "",
+          "Invocations": 2,
+          "CreatedRuns": 2,
+          "Effects": 0,
+          "DecisionOrder": 0
+        },
+        "Outcome": {
+          "ID": "4ab1e00ceae4b1b1db845ed4d158bbfcbdd822326e2ac709d4227e07641b74c5",
+          "InvocationID": "root:e1c994f5ca066f3a038c66d24b17b32805e8a3b45bd59a5af09c523844d4c88d",
+          "OperationID": "root:e1c994f5ca066f3a038c66d24b17b32805e8a3b45bd59a5af09c523844d4c88d",
+          "TemplateID": "",
+          "Caller": {
+            "Subject": "root",
+            "Generation": 1
+          },
+          "Status": "failed",
+          "Reason": "member_failed",
+          "ResponsePresent": false,
+          "Response": null,
+          "DecisionOrder": 27
+        },
+        "Pending": "",
+        "PendingInvocations": [],
+        "UnresolvedExternal": [],
+        "UnknownExternal": []
+      },
+      "operational_metrics": {
+        "code_instructions": [
+          52,
+          13,
+          2
+        ],
+        "acyclic_instruction_path_upper": 27,
+        "finite_dispatch_bound": 6,
+        "program_bytes": 21703,
+        "provision_json_bytes": 42540,
+        "projection_bytes": 1066,
+        "observation_bytes": 676,
+        "output_array_bytes": 416,
+        "steps": 15,
+        "dispatches": 5
+      },
+      "classification": {
+        "Kind": "string",
+        "Number": 0,
+        "Text": "invalid_outcome",
+        "Flag": false
+      },
+      "original_joins": {
+        "candidate": {
+          "handle": "[\"root\",1,1,0]",
+          "commit_sequence": 1,
+          "consumed_sequence": 4,
+          "selected_observation": "c497a702c12672ac701e7eb7f899f1ffd88eb35aba0e4371a1c1bb4196fa4f50",
+          "outcome": {
+            "ID": "4c13643ad34160c380d2dea032ac94befc2dfe27d13a8ac7daacf73e2eb27bd9",
+            "InvocationID": "de853380cfcbc9d17116dce6088331d845ff63da7660d55993c5dd85baf63e6d",
+            "OperationID": "[\"root\",1,1,0]",
+            "TemplateID": "a03135203f8b728a6aa7b732d06952cc87b70b3aced2c0833293e333760eece5",
+            "Caller": {
+              "Subject": "root",
+              "Generation": 1
+            },
+            "Status": "succeeded",
+            "Reason": "member_succeeded",
+            "ResponsePresent": true,
+            "Response": {
+              "id": {
+                "Kind": "int",
+                "Number": 1,
+                "Text": "",
+                "Flag": false
+              },
+              "value": {
+                "Kind": "int",
+                "Number": 1,
+                "Text": "",
+                "Flag": false
+              }
+            },
+            "DecisionOrder": 21
+          }
+        },
+        "s": {
+          "handle": "[\"root\",1,2,0]",
+          "commit_sequence": 2,
+          "consumed_sequence": 3,
+          "selected_observation": "e4acb3721c8ac421a4e98adb354facf8fb9c1ec469821c794079c836e473445d",
+          "outcome": {
+            "ID": "1958427f7d123713870b6a8de2b6790abaaa44356787d14b6c9e2194c710c298",
+            "InvocationID": "7224e92b82bb12c51abb143731044dad6113b8155cae75332bf136f8076ff2df",
+            "OperationID": "[\"root\",1,2,0]",
+            "TemplateID": "9f4b6423a1930a6b207f95ace05ab793b73a1c89ca671229a796d4d569a958b0",
+            "Caller": {
+              "Subject": "root",
+              "Generation": 1
+            },
+            "Status": "failed",
+            "Reason": "member_failed",
+            "ResponsePresent": false,
+            "Response": null,
+            "DecisionOrder": 13
+          }
+        }
+      },
+      "classification_writes": [
+        {
+          "pc": 50,
+          "sequence": 6,
+          "instruction": {
+            "Op": "set",
+            "Dst": "classification",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "string",
+                "Number": 0,
+                "Text": "invalid_outcome",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        }
+      ],
+      "terminal_decisions": [
+        {
+          "pc": 51,
+          "sequence": 7,
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "failed"
+          }
+        }
+      ]
+    },
+    "s-absent": {
+      "identities": {
+        "candidate": "a03135203f8b728a6aa7b732d06952cc87b70b3aced2c0833293e333760eece5",
+        "fixed_runs": 1,
+        "parent": "748b5ada6ed8b0bce0a8bb271957eb19219a0ba483a1f5fa70224ecd6df05876",
+        "successor": "22fcc464633a27133cda964a3719a25aa0e65c582c469827ba3c0e323108c3b4"
+      },
+      "root": {
+        "RootID": "f7ae62224cd74569006d00204e40fb0ae4eb7ff54591158cfe927f8401760579",
+        "Run": {
+          "Subject": "root",
+          "Generation": 1
+        },
+        "LocalStatus": "failed",
+        "Limits": {
+          "MaxInvocations": 3,
+          "MaxCreatedRuns": 3,
+          "MaxDepth": 2,
+          "MaxEffects": 0,
+          "MaxInFlight": 1
+        },
+        "Charges": {
+          "RootID": "f7ae62224cd74569006d00204e40fb0ae4eb7ff54591158cfe927f8401760579",
+          "OperationID": "",
+          "Kind": "",
+          "Invocations": 2,
+          "CreatedRuns": 2,
+          "Effects": 0,
+          "DecisionOrder": 0
+        },
+        "Outcome": {
+          "ID": "fa091d4ddd4df7afa6d024f67f39c800f392501ac4e7c716d2f99aff6ce9f017",
+          "InvocationID": "root:f7ae62224cd74569006d00204e40fb0ae4eb7ff54591158cfe927f8401760579",
+          "OperationID": "root:f7ae62224cd74569006d00204e40fb0ae4eb7ff54591158cfe927f8401760579",
+          "TemplateID": "",
+          "Caller": {
+            "Subject": "root",
+            "Generation": 1
+          },
+          "Status": "failed",
+          "Reason": "member_failed",
+          "ResponsePresent": false,
+          "Response": null,
+          "DecisionOrder": 27
+        },
+        "Pending": "",
+        "PendingInvocations": [],
+        "UnresolvedExternal": [],
+        "UnknownExternal": []
+      },
+      "operational_metrics": {
+        "code_instructions": [
+          52,
+          13,
+          2
+        ],
+        "acyclic_instruction_path_upper": 27,
+        "finite_dispatch_bound": 6,
+        "program_bytes": 21703,
+        "provision_json_bytes": 42544,
+        "projection_bytes": 1066,
+        "observation_bytes": 676,
+        "output_array_bytes": 416,
+        "steps": 15,
+        "dispatches": 5
+      },
+      "classification": {
+        "Kind": "string",
+        "Number": 0,
+        "Text": "invalid_outcome",
+        "Flag": false
+      },
+      "original_joins": {
+        "candidate": {
+          "handle": "[\"root\",1,1,0]",
+          "commit_sequence": 1,
+          "consumed_sequence": 4,
+          "selected_observation": "150a41fe79df3d650e92c429a8b77f5344f8e3d556fbb0595458497b8f363b89",
+          "outcome": {
+            "ID": "3faaf510f743fa2b356734234a7a05509da5b7daf0910e8842c5a6522f0f4459",
+            "InvocationID": "f59613fedf37322fb2462c8eb4d241ec612d7536c34a9b9c57799f6fce015aae",
+            "OperationID": "[\"root\",1,1,0]",
+            "TemplateID": "a03135203f8b728a6aa7b732d06952cc87b70b3aced2c0833293e333760eece5",
+            "Caller": {
+              "Subject": "root",
+              "Generation": 1
+            },
+            "Status": "succeeded",
+            "Reason": "member_succeeded",
+            "ResponsePresent": true,
+            "Response": {
+              "id": {
+                "Kind": "int",
+                "Number": 1,
+                "Text": "",
+                "Flag": false
+              },
+              "value": {
+                "Kind": "int",
+                "Number": 1,
+                "Text": "",
+                "Flag": false
+              }
+            },
+            "DecisionOrder": 21
+          }
+        },
+        "s": {
+          "handle": "[\"root\",1,2,0]",
+          "commit_sequence": 2,
+          "consumed_sequence": 3,
+          "selected_observation": "8557cc130444f12bdb4c4d0597ad6f8d5c6bbdb91ffe0ede22412a561090f4e6",
+          "outcome": {
+            "ID": "6e5d09895ca578b32b8deb417feca0cca3f166766bbab8f3f0bf79b5b8ce9faf",
+            "InvocationID": "8f7701cb241a1c34c0c15db956dc621bd362ba97ff7540191dfbad08063ca84d",
+            "OperationID": "[\"root\",1,2,0]",
+            "TemplateID": "22fcc464633a27133cda964a3719a25aa0e65c582c469827ba3c0e323108c3b4",
+            "Caller": {
+              "Subject": "root",
+              "Generation": 1
+            },
+            "Status": "failed",
+            "Reason": "missing_reply",
+            "ResponsePresent": false,
+            "Response": null,
+            "DecisionOrder": 13
+          }
+        }
+      },
+      "classification_writes": [
+        {
+          "pc": 50,
+          "sequence": 6,
+          "instruction": {
+            "Op": "set",
+            "Dst": "classification",
+            "A": {
+              "Ref": "",
+              "Literal": {
+                "Kind": "string",
+                "Number": 0,
+                "Text": "invalid_outcome",
+                "Flag": false
+              },
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": ""
+          }
+        }
+      ],
+      "terminal_decisions": [
+        {
+          "pc": 51,
+          "sequence": 7,
+          "instruction": {
+            "Op": "end",
+            "Dst": "",
+            "A": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "B": {
+              "Ref": "",
+              "Literal": null,
+              "Offset": null
+            },
+            "Target": 0,
+            "Otherwise": 0,
+            "Match": null,
+            "Bind": null,
+            "Effect": null,
+            "Updates": null,
+            "Outcome": "failed"
+          }
+        }
+      ]
+    }
+  }
+}

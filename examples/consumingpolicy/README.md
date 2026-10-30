@@ -46,3 +46,46 @@ Controls select `-mode fail|absent|pending`, `-s-mode fail|absent|pending`, or
 Phase 1L automatic runner: capacity1, MaxSteps200, MaxDispatch200. These two
 construction samples and focused controls do not establish the independent
 reference premise, all-input G qualification or arbitrary-context substitution.
+
+## Explicit reason policy
+
+`NewReason(candidate, config, Options{})` constructs C_reason with the same
+original candidate-then-S commitments and S-then-candidate consumptions. Both
+joins complete before any classification or terminal decision. After strict
+S status/reason/presence/original-id/zero guards, committed parent instructions
+inspect actual candidate status, reason and presence, guarding response reads:
+
+| Candidate evidence with valid original S | Retained classification | Parent |
+| --- | --- | --- |
+| succeeded/member_succeeded, present, original id/complement | answer | Success |
+| failed/member_failed, absent | candidate_failed | Failure |
+| failed/missing_reply, absent | candidate_missing_reply | Failure |
+| Any other completed evidence, or invalid S | invalid_outcome | Failure |
+
+The original `candidate_reason` remains retained. A deliberately failing parent
+publishes root/aggregate `member_failed`, including when its child has
+`missing_reply`. Pending leaves the required await open without classification
+or terminal result. Inspect the public retained projection/history and root
+publication; classification is never computed by the host or sent as a report.
+The requested mode is passed to the candidate and is never a parent decision.
+
+The separate module accepts `-policy reason`; `s-first` remains the default.
+`DeliberateFailure()` / `-candidate deliberate-failure` is a separately named
+control receiving one original request then executing Failure. An absent request
+therefore genuinely produces child `member_failed` and `candidate_failed`.
+This is an executable component mutation outside K1's requested-absent behavior,
+not a conforming absent outcome or a substitution counterexample. Original
+components and the S-first compiled artifacts remain unchanged.
+
+NewReason reuses NewSFirst's author-time template selection/validation, replaces
+its unused provision, and independently authors the explicit reason-policy
+program from the behavioral specification. No S-first provision runs. The
+compiler/runtime, original templates, resource setup and CLI/store/test plumbing
+remain shared. New classification tests authenticate committed setter/end
+instructions after actual selected joins; they do not independently validate the
+compiler. Reason preflight expectations, source snapshots, exact commands,
+compiled inventories and raw observations live separately in
+`docs/foundational/phase1m/evidence/reason-preflight/`. Representative public
+preflight is construction evidence; the independent model, full-input audited
+executions, correspondence, local requalification and research conclusions are
+separate later obligations.

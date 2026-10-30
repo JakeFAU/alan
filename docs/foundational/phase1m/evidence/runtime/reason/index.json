@@ -1,0 +1,857 @@
+{
+  "scope": "Independent raw-row/instruction/table audit for the bounded Task6 samples; no universal or new recovery claim.",
+  "commands": {
+    "reason-normal": {
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-tags",
+        "integration",
+        "-run",
+        "^TestConsumerReason(Runtime|Modes|Controls|Decoder|ClassificationCut)$",
+        "-count=1",
+        "-timeout=3m",
+        "./internal/substitutiontest"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build",
+        "ALAN_I_ARTIFACTS": "/private/tmp/alan-phase1m-reason-normal-146bo98q"
+      },
+      "exit": 0,
+      "elapsed_seconds": 5.566305167,
+      "selected_leaves": [
+        "TestConsumerReasonDecoder/classification-tag",
+        "TestConsumerReasonDecoder/classification-branch",
+        "TestConsumerReasonDecoder/consumed-reason",
+        "TestConsumerReasonDecoder/pending-branch",
+        "TestConsumerReasonDecoder/final-tag-only",
+        "TestConsumerReasonClassificationCut",
+        "TestConsumerReasonRuntime/a/id1-value0",
+        "TestConsumerReasonRuntime/a/id1-value1",
+        "TestConsumerReasonRuntime/a/id2-value0",
+        "TestConsumerReasonRuntime/a/id2-value1",
+        "TestConsumerReasonRuntime/b/id1-value0",
+        "TestConsumerReasonRuntime/b/id1-value1",
+        "TestConsumerReasonRuntime/b/id2-value0",
+        "TestConsumerReasonRuntime/b/id2-value1",
+        "TestConsumerReasonModes/a/fail",
+        "TestConsumerReasonModes/a/absent",
+        "TestConsumerReasonModes/a/pending",
+        "TestConsumerReasonModes/b/fail",
+        "TestConsumerReasonModes/b/absent",
+        "TestConsumerReasonModes/b/pending",
+        "TestConsumerReasonControls/wrong-id",
+        "TestConsumerReasonControls/absent-deliberate-failure",
+        "TestConsumerReasonControls/s-fail",
+        "TestConsumerReasonControls/s-absent",
+        "TestConsumerReasonControls/budget2"
+      ],
+      "source_aggregate_sha256": "bfbba3d721fefdc63da9b76dce92b2af8226a6cbe1d837b1601ed8a903520590"
+    },
+    "format": {
+      "argv": [
+        "/opt/homebrew/bin/gofmt",
+        "-l",
+        "internal/substitutiontest/invocation_join_evidence_test.go",
+        "internal/substitutiontest/consumer_reason_evidence_test.go",
+        "internal/substitutiontest/consumer_reason_runtime_test.go",
+        "internal/substitutiontest/consumer_reason_decoder_test.go"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build",
+        "ALAN_I_ARTIFACTS": "/private/tmp/alan-phase1m-format-svve2r21"
+      },
+      "exit": 0,
+      "elapsed_seconds": 0.014029792,
+      "selected_leaves": [],
+      "source_aggregate_sha256": "bfbba3d721fefdc63da9b76dce92b2af8226a6cbe1d837b1601ed8a903520590"
+    },
+    "audit-final": {
+      "argv": [
+        "python3",
+        "docs/foundational/phase1m/evidence/runtime/reason/audit.py"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build",
+        "ALAN_I_ARTIFACTS": "/private/tmp/alan-phase1m-audit-final-k2rmaarp"
+      },
+      "exit": 0,
+      "elapsed_seconds": 0.646752666,
+      "selected_leaves": [],
+      "source_aggregate_sha256": "bfbba3d721fefdc63da9b76dce92b2af8226a6cbe1d837b1601ed8a903520590"
+    },
+    "model-race": {
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-race",
+        "-run",
+        "^TestConsumerReason(Domain|DirectedReference|ClassificationTable|OracleAdversaries|ObservationsOverrideRequestedMode|PendingEvidence|StateGuards|InvalidSControl)$",
+        "-count=1",
+        "-timeout=3m",
+        "./research/substitution"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build",
+        "ALAN_I_ARTIFACTS": "/private/tmp/alan-phase1m-model-race-8qgvj287"
+      },
+      "exit": 0,
+      "elapsed_seconds": 2.634694333,
+      "selected_leaves": [
+        "TestConsumerReasonDomain",
+        "TestConsumerReasonDirectedReference/answer/helperfalse",
+        "TestConsumerReasonDirectedReference/answer/helpertrue",
+        "TestConsumerReasonDirectedReference/fail/helperfalse",
+        "TestConsumerReasonDirectedReference/fail/helpertrue",
+        "TestConsumerReasonDirectedReference/absent/helperfalse",
+        "TestConsumerReasonDirectedReference/absent/helpertrue",
+        "TestConsumerReasonDirectedReference/pending/helperfalse",
+        "TestConsumerReasonDirectedReference/pending/helpertrue",
+        "TestConsumerReasonClassificationTable/answer",
+        "TestConsumerReasonClassificationTable/failed",
+        "TestConsumerReasonClassificationTable/absent",
+        "TestConsumerReasonClassificationTable/failed-present",
+        "TestConsumerReasonClassificationTable/success-absent",
+        "TestConsumerReasonClassificationTable/success-wrong-reason",
+        "TestConsumerReasonClassificationTable/wrong-id",
+        "TestConsumerReasonClassificationTable/wrong-complement",
+        "TestConsumerReasonClassificationTable/rejected",
+        "TestConsumerReasonClassificationTable/s-wrong-reason",
+        "TestConsumerReasonClassificationTable/s-absent",
+        "TestConsumerReasonClassificationTable/s-nonzero",
+        "TestConsumerReasonOracleAdversaries/missing-classification",
+        "TestConsumerReasonOracleAdversaries/wrong-tag",
+        "TestConsumerReasonOracleAdversaries/duplicate-classification",
+        "TestConsumerReasonOracleAdversaries/missing-candidate-consume",
+        "TestConsumerReasonOracleAdversaries/wrong-terminal",
+        "TestConsumerReasonOracleAdversaries/root-child-reason-conflation",
+        "TestConsumerReasonOracleAdversaries/tag-without-write",
+        "TestConsumerReasonOracleAdversaries/early-parent_classify",
+        "TestConsumerReasonOracleAdversaries/early-parent_decide",
+        "TestConsumerReasonOracleAdversaries/early-parent_terminal",
+        "TestConsumerReasonOracleAdversaries/early-root_publish",
+        "TestConsumerReasonObservationsOverrideRequestedMode",
+        "TestConsumerReasonPendingEvidence/after-pending-pending_receive",
+        "TestConsumerReasonPendingEvidence/after-pending-terminal_freeze",
+        "TestConsumerReasonPendingEvidence/after-pending-reply_commit",
+        "TestConsumerReasonStateGuards/terminal-tag-",
+        "TestConsumerReasonStateGuards/terminal-tag-candidate_failed",
+        "TestConsumerReasonStateGuards/terminal-tag-invented",
+        "TestConsumerReasonInvalidSControl"
+      ],
+      "source_aggregate_sha256": "bfbba3d721fefdc63da9b76dce92b2af8226a6cbe1d837b1601ed8a903520590"
+    },
+    "vet": {
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "vet",
+        "-tags",
+        "integration",
+        "./internal/substitutiontest",
+        "./research/substitution"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build",
+        "ALAN_I_ARTIFACTS": "/private/tmp/alan-phase1m-vet-phc9dl6o"
+      },
+      "exit": 0,
+      "elapsed_seconds": 0.281551084,
+      "selected_leaves": [],
+      "source_aggregate_sha256": "bfbba3d721fefdc63da9b76dce92b2af8226a6cbe1d837b1601ed8a903520590"
+    },
+    "model-normal": {
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-run",
+        "^TestConsumerReason(Domain|DirectedReference|ClassificationTable|OracleAdversaries|ObservationsOverrideRequestedMode|PendingEvidence|StateGuards|InvalidSControl)$",
+        "-count=1",
+        "-timeout=3m",
+        "./research/substitution"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build",
+        "ALAN_I_ARTIFACTS": "/private/tmp/alan-phase1m-model-normal-xzibx97k"
+      },
+      "exit": 0,
+      "elapsed_seconds": 0.809044334,
+      "selected_leaves": [
+        "TestConsumerReasonDomain",
+        "TestConsumerReasonDirectedReference/answer/helperfalse",
+        "TestConsumerReasonDirectedReference/answer/helpertrue",
+        "TestConsumerReasonDirectedReference/fail/helperfalse",
+        "TestConsumerReasonDirectedReference/fail/helpertrue",
+        "TestConsumerReasonDirectedReference/absent/helperfalse",
+        "TestConsumerReasonDirectedReference/absent/helpertrue",
+        "TestConsumerReasonDirectedReference/pending/helperfalse",
+        "TestConsumerReasonDirectedReference/pending/helpertrue",
+        "TestConsumerReasonClassificationTable/answer",
+        "TestConsumerReasonClassificationTable/failed",
+        "TestConsumerReasonClassificationTable/absent",
+        "TestConsumerReasonClassificationTable/failed-present",
+        "TestConsumerReasonClassificationTable/success-absent",
+        "TestConsumerReasonClassificationTable/success-wrong-reason",
+        "TestConsumerReasonClassificationTable/wrong-id",
+        "TestConsumerReasonClassificationTable/wrong-complement",
+        "TestConsumerReasonClassificationTable/rejected",
+        "TestConsumerReasonClassificationTable/s-wrong-reason",
+        "TestConsumerReasonClassificationTable/s-absent",
+        "TestConsumerReasonClassificationTable/s-nonzero",
+        "TestConsumerReasonOracleAdversaries/missing-classification",
+        "TestConsumerReasonOracleAdversaries/wrong-tag",
+        "TestConsumerReasonOracleAdversaries/duplicate-classification",
+        "TestConsumerReasonOracleAdversaries/missing-candidate-consume",
+        "TestConsumerReasonOracleAdversaries/wrong-terminal",
+        "TestConsumerReasonOracleAdversaries/root-child-reason-conflation",
+        "TestConsumerReasonOracleAdversaries/tag-without-write",
+        "TestConsumerReasonOracleAdversaries/early-parent_classify",
+        "TestConsumerReasonOracleAdversaries/early-parent_decide",
+        "TestConsumerReasonOracleAdversaries/early-parent_terminal",
+        "TestConsumerReasonOracleAdversaries/early-root_publish",
+        "TestConsumerReasonObservationsOverrideRequestedMode",
+        "TestConsumerReasonPendingEvidence/after-pending-pending_receive",
+        "TestConsumerReasonPendingEvidence/after-pending-terminal_freeze",
+        "TestConsumerReasonPendingEvidence/after-pending-reply_commit",
+        "TestConsumerReasonStateGuards/terminal-tag-",
+        "TestConsumerReasonStateGuards/terminal-tag-candidate_failed",
+        "TestConsumerReasonStateGuards/terminal-tag-invented",
+        "TestConsumerReasonInvalidSControl"
+      ],
+      "source_aggregate_sha256": "bfbba3d721fefdc63da9b76dce92b2af8226a6cbe1d837b1601ed8a903520590"
+    },
+    "reason-race": {
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-race",
+        "-tags",
+        "integration",
+        "-run",
+        "^TestConsumerReason(Runtime|Modes|Controls|Decoder|ClassificationCut)$",
+        "-count=1",
+        "-timeout=5m",
+        "./internal/substitutiontest"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build",
+        "ALAN_I_ARTIFACTS": "/private/tmp/alan-phase1m-reason-race-hc5rnsy3"
+      },
+      "exit": 0,
+      "elapsed_seconds": 65.591173958,
+      "selected_leaves": [
+        "TestConsumerReasonDecoder/classification-tag",
+        "TestConsumerReasonDecoder/classification-branch",
+        "TestConsumerReasonDecoder/consumed-reason",
+        "TestConsumerReasonDecoder/pending-branch",
+        "TestConsumerReasonDecoder/final-tag-only",
+        "TestConsumerReasonClassificationCut",
+        "TestConsumerReasonRuntime/a/id1-value0",
+        "TestConsumerReasonRuntime/a/id1-value1",
+        "TestConsumerReasonRuntime/a/id2-value0",
+        "TestConsumerReasonRuntime/a/id2-value1",
+        "TestConsumerReasonRuntime/b/id1-value0",
+        "TestConsumerReasonRuntime/b/id1-value1",
+        "TestConsumerReasonRuntime/b/id2-value0",
+        "TestConsumerReasonRuntime/b/id2-value1",
+        "TestConsumerReasonModes/a/fail",
+        "TestConsumerReasonModes/a/absent",
+        "TestConsumerReasonModes/a/pending",
+        "TestConsumerReasonModes/b/fail",
+        "TestConsumerReasonModes/b/absent",
+        "TestConsumerReasonModes/b/pending",
+        "TestConsumerReasonControls/wrong-id",
+        "TestConsumerReasonControls/absent-deliberate-failure",
+        "TestConsumerReasonControls/s-fail",
+        "TestConsumerReasonControls/s-absent",
+        "TestConsumerReasonControls/budget2"
+      ],
+      "source_aggregate_sha256": "bfbba3d721fefdc63da9b76dce92b2af8226a6cbe1d837b1601ed8a903520590"
+    },
+    "baseline-race": {
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-race",
+        "-tags",
+        "integration",
+        "-run",
+        "^Test(ConsumerPolicy(Runtime|Controls|Orders|Decoder|HistoricalWrapper)|InvocationJoin(Runtime|Controls|Orders|Decoder|IncompletePrefixes))$",
+        "-count=1",
+        "-timeout=5m",
+        "./internal/substitutiontest"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build",
+        "ALAN_I_ARTIFACTS": "/private/tmp/alan-phase1m-baseline-race-fcrjv1tp"
+      },
+      "exit": 0,
+      "elapsed_seconds": 95.71041275,
+      "selected_leaves": [
+        "TestConsumerPolicyDecoder/historical-es",
+        "TestConsumerPolicyDecoder/s-first-se",
+        "TestConsumerPolicyDecoder/swapped-selected-outcomes",
+        "TestConsumerPolicyDecoder/delivery-is-not-consumption",
+        "TestConsumerPolicyRuntime/a/id1-value0",
+        "TestConsumerPolicyRuntime/a/id1-value1",
+        "TestConsumerPolicyRuntime/a/id2-value0",
+        "TestConsumerPolicyRuntime/a/id2-value1",
+        "TestConsumerPolicyRuntime/b/id1-value0",
+        "TestConsumerPolicyRuntime/b/id1-value1",
+        "TestConsumerPolicyRuntime/b/id2-value0",
+        "TestConsumerPolicyRuntime/b/id2-value1",
+        "TestConsumerPolicyControls/candidate-pending",
+        "TestConsumerPolicyControls/s-pending",
+        "TestConsumerPolicyControls/wrong-id",
+        "TestConsumerPolicyControls/budget2",
+        "TestConsumerPolicyOrders/s-first",
+        "TestConsumerPolicyOrders/candidate-first",
+        "TestConsumerPolicyHistoricalWrapper",
+        "TestInvocationJoinDecoder/coherent-revision",
+        "TestInvocationJoinDecoder/orphan-intent",
+        "TestInvocationJoinDecoder/unadmitted-revision",
+        "TestInvocationJoinDecoder/original-handle",
+        "TestInvocationJoinDecoder/selected-identity",
+        "TestInvocationJoinDecoder/selected-payload",
+        "TestInvocationJoinDecoder/missing-delivery",
+        "TestInvocationJoinDecoder/missing-request",
+        "TestInvocationJoinDecoder/request-source",
+        "TestInvocationJoinDecoder/authorization-sequence",
+        "TestInvocationJoinDecoder/reply-authorization",
+        "TestInvocationJoinDecoder/duplicate-selection",
+        "TestInvocationJoinDecoder/extra-charge",
+        "TestInvocationJoinDecoder/fact-order",
+        "TestInvocationJoinDecoder/program-hash",
+        "TestInvocationJoinDecoder/duplicate-program",
+        "TestInvocationJoinDecoder/parent-pure-path",
+        "TestInvocationJoinDecoder/request-bound-payload",
+        "TestInvocationJoinDecoder/unconsumed-request-obligation",
+        "TestInvocationJoinIncompletePrefixes",
+        "TestInvocationJoinRuntime/a/id1-value0",
+        "TestInvocationJoinRuntime/a/id1-value1",
+        "TestInvocationJoinRuntime/a/id2-value0",
+        "TestInvocationJoinRuntime/a/id2-value1",
+        "TestInvocationJoinRuntime/b/id1-value0",
+        "TestInvocationJoinRuntime/b/id1-value1",
+        "TestInvocationJoinRuntime/b/id2-value0",
+        "TestInvocationJoinRuntime/b/id2-value1",
+        "TestInvocationJoinControls/wrong-id",
+        "TestInvocationJoinControls/budget2",
+        "TestInvocationJoinControls/candidate-fail",
+        "TestInvocationJoinControls/candidate-absent",
+        "TestInvocationJoinControls/candidate-pending",
+        "TestInvocationJoinControls/s-fail",
+        "TestInvocationJoinControls/s-absent",
+        "TestInvocationJoinControls/s-pending",
+        "TestInvocationJoinOrders/candidate-first",
+        "TestInvocationJoinOrders/s-first"
+      ],
+      "source_aggregate_sha256": "bfbba3d721fefdc63da9b76dce92b2af8226a6cbe1d837b1601ed8a903520590"
+    },
+    "construction-fixed": {
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-tags",
+        "integration",
+        "-run",
+        "^TestConsumerReason(Runtime|Modes|Controls|Decoder|ClassificationCut)$",
+        "-count=1",
+        "-timeout=3m",
+        "./internal/substitutiontest"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build",
+        "ALAN_I_ARTIFACTS": "/private/tmp/alan-phase1m-construction-fixed-6yw2a6ab"
+      },
+      "exit": 1,
+      "elapsed_seconds": 5.527615083000001,
+      "selected_leaves": [
+        "TestConsumerReasonDecoder/classification-tag",
+        "TestConsumerReasonDecoder/classification-branch",
+        "TestConsumerReasonDecoder/consumed-reason",
+        "TestConsumerReasonDecoder/pending-branch",
+        "TestConsumerReasonDecoder/final-tag-only",
+        "TestConsumerReasonClassificationCut",
+        "TestConsumerReasonRuntime/a/id1-value0",
+        "TestConsumerReasonRuntime/a/id1-value1",
+        "TestConsumerReasonRuntime/a/id2-value0",
+        "TestConsumerReasonRuntime/a/id2-value1",
+        "TestConsumerReasonRuntime/b/id1-value0",
+        "TestConsumerReasonRuntime/b/id1-value1",
+        "TestConsumerReasonRuntime/b/id2-value0",
+        "TestConsumerReasonRuntime/b/id2-value1",
+        "TestConsumerReasonModes/a/fail",
+        "TestConsumerReasonModes/a/absent",
+        "TestConsumerReasonModes/a/pending",
+        "TestConsumerReasonModes/b/fail",
+        "TestConsumerReasonModes/b/absent",
+        "TestConsumerReasonModes/b/pending",
+        "TestConsumerReasonControls/wrong-id",
+        "TestConsumerReasonControls/absent-deliberate-failure",
+        "TestConsumerReasonControls/s-fail",
+        "TestConsumerReasonControls/s-absent",
+        "TestConsumerReasonControls/budget2"
+      ],
+      "source_aggregate_sha256": "88daeca29ea994798d0fde04eee365b0eb03c3c75bf45668afc41576f3263122"
+    },
+    "toolchain": {
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "env",
+        "GOVERSION",
+        "GOOS",
+        "GOARCH",
+        "CGO_ENABLED",
+        "GOTOOLCHAIN",
+        "GOPROXY",
+        "GOSUMDB",
+        "GOFLAGS",
+        "GOCACHE",
+        "GOMOD"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build",
+        "ALAN_I_ARTIFACTS": "/private/tmp/alan-phase1m-toolchain-swrvpycv"
+      },
+      "exit": 0,
+      "elapsed_seconds": 0.008130417000000001,
+      "selected_leaves": [],
+      "source_aggregate_sha256": "bfbba3d721fefdc63da9b76dce92b2af8226a6cbe1d837b1601ed8a903520590"
+    },
+    "modules": {
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "mod",
+        "verify"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build",
+        "ALAN_I_ARTIFACTS": "/private/tmp/alan-phase1m-modules-aqmokykf"
+      },
+      "exit": 0,
+      "elapsed_seconds": 0.082021833,
+      "selected_leaves": [],
+      "source_aggregate_sha256": "bfbba3d721fefdc63da9b76dce92b2af8226a6cbe1d837b1601ed8a903520590"
+    },
+    "diff-check": {
+      "argv": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build",
+        "ALAN_I_ARTIFACTS": "/private/tmp/alan-phase1m-diff-check-9kw2p2uo"
+      },
+      "exit": 0,
+      "elapsed_seconds": 0.018919667,
+      "selected_leaves": [],
+      "source_aggregate_sha256": "bfbba3d721fefdc63da9b76dce92b2af8226a6cbe1d837b1601ed8a903520590"
+    },
+    "baseline-normal": {
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-tags",
+        "integration",
+        "-run",
+        "^Test(ConsumerPolicy(Runtime|Controls|Orders|Decoder|HistoricalWrapper)|InvocationJoin(Runtime|Controls|Orders|Decoder|IncompletePrefixes))$",
+        "-count=1",
+        "-timeout=5m",
+        "./internal/substitutiontest"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build",
+        "ALAN_I_ARTIFACTS": "/private/tmp/alan-phase1m-baseline-normal-so1or7b8"
+      },
+      "exit": 0,
+      "elapsed_seconds": 7.906521333,
+      "selected_leaves": [
+        "TestConsumerPolicyDecoder/historical-es",
+        "TestConsumerPolicyDecoder/s-first-se",
+        "TestConsumerPolicyDecoder/swapped-selected-outcomes",
+        "TestConsumerPolicyDecoder/delivery-is-not-consumption",
+        "TestConsumerPolicyRuntime/a/id1-value0",
+        "TestConsumerPolicyRuntime/a/id1-value1",
+        "TestConsumerPolicyRuntime/a/id2-value0",
+        "TestConsumerPolicyRuntime/a/id2-value1",
+        "TestConsumerPolicyRuntime/b/id1-value0",
+        "TestConsumerPolicyRuntime/b/id1-value1",
+        "TestConsumerPolicyRuntime/b/id2-value0",
+        "TestConsumerPolicyRuntime/b/id2-value1",
+        "TestConsumerPolicyControls/candidate-pending",
+        "TestConsumerPolicyControls/s-pending",
+        "TestConsumerPolicyControls/wrong-id",
+        "TestConsumerPolicyControls/budget2",
+        "TestConsumerPolicyOrders/s-first",
+        "TestConsumerPolicyOrders/candidate-first",
+        "TestConsumerPolicyHistoricalWrapper",
+        "TestInvocationJoinDecoder/coherent-revision",
+        "TestInvocationJoinDecoder/orphan-intent",
+        "TestInvocationJoinDecoder/unadmitted-revision",
+        "TestInvocationJoinDecoder/original-handle",
+        "TestInvocationJoinDecoder/selected-identity",
+        "TestInvocationJoinDecoder/selected-payload",
+        "TestInvocationJoinDecoder/missing-delivery",
+        "TestInvocationJoinDecoder/missing-request",
+        "TestInvocationJoinDecoder/request-source",
+        "TestInvocationJoinDecoder/authorization-sequence",
+        "TestInvocationJoinDecoder/reply-authorization",
+        "TestInvocationJoinDecoder/duplicate-selection",
+        "TestInvocationJoinDecoder/extra-charge",
+        "TestInvocationJoinDecoder/fact-order",
+        "TestInvocationJoinDecoder/program-hash",
+        "TestInvocationJoinDecoder/duplicate-program",
+        "TestInvocationJoinDecoder/parent-pure-path",
+        "TestInvocationJoinDecoder/request-bound-payload",
+        "TestInvocationJoinDecoder/unconsumed-request-obligation",
+        "TestInvocationJoinIncompletePrefixes",
+        "TestInvocationJoinRuntime/a/id1-value0",
+        "TestInvocationJoinRuntime/a/id1-value1",
+        "TestInvocationJoinRuntime/a/id2-value0",
+        "TestInvocationJoinRuntime/a/id2-value1",
+        "TestInvocationJoinRuntime/b/id1-value0",
+        "TestInvocationJoinRuntime/b/id1-value1",
+        "TestInvocationJoinRuntime/b/id2-value0",
+        "TestInvocationJoinRuntime/b/id2-value1",
+        "TestInvocationJoinControls/wrong-id",
+        "TestInvocationJoinControls/budget2",
+        "TestInvocationJoinControls/candidate-fail",
+        "TestInvocationJoinControls/candidate-absent",
+        "TestInvocationJoinControls/candidate-pending",
+        "TestInvocationJoinControls/s-fail",
+        "TestInvocationJoinControls/s-absent",
+        "TestInvocationJoinControls/s-pending",
+        "TestInvocationJoinOrders/candidate-first",
+        "TestInvocationJoinOrders/s-first"
+      ],
+      "source_aggregate_sha256": "bfbba3d721fefdc63da9b76dce92b2af8226a6cbe1d837b1601ed8a903520590"
+    },
+    "pending-fixed": {
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-tags",
+        "integration",
+        "-run",
+        "^TestConsumerReason(Modes|Decoder)$/^(a|b|pending-branch)$/^pending$",
+        "-count=1",
+        "-timeout=3m",
+        "./internal/substitutiontest"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build",
+        "ALAN_I_ARTIFACTS": "/private/tmp/alan-phase1m-pending-fixed-mq_cx4fe"
+      },
+      "exit": 0,
+      "elapsed_seconds": 1.654947417,
+      "selected_leaves": [
+        "TestConsumerReasonDecoder/pending-branch",
+        "TestConsumerReasonModes/a/pending",
+        "TestConsumerReasonModes/b/pending"
+      ],
+      "source_aggregate_sha256": "77295600e0408362e5cf5f72b2ac712ba49ca54ae9c928821730b40b029e60d2"
+    },
+    "discovery": {
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-tags",
+        "integration",
+        "-list",
+        "^Test(ConsumerReason|ConsumerPolicy|InvocationJoin)",
+        "./internal/substitutiontest"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build",
+        "ALAN_I_ARTIFACTS": "/private/tmp/alan-phase1m-discovery-r4z34zdp"
+      },
+      "exit": 0,
+      "elapsed_seconds": 1.147275708,
+      "selected_leaves": [],
+      "source_aggregate_sha256": "bfbba3d721fefdc63da9b76dce92b2af8226a6cbe1d837b1601ed8a903520590"
+    },
+    "audit-attempt1": {
+      "argv": [
+        "python3",
+        "docs/foundational/phase1m/evidence/runtime/reason/audit.py"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build",
+        "ALAN_I_ARTIFACTS": "/private/tmp/alan-phase1m-audit-attempt1-oq4x0nmw"
+      },
+      "exit": 1,
+      "elapsed_seconds": 0.263618708,
+      "selected_leaves": [],
+      "source_aggregate_sha256": "bfbba3d721fefdc63da9b76dce92b2af8226a6cbe1d837b1601ed8a903520590"
+    },
+    "red-classification": {
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-tags",
+        "integration",
+        "-run",
+        "^TestConsumerReasonRuntime$/^a$/^id1-value0$",
+        "-count=1",
+        "-timeout=2m",
+        "./internal/substitutiontest"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build",
+        "ALAN_I_ARTIFACTS": "/private/tmp/alan-phase1m-red-classification-71ljsi6c"
+      },
+      "exit": 1,
+      "elapsed_seconds": 2.116518292,
+      "selected_leaves": [
+        "TestConsumerReasonRuntime/a/id1-value0"
+      ],
+      "source_aggregate_sha256": "431b1fd57d89a9cf14e96776f2afcae85a6d185d115623db04761c4eeb0fafc9"
+    },
+    "construction-green": {
+      "argv": [
+        "/opt/homebrew/bin/go",
+        "test",
+        "-json",
+        "-tags",
+        "integration",
+        "-run",
+        "^TestConsumerReason(Runtime|Modes|Controls)$",
+        "-count=1",
+        "-timeout=3m",
+        "./internal/substitutiontest"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOFLAGS": "-mod=readonly",
+        "CGO_ENABLED": "1",
+        "GOCACHE": "/private/tmp/alan-phase1l-go-build",
+        "ALAN_I_ARTIFACTS": "/private/tmp/alan-phase1m-construction-green-ycr51p58"
+      },
+      "exit": 1,
+      "elapsed_seconds": 1.579184042,
+      "selected_leaves": [
+        "TestConsumerReasonRuntime/a/id1-value0"
+      ],
+      "source_aggregate_sha256": "c5f1724b8a20284b2d9db9d4b66a1b0e505c09ae483b761ffd26d9b3cb15dfe6"
+    }
+  },
+  "files": {
+    "README.md": {
+      "sha256": "78e9bbb82631465a8c853f4a958b7fefc4ffc6140512be4725db7e5030f81992",
+      "bytes": 7944
+    },
+    "audit-attempt1-source.py.txt": {
+      "sha256": "13352318c50c6fc5e587859f7604745d0e8557a0924b34fd859dff07cd678095",
+      "bytes": 16978
+    },
+    "audit-attempt1.json.gz": {
+      "sha256": "ebc6d4a74b855992e244a4325e32d88d970bb22a8a01b952e78db542ccf05353",
+      "bytes": 37832
+    },
+    "audit-final.json.gz": {
+      "sha256": "b0cd9de8c66e715be5f896a063586004d022e80f13cfb5aa9e8a0ddd096b5442",
+      "bytes": 37547
+    },
+    "audit.json": {
+      "sha256": "1a33ca654d02bbeae96e9c6b1992d10fe2afa1322fab419d5004e7237b9d1690",
+      "bytes": 1536
+    },
+    "audit.py": {
+      "sha256": "421c6b409c883862ac2a989f457b9fa7f39ea816d8684922b9b499f056fa5370",
+      "bytes": 17946
+    },
+    "baseline-normal.json.gz": {
+      "sha256": "307a33f1e98a52f850a0b89ceed1a2d8c9986b5198ff02322d863c2935f076d6",
+      "bytes": 677777
+    },
+    "baseline-race.json.gz": {
+      "sha256": "7942d702248069c505ff7aa50169bd21b178457ddaaa3bd15f1d577858d140c3",
+      "bytes": 678294
+    },
+    "capture.py": {
+      "sha256": "b9be9bf2a7753f9a3bd5f958e0dfd1d2d2a9e68177102b022595188600bd8b36",
+      "bytes": 4067
+    },
+    "construction-fixed.json.gz": {
+      "sha256": "6ea3578ebc1d581415836b6589c6bd98c5204f43a32463ad78cb8816a81133e4",
+      "bytes": 470612
+    },
+    "construction-green.json.gz": {
+      "sha256": "f1d5c3107013e4baaa286706dae15e87b0e3ef02c1e4490bbeb5f3c4eca5d50f",
+      "bytes": 36902
+    },
+    "diff-check.json.gz": {
+      "sha256": "fc0aefb1759a94448bad62564ae292814e687ee2b431f93904a931ddb323b88d",
+      "bytes": 37400
+    },
+    "discovery.json.gz": {
+      "sha256": "5ff5aea257322564b67ad3020659528850659ea221f9e0a653c2a6cd3629a4a5",
+      "bytes": 37617
+    },
+    "format.json.gz": {
+      "sha256": "a0eafe54c45767d0caf2f3f11ec7559e52f59768f38cd85e854d8adb2e7fec4e",
+      "bytes": 37444
+    },
+    "model-normal.json.gz": {
+      "sha256": "cd3b15020340a14ff843ebd993eae0e0128950bcaca54a4a624d90fb5b0cef42",
+      "bytes": 40256
+    },
+    "model-race.json.gz": {
+      "sha256": "5d9564ded9233309da99fd1d86bb46f4d402017539b93176098b6e8500195b75",
+      "bytes": 40353
+    },
+    "modules.json.gz": {
+      "sha256": "1017c24690eb568945dc8a25ae95535d72c64dff0e40ed06753897fe11c45e2b",
+      "bytes": 37427
+    },
+    "pending-fixed.json.gz": {
+      "sha256": "98fc05e582c5f40bc60dd22e534bd19fe8790a0ec9b0c094d542122562df72b3",
+      "bytes": 85095
+    },
+    "reason-normal.json.gz": {
+      "sha256": "ed9f9064187be6dda599118ed0d7156db46f44032e6b56b0b449a18fe65d878f",
+      "bytes": 516565
+    },
+    "reason-race.json.gz": {
+      "sha256": "3e5cafebe525ce228c20bd80b4d4fc024bba48f43768a5b2acc05771ea8a7e24",
+      "bytes": 516945
+    },
+    "red-classification.json.gz": {
+      "sha256": "df08b7af7ac2e1f1b1be0b4e4c33c53c6e129a9ea73b9256dd3986016339a6ac",
+      "bytes": 47303
+    },
+    "toolchain.json.gz": {
+      "sha256": "dfa397572b92417feca36d504b673ddf7b4c5a12818c94d78a74a3ff167fe417",
+      "bytes": 37495
+    },
+    "vet.json.gz": {
+      "sha256": "405306478116247fd066c5adff5cd603f4af040192e265a1a5988417f3ca74c3",
+      "bytes": 37428
+    }
+  },
+  "profiles": {
+    "normal": {
+      "leaves": 25,
+      "records": {
+        "mode": 6,
+        "classification-cut": 1,
+        "classification-cut-completed": 1,
+        "control": 5,
+        "automatic": 8,
+        "decoder-negative": 5
+      },
+      "baseline_leaves": 57,
+      "historical_exact_inspections": 48
+    },
+    "race": {
+      "leaves": 25,
+      "records": {
+        "mode": 6,
+        "classification-cut": 1,
+        "classification-cut-completed": 1,
+        "control": 5,
+        "automatic": 8,
+        "decoder-negative": 5
+      },
+      "baseline_leaves": 57,
+      "historical_exact_inspections": 48
+    }
+  }
+}

@@ -104,7 +104,13 @@ func decodeInvocationJoin(s runtime.Inspection, c model.JoinConfig) (invocationJ
 
 // The raw pass authenticates original records without imposing a parent's
 // consumption policy. Historical and S-first wrappers apply separate verdicts.
-func decodeInvocationJoinRaw(s runtime.Inspection, c model.JoinConfig) (out invocationJoinTrace, err error) {
+func decodeInvocationJoinRaw(s runtime.Inspection, c model.JoinConfig) (invocationJoinTrace, error) {
+	return decodeInvocationJoinRawOrdered(s, c, nil)
+}
+
+// Optional event-order metadata is private to the reason adapter. It neither
+// changes validation nor adds events/fields to the historical serialized trace.
+func decodeInvocationJoinRawOrdered(s runtime.Inspection, c model.JoinConfig, orders *[]int64) (out invocationJoinTrace, err error) {
 	out.Handles = map[string]string{}
 	fail := func(f string, a ...any) (invocationJoinTrace, error) {
 		return invocationJoinTrace{}, fmt.Errorf(f, a...)
@@ -442,7 +448,13 @@ func decodeInvocationJoinRaw(s runtime.Inspection, c model.JoinConfig) (out invo
 	executedIntents := map[string]bool{}
 	decided := false
 	emit := func(op, kind string) model.Observation { v := metadata[op]; v.Kind = kind; return v }
-	appendEvent := func(v model.Observation) { out.Events = append(out.Events, model.JoinEvent{Fact: v}) }
+	currentOrder := int64(0)
+	appendEvent := func(v model.Observation) {
+		out.Events = append(out.Events, model.JoinEvent{Fact: v})
+		if orders != nil {
+			*orders = append(*orders, currentOrder)
+		}
+	}
 	parentMeta := func(kind, status string) model.Observation {
 		return model.Observation{Kind: kind, Operation: "root", Role: "parent", Request: c.Request, Status: status}
 	}
@@ -461,6 +473,7 @@ func decodeInvocationJoinRaw(s runtime.Inspection, c model.JoinConfig) (out invo
 		return ok && port.Send.Record.Validate(in.Payload) == nil && b.Protocol == "alan/composition/v1" && in.Kind == "message" && b.Members[t.EntryMember] == in.Run && in.Target == b.Caller.Subject && in.Generation == b.Caller.Generation && in.Obligation == port.Obligation
 	}
 	for index, f := range facts {
+		currentOrder = f.Order
 		if f.Order != int64(index+1) {
 			return fail("noncontiguous/duplicate fact order")
 		}
@@ -646,6 +659,9 @@ func decodeInvocationJoinRaw(s runtime.Inspection, c model.JoinConfig) (out invo
 			revisionMatches := a.Source.Revision == intentRevisions[original.ID] && a.Source.Revision == source.Revision
 			generationMatches := a.Source.Run.Generation == source.Generation
 			out.Events = append(out.Events, model.JoinEvent{Fact: v, SourceOpen: states[original.Run].Status == "open", SourceRetired: source.Retired, RevisionMatches: revisionMatches, GenerationMatches: generationMatches, ReplyBound: kind == "reply_authorize" && boundReply(original)})
+			if orders != nil {
+				*orders = append(*orders, currentOrder)
+			}
 		case "admission":
 			a, ok := admissions[f.OperationID]
 			if !ok || rename[f.OperationID] == "" || seenAdmissions[f.OperationID] {
