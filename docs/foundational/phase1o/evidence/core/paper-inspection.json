@@ -1,0 +1,63 @@
+{
+  "utc": "2026-10-30T18:39:52.134901+00:00",
+  "pdf_sha256": "2f1737e338641b9c47a203930b28e184bbb58d58160f714a8cd52d6718829937",
+  "build_record_sha256": "003b72da2b8cec994c129d3bc38a0c0268b6ee49802c65014a276d9b66820702",
+  "tectonic_invocations_this_phase": 1,
+  "marker_invocations_this_phase": 1,
+  "exit": 0,
+  "pages": 21,
+  "page_size": "A4 595.28 x 841.89 pts",
+  "changed_content_pages": [
+    16,
+    17
+  ],
+  "visually_inspected_pages": [
+    15,
+    16,
+    17,
+    18
+  ],
+  "commands_executed": [
+    [
+      "/opt/homebrew/bin/pdfinfo",
+      "paper/alan-dissertation.pdf"
+    ],
+    [
+      "/opt/homebrew/bin/pdftotext",
+      "-layout",
+      "paper/alan-dissertation.pdf",
+      "-"
+    ],
+    [
+      "/opt/homebrew/bin/pdftoppm",
+      "-f",
+      "15",
+      "-l",
+      "18",
+      "-scale-to",
+      "1500",
+      "-png",
+      "paper/alan-dissertation.pdf",
+      "/private/tmp/alan-phase1o-review"
+    ]
+  ],
+  "inspection_tool": "view_image, each of the four resulting PNGs",
+  "rendered_png_sha256": {
+    "15": "4426b584d59b762f656fb5a5ec978c59ab999c561892e48fd5266f69d981642d",
+    "16": "f5b592174fc3658fa8dcd68d0b1ed54b668b508641cb5e3cd5369c186fba77e1",
+    "17": "0d2e0c24dd78404651ed94f38eef5c80ed9362de2deadd7d8be86957a2323f0e",
+    "18": "e51f1889df35bdd540c19ff95aace313082f03d752994964e47125bb84282ad8"
+  },
+  "disposition": "PASS: changed source text and mathematics are readable; no clipping, overlap, missing glyphs or damaged surrounding layout observed on inspected pages. Standard paragraph continuation across pages16/17.",
+  "warning_policy": "Recorded TeX underfull/overfull hbox warnings accepted per user; no repeat Tectonic invocation. Internal TeX/BibTeX passes belong to the single Tectonic command.",
+  "source_sha256": {
+    "paper/alan-dissertation.md": "12daf0bb6b5366d99ae3f314ed6912c5f79e8788d1edf8eae40a65457ae60533",
+    "paper/alan-dissertation.tex": "5ef67d35eafe4405a50b06e19ae00d38b382369a77393f10343f643b5c7a7ceb",
+    "paper/references.bib": "07e21dbbfe00f9af2eefb3b159b7cd5c8c1be2f7ab4cf0a88c6d3fc93da1626b"
+  },
+  "source_unchanged_during_build": {
+    "paper/alan-dissertation.md": true,
+    "paper/alan-dissertation.tex": true,
+    "paper/references.bib": true
+  }
+}
