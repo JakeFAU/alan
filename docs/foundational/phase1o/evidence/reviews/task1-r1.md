@@ -1,0 +1,53 @@
+# Phase 1O Task 1 independent specification and semantic review — r1
+
+Specification: **APPROVE**.
+
+Semantic/research quality: **APPROVE**, for the qualified definition/provenance gate only. There is one nonblocking wording finding below. This approval establishes neither ARG-2 nor any candidate acceptance, and does not select a uniquely authoritative interpretation of unchanged K1.
+
+## Reviewed identity and scope
+
+- Base/current HEAD supplied by the controller: `42c837f545ae60676935c3f46e38d17d98f009df`; the change is the explicitly packaged new-file working tree.
+- Scoped diff: `.superpowers/sdd/00-plan-phase1o/task-1-r1-diff.txt`, independently hashed as `c2beeb73477c1fb9588dc2802858358b63d92cf0abb5b3012c95f45893683747`.
+- Definition: `docs/foundational/phase1o/01-weak-contract.md`, independently hashed as `bbf8e0923d2819b3658c73bca0471cd07421b5a8b9490ab3680ea00b28dee225`.
+- Read the exact Task 1 brief, binding constraints, implementer report as unverified claims, and the supplied diff. Console-truncated portions were recovered from the diff, not by a second independent read of the changed document. Applied the supplied `subagent-driven-development/task-reviewer-prompt.md`. The startup skill explicitly exempts dispatched subagents.
+- This is the requested definition gate, not an audit of every historical claim or an experimental qualification gate. No whole-plan read, candidate search, Go test rerun, production edit, manuscript render, commit, push, or delegation occurred. The sole review write is this report.
+
+## Specification checks and strengths
+
+1. **Domain and premise scope are correct.** `01-weak-contract.md:44–100` distinguishes the original 3,072 local initial configurations from the five context products, defines the depth2/cap3/residual3/q restriction, retains closure for safety/readiness, and separately requires open progress. It states both directions of the quantifier limitation: a profile proof needs justified restriction to support the full-premise implication, and a profile-only negative does not refute full local conformance. Checked against K1 `01-substitution-contract.md:202–242`, `relation.go:21–40`, and `callable_join_local.go:5–8,178–219`.
+2. **Existential witnesses and coherent strategy are preserved.** `01-weak-contract.md:244–275,302–310,339–359` permits nonfunctional relations, alternative reference successors and finite paths, and does not require the suitable relation to extend a supplied weak witness. The universal obligation at every related reachable pair prevents favorable completed traces from masquerading as a strategy. The three distinct negative propositions remain distinct. The minor wording issue below does not change the explicit numbered definition.
+3. **Candidate ownership is independent of the conclusion.** `01-weak-contract.md:104–154,216–220,325` defines operational ownership before conformance and leaves wrong computations, premature terminal choices, stuck control and private divergence to the premises. It neither treats `Environment=false` as candidate authority nor silently extends bilateral environment readiness to caller actions. The A_op/A_graph distinction is explicit; A_pub requires a separate correspondence gate. This matches final ARG-1 `reference-r1.md:140–145` and the actual owner extraction in `candidates.go:17–43,56–69` with caller transitions in `model.go:230–242,375–423`.
+4. **Visibility is sufficiently explicit for this qualified gate.** `01-weak-contract.md:158–240` specifies endpoint facts, ordered events, multiplicity, exact payload/reason/presence/debit/identity facts, and atomic boundaries. It accounts for the coarse terminal event's empty Status by retaining successor Freeze, and does not invent a durable checkpoint between runtime publication and delivery. It distinguishes pure candidate stutters from the unresolved requirements on reference matching intermediates. Checked against K1 `:71–106,218–225,288–304`, `oracle.go:12–22`, `model.go:181–423`, `invocation_join.go:207–211`, and `callable_join_local.go:78–80`.
+5. **The historical checker is not promoted to the weak contract.** `01-weak-contract.md:178–184,312–335` identifies its exact erasure projection and preserves F_event/F_fact and P_stage/P_boundary as interpretation alternatives. The actual checker fixes `k = publicState(m)` and matches one event or a pure stutter (`relation.go:15–19,61–109`); it does not search all relations. The document accurately limits what that fact establishes. The alternative readings are recorded proof obligations, not claimed acceptance-set experiments.
+6. **The desired conclusion has not been put into the premise.** `01-weak-contract.md:339–387` includes final ARG-1's guard-stable weak-path alternative, and the provenance table marks intermediate stability, caller transfer and authorization extension as unresolved. Entitlement, equality and fixed ownership are not falsely labeled universal intermediate-state lemmas. Checked against final `reference-r1.md:148–171,205–224`; the earlier `02-lifting.md:182–190` is not treated as closing ARG-2.
+7. **Progress remains a separate obligation.** `01-weak-contract.md:277–300,349–351` states service/resource assumptions, exact answer/fail/absent and designated-pending behavior, scarce refusal handling, and nondivergence. It does not infer progress from endpoint simulation or impose the A/B rank cap on arbitrary candidates. The profile completion boundary agrees with `callable_join_local.go:104–165`, while original K1 `:192–198,232–242` supplies the independent obligation.
+8. **Environment and paper status remain honest.** `01-weak-contract.md:65–76,390–410` preserves full4/residual3, prior J debit, original S as the only q debit, original-handle order, no closure/release and eventual eligible service. The manuscript status checked at Markdown line 562 and LaTeX line 381 remains conditional ARG-1/open ARG-2; no new result requires a Task 1 status rewrite. Phase-end reconciliation is still required.
+
+## Findings
+
+### Critical / Important
+
+None found within this Task 1 scope.
+
+### Minor — clarify which reference state may be chosen after an event
+
+`docs/foundational/phase1o/01-weak-contract.md:269–271` says the witness may choose “a related reference state and matching path after seeing the candidate event.” The numbered definition at `:251–253` correctly quantifies over **every already-related pair** `(x,k)` and requires the path to start from **that k**. Read literally in isolation, the later sentence could allow choosing a different starting k for each event of x, weakening the relation game.
+
+Recommended edit: say that for each already-related `(x,k)`, the matching path **from k** and related successor k' may be chosen after seeing the candidate event. Nonfunctional R remains allowed, but every included pair must meet all its obligations. This is nonblocking because the numbered definition already states the correct quantifier order; approval adopts that explicit definition and does not authorize event-dependent replacement of the starting pair.
+
+## Focused source checks for named risks
+
+- **Operational ownership and impossible post-freeze work:** inspected K1 `:89–105,118–134`, `model.go:138–143,230–242,375–423`, and `candidates.go:17–85,130–215`; public `Reduce` rejects closed source projections at `internal/executor/program.go:290–317,470–477`. The document's ownership restriction is independently stated and does not come from the weak simulation alone.
+- **Undeclared inputs or authorization access:** inspected `author/invocations.go:94–107`, `author/compile.go:307–329`, `internal/executor/program.go:362–397`, and `invocation_payload.go:9–25`. These support the claimed public boundary; they do not prove arbitrary A_op graphs publicly realizable. The document preserves that limitation.
+- **Invented authorization histories:** inspected `internal/executor/messages.go:103–177`, `invocation.go:123–140,218–224,296–312`, and `invocation_outcome.go:164–184,354–373,426–440`. First authorization is retained, revision/generation checks precede the reply exception, reply schema/admission is distinct, and accepted response evidence may survive failed End. Equal sidecar extension for all service orders remains explicitly unproved.
+- **False atomicity or checkpoint:** inspected `invocation_outcome.go:220–288,499–568,571–621` and `invocation.go:218–219`. Freeze captures the committed prefix, admission retains its child/binding/debit atomically, and settlement publication/delivery is one transaction even though the finite abstraction separates its ordered facts.
+- **Composition profile or progress drift:** inspected N `01-contract.md:38–47,177–253`, `02-lifting.md:49–90,101–190`, final `reference-r1.md:140–224`, and `callable_join_local.go:5–219`. The profile and distinct progress obligations agree; no new derivation is inferred from the old code.
+- **Historical status being silently upgraded:** inspected N `03-qualification.md:21–35,60–78`, `05-decisions.md:29–34`, `06-review.md:56–60`, and the matching manuscript status paragraphs. They support the document's stated conditional/open disposition.
+
+## Evidence inspected and limits
+
+Executed read-only `cat`/`sed`/`nl` source reads, SHA-256 checks, and a Python comparison of all 35 source hashes in `evidence/core/baseline.json`: zero mismatches. Independently confirmed the scoped diff and definition digests above. Initial `git status --short` showed only the new Phase 1O directory; no additional Git commands were used for review.
+
+Decoded the controller's `evidence/core/baseline-checks.json.gz`. Its three recorded commands (Go version, focused test listing, and focused test execution) exit 0 with empty stderr; its inherited-code comparison also exits 0 with empty output. The focused command is `go test -json -count=1 -timeout=2m -run '^TestCallableJoin(Domain|DirectedReference|PendingEvidence|RefusalProjectionIsNotDebit)$' ./research/substitution`. These are inspectable **controller-run inherited baseline results**, not reviewer-run tests or candidate/ARG-2 evidence. No new test was warranted for this documentation-only definition gate.
+
+This approval accepts the explicit A_op domain and the named unresolved interpretation/proof boundaries. It does not assert that F_event equals F_fact, that P_stage equals P_boundary, that either is uniquely forced by unchanged K1, or that A_op equals A_pub. A subsequent proof or negative must state its reading and domain, preserve the existential suitable-relation target and independent progress/reference premises, and undergo the corresponding acceptance review. ARG-2 and phase-end manuscript reconciliation remain open obligations.
