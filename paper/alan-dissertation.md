@@ -599,6 +599,12 @@ A separate open-progress check covers 784 states and 1,184 edges, with one servi
 
 The closure-inclusive local kernel and the concrete Store differ on a bound reply. In the original J placement the helper committed its correct reply to B, the root was cancelled, and the helper ended. The Store then authorized and accepted that reply. At the same cut the local kernel requires refusal because the scope is closed. This execution refutes exact correspondence across arbitrary Store cancellation schedules. The positive relay result retains its open-frame hypothesis. See `docs/foundational/phase1s/04-qualification.md`.
 
+**Finite owning trees (Phase 1T).** Every finite legal tree built from the original callable join with A or B at each leaf, a unary owning relay, and a binary owning fork preserves the following guarantee. Each leaf independently receives one of the sixteen original requests in $D_N$. All eventual outcomes below assume service of continuously eligible work and a common sufficient allowance for invocations, created runs and depth. The fork commits both invocations before awaiting the left and then the right by their original handles. Equal application ids can therefore occur on distinct branches. If all leaves answer, the tree succeeds and returns their id-preserving complements in their respective positions. If every leaf completes but some candidate fails or ends without its reply, the tree fails with a present product. Each affected position retains its specific diagnosis and every answering sibling retains its answer. At first publication, all owned descendants and captured replies have settled.
+
+A genuinely pending leaf leaves its ancestors unpublished. A fork blocked on its left child may already hold a delivered, unconsumed outcome from its right. The source argument uses the actual retained leaf machines, the generated parent instructions and the open, pure Store protocol. It requires stable authority and bindings, sufficient representation and operational limits at each placement, and no external closure, extra work or release of a pending receive. Charge each accepted occurrence once against the finite slots of the whole tree. With the fixed outer root counted separately, a two-leaf fork admits AA, AB, BA and BB under the same nine-slot allowance and depth four. They spend seven, eight, eight and nine slots respectively.
+
+An independent finite model covered all 2,176 declared configurations. The public Store campaign exercised 80 automatic configurations and 14 manual schedules and adverse cases at physical capacity one. A branching cancellation prefix preserved the earlier counterexample. A bound reply first received permission after both root cancellation and sender End. The positive theorem applies to open placements.
+
 ## 5. Pillar IV: Algebraic Effects, Split-Phase Operational Handlers, and the Epistemic Effect Lattice
 
 ### 5.1 From Monads and Algebraic Effects to Coinductive Interaction Trees
@@ -953,6 +959,8 @@ We return to the four foundational propositions posed at the outset of this inve
    Historical replay, retained charges/identities and conservative unknown handling are distinct from future contextual simulation. Theorem 6.6 records the replay argument and the open additional premises for symmetric recovery, peer independence and reconciliation. The missing-receipt impossibility boundary remains relevant: no fabricated result or blind non-idempotent retransmission can supply the lost knowledge. Shared retry expenditure and external effects remain observable.
 4. **Separation of Intelligence and Execution:**
    Rather than attempting to force probabilistic language models to behave like deterministic state machines, ALAN allows models to remain probabilistic external effects while making the surrounding computation—budget reservation, schema validation, tool authorization, span-exclusion forwarding, and byte-exact citation provenance verification—a deterministic, crash-recoverable formal system.
+
+**Series 1 conclusion.** Series 1 establishes behavioral substitution for the finite legal owning-tree grammar under a common sufficient allowance. The broader exact-debit congruence remains open. Pillar IV takes up the separate question of when a committed external intent can still launch after cancellation.
 
 ### 8.2 Open Problems for Future Research
 
