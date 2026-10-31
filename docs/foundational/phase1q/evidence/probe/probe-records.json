@@ -1,0 +1,311 @@
+[
+  {
+    "record": "probe-format-initial.json.gz",
+    "sha256": "30d317def0e19206f81156bcc8225c9a6d2f1dbccc04de86764c2553f02ad329",
+    "argv": [
+      "gofmt",
+      "-w",
+      "/private/tmp/alan-phase1q-66b979d/diagnostic_relay_identity_test.go"
+    ],
+    "exit": 0,
+    "passed": [],
+    "sources": {
+      "go.mod": "1d8b5c8939d1422813ed2b004c6560e3ec3f262709d57e9b957f6994ffd9bdeb",
+      "go.sum": "9eb975c181ebee792e06f732fc13ef81acad0779d94731f75133ad2bba52c5ca"
+    }
+  },
+  {
+    "record": "probe-discover.json.gz",
+    "sha256": "95e965030fdc7f98ffdf24ef42ba71f15a9e93d4f38553b752b7e21f4ba6b84a",
+    "argv": [
+      "go",
+      "test",
+      "-tags=integration",
+      "-list",
+      "^TestDiagnosticRelayHandleObservation$",
+      "./internal/substitutiontest"
+    ],
+    "exit": 0,
+    "passed": [],
+    "sources": {
+      "go.mod": "1d8b5c8939d1422813ed2b004c6560e3ec3f262709d57e9b957f6994ffd9bdeb",
+      "go.sum": "9eb975c181ebee792e06f732fc13ef81acad0779d94731f75133ad2bba52c5ca",
+      "internal/substitutiontest/diagnostic_relay_identity_test.go": "1d246bdd4775e791048a87244239e9557191871eca5d99eb5b614220cb785960"
+    }
+  },
+  {
+    "record": "probe-author-discover.json.gz",
+    "sha256": "7b2de3faa26041eabc420bfcb15041ca4814394653cb37ee15e52ff7f0fa6fe9",
+    "argv": [
+      "go",
+      "test",
+      "-list",
+      "^Test(InvocationHandleRoundTripThroughList|InvocationAwaitRejectsKnownWrongDeclarationAndNonString|AdapterAwaitStillRejectsPlainString|SerializedInvocationHandleCannotRebindOutcome)$",
+      "./author"
+    ],
+    "exit": 0,
+    "passed": [],
+    "sources": {
+      "go.mod": "1d8b5c8939d1422813ed2b004c6560e3ec3f262709d57e9b957f6994ffd9bdeb",
+      "go.sum": "9eb975c181ebee792e06f732fc13ef81acad0779d94731f75133ad2bba52c5ca",
+      "internal/substitutiontest/diagnostic_relay_identity_test.go": "1dcaf16485cd81d6cb03bb2edef49ff8ed6252573f4f87dd599f2f736a252786"
+    }
+  },
+  {
+    "record": "probe-normal-1.json.gz",
+    "sha256": "bb9acf4362887ef56cd3abdd3f0ff428aeec02343e171a13a2773c915b5ebf8f",
+    "argv": [
+      "go",
+      "test",
+      "-tags=integration",
+      "-run",
+      "^TestDiagnosticRelayHandleObservation$",
+      "-count=1",
+      "-v",
+      "./internal/substitutiontest"
+    ],
+    "exit": 0,
+    "passed": [
+      "TestDiagnosticRelayHandleObservation",
+      "TestDiagnosticRelayHandleObservation/probeA",
+      "TestDiagnosticRelayHandleObservation/probeB"
+    ],
+    "sources": {
+      "go.mod": "1d8b5c8939d1422813ed2b004c6560e3ec3f262709d57e9b957f6994ffd9bdeb",
+      "go.sum": "9eb975c181ebee792e06f732fc13ef81acad0779d94731f75133ad2bba52c5ca",
+      "internal/substitutiontest/diagnostic_relay_identity_test.go": "1dcaf16485cd81d6cb03bb2edef49ff8ed6252573f4f87dd599f2f736a252786"
+    }
+  },
+  {
+    "record": "probe-race-1.json.gz",
+    "sha256": "fbb04cef7f8dac1fe7b1add905ab7d0de067a319767817e838ca122802219261",
+    "argv": [
+      "go",
+      "test",
+      "-race",
+      "-tags=integration",
+      "-run",
+      "^TestDiagnosticRelayHandleObservation$",
+      "-count=1",
+      "-v",
+      "./internal/substitutiontest"
+    ],
+    "exit": 0,
+    "passed": [
+      "TestDiagnosticRelayHandleObservation",
+      "TestDiagnosticRelayHandleObservation/probeA",
+      "TestDiagnosticRelayHandleObservation/probeB"
+    ],
+    "sources": {
+      "go.mod": "1d8b5c8939d1422813ed2b004c6560e3ec3f262709d57e9b957f6994ffd9bdeb",
+      "go.sum": "9eb975c181ebee792e06f732fc13ef81acad0779d94731f75133ad2bba52c5ca",
+      "internal/substitutiontest/diagnostic_relay_identity_test.go": "1dcaf16485cd81d6cb03bb2edef49ff8ed6252573f4f87dd599f2f736a252786"
+    }
+  },
+  {
+    "record": "probe-author-normal.json.gz",
+    "sha256": "4feea93825183d11e43a38fb64c8759faa214b88d04239f134486300f96a39ca",
+    "argv": [
+      "go",
+      "test",
+      "-run",
+      "^Test(InvocationHandleRoundTripThroughList|InvocationAwaitRejectsKnownWrongDeclarationAndNonString|AdapterAwaitStillRejectsPlainString|SerializedInvocationHandleCannotRebindOutcome)$",
+      "-count=1",
+      "-v",
+      "./author"
+    ],
+    "exit": 0,
+    "passed": [
+      "TestInvocationHandleRoundTripThroughList",
+      "TestInvocationAwaitRejectsKnownWrongDeclarationAndNonString",
+      "TestAdapterAwaitStillRejectsPlainString",
+      "TestSerializedInvocationHandleCannotRebindOutcome"
+    ],
+    "sources": {
+      "go.mod": "1d8b5c8939d1422813ed2b004c6560e3ec3f262709d57e9b957f6994ffd9bdeb",
+      "go.sum": "9eb975c181ebee792e06f732fc13ef81acad0779d94731f75133ad2bba52c5ca",
+      "internal/substitutiontest/diagnostic_relay_identity_test.go": "1dcaf16485cd81d6cb03bb2edef49ff8ed6252573f4f87dd599f2f736a252786"
+    }
+  },
+  {
+    "record": "probe-author-race.json.gz",
+    "sha256": "cd213122f80d425fa7996634dcc684788000e883f269ad15a453b9d9d69053d3",
+    "argv": [
+      "go",
+      "test",
+      "-race",
+      "-run",
+      "^Test(InvocationHandleRoundTripThroughList|InvocationAwaitRejectsKnownWrongDeclarationAndNonString|AdapterAwaitStillRejectsPlainString|SerializedInvocationHandleCannotRebindOutcome)$",
+      "-count=1",
+      "-v",
+      "./author"
+    ],
+    "exit": 0,
+    "passed": [
+      "TestInvocationHandleRoundTripThroughList",
+      "TestInvocationAwaitRejectsKnownWrongDeclarationAndNonString",
+      "TestAdapterAwaitStillRejectsPlainString",
+      "TestSerializedInvocationHandleCannotRebindOutcome"
+    ],
+    "sources": {
+      "go.mod": "1d8b5c8939d1422813ed2b004c6560e3ec3f262709d57e9b957f6994ffd9bdeb",
+      "go.sum": "9eb975c181ebee792e06f732fc13ef81acad0779d94731f75133ad2bba52c5ca",
+      "internal/substitutiontest/diagnostic_relay_identity_test.go": "1dcaf16485cd81d6cb03bb2edef49ff8ed6252573f4f87dd599f2f736a252786"
+    }
+  },
+  {
+    "record": "probe-vet.json.gz",
+    "sha256": "00b73b2929dbf0493733da49c6a1bded7ce53f416a17d8cb03a321815013f552",
+    "argv": [
+      "go",
+      "vet",
+      "-tags=integration",
+      "./internal/substitutiontest"
+    ],
+    "exit": 0,
+    "passed": [],
+    "sources": {
+      "go.mod": "1d8b5c8939d1422813ed2b004c6560e3ec3f262709d57e9b957f6994ffd9bdeb",
+      "go.sum": "9eb975c181ebee792e06f732fc13ef81acad0779d94731f75133ad2bba52c5ca",
+      "internal/substitutiontest/diagnostic_relay_identity_test.go": "1dcaf16485cd81d6cb03bb2edef49ff8ed6252573f4f87dd599f2f736a252786"
+    }
+  },
+  {
+    "record": "probe-mod-verify.json.gz",
+    "sha256": "d926050bc7317154b6fffaa2772e9ccdc1c9971f4bfbec2775260976c6d61d1a",
+    "argv": [
+      "go",
+      "mod",
+      "verify"
+    ],
+    "exit": 0,
+    "passed": [],
+    "sources": {
+      "go.mod": "1d8b5c8939d1422813ed2b004c6560e3ec3f262709d57e9b957f6994ffd9bdeb",
+      "go.sum": "9eb975c181ebee792e06f732fc13ef81acad0779d94731f75133ad2bba52c5ca",
+      "internal/substitutiontest/diagnostic_relay_identity_test.go": "1dcaf16485cd81d6cb03bb2edef49ff8ed6252573f4f87dd599f2f736a252786"
+    }
+  },
+  {
+    "record": "probe-gofmt-check.json.gz",
+    "sha256": "2d77cd6234a8c6049b325774df031773061cea45597ef395b21fe6e1f654eb09",
+    "argv": [
+      "gofmt",
+      "-d",
+      "internal/substitutiontest/diagnostic_relay_identity_test.go"
+    ],
+    "exit": 0,
+    "passed": [],
+    "sources": {
+      "go.mod": "1d8b5c8939d1422813ed2b004c6560e3ec3f262709d57e9b957f6994ffd9bdeb",
+      "go.sum": "9eb975c181ebee792e06f732fc13ef81acad0779d94731f75133ad2bba52c5ca",
+      "internal/substitutiontest/diagnostic_relay_identity_test.go": "1dcaf16485cd81d6cb03bb2edef49ff8ed6252573f4f87dd599f2f736a252786"
+    }
+  },
+  {
+    "record": "probe-normal-timeout.json.gz",
+    "sha256": "19c17f4a681dcf121d076a4d659ebb785fa20f2daca8fc889b0d0bf20cb3de9c",
+    "argv": [
+      "go",
+      "test",
+      "-tags=integration",
+      "-run",
+      "^TestDiagnosticRelayHandleObservation$",
+      "-count=1",
+      "-timeout=2m",
+      "-v",
+      "./internal/substitutiontest"
+    ],
+    "exit": 0,
+    "passed": [
+      "TestDiagnosticRelayHandleObservation",
+      "TestDiagnosticRelayHandleObservation/probeA",
+      "TestDiagnosticRelayHandleObservation/probeB"
+    ],
+    "sources": {
+      "go.mod": "1d8b5c8939d1422813ed2b004c6560e3ec3f262709d57e9b957f6994ffd9bdeb",
+      "go.sum": "9eb975c181ebee792e06f732fc13ef81acad0779d94731f75133ad2bba52c5ca",
+      "internal/substitutiontest/diagnostic_relay_identity_test.go": "1dcaf16485cd81d6cb03bb2edef49ff8ed6252573f4f87dd599f2f736a252786"
+    }
+  },
+  {
+    "record": "probe-race-timeout.json.gz",
+    "sha256": "0522f6219ee09444dc6213b3eb615fe547e3e865de55a76c9451caa7a389ec32",
+    "argv": [
+      "go",
+      "test",
+      "-race",
+      "-tags=integration",
+      "-run",
+      "^TestDiagnosticRelayHandleObservation$",
+      "-count=1",
+      "-timeout=2m",
+      "-v",
+      "./internal/substitutiontest"
+    ],
+    "exit": 0,
+    "passed": [
+      "TestDiagnosticRelayHandleObservation",
+      "TestDiagnosticRelayHandleObservation/probeA",
+      "TestDiagnosticRelayHandleObservation/probeB"
+    ],
+    "sources": {
+      "go.mod": "1d8b5c8939d1422813ed2b004c6560e3ec3f262709d57e9b957f6994ffd9bdeb",
+      "go.sum": "9eb975c181ebee792e06f732fc13ef81acad0779d94731f75133ad2bba52c5ca",
+      "internal/substitutiontest/diagnostic_relay_identity_test.go": "1dcaf16485cd81d6cb03bb2edef49ff8ed6252573f4f87dd599f2f736a252786"
+    }
+  },
+  {
+    "record": "probe-author-normal-timeout.json.gz",
+    "sha256": "b03441b1e9fcb67f1cafb2a286f9403002e311c7b2494259a28c4d2d2591281a",
+    "argv": [
+      "go",
+      "test",
+      "-run",
+      "^Test(InvocationHandleRoundTripThroughList|InvocationAwaitRejectsKnownWrongDeclarationAndNonString|AdapterAwaitStillRejectsPlainString|SerializedInvocationHandleCannotRebindOutcome)$",
+      "-count=1",
+      "-timeout=2m",
+      "-v",
+      "./author"
+    ],
+    "exit": 0,
+    "passed": [
+      "TestInvocationHandleRoundTripThroughList",
+      "TestInvocationAwaitRejectsKnownWrongDeclarationAndNonString",
+      "TestAdapterAwaitStillRejectsPlainString",
+      "TestSerializedInvocationHandleCannotRebindOutcome"
+    ],
+    "sources": {
+      "go.mod": "1d8b5c8939d1422813ed2b004c6560e3ec3f262709d57e9b957f6994ffd9bdeb",
+      "go.sum": "9eb975c181ebee792e06f732fc13ef81acad0779d94731f75133ad2bba52c5ca",
+      "internal/substitutiontest/diagnostic_relay_identity_test.go": "1dcaf16485cd81d6cb03bb2edef49ff8ed6252573f4f87dd599f2f736a252786"
+    }
+  },
+  {
+    "record": "probe-author-race-timeout.json.gz",
+    "sha256": "73a45460f1848af22f2a328e4c837a67e45fcf948e807466778ba1b94e97a14e",
+    "argv": [
+      "go",
+      "test",
+      "-race",
+      "-run",
+      "^Test(InvocationHandleRoundTripThroughList|InvocationAwaitRejectsKnownWrongDeclarationAndNonString|AdapterAwaitStillRejectsPlainString|SerializedInvocationHandleCannotRebindOutcome)$",
+      "-count=1",
+      "-timeout=2m",
+      "-v",
+      "./author"
+    ],
+    "exit": 0,
+    "passed": [
+      "TestInvocationHandleRoundTripThroughList",
+      "TestInvocationAwaitRejectsKnownWrongDeclarationAndNonString",
+      "TestAdapterAwaitStillRejectsPlainString",
+      "TestSerializedInvocationHandleCannotRebindOutcome"
+    ],
+    "sources": {
+      "go.mod": "1d8b5c8939d1422813ed2b004c6560e3ec3f262709d57e9b957f6994ffd9bdeb",
+      "go.sum": "9eb975c181ebee792e06f732fc13ef81acad0779d94731f75133ad2bba52c5ca",
+      "internal/substitutiontest/diagnostic_relay_identity_test.go": "1dcaf16485cd81d6cb03bb2edef49ff8ed6252573f4f87dd599f2f736a252786"
+    }
+  }
+]
