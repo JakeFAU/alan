@@ -22,3 +22,11 @@ go mod verify
 ```
 
 For each raw relocation inspection, start at its sole original root, follow each original commitment to the corresponding admission and member, then link the committed/frozen bound reply to its publication and the delivery to the caller's actual selected observation. The original history and predecessor PC identify the selected Await and operation register. Inspect both the leaf's local End or open receive and the outward diagnostic, especially for absent and pending. In the two distinct-name alias inspections, compare the two actual branch edges and the operation selected by each receive. The prior same-depth Q probe emits its complete inspections in the verbose output of the inherited command records.
+
+## Broader untagged tests
+
+`go test -count=1 -timeout=60m ./...` passed 23 packages in the sandbox, with five further packages reporting no test files. Six packages failed at local HTTP listeners or their dependent resource processes. The complete six packages passed on a fresh run with loopback access and the same pinned offline Go environment. The combined results cover all 29 packages with untagged tests. [Sandbox invocation](evidence/unit-all.json.gz) · [Loopback rerun](evidence/unit-loopback-retry.json.gz)
+
+```sh
+go test -count=1 -timeout=60m ./cmd/alan ./cmd/alan-investigate ./examples/investigation ./internal/durabletest ./internal/executor ./research/semantics
+```
