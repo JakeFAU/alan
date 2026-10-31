@@ -1,0 +1,962 @@
+[
+  {
+    "Name": "omitted-sibling",
+    "Scenario": {
+      "Shape": "fork",
+      "Assignment": "BB",
+      "Requests": [
+        {
+          "ID": 1,
+          "Value": 0,
+          "Mode": "fail"
+        },
+        {
+          "ID": 1,
+          "Value": 0,
+          "Mode": "absent"
+        }
+      ]
+    },
+    "History": [
+      "O/tree:invoke",
+      "O/tree:allow",
+      "O/tree:admit",
+      "O/tree:receive",
+      "O/tree/left:invoke",
+      "O/tree/right:invoke"
+    ],
+    "Next": "O/tree/right:allow",
+    "Change": "requires left first permission too",
+    "Rejection": "O/tree/right/S:admit: wrong enable cone"
+  },
+  {
+    "Name": "omitted-post-end-cut",
+    "Scenario": {
+      "Shape": "fork",
+      "Assignment": "BB",
+      "Requests": [
+        {
+          "ID": 1,
+          "Value": 0,
+          "Mode": "fail"
+        },
+        {
+          "ID": 1,
+          "Value": 0,
+          "Mode": "absent"
+        }
+      ]
+    },
+    "History": [
+      "O/tree:invoke",
+      "O/tree:allow",
+      "O/tree:admit",
+      "O/tree:receive",
+      "O/tree/left:invoke",
+      "O/tree/right:invoke",
+      "O/tree/right:allow",
+      "O/tree/right:admit",
+      "O/tree/right:receive",
+      "O/tree/right/e:invoke",
+      "O/tree/right/S:invoke",
+      "O/tree/right/S:allow",
+      "O/tree/right/S:admit",
+      "O/tree/right/S:receive",
+      "O/tree/right/S:send"
+    ],
+    "Next": "O/tree/right/S:reply_allow",
+    "Change": "requires sender End before first permission",
+    "Rejection": "O/tree/right/S:record: wrong enable cone"
+  },
+  {
+    "Name": "omitted-pre-end-cut",
+    "Scenario": {
+      "Shape": "fork",
+      "Assignment": "BB",
+      "Requests": [
+        {
+          "ID": 1,
+          "Value": 0,
+          "Mode": "fail"
+        },
+        {
+          "ID": 1,
+          "Value": 0,
+          "Mode": "absent"
+        }
+      ]
+    },
+    "History": [
+      "O/tree:invoke",
+      "O/tree:allow",
+      "O/tree:admit",
+      "O/tree:receive",
+      "O/tree/left:invoke",
+      "O/tree/right:invoke",
+      "O/tree/right:allow",
+      "O/tree/right:admit",
+      "O/tree/right:receive",
+      "O/tree/right/e:invoke",
+      "O/tree/right/S:invoke",
+      "O/tree/right/S:allow",
+      "O/tree/right/S:admit",
+      "O/tree/right/S:receive",
+      "O/tree/right/S:send"
+    ],
+    "Next": "O/tree/right/S:end",
+    "Change": "requires sender permission before End",
+    "Rejection": "O/tree/right/S:end: wrong enable cone"
+  },
+  {
+    "Name": "wrong-handle",
+    "Scenario": {
+      "Shape": "fork",
+      "Assignment": "BB",
+      "Requests": [
+        {
+          "ID": 1,
+          "Value": 0,
+          "Mode": "fail"
+        },
+        {
+          "ID": 1,
+          "Value": 0,
+          "Mode": "absent"
+        }
+      ]
+    },
+    "History": [
+      "O/tree:invoke",
+      "O/tree:allow",
+      "O/tree:admit",
+      "O/tree:receive",
+      "O/tree/left:invoke",
+      "O/tree/right:invoke",
+      "O/tree/right:allow",
+      "O/tree/right:admit",
+      "O/tree/right:receive",
+      "O/tree/right/e:invoke",
+      "O/tree/right/e:allow",
+      "O/tree/right/e:admit",
+      "O/tree/right/e:receive",
+      "O/tree/right/e/h:invoke",
+      "O/tree/right/e/h:allow",
+      "O/tree/right/e/h:admit",
+      "O/tree/right/e/h:receive",
+      "O/tree/right/e/h:send",
+      "O/tree/right/e/h:end",
+      "O/tree/right/e/h:reply_allow",
+      "O/tree/right/e/h:record",
+      "O/tree/right/e/h:publish",
+      "O/tree/right/e/h:select",
+      "O/tree/right/e:end",
+      "O/tree/right/e:publish",
+      "O/tree/right/S:invoke",
+      "O/tree/right/S:allow",
+      "O/tree/right/S:admit",
+      "O/tree/right/S:receive",
+      "O/tree/right/S:send",
+      "O/tree/right/S:end",
+      "O/tree/right/S:reply_allow",
+      "O/tree/right/S:record",
+      "O/tree/right/S:publish",
+      "O/tree/right/S:select",
+      "O/tree/right/e:select",
+      "O/tree/right:send",
+      "O/tree/right:end",
+      "O/tree/right:reply_allow",
+      "O/tree/right:record",
+      "O/tree/right:publish"
+    ],
+    "Next": "O/tree/left:select",
+    "Change": "selects right publication on original left Await",
+    "Rejection": "O/tree/left:select: wrong enable cone"
+  },
+  {
+    "Name": "wrong-owner",
+    "Scenario": {
+      "Shape": "fork",
+      "Assignment": "BB",
+      "Requests": [
+        {
+          "ID": 1,
+          "Value": 0,
+          "Mode": "fail"
+        },
+        {
+          "ID": 1,
+          "Value": 0,
+          "Mode": "absent"
+        }
+      ]
+    },
+    "History": [
+      "O/tree:invoke",
+      "O/tree:allow",
+      "O/tree:admit",
+      "O/tree:receive",
+      "O/tree/left:invoke",
+      "O/tree/left:allow",
+      "O/tree/left:admit",
+      "O/tree/left:receive",
+      "O/tree/left/e:invoke",
+      "O/tree/left/e:allow",
+      "O/tree/left/e:admit",
+      "O/tree/left/e:receive",
+      "O/tree/left/e/h:invoke",
+      "O/tree/left/e/h:allow",
+      "O/tree/left/e/h:admit",
+      "O/tree/left/e/h:receive",
+      "O/tree/left/e/h:send",
+      "O/tree/left/e/h:end",
+      "O/tree/left/e/h:reply_allow",
+      "O/tree/left/e/h:record",
+      "O/tree/left/e/h:publish",
+      "O/tree/left/e/h:select",
+      "O/tree/left/e:end",
+      "O/tree/left/e:publish",
+      "O/tree/left/S:invoke",
+      "O/tree/left/S:allow",
+      "O/tree/left/S:admit",
+      "O/tree/left/S:receive",
+      "O/tree/left/S:send",
+      "O/tree/left/S:end",
+      "O/tree/left/S:reply_allow",
+      "O/tree/left/S:record",
+      "O/tree/left/S:publish",
+      "O/tree/left/S:select",
+      "O/tree/left/e:select",
+      "O/tree/left:send",
+      "O/tree/left:end",
+      "O/tree/left:reply_allow",
+      "O/tree/left:record",
+      "O/tree/left:publish",
+      "O/tree/right:invoke"
+    ],
+    "Next": "O/tree/left:select",
+    "Change": "attribute selection to sibling",
+    "Rejection": "O/tree/left:select: wrong owner or ordered word"
+  },
+  {
+    "Name": "wrong-target",
+    "Scenario": {
+      "Shape": "fork",
+      "Assignment": "BB",
+      "Requests": [
+        {
+          "ID": 1,
+          "Value": 0,
+          "Mode": "fail"
+        },
+        {
+          "ID": 1,
+          "Value": 0,
+          "Mode": "absent"
+        }
+      ]
+    },
+    "History": [
+      "O/tree:invoke",
+      "O/tree:allow",
+      "O/tree:admit",
+      "O/tree:receive",
+      "O/tree/left:invoke",
+      "O/tree/right:invoke"
+    ],
+    "Next": "O/tree/right:allow",
+    "Change": "set sibling permission bit",
+    "Rejection": "wrong target bit for O/tree/right:allow: O/tree/left:allow"
+  },
+  {
+    "Name": "snapshot-source",
+    "Scenario": {
+      "Shape": "fork",
+      "Assignment": "BB",
+      "Requests": [
+        {
+          "ID": 1,
+          "Value": 0,
+          "Mode": "fail"
+        },
+        {
+          "ID": 1,
+          "Value": 0,
+          "Mode": "absent"
+        }
+      ]
+    },
+    "History": [
+      "O/tree:invoke",
+      "O/tree:allow",
+      "O/tree:admit",
+      "O/tree:receive",
+      "O/tree/left:invoke",
+      "O/tree/right:invoke",
+      "O/tree/right:allow",
+      "O/tree/right:admit",
+      "O/tree/right:receive",
+      "O/tree/right/e:invoke",
+      "O/tree/right/e:allow",
+      "O/tree/right/e:admit",
+      "O/tree/right/e:receive",
+      "O/tree/right/e/h:invoke",
+      "O/tree/right/e/h:allow",
+      "O/tree/right/e/h:admit",
+      "O/tree/right/e/h:receive",
+      "O/tree/right/e/h:send"
+    ],
+    "Next": "O/tree/right/e/h:reply_allow",
+    "Change": "read helper caller instead of sender",
+    "Rejection": "O/tree/right/e/h:reply_allow: wrong owner or ordered word"
+  },
+  {
+    "Name": "split-publication",
+    "Scenario": {
+      "Shape": "fork",
+      "Assignment": "BB",
+      "Requests": [
+        {
+          "ID": 1,
+          "Value": 0,
+          "Mode": "fail"
+        },
+        {
+          "ID": 1,
+          "Value": 0,
+          "Mode": "absent"
+        }
+      ]
+    },
+    "History": [
+      "O/tree:invoke",
+      "O/tree:allow",
+      "O/tree:admit",
+      "O/tree:receive",
+      "O/tree/left:invoke",
+      "O/tree/left:allow",
+      "O/tree/left:admit",
+      "O/tree/left:receive",
+      "O/tree/left/e:invoke",
+      "O/tree/left/e:allow",
+      "O/tree/left/e:admit",
+      "O/tree/left/e:receive",
+      "O/tree/left/e/h:invoke",
+      "O/tree/left/e/h:allow",
+      "O/tree/left/e/h:admit",
+      "O/tree/left/e/h:receive",
+      "O/tree/left/e/h:send",
+      "O/tree/left/e/h:end",
+      "O/tree/left/e/h:reply_allow",
+      "O/tree/left/e/h:record",
+      "O/tree/left/e/h:publish",
+      "O/tree/left/e/h:select",
+      "O/tree/left/e:end",
+      "O/tree/left/e:publish",
+      "O/tree/left/S:invoke",
+      "O/tree/left/S:allow",
+      "O/tree/left/S:admit",
+      "O/tree/left/S:receive",
+      "O/tree/left/S:send",
+      "O/tree/left/S:end",
+      "O/tree/left/S:reply_allow",
+      "O/tree/left/S:record",
+      "O/tree/left/S:publish",
+      "O/tree/left/S:select",
+      "O/tree/left/e:select",
+      "O/tree/left:send",
+      "O/tree/left:end",
+      "O/tree/left:reply_allow",
+      "O/tree/left:record"
+    ],
+    "Next": "O/tree/left:publish",
+    "Change": "delete atomic delivery",
+    "Rejection": "O/tree/left:publish: wrong owner or ordered word"
+  },
+  {
+    "Name": "reordered-admission",
+    "Scenario": {
+      "Shape": "fork",
+      "Assignment": "BB",
+      "Requests": [
+        {
+          "ID": 1,
+          "Value": 0,
+          "Mode": "fail"
+        },
+        {
+          "ID": 1,
+          "Value": 0,
+          "Mode": "absent"
+        }
+      ]
+    },
+    "History": [
+      "O/tree:invoke",
+      "O/tree:allow",
+      "O/tree:admit",
+      "O/tree:receive",
+      "O/tree/left:invoke",
+      "O/tree/right:invoke",
+      "O/tree/right:allow"
+    ],
+    "Next": "O/tree/right:admit",
+    "Change": "reverse in-transaction word",
+    "Rejection": "O/tree/right:admit: wrong owner or ordered word"
+  },
+  {
+    "Name": "dropped-diagnosis",
+    "Scenario": {
+      "Shape": "fork",
+      "Assignment": "BB",
+      "Requests": [
+        {
+          "ID": 1,
+          "Value": 0,
+          "Mode": "fail"
+        },
+        {
+          "ID": 1,
+          "Value": 0,
+          "Mode": "absent"
+        }
+      ]
+    },
+    "History": [
+      "O/tree:invoke",
+      "O/tree:allow",
+      "O/tree:admit",
+      "O/tree:receive",
+      "O/tree/left:invoke",
+      "O/tree/right:invoke",
+      "O/tree/right:allow",
+      "O/tree/right:admit",
+      "O/tree/right:receive",
+      "O/tree/right/e:invoke",
+      "O/tree/right/e:allow",
+      "O/tree/right/e:admit",
+      "O/tree/right/e:receive",
+      "O/tree/right/e/h:invoke",
+      "O/tree/right/e/h:allow",
+      "O/tree/right/e/h:admit",
+      "O/tree/right/e/h:receive",
+      "O/tree/right/e/h:send",
+      "O/tree/right/e/h:end",
+      "O/tree/right/e/h:reply_allow",
+      "O/tree/right/e/h:record",
+      "O/tree/right/e/h:publish",
+      "O/tree/right/e/h:select",
+      "O/tree/right/e:end",
+      "O/tree/right/e:publish",
+      "O/tree/right/S:invoke",
+      "O/tree/right/S:allow",
+      "O/tree/right/S:admit",
+      "O/tree/right/S:receive",
+      "O/tree/right/S:send",
+      "O/tree/right/S:end",
+      "O/tree/right/S:reply_allow",
+      "O/tree/right/S:record",
+      "O/tree/right/S:publish",
+      "O/tree/right/S:select",
+      "O/tree/right/e:select",
+      "O/tree/right:send",
+      "O/tree/right:end",
+      "O/tree/right:reply_allow",
+      "O/tree/right:record",
+      "O/tree/right:publish",
+      "O/tree/left:allow",
+      "O/tree/left:admit",
+      "O/tree/left:receive",
+      "O/tree/left/e:invoke",
+      "O/tree/left/e:allow",
+      "O/tree/left/e:admit",
+      "O/tree/left/e:receive",
+      "O/tree/left/e/h:invoke",
+      "O/tree/left/e/h:allow",
+      "O/tree/left/e/h:admit",
+      "O/tree/left/e/h:receive",
+      "O/tree/left/e/h:send",
+      "O/tree/left/e/h:end",
+      "O/tree/left/e/h:reply_allow",
+      "O/tree/left/e/h:record",
+      "O/tree/left/e/h:publish",
+      "O/tree/left/e/h:select",
+      "O/tree/left/e:end",
+      "O/tree/left/e:publish",
+      "O/tree/left/S:invoke",
+      "O/tree/left/S:allow",
+      "O/tree/left/S:admit",
+      "O/tree/left/S:receive",
+      "O/tree/left/S:send",
+      "O/tree/left/S:end",
+      "O/tree/left/S:reply_allow",
+      "O/tree/left/S:record",
+      "O/tree/left/S:publish",
+      "O/tree/left/S:select",
+      "O/tree/left/e:select",
+      "O/tree/left:send",
+      "O/tree/left:end",
+      "O/tree/left:reply_allow",
+      "O/tree/left:record",
+      "O/tree/left:publish",
+      "O/tree/left:select",
+      "O/tree/right:select"
+    ],
+    "Next": "O/tree:send",
+    "Change": "drop actual selected right absent diagnosis",
+    "Rejection": "O/tree:send: wrong owner or ordered word"
+  },
+  {
+    "Name": "fabricated-diagnosis",
+    "Scenario": {
+      "Shape": "fork",
+      "Assignment": "BB",
+      "Requests": [
+        {
+          "ID": 1,
+          "Value": 0,
+          "Mode": "fail"
+        },
+        {
+          "ID": 1,
+          "Value": 0,
+          "Mode": "absent"
+        }
+      ]
+    },
+    "History": [
+      "O/tree:invoke",
+      "O/tree:allow",
+      "O/tree:admit",
+      "O/tree:receive",
+      "O/tree/left:invoke",
+      "O/tree/right:invoke",
+      "O/tree/right:allow",
+      "O/tree/right:admit",
+      "O/tree/right:receive",
+      "O/tree/right/e:invoke",
+      "O/tree/right/e:allow",
+      "O/tree/right/e:admit",
+      "O/tree/right/e:receive",
+      "O/tree/right/e/h:invoke",
+      "O/tree/right/e/h:allow",
+      "O/tree/right/e/h:admit",
+      "O/tree/right/e/h:receive",
+      "O/tree/right/e/h:send",
+      "O/tree/right/e/h:end",
+      "O/tree/right/e/h:reply_allow",
+      "O/tree/right/e/h:record",
+      "O/tree/right/e/h:publish",
+      "O/tree/right/e/h:select",
+      "O/tree/right/e:end",
+      "O/tree/right/e:publish",
+      "O/tree/right/S:invoke",
+      "O/tree/right/S:allow",
+      "O/tree/right/S:admit",
+      "O/tree/right/S:receive",
+      "O/tree/right/S:send",
+      "O/tree/right/S:end",
+      "O/tree/right/S:reply_allow",
+      "O/tree/right/S:record",
+      "O/tree/right/S:publish",
+      "O/tree/right/S:select",
+      "O/tree/right/e:select",
+      "O/tree/right:send",
+      "O/tree/right:end",
+      "O/tree/right:reply_allow",
+      "O/tree/right:record",
+      "O/tree/right:publish",
+      "O/tree/left:allow",
+      "O/tree/left:admit",
+      "O/tree/left:receive",
+      "O/tree/left/e:invoke",
+      "O/tree/left/e:allow",
+      "O/tree/left/e:admit",
+      "O/tree/left/e:receive",
+      "O/tree/left/e/h:invoke",
+      "O/tree/left/e/h:allow",
+      "O/tree/left/e/h:admit",
+      "O/tree/left/e/h:receive",
+      "O/tree/left/e/h:send",
+      "O/tree/left/e/h:end",
+      "O/tree/left/e/h:reply_allow",
+      "O/tree/left/e/h:record",
+      "O/tree/left/e/h:publish",
+      "O/tree/left/e/h:select",
+      "O/tree/left/e:end",
+      "O/tree/left/e:publish",
+      "O/tree/left/S:invoke",
+      "O/tree/left/S:allow",
+      "O/tree/left/S:admit",
+      "O/tree/left/S:receive",
+      "O/tree/left/S:send",
+      "O/tree/left/S:end",
+      "O/tree/left/S:reply_allow",
+      "O/tree/left/S:record",
+      "O/tree/left/S:publish",
+      "O/tree/left/S:select",
+      "O/tree/left/e:select",
+      "O/tree/left:send",
+      "O/tree/left:end",
+      "O/tree/left:reply_allow",
+      "O/tree/left:record",
+      "O/tree/left:publish",
+      "O/tree/left:select",
+      "O/tree/right:select"
+    ],
+    "Next": "O/tree:send",
+    "Change": "replace missing_reply by failed",
+    "Rejection": "O/tree:send: wrong owner or ordered word"
+  },
+  {
+    "Name": "authentic-wrong-answer",
+    "Scenario": {
+      "Shape": "fork",
+      "Assignment": "BB",
+      "Requests": [
+        {
+          "ID": 1,
+          "Value": 0,
+          "Mode": "fail"
+        },
+        {
+          "ID": 1,
+          "Value": 0,
+          "Mode": "absent"
+        }
+      ]
+    },
+    "History": [
+      "O/tree:invoke",
+      "O/tree:allow",
+      "O/tree:admit",
+      "O/tree:receive",
+      "O/tree/left:invoke",
+      "O/tree/right:invoke",
+      "O/tree/right:allow",
+      "O/tree/right:admit",
+      "O/tree/right:receive",
+      "O/tree/right/e:invoke",
+      "O/tree/right/e:allow",
+      "O/tree/right/e:admit",
+      "O/tree/right/e:receive",
+      "O/tree/right/e/h:invoke",
+      "O/tree/right/e/h:allow",
+      "O/tree/right/e/h:admit",
+      "O/tree/right/e/h:receive",
+      "O/tree/right/e/h:send",
+      "O/tree/right/e/h:end",
+      "O/tree/right/e/h:reply_allow",
+      "O/tree/right/e/h:record"
+    ],
+    "Next": "O/tree/right/e/h:publish",
+    "Change": "retain original helper operation and successful envelope; replace complement by input",
+    "Rejection": "O/tree/right/e/h:publish: wrong owner or ordered word"
+  },
+  {
+    "Name": "early-failure",
+    "Scenario": {
+      "Shape": "fork",
+      "Assignment": "AB",
+      "Requests": [
+        {
+          "ID": 1,
+          "Value": 0,
+          "Mode": "fail"
+        },
+        {
+          "ID": 1,
+          "Value": 0,
+          "Mode": "pending"
+        }
+      ]
+    },
+    "History": [
+      "O/tree:invoke",
+      "O/tree:allow",
+      "O/tree:admit",
+      "O/tree:receive",
+      "O/tree/left:invoke",
+      "O/tree/left:allow",
+      "O/tree/left:admit",
+      "O/tree/left:receive",
+      "O/tree/left/e:invoke",
+      "O/tree/left/e:allow",
+      "O/tree/left/e:admit",
+      "O/tree/left/e:receive",
+      "O/tree/left/e:end",
+      "O/tree/left/e:publish",
+      "O/tree/left/S:invoke",
+      "O/tree/left/S:allow",
+      "O/tree/left/S:admit",
+      "O/tree/left/S:receive",
+      "O/tree/left/S:send",
+      "O/tree/left/S:end",
+      "O/tree/left/S:reply_allow",
+      "O/tree/left/S:record",
+      "O/tree/left/S:publish",
+      "O/tree/left/S:select",
+      "O/tree/left/e:select",
+      "O/tree/left:send",
+      "O/tree/left:end",
+      "O/tree/left:reply_allow",
+      "O/tree/left:record",
+      "O/tree/left:publish",
+      "O/tree/right:invoke",
+      "O/tree/left:select",
+      "O/tree/right:allow",
+      "O/tree/right:admit",
+      "O/tree/right:receive",
+      "O/tree/right/e:invoke",
+      "O/tree/right/S:invoke",
+      "O/tree/right/S:allow",
+      "O/tree/right/S:admit",
+      "O/tree/right/S:receive",
+      "O/tree/right/S:send",
+      "O/tree/right/S:end",
+      "O/tree/right/S:reply_allow",
+      "O/tree/right/S:record",
+      "O/tree/right/S:publish",
+      "O/tree/right/S:select",
+      "O/tree/right/e:allow",
+      "O/tree/right/e:admit",
+      "O/tree/right/e:receive",
+      "O/tree/right/e/h:invoke",
+      "O/tree/right/e/h:allow",
+      "O/tree/right/e/h:admit",
+      "O/tree/right/e/h:receive",
+      "O/tree/right/e/h:send",
+      "O/tree/right/e/h:end",
+      "O/tree/right/e/h:reply_allow",
+      "O/tree/right/e/h:record",
+      "O/tree/right/e/h:publish",
+      "O/tree/right/e/h:select",
+      "O/tree/right/e:unmatched"
+    ],
+    "Next": "O/tree:publish",
+    "Change": "publish after only failed left selected",
+    "Rejection": "different event alphabets"
+  },
+  {
+    "Name": "fault-as-pending",
+    "Scenario": {
+      "Shape": "fork",
+      "Assignment": "BB",
+      "Requests": [
+        {
+          "ID": 1,
+          "Value": 0,
+          "Mode": "fail"
+        },
+        {
+          "ID": 1,
+          "Value": 0,
+          "Mode": "absent"
+        }
+      ]
+    },
+    "History": [
+      "O/tree:invoke",
+      "O/tree:allow",
+      "O/tree:admit",
+      "O/tree:receive",
+      "O/tree/left:invoke",
+      "O/tree/right:invoke",
+      "O/tree/right:allow",
+      "O/tree/right:admit",
+      "O/tree/right:receive",
+      "O/tree/right/e:invoke",
+      "O/tree/right/e:allow",
+      "O/tree/right/e:admit",
+      "O/tree/right/e:receive",
+      "O/tree/right/e/h:invoke",
+      "O/tree/right/e/h:allow",
+      "O/tree/right/e/h:admit",
+      "O/tree/right/e/h:receive",
+      "O/tree/right/e/h:send",
+      "O/tree/right/e/h:end",
+      "O/tree/right/e/h:reply_allow",
+      "O/tree/right/e/h:record",
+      "O/tree/right/e/h:publish",
+      "O/tree/right/e/h:select",
+      "O/tree/right/e:end",
+      "O/tree/right/e:publish",
+      "O/tree/right/S:invoke",
+      "O/tree/right/S:allow",
+      "O/tree/right/S:admit",
+      "O/tree/right/S:receive",
+      "O/tree/right/S:send",
+      "O/tree/right/S:end",
+      "O/tree/right/S:reply_allow",
+      "O/tree/right/S:record",
+      "O/tree/right/S:publish",
+      "O/tree/right/S:select",
+      "O/tree/right/e:select"
+    ],
+    "Next": "O/tree/right:unmatched",
+    "Change": "label an absent optional-field read fault as pending_receive",
+    "Rejection": "different event alphabets"
+  },
+  {
+    "Name": "invocation_limit",
+    "Scenario": {
+      "Shape": "fork",
+      "Assignment": "BB",
+      "Requests": [
+        {
+          "ID": 1,
+          "Value": 0,
+          "Mode": "fail"
+        },
+        {
+          "ID": 1,
+          "Value": 0,
+          "Mode": "absent"
+        }
+      ]
+    },
+    "History": [
+      "O/tree:invoke",
+      "O/tree:allow",
+      "O/tree:admit",
+      "O/tree:receive",
+      "O/tree/left:invoke",
+      "O/tree/left:allow",
+      "O/tree/left:admit",
+      "O/tree/right:invoke",
+      "O/tree/right:allow",
+      "O/tree/right:admit",
+      "O/tree/left:receive",
+      "O/tree/left/e:invoke",
+      "O/tree/left/e:allow",
+      "O/tree/left/e:admit",
+      "O/tree/right:receive",
+      "O/tree/right/e:invoke",
+      "O/tree/right/e:allow",
+      "O/tree/right/e:admit",
+      "O/tree/left/S:invoke",
+      "O/tree/left/S:allow",
+      "O/tree/left/S:admit",
+      "O/tree/right/S:invoke",
+      "O/tree/right/S:allow",
+      "O/tree/right/S:admit",
+      "O/tree/left/e:receive",
+      "O/tree/left/e/h:invoke",
+      "O/tree/right/e:receive",
+      "O/tree/right/e/h:invoke",
+      "O/tree/left/e/h:allow",
+      "O/tree/left/e/h:admit",
+      "O/tree/right/e/h:allow"
+    ],
+    "Next": "O/tree/right/e/h:admit",
+    "Change": "I=8,R=9,H=4; pre-spend=8,depth=4",
+    "Rejection": "invocation_limit; zero debit"
+  },
+  {
+    "Name": "created_run_limit",
+    "Scenario": {
+      "Shape": "fork",
+      "Assignment": "BB",
+      "Requests": [
+        {
+          "ID": 1,
+          "Value": 0,
+          "Mode": "fail"
+        },
+        {
+          "ID": 1,
+          "Value": 0,
+          "Mode": "absent"
+        }
+      ]
+    },
+    "History": [
+      "O/tree:invoke",
+      "O/tree:allow",
+      "O/tree:admit",
+      "O/tree:receive",
+      "O/tree/left:invoke",
+      "O/tree/left:allow",
+      "O/tree/left:admit",
+      "O/tree/right:invoke",
+      "O/tree/right:allow",
+      "O/tree/right:admit",
+      "O/tree/left:receive",
+      "O/tree/left/e:invoke",
+      "O/tree/left/e:allow",
+      "O/tree/left/e:admit",
+      "O/tree/right:receive",
+      "O/tree/right/e:invoke",
+      "O/tree/right/e:allow",
+      "O/tree/right/e:admit",
+      "O/tree/left/S:invoke",
+      "O/tree/left/S:allow",
+      "O/tree/left/S:admit",
+      "O/tree/right/S:invoke",
+      "O/tree/right/S:allow",
+      "O/tree/right/S:admit",
+      "O/tree/left/e:receive",
+      "O/tree/left/e/h:invoke",
+      "O/tree/right/e:receive",
+      "O/tree/right/e/h:invoke",
+      "O/tree/left/e/h:allow",
+      "O/tree/left/e/h:admit",
+      "O/tree/right/e/h:allow"
+    ],
+    "Next": "O/tree/right/e/h:admit",
+    "Change": "I=9,R=8,H=4; pre-spend=8,depth=4",
+    "Rejection": "created_run_limit; zero debit"
+  },
+  {
+    "Name": "depth_limit",
+    "Scenario": {
+      "Shape": "fork",
+      "Assignment": "BB",
+      "Requests": [
+        {
+          "ID": 1,
+          "Value": 0,
+          "Mode": "fail"
+        },
+        {
+          "ID": 1,
+          "Value": 0,
+          "Mode": "absent"
+        }
+      ]
+    },
+    "History": [
+      "O/tree:invoke",
+      "O/tree:allow",
+      "O/tree:admit",
+      "O/tree:receive",
+      "O/tree/left:invoke",
+      "O/tree/left:allow",
+      "O/tree/left:admit",
+      "O/tree/right:invoke",
+      "O/tree/right:allow",
+      "O/tree/right:admit",
+      "O/tree/left:receive",
+      "O/tree/left/e:invoke",
+      "O/tree/left/e:allow",
+      "O/tree/left/e:admit",
+      "O/tree/right:receive",
+      "O/tree/right/e:invoke",
+      "O/tree/right/e:allow",
+      "O/tree/right/e:admit",
+      "O/tree/left/S:invoke",
+      "O/tree/left/S:allow",
+      "O/tree/left/S:admit",
+      "O/tree/right/S:invoke",
+      "O/tree/right/S:allow",
+      "O/tree/right/S:admit",
+      "O/tree/left/e:receive",
+      "O/tree/left/e/h:invoke",
+      "O/tree/right/e:receive",
+      "O/tree/right/e/h:invoke",
+      "O/tree/left/e/h:allow"
+    ],
+    "Next": "O/tree/left/e/h:admit",
+    "Change": "I=9,R=9,H=3; pre-spend=7,depth=4",
+    "Rejection": "depth_limit; zero debit"
+  }
+]
