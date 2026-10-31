@@ -13,10 +13,9 @@ func outerGuard(a, b author.Expr, next []author.Step) author.Step {
 	return author.IfEqual(a, b, next, decided("invalid_join_outcome"))
 }
 
-// NewOuter consumes its original J handle. All diagnostic reads are dominated
-// by presence; answer-record reads occur only within the bounded list body.
-// This policy has no access to J's inner handles or requested mode.
-func NewOuter(join author.Template) (author.Artifact, error) {
+// diagnosticDecision checks the selected envelope and sets the decision register.
+// It has no access to the requested mode or the child's inner handles.
+func diagnosticDecision() author.Step {
 	answer := outerGuard(author.Var("join_status"), author.String("succeeded"), []author.Step{
 		outerGuard(author.Var("join_reason"), author.String("member_succeeded"), []author.Step{
 			outerGuard(author.Var("answer_seen"), author.Boolean(true), []author.Step{
@@ -35,7 +34,7 @@ func NewOuter(join author.Template) (author.Artifact, error) {
 		}),
 	})
 	invalidAnswer := []author.Step{author.Set("answers_valid", author.Boolean(false))}
-	policy := outerGuard(author.Var("join_present"), author.Boolean(true), []author.Step{
+	return outerGuard(author.Var("join_present"), author.Boolean(true), []author.Step{
 		outerGuard(author.Var("report_id"), author.Var("request_id"), []author.Step{
 			author.IfEqual(author.Var("request_value"), author.Integer(0), []author.Step{author.Set("expected_value", author.Integer(1))}, []author.Step{author.Set("expected_value", author.Integer(0))}),
 			author.Set("answer_seen", author.Boolean(false)),
@@ -49,6 +48,11 @@ func NewOuter(join author.Template) (author.Artifact, error) {
 			author.IfEqual(author.Var("report_classification"), author.String("answer"), []author.Step{answer}, []author.Step{failure}),
 		}),
 	})
+}
+
+// NewOuter consumes its original J handle. All diagnostic reads are dominated
+// by presence; answer-record reads occur only within the bounded list body.
+func NewOuter(join author.Template) (author.Artifact, error) {
 	request := protocol.Request()
 	return author.Compile(author.Definition{
 		Name: "phase1n-outer-caller", Invocations: map[string]author.Template{"join": join},
@@ -56,7 +60,7 @@ func NewOuter(join author.Template) (author.Artifact, error) {
 		Steps: []author.Step{
 			author.Invoke("join_operation", "join", map[string]author.Expr{"id": author.Var("request_id"), "value": author.Var("request_value"), "mode": author.Var("request_mode")}, nil),
 			author.AwaitInvocation("join", "join_operation", author.InvocationOutcomeBindings{Status: "join_status", Reason: "join_reason", ResponsePresent: "join_present", Response: map[string]string{"id": "report_id", "classification": "report_classification", "answers": "report_answers"}}),
-			policy,
+			diagnosticDecision(),
 			author.IfEqual(author.Var("decision"), author.String("answer"), []author.Step{author.Success()}, []author.Step{author.Failure()}),
 		},
 	})
