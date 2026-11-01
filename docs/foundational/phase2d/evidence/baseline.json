@@ -1,0 +1,126 @@
+{
+  "commands": [
+    {
+      "cwd": "/private/tmp/alan-phase2d",
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD",
+        "origin/main",
+        "HEAD^{tree}",
+        "089c1b6e^{tree}"
+      ],
+      "exit": 0,
+      "output": "2612a85b287d95aa95f11e35c57b8b7b8dc26c6d\n2612a85b287d95aa95f11e35c57b8b7b8dc26c6d\nd470a42b48881c09b1d4e6d32d58f5394be044a5\nd470a42b48881c09b1d4e6d32d58f5394be044a5\n"
+    },
+    {
+      "cwd": "/private/tmp/alan-phase2d",
+      "argv": [
+        "git",
+        "merge-base",
+        "--is-ancestor",
+        "089c1b6e",
+        "HEAD"
+      ],
+      "exit": 1,
+      "output": ""
+    },
+    {
+      "cwd": "/private/tmp/alan-phase2d",
+      "argv": [
+        "git",
+        "merge-base",
+        "--is-ancestor",
+        "a461f25",
+        "HEAD"
+      ],
+      "exit": 0,
+      "output": ""
+    },
+    {
+      "cwd": "/private/tmp/alan-phase2d",
+      "argv": [
+        "git",
+        "log",
+        "-1",
+        "--format=%H %P %s"
+      ],
+      "exit": 0,
+      "output": "2612a85b287d95aa95f11e35c57b8b7b8dc26c6d 0dcc369b617b7fdbcbed6e1357b78426030902e5 Record independent review of the corrected manuscript PDF\n"
+    },
+    {
+      "cwd": "/private/tmp/alan-phase2d",
+      "argv": [
+        "go",
+        "env",
+        "GOVERSION",
+        "GOTOOLCHAIN",
+        "CGO_ENABLED",
+        "GOOS",
+        "GOARCH",
+        "CC",
+        "GOMODCACHE",
+        "GOPROXY",
+        "GOFLAGS"
+      ],
+      "exit": 0,
+      "output": "go1.27.3\nlocal\n1\ndarwin\narm64\ncc\n/Users/jacob/go/pkg/mod\noff\n-mod=readonly\n"
+    },
+    {
+      "cwd": "/private/tmp/alan-phase2d",
+      "argv": [
+        "go",
+        "mod",
+        "verify"
+      ],
+      "exit": 0,
+      "output": "all modules verified\n"
+    },
+    {
+      "cwd": "/private/tmp/alan-phase2c",
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "exit": 0,
+      "output": "089c1b6e61630f3e7db713eda2883b7b725d9f78\n"
+    },
+    {
+      "cwd": "/private/tmp/alan-phase2c",
+      "argv": [
+        "python3",
+        "-B",
+        "docs/foundational/phase2c/tools/index.py"
+      ],
+      "exit": 0,
+      "output": "PASS 3394 files; e4a52236e93e32ddb64a16a57b33a23ee721c301d1b3c407d148e1016bb56de0 docs/foundational/phase2c/evidence/index.sha256\n"
+    },
+    {
+      "cwd": "/private/tmp/alan-phase1t-owning-trees",
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "exit": 0,
+      "output": "11d1a892c10414362b0b09ff4d17298b8fef3bdb\n"
+    },
+    {
+      "cwd": "/private/tmp/alan-phase1t-owning-trees",
+      "argv": [
+        "python3",
+        "-B",
+        "docs/foundational/phase1t/evidence/verify_delivery.py"
+      ],
+      "exit": 0,
+      "output": "Verified 279 change paths and 174 raw/replay records.\n"
+    }
+  ],
+  "sha256": {
+    "paper/alan-dissertation.pdf": "264e8fe998c1eec200642402f9fffeb19c1cdde19b2b907b254831679ebc1f64",
+    "docs/foundational/phase1t/evidence/identity-index.json": "a1eb99a8e44e389c07761b132f6898ec3b59efd2d196b692989b620031db7bff",
+    "docs/foundational/phase2c/evidence/index.sha256": "e4a52236e93e32ddb64a16a57b33a23ee721c301d1b3c407d148e1016bb56de0",
+    "docs/foundational/phase2d/assignment.md": "d5b2e896a4f854d59b5991bf4c83928038cc04132dcd589a8e95eac50edf79ac"
+  }
+}

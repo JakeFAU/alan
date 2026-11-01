@@ -1,0 +1,658 @@
+{
+  "first_barrier": {
+    "Attempt": "",
+    "Boundary": "resource.applied",
+    "Epoch": 0,
+    "Generation": 0,
+    "InFlight": null,
+    "Intent": "[2,\"de7758cc1c85ac49b9d70a5a441dcfb71fb35ed4cf30d4d147cd37f003c36f13\",\"[\\\"50de53fed05f7fc78f49f4dc490e67d205d68ea6e50af31e94afa8dd95ddb87e\\\",1,2,0]\"]",
+    "PID": 74852,
+    "Phase": "post-commit",
+    "Scenario": "two-public-handoffs",
+    "Sequence": 0,
+    "Store": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/phase2d-public-0pe8hrax/ledger.sqlite",
+    "Subject": "",
+    "Token": "first-applied"
+  },
+  "fresh_owner_pid": 74886,
+  "grants": [
+    {
+      "Adopt": true,
+      "Endpoint": "http://127.0.0.1:60798/phase2c/0c597cffe01d8c71e8cad2abb2bddc3a73d65e1520ebb7e2a167d500a1333625/apply",
+      "Invocation": "[\"parent\",1,1,0]",
+      "Member": "source",
+      "Original": {
+        "Generation": 0,
+        "Subject": ""
+      },
+      "Resolver": {
+        "Generation": 1,
+        "Subject": "resolver_l"
+      },
+      "Sequence": 2
+    },
+    {
+      "Adopt": true,
+      "Endpoint": "http://127.0.0.1:60798/phase2c/0c597cffe01d8c71e8cad2abb2bddc3a73d65e1520ebb7e2a167d500a1333625/apply",
+      "Invocation": "[\"parent\",1,2,0]",
+      "Member": "source",
+      "Original": {
+        "Generation": 0,
+        "Subject": ""
+      },
+      "Resolver": {
+        "Generation": 1,
+        "Subject": "resolver_r"
+      },
+      "Sequence": 2
+    }
+  ],
+  "ids": {
+    "l": {
+      "grant": {
+        "Adopt": true,
+        "Endpoint": "http://127.0.0.1:60798/phase2c/0c597cffe01d8c71e8cad2abb2bddc3a73d65e1520ebb7e2a167d500a1333625/apply",
+        "Invocation": "[\"parent\",1,1,0]",
+        "Member": "source",
+        "Original": {
+          "Generation": 0,
+          "Subject": ""
+        },
+        "Resolver": {
+          "Generation": 1,
+          "Subject": "resolver_l"
+        },
+        "Sequence": 2
+      },
+      "invocation": "[\"parent\",1,1,0]",
+      "issuer": "50de53fed05f7fc78f49f4dc490e67d205d68ea6e50af31e94afa8dd95ddb87e",
+      "selected_ack": {
+        "ID": "[\"observation\",\"message\",\"[\\\"parent\\\",1,9,0]\"]",
+        "Kind": "message",
+        "Obligation": "l_identity",
+        "Operation": "",
+        "Payload": {
+          "target": {
+            "Flag": false,
+            "Kind": "string",
+            "Number": 0,
+            "Text": "[\"50de53fed05f7fc78f49f4dc490e67d205d68ea6e50af31e94afa8dd95ddb87e\",1,2,0]"
+          }
+        },
+        "Provenance": "ordinary-message",
+        "Run": {
+          "Generation": 1,
+          "Subject": "50de53fed05f7fc78f49f4dc490e67d205d68ea6e50af31e94afa8dd95ddb87e"
+        },
+        "Source": "parent",
+        "SourceGeneration": 1
+      },
+      "target": "[\"50de53fed05f7fc78f49f4dc490e67d205d68ea6e50af31e94afa8dd95ddb87e\",1,2,0]"
+    },
+    "r": {
+      "grant": {
+        "Adopt": true,
+        "Endpoint": "http://127.0.0.1:60798/phase2c/0c597cffe01d8c71e8cad2abb2bddc3a73d65e1520ebb7e2a167d500a1333625/apply",
+        "Invocation": "[\"parent\",1,2,0]",
+        "Member": "source",
+        "Original": {
+          "Generation": 0,
+          "Subject": ""
+        },
+        "Resolver": {
+          "Generation": 1,
+          "Subject": "resolver_r"
+        },
+        "Sequence": 2
+      },
+      "invocation": "[\"parent\",1,2,0]",
+      "issuer": "96445ff0b8ec9bda01908cb40096b3635e2060e9de47820e919e3351755bfd61",
+      "selected_ack": {
+        "ID": "[\"observation\",\"message\",\"[\\\"parent\\\",1,15,0]\"]",
+        "Kind": "message",
+        "Obligation": "r_identity",
+        "Operation": "",
+        "Payload": {
+          "target": {
+            "Flag": false,
+            "Kind": "string",
+            "Number": 0,
+            "Text": "[\"96445ff0b8ec9bda01908cb40096b3635e2060e9de47820e919e3351755bfd61\",1,2,0]"
+          }
+        },
+        "Provenance": "ordinary-message",
+        "Run": {
+          "Generation": 1,
+          "Subject": "96445ff0b8ec9bda01908cb40096b3635e2060e9de47820e919e3351755bfd61"
+        },
+        "Source": "parent",
+        "SourceGeneration": 1
+      },
+      "target": "[\"96445ff0b8ec9bda01908cb40096b3635e2060e9de47820e919e3351755bfd61\",1,2,0]"
+    }
+  },
+  "killed_pid": 74881,
+  "public": {
+    "namespace": "de7758cc1c85ac49b9d70a5a441dcfb71fb35ed4cf30d4d147cd37f003c36f13",
+    "parent": {
+      "Epoch": 3,
+      "ID": {
+        "Generation": 1,
+        "Subject": "parent"
+      },
+      "ProgramID": "042cfd9169fcba98e6bbd662e8a20dca5d27b7439356634578ad082f32fbd779",
+      "Projection": {
+        "Data": {
+          "l_id": {
+            "Flag": false,
+            "Kind": "int",
+            "Number": 1,
+            "Text": ""
+          },
+          "l_invocation": {
+            "Flag": false,
+            "Kind": "string",
+            "Number": 0,
+            "Text": "[\"parent\",1,1,0]"
+          },
+          "l_mode": {
+            "Flag": false,
+            "Kind": "string",
+            "Number": 0,
+            "Text": "answer"
+          },
+          "l_resolver_ack": {
+            "Flag": false,
+            "Kind": "string",
+            "Number": 0,
+            "Text": "[\"50de53fed05f7fc78f49f4dc490e67d205d68ea6e50af31e94afa8dd95ddb87e\",1,2,0]"
+          },
+          "l_target": {
+            "Flag": false,
+            "Kind": "string",
+            "Number": 0,
+            "Text": "[\"50de53fed05f7fc78f49f4dc490e67d205d68ea6e50af31e94afa8dd95ddb87e\",1,2,0]"
+          },
+          "l_value": {
+            "Flag": false,
+            "Kind": "int",
+            "Number": 0,
+            "Text": ""
+          },
+          "r_id": {
+            "Flag": false,
+            "Kind": "int",
+            "Number": 1,
+            "Text": ""
+          },
+          "r_invocation": {
+            "Flag": false,
+            "Kind": "string",
+            "Number": 0,
+            "Text": "[\"parent\",1,2,0]"
+          },
+          "r_mode": {
+            "Flag": false,
+            "Kind": "string",
+            "Number": 0,
+            "Text": "answer"
+          },
+          "r_resolver_ack": {
+            "Flag": false,
+            "Kind": "string",
+            "Number": 0,
+            "Text": "[\"96445ff0b8ec9bda01908cb40096b3635e2060e9de47820e919e3351755bfd61\",1,2,0]"
+          },
+          "r_target": {
+            "Flag": false,
+            "Kind": "string",
+            "Number": 0,
+            "Text": "[\"96445ff0b8ec9bda01908cb40096b3635e2060e9de47820e919e3351755bfd61\",1,2,0]"
+          },
+          "r_value": {
+            "Flag": false,
+            "Kind": "int",
+            "Number": 1,
+            "Text": ""
+          },
+          "tree_invocation": {
+            "Flag": false,
+            "Kind": "string",
+            "Number": 0,
+            "Text": "[\"parent\",1,3,0]"
+          }
+        },
+        "PC": 17,
+        "Status": "open"
+      },
+      "Revision": 1,
+      "Sequence": 15
+    },
+    "roles": {
+      "l": {
+        "Admission": {
+          "Accepted": true,
+          "BindingID": "04bd9ff14fdfa1fc92352da6bc1a6f4ed7003e3a0a5e5de5cbea6c5c9aa53535",
+          "Invocation": {
+            "Caller": {
+              "Generation": 1,
+              "Subject": "parent"
+            },
+            "Depth": 1,
+            "ID": "0f7c0ccc6745025cd9d3282ab9d63ef72ca44fd9d6ce6173256211b178b3760a",
+            "Inputs": {},
+            "OperationID": "[\"parent\",1,1,0]",
+            "ParentInvocationID": "",
+            "RootID": "df38476e06bda6033a27e9f0c0f02106f33c335be9570860db04fae8623f8223",
+            "SourceRevision": 1,
+            "SourceSequence": 1,
+            "TemplateID": "deb75c99d9c7ada0ea79f7bd1dc22846b17f5538e33139b0a6d39aa1ea71cc9c"
+          },
+          "Members": [
+            {
+              "Generation": 1,
+              "Subject": "50de53fed05f7fc78f49f4dc490e67d205d68ea6e50af31e94afa8dd95ddb87e"
+            }
+          ],
+          "Reason": "accepted"
+        },
+        "Original": {
+          "Epoch": 1,
+          "ID": {
+            "Generation": 1,
+            "Subject": "50de53fed05f7fc78f49f4dc490e67d205d68ea6e50af31e94afa8dd95ddb87e"
+          },
+          "ProgramID": "e39b7cd1db99cd0bcdb19f74f1d9f24505471f251f7d2e00ee61cc68cc6fa7a1",
+          "Projection": {
+            "Data": {
+              "echo": {
+                "Flag": false,
+                "Kind": "string",
+                "Number": 0,
+                "Text": "[\"50de53fed05f7fc78f49f4dc490e67d205d68ea6e50af31e94afa8dd95ddb87e\",1,2,0]"
+              },
+              "original": {
+                "Flag": false,
+                "Kind": "string",
+                "Number": 0,
+                "Text": "[\"50de53fed05f7fc78f49f4dc490e67d205d68ea6e50af31e94afa8dd95ddb87e\",1,2,0]"
+              }
+            },
+            "PC": 5,
+            "Status": "succeeded"
+          },
+          "Revision": 1,
+          "Sequence": 6
+        },
+        "Preparation": {
+          "Freeze": {
+            "DecisionOrder": 104,
+            "ExternalIntents": [
+              "[\"50de53fed05f7fc78f49f4dc490e67d205d68ea6e50af31e94afa8dd95ddb87e\",1,2,0]"
+            ],
+            "InvocationID": "0f7c0ccc6745025cd9d3282ab9d63ef72ca44fd9d6ce6173256211b178b3760a",
+            "InvocationIntents": [],
+            "ReplyIntents": [
+              "[\"50de53fed05f7fc78f49f4dc490e67d205d68ea6e50af31e94afa8dd95ddb87e\",1,3,0]"
+            ],
+            "Run": {
+              "Generation": 1,
+              "Subject": "50de53fed05f7fc78f49f4dc490e67d205d68ea6e50af31e94afa8dd95ddb87e"
+            },
+            "Sequence": 6,
+            "Status": "succeeded",
+            "Trigger": "20d93c550abd4d8fa8e51257c442364f0a754aedd473f30a9811ef91ab45fbc1"
+          },
+          "Outcome": {
+            "Caller": {
+              "Generation": 1,
+              "Subject": "parent"
+            },
+            "DecisionOrder": 0,
+            "ID": "",
+            "InvocationID": "0f7c0ccc6745025cd9d3282ab9d63ef72ca44fd9d6ce6173256211b178b3760a",
+            "OperationID": "[\"parent\",1,1,0]",
+            "Reason": "member_succeeded",
+            "Response": null,
+            "ResponsePresent": false,
+            "Status": "succeeded",
+            "TemplateID": "deb75c99d9c7ada0ea79f7bd1dc22846b17f5538e33139b0a6d39aa1ea71cc9c"
+          },
+          "Pending": "external_outcome",
+          "Ready": false
+        },
+        "Resolver": {
+          "Epoch": 3,
+          "ID": {
+            "Generation": 1,
+            "Subject": "resolver_l"
+          },
+          "ProgramID": "5de95a6e40ba86a37548457b8902f287159e41b8567a0915e00375dcb9f59021",
+          "Projection": {
+            "Data": {
+              "conflict": {
+                "Flag": false,
+                "Kind": "bool",
+                "Number": 0,
+                "Text": ""
+              },
+              "received": {
+                "Flag": false,
+                "Kind": "string",
+                "Number": 0,
+                "Text": "[\"50de53fed05f7fc78f49f4dc490e67d205d68ea6e50af31e94afa8dd95ddb87e\",1,2,0]"
+              },
+              "witness": {
+                "Flag": false,
+                "Kind": "bool",
+                "Number": 0,
+                "Text": ""
+              },
+              "witness_adoption": {
+                "Flag": false,
+                "Kind": "string",
+                "Number": 0,
+                "Text": ""
+              },
+              "witness_ids": {
+                "Flag": false,
+                "Kind": "list",
+                "List": [],
+                "Number": 0,
+                "Text": ""
+              },
+              "witness_mutation": {
+                "Flag": false,
+                "Kind": "int",
+                "Number": 0,
+                "Text": ""
+              },
+              "witness_query": {
+                "Flag": false,
+                "Kind": "string",
+                "Number": 0,
+                "Text": ""
+              },
+              "witness_target": {
+                "Flag": false,
+                "Kind": "string",
+                "Number": 0,
+                "Text": ""
+              },
+              "witness_total": {
+                "Flag": false,
+                "Kind": "int",
+                "Number": 0,
+                "Text": ""
+              }
+            },
+            "PC": 10,
+            "Status": "open"
+          },
+          "Revision": 1,
+          "Sequence": 10
+        }
+      },
+      "r": {
+        "Admission": {
+          "Accepted": true,
+          "BindingID": "cc29aaa6e4928f84170b70f6e2a752cd80ce794a02eb42437a38e4377f480d69",
+          "Invocation": {
+            "Caller": {
+              "Generation": 1,
+              "Subject": "parent"
+            },
+            "Depth": 1,
+            "ID": "dac184fbace8bfebe177ba54bbd0c583bf8158d2e8ebc621d5b0a1c45c13ede8",
+            "Inputs": {},
+            "OperationID": "[\"parent\",1,2,0]",
+            "ParentInvocationID": "",
+            "RootID": "df38476e06bda6033a27e9f0c0f02106f33c335be9570860db04fae8623f8223",
+            "SourceRevision": 1,
+            "SourceSequence": 2,
+            "TemplateID": "4d8ed52bfb065b59e9dcfd08a9b60e4fe292ffc09d894b9c125af1b317b02c0e"
+          },
+          "Members": [
+            {
+              "Generation": 1,
+              "Subject": "96445ff0b8ec9bda01908cb40096b3635e2060e9de47820e919e3351755bfd61"
+            }
+          ],
+          "Reason": "accepted"
+        },
+        "Original": {
+          "Epoch": 1,
+          "ID": {
+            "Generation": 1,
+            "Subject": "96445ff0b8ec9bda01908cb40096b3635e2060e9de47820e919e3351755bfd61"
+          },
+          "ProgramID": "a286dbd15dbfc1ca67a8bec2c465d8131d3a3d42e2c5ce525900dd2b25612820",
+          "Projection": {
+            "Data": {
+              "echo": {
+                "Flag": false,
+                "Kind": "string",
+                "Number": 0,
+                "Text": "[\"96445ff0b8ec9bda01908cb40096b3635e2060e9de47820e919e3351755bfd61\",1,2,0]"
+              },
+              "original": {
+                "Flag": false,
+                "Kind": "string",
+                "Number": 0,
+                "Text": "[\"96445ff0b8ec9bda01908cb40096b3635e2060e9de47820e919e3351755bfd61\",1,2,0]"
+              }
+            },
+            "PC": 5,
+            "Status": "succeeded"
+          },
+          "Revision": 1,
+          "Sequence": 6
+        },
+        "Preparation": {
+          "Freeze": {
+            "DecisionOrder": 148,
+            "ExternalIntents": [
+              "[\"96445ff0b8ec9bda01908cb40096b3635e2060e9de47820e919e3351755bfd61\",1,2,0]"
+            ],
+            "InvocationID": "dac184fbace8bfebe177ba54bbd0c583bf8158d2e8ebc621d5b0a1c45c13ede8",
+            "InvocationIntents": [],
+            "ReplyIntents": [
+              "[\"96445ff0b8ec9bda01908cb40096b3635e2060e9de47820e919e3351755bfd61\",1,3,0]"
+            ],
+            "Run": {
+              "Generation": 1,
+              "Subject": "96445ff0b8ec9bda01908cb40096b3635e2060e9de47820e919e3351755bfd61"
+            },
+            "Sequence": 6,
+            "Status": "succeeded",
+            "Trigger": "360f023a47b782c6bdfbee5bbb8dcf8330038585b3ef67be59d4ea036e47caed"
+          },
+          "Outcome": {
+            "Caller": {
+              "Generation": 1,
+              "Subject": "parent"
+            },
+            "DecisionOrder": 0,
+            "ID": "",
+            "InvocationID": "dac184fbace8bfebe177ba54bbd0c583bf8158d2e8ebc621d5b0a1c45c13ede8",
+            "OperationID": "[\"parent\",1,2,0]",
+            "Reason": "member_succeeded",
+            "Response": null,
+            "ResponsePresent": false,
+            "Status": "succeeded",
+            "TemplateID": "4d8ed52bfb065b59e9dcfd08a9b60e4fe292ffc09d894b9c125af1b317b02c0e"
+          },
+          "Pending": "external_outcome",
+          "Ready": false
+        },
+        "Resolver": {
+          "Epoch": 3,
+          "ID": {
+            "Generation": 1,
+            "Subject": "resolver_r"
+          },
+          "ProgramID": "ee5338252117bbfcc4bf7911f987ac254162b94064c7ff8b3db394bb40bb427b",
+          "Projection": {
+            "Data": {
+              "conflict": {
+                "Flag": false,
+                "Kind": "bool",
+                "Number": 0,
+                "Text": ""
+              },
+              "received": {
+                "Flag": false,
+                "Kind": "string",
+                "Number": 0,
+                "Text": "[\"96445ff0b8ec9bda01908cb40096b3635e2060e9de47820e919e3351755bfd61\",1,2,0]"
+              },
+              "witness": {
+                "Flag": false,
+                "Kind": "bool",
+                "Number": 0,
+                "Text": ""
+              },
+              "witness_adoption": {
+                "Flag": false,
+                "Kind": "string",
+                "Number": 0,
+                "Text": ""
+              },
+              "witness_ids": {
+                "Flag": false,
+                "Kind": "list",
+                "List": [],
+                "Number": 0,
+                "Text": ""
+              },
+              "witness_query": {
+                "Flag": false,
+                "Kind": "string",
+                "Number": 0,
+                "Text": ""
+              },
+              "witness_target": {
+                "Flag": false,
+                "Kind": "string",
+                "Number": 0,
+                "Text": ""
+              }
+            },
+            "PC": 8,
+            "Status": "open"
+          },
+          "Revision": 1,
+          "Sequence": 8
+        }
+      }
+    }
+  },
+  "roots": [
+    {
+      "Capabilities": [
+        "phase2c.receipt-read"
+      ],
+      "ID": "",
+      "Limits": {
+        "MaxCreatedRuns": 0,
+        "MaxDepth": 0,
+        "MaxEffects": 2,
+        "MaxInFlight": 1,
+        "MaxInvocations": 0
+      },
+      "Members": [
+        {
+          "Generation": 1,
+          "Subject": "resolver_l"
+        }
+      ],
+      "Run": {
+        "Generation": 1,
+        "Subject": "resolver_l"
+      },
+      "Templates": null,
+      "Version": ""
+    },
+    {
+      "Capabilities": [
+        "phase2c.receipt-read"
+      ],
+      "ID": "",
+      "Limits": {
+        "MaxCreatedRuns": 0,
+        "MaxDepth": 0,
+        "MaxEffects": 2,
+        "MaxInFlight": 1,
+        "MaxInvocations": 0
+      },
+      "Members": [
+        {
+          "Generation": 1,
+          "Subject": "resolver_r"
+        }
+      ],
+      "Run": {
+        "Generation": 1,
+        "Subject": "resolver_r"
+      },
+      "Templates": null,
+      "Version": ""
+    },
+    {
+      "Capabilities": [
+        "phase2c.counter"
+      ],
+      "ID": "",
+      "Limits": {
+        "MaxCreatedRuns": 11,
+        "MaxDepth": 4,
+        "MaxEffects": 2,
+        "MaxInFlight": 2,
+        "MaxInvocations": 11
+      },
+      "Members": [
+        {
+          "Generation": 1,
+          "Subject": "parent"
+        }
+      ],
+      "Run": {
+        "Generation": 1,
+        "Subject": "parent"
+      },
+      "Templates": [
+        "0f115d08d206eb8e97776104431df2a595bb4e3c5886da34cb46c57ddf4e8c4f",
+        "1806cf3a9e1e67ec0ed25a665b7a8a9be2dd7cf37585c5b1cd3e274b12595e3d",
+        "2e10975004e0351d07b237e0360a2b96b50d5884b651cfa5bfc8e88af62da266",
+        "2e7f0654c6c3e62287d76dff5144674784029e3d038714eabfe17f511ca34a37",
+        "4d8ed52bfb065b59e9dcfd08a9b60e4fe292ffc09d894b9c125af1b317b02c0e",
+        "8f537a4abec7a501f6b6875db112da8bd2d0bcc8ecbd7d16d2c97d7e8424a942",
+        "a03135203f8b728a6aa7b732d06952cc87b70b3aced2c0833293e333760eece5",
+        "a6bfb72f823541b21e8780faf1eaab779254f5a563e5352cd631521c7ab6c61c",
+        "deb75c99d9c7ada0ea79f7bd1dc22846b17f5538e33139b0a6d39aa1ea71cc9c"
+      ],
+      "Version": ""
+    }
+  ],
+  "signal": -9,
+  "wires": [
+    {
+      "Delta": 1,
+      "Key": "[2,\"de7758cc1c85ac49b9d70a5a441dcfb71fb35ed4cf30d4d147cd37f003c36f13\",\"[\\\"50de53fed05f7fc78f49f4dc490e67d205d68ea6e50af31e94afa8dd95ddb87e\\\",1,2,0]\"]",
+      "Profile": "idempotent"
+    },
+    {
+      "Delta": 2,
+      "Key": "[2,\"de7758cc1c85ac49b9d70a5a441dcfb71fb35ed4cf30d4d147cd37f003c36f13\",\"[\\\"96445ff0b8ec9bda01908cb40096b3635e2060e9de47820e919e3351755bfd61\\\",1,2,0]\"]",
+      "Profile": "idempotent"
+    }
+  ],
+  "world": {
+    "LedgerID": "0c597cffe01d8c71e8cad2abb2bddc3a73d65e1520ebb7e2a167d500a1333625",
+    "LookupURL": "http://127.0.0.1:60798/phase2c/0c597cffe01d8c71e8cad2abb2bddc3a73d65e1520ebb7e2a167d500a1333625/lookup",
+    "PID": 74852,
+    "Store": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/phase2d-public-0pe8hrax/ledger.sqlite",
+    "Token": "construction-race",
+    "URL": "http://127.0.0.1:60798/phase2c/0c597cffe01d8c71e8cad2abb2bddc3a73d65e1520ebb7e2a167d500a1333625/apply"
+  }
+}

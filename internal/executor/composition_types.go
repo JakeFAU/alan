@@ -44,6 +44,7 @@ type InvocationHandoff struct {
 
 const HandoffPeer = "phase2c-invoked-entry"
 const handoffTemplateVersion = "alan/identity-handoff-template/v1"
+const PairedHandoffTemplateVersion = "alan/identity-handoff-template/v2"
 
 type compositionTemplate struct {
 	Handoff                            *InvocationHandoff `json:",omitempty"`
