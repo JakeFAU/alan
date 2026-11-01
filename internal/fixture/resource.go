@@ -39,16 +39,27 @@ type Snapshot struct {
 	Requests                                   []Request
 	Applications                               []Receipt
 	Total, Contacts                            int64
+	LedgerID                                   string `json:",omitempty"`
+	ReadContacts                               int64  `json:",omitempty"`
 }
 type Resource struct {
-	mu      sync.Mutex
-	db      *sql.DB
-	conn    *sql.Conn
-	lock    *os.File
-	process string
+	mu       sync.Mutex
+	db       *sql.DB
+	conn     *sql.Conn
+	lock     *os.File
+	process  string
+	ledgerID string
 }
 
 func Open(ctx context.Context, path, process string) (*Resource, error) {
+	return open(ctx, path, process, false)
+}
+
+func OpenLedger(ctx context.Context, path, process string) (*Resource, error) {
+	return open(ctx, path, process, true)
+}
+
+func open(ctx context.Context, path, process string, ledger bool) (*Resource, error) {
 	if process == "" {
 		return nil, fmt.Errorf("process identity required")
 	}
@@ -93,12 +104,16 @@ func Open(ctx context.Context, path, process string) (*Resource, error) {
 		return nil, err
 	}
 
-	_, err = r.conn.ExecContext(ctx, `CREATE TABLE IF NOT EXISTS metadata(version INTEGER NOT NULL); INSERT INTO metadata SELECT 1 WHERE NOT EXISTS(SELECT 1 FROM metadata); CREATE TABLE IF NOT EXISTS keys(key TEXT PRIMARY KEY,profile TEXT NOT NULL,delta INTEGER NOT NULL,descriptor BLOB NOT NULL); CREATE TABLE IF NOT EXISTS applications(number INTEGER PRIMARY KEY,receipt BLOB NOT NULL); CREATE TABLE IF NOT EXISTS contacts(number INTEGER PRIMARY KEY,request BLOB NOT NULL);`)
-	if err == nil {
-		var version int
-		err = r.conn.QueryRowContext(ctx, "SELECT version FROM metadata").Scan(&version)
-		if version != 1 {
-			err = fmt.Errorf("unsupported resource version")
+	if ledger {
+		err = r.openLedger(ctx)
+	} else {
+		_, err = r.conn.ExecContext(ctx, `CREATE TABLE IF NOT EXISTS metadata(version INTEGER NOT NULL); INSERT INTO metadata SELECT 1 WHERE NOT EXISTS(SELECT 1 FROM metadata); CREATE TABLE IF NOT EXISTS keys(key TEXT PRIMARY KEY,profile TEXT NOT NULL,delta INTEGER NOT NULL,descriptor BLOB NOT NULL); CREATE TABLE IF NOT EXISTS applications(number INTEGER PRIMARY KEY,receipt BLOB NOT NULL); CREATE TABLE IF NOT EXISTS contacts(number INTEGER PRIMARY KEY,request BLOB NOT NULL);`)
+		if err == nil {
+			var version int
+			err = r.conn.QueryRowContext(ctx, "SELECT version FROM metadata").Scan(&version)
+			if version != 1 {
+				err = fmt.Errorf("unsupported resource version")
+			}
 		}
 	}
 	if err != nil {
@@ -121,10 +136,20 @@ func (r *Resource) Close() error {
 	return err
 }
 func (r *Resource) Apply(ctx context.Context, request Request) (Receipt, error) {
+	if r.ledgerID != "" {
+		return Receipt{}, fmt.Errorf("ledger requires exact received bytes")
+	}
+	return r.apply(ctx, request, nil)
+}
+
+func (r *Resource) apply(ctx context.Context, request Request, received []byte) (Receipt, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if request.Key == "" || len(request.Key) > 1<<20 || (request.Profile != "idempotent" && request.Profile != "non-idempotent") {
 		return Receipt{}, fmt.Errorf("invalid request")
+	}
+	if received == nil {
+		received = mustJSON(request)
 	}
 	tx, err := r.conn.BeginTx(ctx, nil)
 	if err != nil {
@@ -136,19 +161,17 @@ func (r *Resource) Apply(ctx context.Context, request Request) (Receipt, error) 
 	var delta int64
 	err = tx.QueryRowContext(ctx, "SELECT profile,delta,descriptor FROM keys WHERE key=?", request.Key).Scan(&profile, &delta, &descriptor)
 	if err == nil {
-		expected, _ := json.Marshal(request)
-		if profile != request.Profile || delta != request.Delta || string(descriptor) != string(expected) {
+		if profile != request.Profile || delta != request.Delta || string(descriptor) != string(received) {
 			return Receipt{}, ErrConflict
 		}
 	} else if errors.Is(err, sql.ErrNoRows) {
-		if _, err = tx.ExecContext(ctx, "INSERT INTO keys VALUES(?,?,?,?)", request.Key, request.Profile, request.Delta, mustJSON(request)); err != nil {
+		if _, err = tx.ExecContext(ctx, "INSERT INTO keys VALUES(?,?,?,?)", request.Key, request.Profile, request.Delta, received); err != nil {
 			return Receipt{}, err
 		}
 	} else {
 		return Receipt{}, err
 	}
-	raw, _ := json.Marshal(request)
-	if _, err = tx.ExecContext(ctx, "INSERT INTO contacts(request) VALUES(?)", raw); err != nil {
+	if _, err = tx.ExecContext(ctx, "INSERT INTO contacts(request) VALUES(?)", received); err != nil {
 		return Receipt{}, err
 	}
 	rows, err := tx.QueryContext(ctx, "SELECT receipt FROM applications ORDER BY number")
@@ -181,9 +204,14 @@ func (r *Resource) Apply(ctx context.Context, request Request) (Receipt, error) 
 		return Receipt{}, fmt.Errorf("resource capacity")
 	}
 	result := Receipt{Key: request.Key, Profile: request.Profile, Delta: request.Delta, Mutation: last.Mutation + 1, Total: last.Total + request.Delta, Process: r.process, PID: os.Getpid()}
-	raw, _ = json.Marshal(result)
+	raw, _ := json.Marshal(result)
 	if _, err = tx.ExecContext(ctx, "INSERT INTO applications VALUES(?,?)", result.Mutation, raw); err != nil {
 		return Receipt{}, err
+	}
+	if r.ledgerID != "" {
+		if _, err = tx.ExecContext(ctx, "INSERT INTO application_wires(number,key,wire) VALUES(?,?,?)", result.Mutation, request.Key, received); err != nil {
+			return Receipt{}, err
+		}
 	}
 	return result, tx.Commit()
 }
@@ -208,7 +236,7 @@ func Inspect(ctx context.Context, path string) (Snapshot, error) {
 	if err = tx.QueryRowContext(ctx, "SELECT version,(SELECT count(*) FROM metadata) FROM metadata").Scan(&version, &count); err != nil {
 		return snapshot, err
 	}
-	if version != 1 || count != 1 {
+	if (version != 1 && version != 2) || count != 1 {
 		return snapshot, fmt.Errorf("unsupported resource version")
 	}
 	settings, err := verifySettings(ctx, tx, true)
@@ -216,6 +244,11 @@ func Inspect(ctx context.Context, path string) (Snapshot, error) {
 		return snapshot, err
 	}
 	snapshot = settings
+	if version == 2 {
+		if err = tx.QueryRowContext(ctx, "SELECT id,(SELECT count(*) FROM receipt_reads) FROM ledger_identity WHERE singleton=1").Scan(&snapshot.LedgerID, &snapshot.ReadContacts); err != nil {
+			return snapshot, err
+		}
+	}
 
 	var integrity string
 	if err = tx.QueryRowContext(ctx, "PRAGMA quick_check").Scan(&integrity); err != nil {
