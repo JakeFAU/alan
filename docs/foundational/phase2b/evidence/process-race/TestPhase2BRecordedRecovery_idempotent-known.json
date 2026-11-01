@@ -1,0 +1,176 @@
+{
+  "barrier": {
+    "Scenario": "TestPhase2BRecordedRecovery/idempotent",
+    "Token": "phase2-runner-1793556322244606000",
+    "Store": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/TestPhase2BRecordedRecoveryidempotent1488848682/001/local.sqlite",
+    "Boundary": "external.result-recorded",
+    "Phase": "pre-settlement",
+    "Subject": "client",
+    "PID": 96971,
+    "Generation": 1,
+    "Epoch": 2,
+    "Sequence": 1,
+    "Intent": "[\"client\",1,1,0]",
+    "Attempt": "[\"authorization\",\"[\\\"client\\\",1,1,0]\"]",
+    "InFlight": null
+  },
+  "crashed": [
+    {
+      "PID": 96971,
+      "AnchorEpoch": 2,
+      "Command": "open",
+      "Client": {
+        "ID": {
+          "Subject": "client",
+          "Generation": 1
+        },
+        "ProgramID": "860ee9ac592e48b84dd720df188f97c81d35e98355b5fc94c49e50ce00901ce5",
+        "Epoch": 2,
+        "Sequence": 0,
+        "Revision": 1,
+        "Projection": {
+          "PC": 0,
+          "Data": {},
+          "Status": "open"
+        }
+      },
+      "Report": null
+    },
+    {
+      "PID": 96971,
+      "AnchorEpoch": 2,
+      "Command": "start",
+      "Client": {
+        "ID": {
+          "Subject": "client",
+          "Generation": 1
+        },
+        "ProgramID": "860ee9ac592e48b84dd720df188f97c81d35e98355b5fc94c49e50ce00901ce5",
+        "Epoch": 2,
+        "Sequence": 0,
+        "Revision": 1,
+        "Projection": {
+          "PC": 0,
+          "Data": {},
+          "Status": "open"
+        }
+      },
+      "Report": null
+    },
+    {
+      "PID": 96971,
+      "AnchorEpoch": 2,
+      "Command": "revoke-manual",
+      "Client": {
+        "ID": {
+          "Subject": "client",
+          "Generation": 1
+        },
+        "ProgramID": "860ee9ac592e48b84dd720df188f97c81d35e98355b5fc94c49e50ce00901ce5",
+        "Epoch": 2,
+        "Sequence": 1,
+        "Revision": 1,
+        "Projection": {
+          "PC": 1,
+          "Data": {
+            "pending": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"client\",1,1,0]",
+              "Flag": false
+            }
+          },
+          "Status": "cancelled"
+        }
+      },
+      "Report": null
+    }
+  ],
+  "reopened": [
+    {
+      "PID": 96989,
+      "AnchorEpoch": 3,
+      "Command": "open",
+      "Client": {
+        "ID": {
+          "Subject": "client",
+          "Generation": 1
+        },
+        "ProgramID": "860ee9ac592e48b84dd720df188f97c81d35e98355b5fc94c49e50ce00901ce5",
+        "Epoch": 2,
+        "Sequence": 1,
+        "Revision": 1,
+        "Projection": {
+          "PC": 1,
+          "Data": {
+            "pending": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"client\",1,1,0]",
+              "Flag": false
+            }
+          },
+          "Status": "cancelled"
+        }
+      },
+      "Report": null
+    },
+    {
+      "PID": 96989,
+      "AnchorEpoch": 3,
+      "Command": "quiesce",
+      "Client": {
+        "ID": {
+          "Subject": "client",
+          "Generation": 1
+        },
+        "ProgramID": "860ee9ac592e48b84dd720df188f97c81d35e98355b5fc94c49e50ce00901ce5",
+        "Epoch": 2,
+        "Sequence": 1,
+        "Revision": 1,
+        "Projection": {
+          "PC": 1,
+          "Data": {
+            "pending": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"client\",1,1,0]",
+              "Flag": false
+            }
+          },
+          "Status": "cancelled"
+        }
+      },
+      "Report": null
+    },
+    {
+      "PID": 96989,
+      "AnchorEpoch": 3,
+      "Command": "exit",
+      "Client": {
+        "ID": {
+          "Subject": "client",
+          "Generation": 1
+        },
+        "ProgramID": "860ee9ac592e48b84dd720df188f97c81d35e98355b5fc94c49e50ce00901ce5",
+        "Epoch": 2,
+        "Sequence": 1,
+        "Revision": 1,
+        "Projection": {
+          "PC": 1,
+          "Data": {
+            "pending": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"client\",1,1,0]",
+              "Flag": false
+            }
+          },
+          "Status": "cancelled"
+        }
+      },
+      "Report": null
+    }
+  ],
+  "signal": "SIGKILL"
+}

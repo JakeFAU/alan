@@ -1,0 +1,737 @@
+{
+  "after": {
+    "Namespace": "67c076c791b6526be36c194a235a4867209f3318877ecce38e80207c93e2aba3",
+    "KeyVersion": 2,
+    "Settings": {
+      "JournalMode": "wal",
+      "SQLiteVersion": "3.53.4",
+      "SQLiteSourceID": "2026-07-24 19:02:57 bf7c7f30031888f4e796e429ab3978879485813aaca6f641c7b33e4e09459bcc",
+      "Synchronous": 2,
+      "ForeignKeys": 1,
+      "BusyTimeoutMS": 5000,
+      "QueryOnly": 1
+    },
+    "Tables": {
+      "adapter_attempts": [],
+      "adapter_results": [],
+      "admissions": [
+        {
+          "descriptor": "{\"TransportID\":\"operator\",\"Kind\":\"input\",\"LogicalID\":\"operator\",\"Source\":{\"Subject\":\"local\",\"Generation\":1},\"Target\":\"operator\",\"Generation\":1,\"Obligation\":\"control\",\"Operation\":\"\",\"Payload\":{\"target\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"client\",\"Flag\":false}},\"IntentID\":\"\",\"TerminalSequence\":0}",
+          "domain": "input",
+          "id": "[\"admission\",\"input\",\"operator\"]",
+          "observation_id": "[\"observation\",\"input\",\"operator\"]",
+          "result": "{\"TransportID\":\"operator\",\"Accepted\":true,\"Reason\":\"accepted\",\"Bound\":{\"Subject\":\"operator\",\"Generation\":1},\"ObservationID\":\"[\\\"observation\\\",\\\"input\\\",\\\"operator\\\"]\"}",
+          "transport_id": "operator"
+        },
+        {
+          "descriptor": "{\"TransportID\":\"[\\\"receipt-delivery\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"Kind\":\"receipt\",\"LogicalID\":\"[\\\"client\\\",1,1,0]\",\"Source\":{\"Subject\":\"http://127.0.0.1:49653/apply\",\"Generation\":1},\"Target\":\"client\",\"Generation\":1,\"Obligation\":\"receipt\",\"Operation\":\"[\\\"client\\\",1,1,0]\",\"Payload\":{\"accepted\":{\"Kind\":\"bool\",\"Number\":0,\"Text\":\"\",\"Flag\":true},\"disposition\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"applied\",\"Flag\":false},\"mutation\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"total\":{\"Kind\":\"int\",\"Number\":5,\"Text\":\"\",\"Flag\":false}},\"IntentID\":\"[\\\"client\\\",1,1,0]\",\"TerminalSequence\":0}",
+          "domain": "receipt",
+          "id": "[\"admission\",\"receipt\",\"[\\\"receipt-delivery\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\"]",
+          "observation_id": "[\"observation\",\"receipt\",\"[\\\"client\\\",1,1,0]\"]",
+          "result": "{\"TransportID\":\"[\\\"receipt-delivery\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"Accepted\":true,\"Reason\":\"settled\",\"Bound\":{\"Subject\":\"client\",\"Generation\":1},\"ObservationID\":\"[\\\"observation\\\",\\\"receipt\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\"}",
+          "transport_id": "[\"receipt-delivery\",\"[\\\"client\\\",1,1,0]\"]"
+        }
+      ],
+      "attempts": [
+        {
+          "descriptor": "{\"Intent\":{\"ID\":\"[\\\"client\\\",1,1,0]\",\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"Ordinal\":0,\"Kind\":\"external\",\"Target\":\"http://127.0.0.1:49653/apply\",\"Generation\":1,\"Obligation\":\"receipt\",\"Payload\":{\"delta\":{\"Kind\":\"int\",\"Number\":5,\"Text\":\"\",\"Flag\":false},\"profile\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"idempotent\",\"Flag\":false}}},\"Revision\":1}",
+          "id": "[\"authorization\",\"[\\\"client\\\",1,1,0]\"]",
+          "intent_id": "[\"client\",1,1,0]",
+          "result": "{\"ID\":\"[\\\"authorization\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"IntentID\":\"[\\\"client\\\",1,1,0]\",\"Allowed\":true,\"Reason\":\"authorized\",\"Source\":{\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Epoch\":2,\"Sequence\":1,\"Revision\":1},\"ClosureOperation\":\"\"}"
+        },
+        {
+          "descriptor": "{\"Intent\":{\"ID\":\"[\\\"operator\\\",1,2,0]\",\"Run\":{\"Subject\":\"operator\",\"Generation\":1},\"Sequence\":2,\"Ordinal\":0,\"Kind\":\"lifecycle\",\"Target\":\"client\",\"Generation\":1,\"Obligation\":\"control\",\"Payload\":{\"operation\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"CancelRun\",\"Flag\":false},\"revision\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false}}},\"Revision\":1}",
+          "id": "[\"authorization\",\"[\\\"operator\\\",1,2,0]\"]",
+          "intent_id": "[\"operator\",1,2,0]",
+          "result": "{\"ID\":\"[\\\"authorization\\\",\\\"[\\\\\\\"operator\\\\\\\",1,2,0]\\\"]\",\"IntentID\":\"[\\\"operator\\\",1,2,0]\",\"Allowed\":true,\"Reason\":\"authorized\",\"Source\":{\"Run\":{\"Subject\":\"operator\",\"Generation\":1},\"Epoch\":2,\"Sequence\":2,\"Revision\":1},\"ClosureOperation\":\"\"}"
+        }
+      ],
+      "corpus_assets": [],
+      "external_attempts": [
+        {
+          "descriptor": "{\"Intent\":{\"ID\":\"[\\\"client\\\",1,1,0]\",\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"Ordinal\":0,\"Kind\":\"external\",\"Target\":\"http://127.0.0.1:49653/apply\",\"Generation\":1,\"Obligation\":\"receipt\",\"Payload\":{\"delta\":{\"Kind\":\"int\",\"Number\":5,\"Text\":\"\",\"Flag\":false},\"profile\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"idempotent\",\"Flag\":false}}},\"AuthorizationID\":\"[\\\"authorization\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"Request\":{\"Key\":\"[2,\\\"67c076c791b6526be36c194a235a4867209f3318877ecce38e80207c93e2aba3\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"Profile\":\"idempotent\",\"Subject\":\"client\",\"Authorization\":\"[\\\"authorization\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"Generation\":1,\"Epoch\":2,\"Sequence\":1,\"Delta\":5},\"Allowed\":true,\"Reason\":\"authorized\"}",
+          "intent_id": "[\"client\",1,1,0]"
+        }
+      ],
+      "external_receipts": [
+        {
+          "descriptor": "{\"Key\":\"[2,\\\"67c076c791b6526be36c194a235a4867209f3318877ecce38e80207c93e2aba3\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"Profile\":\"idempotent\",\"Delta\":5,\"Mutation\":1,\"Total\":5,\"Process\":\"phase2-endpoint-1793556269244702000\",\"PID\":94439}",
+          "intent_id": "[\"client\",1,1,0]"
+        }
+      ],
+      "history": [
+        {
+          "epoch": 2,
+          "generation": 1,
+          "intents": "[{\"ID\":\"[\\\"client\\\",1,1,0]\",\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"Ordinal\":0,\"Kind\":\"external\",\"Target\":\"http://127.0.0.1:49653/apply\",\"Generation\":1,\"Obligation\":\"receipt\",\"Payload\":{\"delta\":{\"Kind\":\"int\",\"Number\":5,\"Text\":\"\",\"Flag\":false},\"profile\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"idempotent\",\"Flag\":false}}}]",
+          "selected_observation": null,
+          "sequence": 1,
+          "source_revision": 1,
+          "subject": "client",
+          "successor": "{\"PC\":1,\"Data\":{\"pending\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"client\\\",1,1,0]\",\"Flag\":false}},\"Status\":\"open\"}"
+        },
+        {
+          "epoch": 2,
+          "generation": 1,
+          "intents": "[]",
+          "selected_observation": "[\"observation\",\"input\",\"operator\"]",
+          "sequence": 1,
+          "source_revision": 1,
+          "subject": "operator",
+          "successor": "{\"PC\":1,\"Data\":{\"target\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"client\",\"Flag\":false}},\"Status\":\"open\"}"
+        },
+        {
+          "epoch": 2,
+          "generation": 1,
+          "intents": "[{\"ID\":\"[\\\"operator\\\",1,2,0]\",\"Run\":{\"Subject\":\"operator\",\"Generation\":1},\"Sequence\":2,\"Ordinal\":0,\"Kind\":\"lifecycle\",\"Target\":\"client\",\"Generation\":1,\"Obligation\":\"control\",\"Payload\":{\"operation\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"CancelRun\",\"Flag\":false},\"revision\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false}}}]",
+          "selected_observation": null,
+          "sequence": 2,
+          "source_revision": 1,
+          "subject": "operator",
+          "successor": "{\"PC\":2,\"Data\":{\"control_op\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"operator\\\",1,2,0]\",\"Flag\":false},\"target\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"client\",\"Flag\":false}},\"Status\":\"open\"}"
+        }
+      ],
+      "intents": [
+        {
+          "descriptor": "{\"ID\":\"[\\\"client\\\",1,1,0]\",\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"Ordinal\":0,\"Kind\":\"external\",\"Target\":\"http://127.0.0.1:49653/apply\",\"Generation\":1,\"Obligation\":\"receipt\",\"Payload\":{\"delta\":{\"Kind\":\"int\",\"Number\":5,\"Text\":\"\",\"Flag\":false},\"profile\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"idempotent\",\"Flag\":false}}}",
+          "generation": 1,
+          "id": "[\"client\",1,1,0]",
+          "ordinal": 0,
+          "sequence": 1,
+          "source_revision": 1,
+          "subject": "client"
+        },
+        {
+          "descriptor": "{\"ID\":\"[\\\"operator\\\",1,2,0]\",\"Run\":{\"Subject\":\"operator\",\"Generation\":1},\"Sequence\":2,\"Ordinal\":0,\"Kind\":\"lifecycle\",\"Target\":\"client\",\"Generation\":1,\"Obligation\":\"control\",\"Payload\":{\"operation\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"CancelRun\",\"Flag\":false},\"revision\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false}}}",
+          "generation": 1,
+          "id": "[\"operator\",1,2,0]",
+          "ordinal": 0,
+          "sequence": 2,
+          "source_revision": 1,
+          "subject": "operator"
+        }
+      ],
+      "lifecycle_results": [
+        {
+          "decision_sequence": 1,
+          "descriptor": "{\"Intent\":{\"ID\":\"[\\\"operator\\\",1,2,0]\",\"Run\":{\"Subject\":\"operator\",\"Generation\":1},\"Sequence\":2,\"Ordinal\":0,\"Kind\":\"lifecycle\",\"Target\":\"client\",\"Generation\":1,\"Obligation\":\"control\",\"Payload\":{\"operation\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"CancelRun\",\"Flag\":false},\"revision\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false}}},\"SourceRevision\":1,\"Operation\":\"CancelRun\",\"ExpectedRevision\":1}",
+          "id": "[\"operator\",1,2,0]",
+          "result": "{\"Request\":{\"Intent\":{\"ID\":\"[\\\"operator\\\",1,2,0]\",\"Run\":{\"Subject\":\"operator\",\"Generation\":1},\"Sequence\":2,\"Ordinal\":0,\"Kind\":\"lifecycle\",\"Target\":\"client\",\"Generation\":1,\"Obligation\":\"control\",\"Payload\":{\"operation\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"CancelRun\",\"Flag\":false},\"revision\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false}}},\"SourceRevision\":1,\"Operation\":\"CancelRun\",\"ExpectedRevision\":1},\"DecisionSequence\":1,\"Accepted\":true,\"Reason\":\"closed\",\"Successor\":0,\"Before\":{\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"ProgramID\":\"52d2139d4548d574af0eeca06441a7d82eeb07e33c507fea28bb46f9df63c60b\",\"Owner\":\"owner:client\",\"Revision\":1,\"Epoch\":2,\"Sequence\":1,\"Retired\":false,\"RetryCancelled\":false,\"Projection\":{\"PC\":1,\"Data\":{\"pending\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"client\\\",1,1,0]\",\"Flag\":false}},\"Status\":\"open\"}},\"After\":{\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"ProgramID\":\"52d2139d4548d574af0eeca06441a7d82eeb07e33c507fea28bb46f9df63c60b\",\"Owner\":\"owner:client\",\"Revision\":1,\"Epoch\":2,\"Sequence\":1,\"Retired\":false,\"RetryCancelled\":false,\"Projection\":{\"PC\":1,\"Data\":{\"pending\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"client\\\",1,1,0]\",\"Flag\":false}},\"Status\":\"cancelled\"}}}"
+        }
+      ],
+      "message_acknowledgments": [],
+      "metadata": [
+        {
+          "key_version": 2,
+          "namespace": "67c076c791b6526be36c194a235a4867209f3318877ecce38e80207c93e2aba3",
+          "schema_version": 3,
+          "semantics": "alan/1d/v1",
+          "singleton": 1
+        }
+      ],
+      "observations": [
+        {
+          "consumed_sequence": 1,
+          "descriptor": "{\"ID\":\"[\\\"observation\\\",\\\"input\\\",\\\"operator\\\"]\",\"Run\":{\"Subject\":\"operator\",\"Generation\":1},\"Kind\":\"input\",\"Provenance\":\"local-input\",\"Source\":\"local\",\"SourceGeneration\":1,\"Obligation\":\"control\",\"Operation\":\"\",\"Payload\":{\"target\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"client\",\"Flag\":false}}}",
+          "generation": 1,
+          "id": "[\"observation\",\"input\",\"operator\"]",
+          "subject": "operator"
+        },
+        {
+          "consumed_sequence": null,
+          "descriptor": "{\"ID\":\"[\\\"observation\\\",\\\"receipt\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Kind\":\"receipt\",\"Provenance\":\"resource-receipt\",\"Source\":\"http://127.0.0.1:49653/apply\",\"SourceGeneration\":1,\"Obligation\":\"receipt\",\"Operation\":\"[\\\"client\\\",1,1,0]\",\"Payload\":{\"accepted\":{\"Kind\":\"bool\",\"Number\":0,\"Text\":\"\",\"Flag\":true},\"disposition\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"applied\",\"Flag\":false},\"mutation\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"total\":{\"Kind\":\"int\",\"Number\":5,\"Text\":\"\",\"Flag\":false}}}",
+          "generation": 1,
+          "id": "[\"observation\",\"receipt\",\"[\\\"client\\\",1,1,0]\"]",
+          "subject": "client"
+        }
+      ],
+      "permissions": [
+        {
+          "kind": "external",
+          "obligation": "",
+          "operation": "apply",
+          "revision": 1,
+          "source": "client",
+          "target": "http://127.0.0.1:49653/apply"
+        },
+        {
+          "kind": "input",
+          "obligation": "control",
+          "operation": "input",
+          "revision": 0,
+          "source": "local",
+          "target": "operator"
+        },
+        {
+          "kind": "lifecycle",
+          "obligation": "",
+          "operation": "CancelRun",
+          "revision": 1,
+          "source": "operator",
+          "target": "client"
+        }
+      ],
+      "programs": [
+        {
+          "bytes": "{\"Semantics\":\"alan/1d/v1\",\"Code\":[{\"Op\":\"emit\",\"Dst\":\"pending\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":null,\"Bind\":null,\"Effect\":{\"Kind\":\"external\",\"Target\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"http://127.0.0.1:49653/apply\",\"Flag\":false},\"Offset\":null},\"Generation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"Offset\":null},\"Obligation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"receipt\",\"Flag\":false},\"Offset\":null},\"Payload\":{\"delta\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"int\",\"Number\":5,\"Text\":\"\",\"Flag\":false},\"Offset\":null},\"profile\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"idempotent\",\"Flag\":false},\"Offset\":null}}},\"Updates\":null,\"Outcome\":\"\"},{\"Op\":\"receive\",\"Dst\":\"\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":{\"Kind\":\"receipt\",\"Provenance\":\"resource-receipt\",\"Source\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"http://127.0.0.1:49653/apply\",\"Flag\":false},\"Offset\":null},\"Generation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"Offset\":null},\"Obligation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"receipt\",\"Flag\":false},\"Offset\":null},\"Operation\":{\"Ref\":\"pending\",\"Literal\":null,\"Offset\":null}},\"Bind\":{\"total\":\"total\"},\"Effect\":null,\"Updates\":null,\"Outcome\":\"\"},{\"Op\":\"end\",\"Dst\":\"\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":null,\"Bind\":null,\"Effect\":null,\"Updates\":null,\"Outcome\":\"succeeded\"}]}",
+          "id": "52d2139d4548d574af0eeca06441a7d82eeb07e33c507fea28bb46f9df63c60b",
+          "semantics": "alan/1d/v1"
+        },
+        {
+          "bytes": "{\"Semantics\":\"alan/1d/v1\",\"Code\":[{\"Op\":\"receive\",\"Dst\":\"\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":{\"Kind\":\"input\",\"Provenance\":\"local-input\",\"Source\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"local\",\"Flag\":false},\"Offset\":null},\"Generation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"Offset\":null},\"Obligation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"control\",\"Flag\":false},\"Offset\":null},\"Operation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"\",\"Flag\":false},\"Offset\":null}},\"Bind\":{\"target\":\"target\"},\"Effect\":null,\"Updates\":null,\"Outcome\":\"\"},{\"Op\":\"emit\",\"Dst\":\"control_op\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":null,\"Bind\":null,\"Effect\":{\"Kind\":\"lifecycle\",\"Target\":{\"Ref\":\"target\",\"Literal\":null,\"Offset\":null},\"Generation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"Offset\":null},\"Obligation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"control\",\"Flag\":false},\"Offset\":null},\"Payload\":{\"operation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"CancelRun\",\"Flag\":false},\"Offset\":null},\"revision\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"Offset\":null}}},\"Updates\":null,\"Outcome\":\"\"},{\"Op\":\"end\",\"Dst\":\"\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":null,\"Bind\":null,\"Effect\":null,\"Updates\":null,\"Outcome\":\"succeeded\"}]}",
+          "id": "e245d4971628887625415d638164016dce41005c1191e92b6ea56bb1f1375e4b",
+          "semantics": "alan/1d/v1"
+        },
+        {
+          "bytes": "{\"Semantics\":\"alan/1d/v1\",\"Code\":[{\"Op\":\"receive\",\"Dst\":\"\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":{\"Kind\":\"input\",\"Provenance\":\"local-input\",\"Source\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"local\",\"Flag\":false},\"Offset\":null},\"Generation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"Offset\":null},\"Obligation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"control\",\"Flag\":false},\"Offset\":null},\"Operation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"\",\"Flag\":false},\"Offset\":null}},\"Bind\":{\"target\":\"target\"},\"Effect\":null,\"Updates\":null,\"Outcome\":\"\"},{\"Op\":\"end\",\"Dst\":\"\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":null,\"Bind\":null,\"Effect\":null,\"Updates\":null,\"Outcome\":\"succeeded\"}]}",
+          "id": "4a28000c4d55b29783b35a164213536789eb0073a79e5e894b3256ac2f8f2bf3",
+          "semantics": "alan/1d/v1"
+        }
+      ],
+      "run_origins": [
+        {
+          "descriptor": "{\"Subject\":{\"ID\":\"client\",\"Generation\":1,\"Owner\":\"owner:client\",\"Revision\":1,\"Retired\":false,\"RetryCancelled\":false},\"ProgramID\":\"52d2139d4548d574af0eeca06441a7d82eeb07e33c507fea28bb46f9df63c60b\",\"Initial\":{\"PC\":0,\"Data\":{},\"Status\":\"open\"}}",
+          "generation": 1,
+          "kind": "root",
+          "operation_id": null,
+          "predecessor_generation": null,
+          "subject": "client"
+        },
+        {
+          "descriptor": "{\"Subject\":{\"ID\":\"operator\",\"Generation\":1,\"Owner\":\"owner:operator\",\"Revision\":1,\"Retired\":false,\"RetryCancelled\":false},\"ProgramID\":\"e245d4971628887625415d638164016dce41005c1191e92b6ea56bb1f1375e4b\",\"Initial\":{\"PC\":0,\"Data\":{},\"Status\":\"open\"}}",
+          "generation": 1,
+          "kind": "root",
+          "operation_id": null,
+          "predecessor_generation": null,
+          "subject": "operator"
+        },
+        {
+          "descriptor": "{\"Subject\":{\"ID\":\"anchor\",\"Generation\":1,\"Owner\":\"owner:anchor\",\"Revision\":1,\"Retired\":false,\"RetryCancelled\":false},\"ProgramID\":\"4a28000c4d55b29783b35a164213536789eb0073a79e5e894b3256ac2f8f2bf3\",\"Initial\":{\"PC\":0,\"Data\":{},\"Status\":\"open\"}}",
+          "generation": 1,
+          "kind": "root",
+          "operation_id": null,
+          "predecessor_generation": null,
+          "subject": "anchor"
+        }
+      ],
+      "runs": [
+        {
+          "epoch": 2,
+          "generation": 1,
+          "initial": "{\"PC\":0,\"Data\":{},\"Status\":\"open\"}",
+          "program_id": "52d2139d4548d574af0eeca06441a7d82eeb07e33c507fea28bb46f9df63c60b",
+          "projection": "{\"PC\":1,\"Data\":{\"pending\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"client\\\",1,1,0]\",\"Flag\":false}},\"Status\":\"cancelled\"}",
+          "sequence": 1,
+          "subject": "client"
+        },
+        {
+          "epoch": 3,
+          "generation": 1,
+          "initial": "{\"PC\":0,\"Data\":{},\"Status\":\"open\"}",
+          "program_id": "e245d4971628887625415d638164016dce41005c1191e92b6ea56bb1f1375e4b",
+          "projection": "{\"PC\":2,\"Data\":{\"control_op\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"operator\\\",1,2,0]\",\"Flag\":false},\"target\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"client\",\"Flag\":false}},\"Status\":\"open\"}",
+          "sequence": 2,
+          "subject": "operator"
+        },
+        {
+          "epoch": 3,
+          "generation": 1,
+          "initial": "{\"PC\":0,\"Data\":{},\"Status\":\"open\"}",
+          "program_id": "4a28000c4d55b29783b35a164213536789eb0073a79e5e894b3256ac2f8f2bf3",
+          "projection": "{\"PC\":0,\"Data\":{},\"Status\":\"open\"}",
+          "sequence": 0,
+          "subject": "anchor"
+        }
+      ],
+      "settlements": [
+        {
+          "descriptor": "{\"Attempt\":{\"Intent\":{\"ID\":\"[\\\"client\\\",1,1,0]\",\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"Ordinal\":0,\"Kind\":\"external\",\"Target\":\"http://127.0.0.1:49653/apply\",\"Generation\":1,\"Obligation\":\"receipt\",\"Payload\":{\"delta\":{\"Kind\":\"int\",\"Number\":5,\"Text\":\"\",\"Flag\":false},\"profile\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"idempotent\",\"Flag\":false}}},\"AuthorizationID\":\"[\\\"authorization\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"Request\":{\"Key\":\"[2,\\\"67c076c791b6526be36c194a235a4867209f3318877ecce38e80207c93e2aba3\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"Profile\":\"idempotent\",\"Subject\":\"client\",\"Authorization\":\"[\\\"authorization\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"Generation\":1,\"Epoch\":2,\"Sequence\":1,\"Delta\":5},\"Allowed\":true,\"Reason\":\"authorized\"},\"Disposition\":\"applied\",\"Receipt\":{\"Key\":\"[2,\\\"67c076c791b6526be36c194a235a4867209f3318877ecce38e80207c93e2aba3\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"Profile\":\"idempotent\",\"Delta\":5,\"Mutation\":1,\"Total\":5,\"Process\":\"phase2-endpoint-1793556269244702000\",\"PID\":94439}}",
+          "id": "[\"external-outcome\",\"[\\\"client\\\",1,1,0]\"]",
+          "intent_id": "[\"client\",1,1,0]",
+          "observation_id": "[\"observation\",\"receipt\",\"[\\\"client\\\",1,1,0]\"]"
+        }
+      ],
+      "subjects": [
+        {
+          "generation": 1,
+          "id": "client",
+          "owner": "owner:client",
+          "retired": 0,
+          "retry_cancelled": 0,
+          "revision": 1
+        },
+        {
+          "generation": 1,
+          "id": "operator",
+          "owner": "owner:operator",
+          "retired": 0,
+          "retry_cancelled": 0,
+          "revision": 1
+        },
+        {
+          "generation": 1,
+          "id": "anchor",
+          "owner": "owner:anchor",
+          "retired": 0,
+          "retry_cancelled": 0,
+          "revision": 1
+        }
+      ],
+      "terminal_obligations": [
+        {
+          "delivery_status": "{}",
+          "destinations": "[]",
+          "generation": 1,
+          "operation_id": "[\"operator\",1,2,0]",
+          "outcome": "{\"PC\":1,\"Data\":{\"pending\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"client\\\",1,1,0]\",\"Flag\":false}},\"Status\":\"cancelled\"}",
+          "sequence": 1,
+          "source_revision": 1,
+          "subject": "client"
+        }
+      ]
+    },
+    "Roots": null
+  },
+  "after_local_store": "/private/tmp/alan-phase2b/docs/foundational/phase2b/evidence/process-normal/TestPhase2BRecordedRecovery_idempotent-replay-after-after-local.sqlite.gz",
+  "after_world_store": "/private/tmp/alan-phase2b/docs/foundational/phase2b/evidence/process-normal/TestPhase2BRecordedRecovery_idempotent-replay-after-after-world.sqlite.gz",
+  "before": {
+    "Namespace": "67c076c791b6526be36c194a235a4867209f3318877ecce38e80207c93e2aba3",
+    "KeyVersion": 2,
+    "Settings": {
+      "JournalMode": "wal",
+      "SQLiteVersion": "3.53.4",
+      "SQLiteSourceID": "2026-07-24 19:02:57 bf7c7f30031888f4e796e429ab3978879485813aaca6f641c7b33e4e09459bcc",
+      "Synchronous": 2,
+      "ForeignKeys": 1,
+      "BusyTimeoutMS": 5000,
+      "QueryOnly": 1
+    },
+    "Tables": {
+      "adapter_attempts": [],
+      "adapter_results": [],
+      "admissions": [
+        {
+          "descriptor": "{\"TransportID\":\"operator\",\"Kind\":\"input\",\"LogicalID\":\"operator\",\"Source\":{\"Subject\":\"local\",\"Generation\":1},\"Target\":\"operator\",\"Generation\":1,\"Obligation\":\"control\",\"Operation\":\"\",\"Payload\":{\"target\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"client\",\"Flag\":false}},\"IntentID\":\"\",\"TerminalSequence\":0}",
+          "domain": "input",
+          "id": "[\"admission\",\"input\",\"operator\"]",
+          "observation_id": "[\"observation\",\"input\",\"operator\"]",
+          "result": "{\"TransportID\":\"operator\",\"Accepted\":true,\"Reason\":\"accepted\",\"Bound\":{\"Subject\":\"operator\",\"Generation\":1},\"ObservationID\":\"[\\\"observation\\\",\\\"input\\\",\\\"operator\\\"]\"}",
+          "transport_id": "operator"
+        },
+        {
+          "descriptor": "{\"TransportID\":\"[\\\"receipt-delivery\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"Kind\":\"receipt\",\"LogicalID\":\"[\\\"client\\\",1,1,0]\",\"Source\":{\"Subject\":\"http://127.0.0.1:49653/apply\",\"Generation\":1},\"Target\":\"client\",\"Generation\":1,\"Obligation\":\"receipt\",\"Operation\":\"[\\\"client\\\",1,1,0]\",\"Payload\":{\"accepted\":{\"Kind\":\"bool\",\"Number\":0,\"Text\":\"\",\"Flag\":true},\"disposition\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"applied\",\"Flag\":false},\"mutation\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"total\":{\"Kind\":\"int\",\"Number\":5,\"Text\":\"\",\"Flag\":false}},\"IntentID\":\"[\\\"client\\\",1,1,0]\",\"TerminalSequence\":0}",
+          "domain": "receipt",
+          "id": "[\"admission\",\"receipt\",\"[\\\"receipt-delivery\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\"]",
+          "observation_id": "[\"observation\",\"receipt\",\"[\\\"client\\\",1,1,0]\"]",
+          "result": "{\"TransportID\":\"[\\\"receipt-delivery\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"Accepted\":true,\"Reason\":\"settled\",\"Bound\":{\"Subject\":\"client\",\"Generation\":1},\"ObservationID\":\"[\\\"observation\\\",\\\"receipt\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\"}",
+          "transport_id": "[\"receipt-delivery\",\"[\\\"client\\\",1,1,0]\"]"
+        }
+      ],
+      "attempts": [
+        {
+          "descriptor": "{\"Intent\":{\"ID\":\"[\\\"client\\\",1,1,0]\",\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"Ordinal\":0,\"Kind\":\"external\",\"Target\":\"http://127.0.0.1:49653/apply\",\"Generation\":1,\"Obligation\":\"receipt\",\"Payload\":{\"delta\":{\"Kind\":\"int\",\"Number\":5,\"Text\":\"\",\"Flag\":false},\"profile\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"idempotent\",\"Flag\":false}}},\"Revision\":1}",
+          "id": "[\"authorization\",\"[\\\"client\\\",1,1,0]\"]",
+          "intent_id": "[\"client\",1,1,0]",
+          "result": "{\"ID\":\"[\\\"authorization\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"IntentID\":\"[\\\"client\\\",1,1,0]\",\"Allowed\":true,\"Reason\":\"authorized\",\"Source\":{\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Epoch\":2,\"Sequence\":1,\"Revision\":1},\"ClosureOperation\":\"\"}"
+        },
+        {
+          "descriptor": "{\"Intent\":{\"ID\":\"[\\\"operator\\\",1,2,0]\",\"Run\":{\"Subject\":\"operator\",\"Generation\":1},\"Sequence\":2,\"Ordinal\":0,\"Kind\":\"lifecycle\",\"Target\":\"client\",\"Generation\":1,\"Obligation\":\"control\",\"Payload\":{\"operation\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"CancelRun\",\"Flag\":false},\"revision\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false}}},\"Revision\":1}",
+          "id": "[\"authorization\",\"[\\\"operator\\\",1,2,0]\"]",
+          "intent_id": "[\"operator\",1,2,0]",
+          "result": "{\"ID\":\"[\\\"authorization\\\",\\\"[\\\\\\\"operator\\\\\\\",1,2,0]\\\"]\",\"IntentID\":\"[\\\"operator\\\",1,2,0]\",\"Allowed\":true,\"Reason\":\"authorized\",\"Source\":{\"Run\":{\"Subject\":\"operator\",\"Generation\":1},\"Epoch\":2,\"Sequence\":2,\"Revision\":1},\"ClosureOperation\":\"\"}"
+        }
+      ],
+      "corpus_assets": [],
+      "external_attempts": [
+        {
+          "descriptor": "{\"Intent\":{\"ID\":\"[\\\"client\\\",1,1,0]\",\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"Ordinal\":0,\"Kind\":\"external\",\"Target\":\"http://127.0.0.1:49653/apply\",\"Generation\":1,\"Obligation\":\"receipt\",\"Payload\":{\"delta\":{\"Kind\":\"int\",\"Number\":5,\"Text\":\"\",\"Flag\":false},\"profile\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"idempotent\",\"Flag\":false}}},\"AuthorizationID\":\"[\\\"authorization\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"Request\":{\"Key\":\"[2,\\\"67c076c791b6526be36c194a235a4867209f3318877ecce38e80207c93e2aba3\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"Profile\":\"idempotent\",\"Subject\":\"client\",\"Authorization\":\"[\\\"authorization\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"Generation\":1,\"Epoch\":2,\"Sequence\":1,\"Delta\":5},\"Allowed\":true,\"Reason\":\"authorized\"}",
+          "intent_id": "[\"client\",1,1,0]"
+        }
+      ],
+      "external_receipts": [
+        {
+          "descriptor": "{\"Key\":\"[2,\\\"67c076c791b6526be36c194a235a4867209f3318877ecce38e80207c93e2aba3\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"Profile\":\"idempotent\",\"Delta\":5,\"Mutation\":1,\"Total\":5,\"Process\":\"phase2-endpoint-1793556269244702000\",\"PID\":94439}",
+          "intent_id": "[\"client\",1,1,0]"
+        }
+      ],
+      "history": [
+        {
+          "epoch": 2,
+          "generation": 1,
+          "intents": "[{\"ID\":\"[\\\"client\\\",1,1,0]\",\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"Ordinal\":0,\"Kind\":\"external\",\"Target\":\"http://127.0.0.1:49653/apply\",\"Generation\":1,\"Obligation\":\"receipt\",\"Payload\":{\"delta\":{\"Kind\":\"int\",\"Number\":5,\"Text\":\"\",\"Flag\":false},\"profile\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"idempotent\",\"Flag\":false}}}]",
+          "selected_observation": null,
+          "sequence": 1,
+          "source_revision": 1,
+          "subject": "client",
+          "successor": "{\"PC\":1,\"Data\":{\"pending\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"client\\\",1,1,0]\",\"Flag\":false}},\"Status\":\"open\"}"
+        },
+        {
+          "epoch": 2,
+          "generation": 1,
+          "intents": "[]",
+          "selected_observation": "[\"observation\",\"input\",\"operator\"]",
+          "sequence": 1,
+          "source_revision": 1,
+          "subject": "operator",
+          "successor": "{\"PC\":1,\"Data\":{\"target\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"client\",\"Flag\":false}},\"Status\":\"open\"}"
+        },
+        {
+          "epoch": 2,
+          "generation": 1,
+          "intents": "[{\"ID\":\"[\\\"operator\\\",1,2,0]\",\"Run\":{\"Subject\":\"operator\",\"Generation\":1},\"Sequence\":2,\"Ordinal\":0,\"Kind\":\"lifecycle\",\"Target\":\"client\",\"Generation\":1,\"Obligation\":\"control\",\"Payload\":{\"operation\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"CancelRun\",\"Flag\":false},\"revision\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false}}}]",
+          "selected_observation": null,
+          "sequence": 2,
+          "source_revision": 1,
+          "subject": "operator",
+          "successor": "{\"PC\":2,\"Data\":{\"control_op\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"operator\\\",1,2,0]\",\"Flag\":false},\"target\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"client\",\"Flag\":false}},\"Status\":\"open\"}"
+        }
+      ],
+      "intents": [
+        {
+          "descriptor": "{\"ID\":\"[\\\"client\\\",1,1,0]\",\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"Ordinal\":0,\"Kind\":\"external\",\"Target\":\"http://127.0.0.1:49653/apply\",\"Generation\":1,\"Obligation\":\"receipt\",\"Payload\":{\"delta\":{\"Kind\":\"int\",\"Number\":5,\"Text\":\"\",\"Flag\":false},\"profile\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"idempotent\",\"Flag\":false}}}",
+          "generation": 1,
+          "id": "[\"client\",1,1,0]",
+          "ordinal": 0,
+          "sequence": 1,
+          "source_revision": 1,
+          "subject": "client"
+        },
+        {
+          "descriptor": "{\"ID\":\"[\\\"operator\\\",1,2,0]\",\"Run\":{\"Subject\":\"operator\",\"Generation\":1},\"Sequence\":2,\"Ordinal\":0,\"Kind\":\"lifecycle\",\"Target\":\"client\",\"Generation\":1,\"Obligation\":\"control\",\"Payload\":{\"operation\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"CancelRun\",\"Flag\":false},\"revision\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false}}}",
+          "generation": 1,
+          "id": "[\"operator\",1,2,0]",
+          "ordinal": 0,
+          "sequence": 2,
+          "source_revision": 1,
+          "subject": "operator"
+        }
+      ],
+      "lifecycle_results": [
+        {
+          "decision_sequence": 1,
+          "descriptor": "{\"Intent\":{\"ID\":\"[\\\"operator\\\",1,2,0]\",\"Run\":{\"Subject\":\"operator\",\"Generation\":1},\"Sequence\":2,\"Ordinal\":0,\"Kind\":\"lifecycle\",\"Target\":\"client\",\"Generation\":1,\"Obligation\":\"control\",\"Payload\":{\"operation\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"CancelRun\",\"Flag\":false},\"revision\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false}}},\"SourceRevision\":1,\"Operation\":\"CancelRun\",\"ExpectedRevision\":1}",
+          "id": "[\"operator\",1,2,0]",
+          "result": "{\"Request\":{\"Intent\":{\"ID\":\"[\\\"operator\\\",1,2,0]\",\"Run\":{\"Subject\":\"operator\",\"Generation\":1},\"Sequence\":2,\"Ordinal\":0,\"Kind\":\"lifecycle\",\"Target\":\"client\",\"Generation\":1,\"Obligation\":\"control\",\"Payload\":{\"operation\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"CancelRun\",\"Flag\":false},\"revision\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false}}},\"SourceRevision\":1,\"Operation\":\"CancelRun\",\"ExpectedRevision\":1},\"DecisionSequence\":1,\"Accepted\":true,\"Reason\":\"closed\",\"Successor\":0,\"Before\":{\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"ProgramID\":\"52d2139d4548d574af0eeca06441a7d82eeb07e33c507fea28bb46f9df63c60b\",\"Owner\":\"owner:client\",\"Revision\":1,\"Epoch\":2,\"Sequence\":1,\"Retired\":false,\"RetryCancelled\":false,\"Projection\":{\"PC\":1,\"Data\":{\"pending\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"client\\\",1,1,0]\",\"Flag\":false}},\"Status\":\"open\"}},\"After\":{\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"ProgramID\":\"52d2139d4548d574af0eeca06441a7d82eeb07e33c507fea28bb46f9df63c60b\",\"Owner\":\"owner:client\",\"Revision\":1,\"Epoch\":2,\"Sequence\":1,\"Retired\":false,\"RetryCancelled\":false,\"Projection\":{\"PC\":1,\"Data\":{\"pending\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"client\\\",1,1,0]\",\"Flag\":false}},\"Status\":\"cancelled\"}}}"
+        }
+      ],
+      "message_acknowledgments": [],
+      "metadata": [
+        {
+          "key_version": 2,
+          "namespace": "67c076c791b6526be36c194a235a4867209f3318877ecce38e80207c93e2aba3",
+          "schema_version": 3,
+          "semantics": "alan/1d/v1",
+          "singleton": 1
+        }
+      ],
+      "observations": [
+        {
+          "consumed_sequence": 1,
+          "descriptor": "{\"ID\":\"[\\\"observation\\\",\\\"input\\\",\\\"operator\\\"]\",\"Run\":{\"Subject\":\"operator\",\"Generation\":1},\"Kind\":\"input\",\"Provenance\":\"local-input\",\"Source\":\"local\",\"SourceGeneration\":1,\"Obligation\":\"control\",\"Operation\":\"\",\"Payload\":{\"target\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"client\",\"Flag\":false}}}",
+          "generation": 1,
+          "id": "[\"observation\",\"input\",\"operator\"]",
+          "subject": "operator"
+        },
+        {
+          "consumed_sequence": null,
+          "descriptor": "{\"ID\":\"[\\\"observation\\\",\\\"receipt\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Kind\":\"receipt\",\"Provenance\":\"resource-receipt\",\"Source\":\"http://127.0.0.1:49653/apply\",\"SourceGeneration\":1,\"Obligation\":\"receipt\",\"Operation\":\"[\\\"client\\\",1,1,0]\",\"Payload\":{\"accepted\":{\"Kind\":\"bool\",\"Number\":0,\"Text\":\"\",\"Flag\":true},\"disposition\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"applied\",\"Flag\":false},\"mutation\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"total\":{\"Kind\":\"int\",\"Number\":5,\"Text\":\"\",\"Flag\":false}}}",
+          "generation": 1,
+          "id": "[\"observation\",\"receipt\",\"[\\\"client\\\",1,1,0]\"]",
+          "subject": "client"
+        }
+      ],
+      "permissions": [
+        {
+          "kind": "external",
+          "obligation": "",
+          "operation": "apply",
+          "revision": 1,
+          "source": "client",
+          "target": "http://127.0.0.1:49653/apply"
+        },
+        {
+          "kind": "input",
+          "obligation": "control",
+          "operation": "input",
+          "revision": 0,
+          "source": "local",
+          "target": "operator"
+        },
+        {
+          "kind": "lifecycle",
+          "obligation": "",
+          "operation": "CancelRun",
+          "revision": 1,
+          "source": "operator",
+          "target": "client"
+        }
+      ],
+      "programs": [
+        {
+          "bytes": "{\"Semantics\":\"alan/1d/v1\",\"Code\":[{\"Op\":\"emit\",\"Dst\":\"pending\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":null,\"Bind\":null,\"Effect\":{\"Kind\":\"external\",\"Target\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"http://127.0.0.1:49653/apply\",\"Flag\":false},\"Offset\":null},\"Generation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"Offset\":null},\"Obligation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"receipt\",\"Flag\":false},\"Offset\":null},\"Payload\":{\"delta\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"int\",\"Number\":5,\"Text\":\"\",\"Flag\":false},\"Offset\":null},\"profile\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"idempotent\",\"Flag\":false},\"Offset\":null}}},\"Updates\":null,\"Outcome\":\"\"},{\"Op\":\"receive\",\"Dst\":\"\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":{\"Kind\":\"receipt\",\"Provenance\":\"resource-receipt\",\"Source\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"http://127.0.0.1:49653/apply\",\"Flag\":false},\"Offset\":null},\"Generation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"Offset\":null},\"Obligation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"receipt\",\"Flag\":false},\"Offset\":null},\"Operation\":{\"Ref\":\"pending\",\"Literal\":null,\"Offset\":null}},\"Bind\":{\"total\":\"total\"},\"Effect\":null,\"Updates\":null,\"Outcome\":\"\"},{\"Op\":\"end\",\"Dst\":\"\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":null,\"Bind\":null,\"Effect\":null,\"Updates\":null,\"Outcome\":\"succeeded\"}]}",
+          "id": "52d2139d4548d574af0eeca06441a7d82eeb07e33c507fea28bb46f9df63c60b",
+          "semantics": "alan/1d/v1"
+        },
+        {
+          "bytes": "{\"Semantics\":\"alan/1d/v1\",\"Code\":[{\"Op\":\"receive\",\"Dst\":\"\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":{\"Kind\":\"input\",\"Provenance\":\"local-input\",\"Source\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"local\",\"Flag\":false},\"Offset\":null},\"Generation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"Offset\":null},\"Obligation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"control\",\"Flag\":false},\"Offset\":null},\"Operation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"\",\"Flag\":false},\"Offset\":null}},\"Bind\":{\"target\":\"target\"},\"Effect\":null,\"Updates\":null,\"Outcome\":\"\"},{\"Op\":\"emit\",\"Dst\":\"control_op\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":null,\"Bind\":null,\"Effect\":{\"Kind\":\"lifecycle\",\"Target\":{\"Ref\":\"target\",\"Literal\":null,\"Offset\":null},\"Generation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"Offset\":null},\"Obligation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"control\",\"Flag\":false},\"Offset\":null},\"Payload\":{\"operation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"CancelRun\",\"Flag\":false},\"Offset\":null},\"revision\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"Offset\":null}}},\"Updates\":null,\"Outcome\":\"\"},{\"Op\":\"end\",\"Dst\":\"\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":null,\"Bind\":null,\"Effect\":null,\"Updates\":null,\"Outcome\":\"succeeded\"}]}",
+          "id": "e245d4971628887625415d638164016dce41005c1191e92b6ea56bb1f1375e4b",
+          "semantics": "alan/1d/v1"
+        },
+        {
+          "bytes": "{\"Semantics\":\"alan/1d/v1\",\"Code\":[{\"Op\":\"receive\",\"Dst\":\"\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":{\"Kind\":\"input\",\"Provenance\":\"local-input\",\"Source\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"local\",\"Flag\":false},\"Offset\":null},\"Generation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"Offset\":null},\"Obligation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"control\",\"Flag\":false},\"Offset\":null},\"Operation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"\",\"Flag\":false},\"Offset\":null}},\"Bind\":{\"target\":\"target\"},\"Effect\":null,\"Updates\":null,\"Outcome\":\"\"},{\"Op\":\"end\",\"Dst\":\"\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":null,\"Bind\":null,\"Effect\":null,\"Updates\":null,\"Outcome\":\"succeeded\"}]}",
+          "id": "4a28000c4d55b29783b35a164213536789eb0073a79e5e894b3256ac2f8f2bf3",
+          "semantics": "alan/1d/v1"
+        }
+      ],
+      "run_origins": [
+        {
+          "descriptor": "{\"Subject\":{\"ID\":\"client\",\"Generation\":1,\"Owner\":\"owner:client\",\"Revision\":1,\"Retired\":false,\"RetryCancelled\":false},\"ProgramID\":\"52d2139d4548d574af0eeca06441a7d82eeb07e33c507fea28bb46f9df63c60b\",\"Initial\":{\"PC\":0,\"Data\":{},\"Status\":\"open\"}}",
+          "generation": 1,
+          "kind": "root",
+          "operation_id": null,
+          "predecessor_generation": null,
+          "subject": "client"
+        },
+        {
+          "descriptor": "{\"Subject\":{\"ID\":\"operator\",\"Generation\":1,\"Owner\":\"owner:operator\",\"Revision\":1,\"Retired\":false,\"RetryCancelled\":false},\"ProgramID\":\"e245d4971628887625415d638164016dce41005c1191e92b6ea56bb1f1375e4b\",\"Initial\":{\"PC\":0,\"Data\":{},\"Status\":\"open\"}}",
+          "generation": 1,
+          "kind": "root",
+          "operation_id": null,
+          "predecessor_generation": null,
+          "subject": "operator"
+        },
+        {
+          "descriptor": "{\"Subject\":{\"ID\":\"anchor\",\"Generation\":1,\"Owner\":\"owner:anchor\",\"Revision\":1,\"Retired\":false,\"RetryCancelled\":false},\"ProgramID\":\"4a28000c4d55b29783b35a164213536789eb0073a79e5e894b3256ac2f8f2bf3\",\"Initial\":{\"PC\":0,\"Data\":{},\"Status\":\"open\"}}",
+          "generation": 1,
+          "kind": "root",
+          "operation_id": null,
+          "predecessor_generation": null,
+          "subject": "anchor"
+        }
+      ],
+      "runs": [
+        {
+          "epoch": 2,
+          "generation": 1,
+          "initial": "{\"PC\":0,\"Data\":{},\"Status\":\"open\"}",
+          "program_id": "52d2139d4548d574af0eeca06441a7d82eeb07e33c507fea28bb46f9df63c60b",
+          "projection": "{\"PC\":1,\"Data\":{\"pending\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"client\\\",1,1,0]\",\"Flag\":false}},\"Status\":\"cancelled\"}",
+          "sequence": 1,
+          "subject": "client"
+        },
+        {
+          "epoch": 3,
+          "generation": 1,
+          "initial": "{\"PC\":0,\"Data\":{},\"Status\":\"open\"}",
+          "program_id": "e245d4971628887625415d638164016dce41005c1191e92b6ea56bb1f1375e4b",
+          "projection": "{\"PC\":2,\"Data\":{\"control_op\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"operator\\\",1,2,0]\",\"Flag\":false},\"target\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"client\",\"Flag\":false}},\"Status\":\"open\"}",
+          "sequence": 2,
+          "subject": "operator"
+        },
+        {
+          "epoch": 3,
+          "generation": 1,
+          "initial": "{\"PC\":0,\"Data\":{},\"Status\":\"open\"}",
+          "program_id": "4a28000c4d55b29783b35a164213536789eb0073a79e5e894b3256ac2f8f2bf3",
+          "projection": "{\"PC\":0,\"Data\":{},\"Status\":\"open\"}",
+          "sequence": 0,
+          "subject": "anchor"
+        }
+      ],
+      "settlements": [
+        {
+          "descriptor": "{\"Attempt\":{\"Intent\":{\"ID\":\"[\\\"client\\\",1,1,0]\",\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"Ordinal\":0,\"Kind\":\"external\",\"Target\":\"http://127.0.0.1:49653/apply\",\"Generation\":1,\"Obligation\":\"receipt\",\"Payload\":{\"delta\":{\"Kind\":\"int\",\"Number\":5,\"Text\":\"\",\"Flag\":false},\"profile\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"idempotent\",\"Flag\":false}}},\"AuthorizationID\":\"[\\\"authorization\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"Request\":{\"Key\":\"[2,\\\"67c076c791b6526be36c194a235a4867209f3318877ecce38e80207c93e2aba3\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"Profile\":\"idempotent\",\"Subject\":\"client\",\"Authorization\":\"[\\\"authorization\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"Generation\":1,\"Epoch\":2,\"Sequence\":1,\"Delta\":5},\"Allowed\":true,\"Reason\":\"authorized\"},\"Disposition\":\"applied\",\"Receipt\":{\"Key\":\"[2,\\\"67c076c791b6526be36c194a235a4867209f3318877ecce38e80207c93e2aba3\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"Profile\":\"idempotent\",\"Delta\":5,\"Mutation\":1,\"Total\":5,\"Process\":\"phase2-endpoint-1793556269244702000\",\"PID\":94439}}",
+          "id": "[\"external-outcome\",\"[\\\"client\\\",1,1,0]\"]",
+          "intent_id": "[\"client\",1,1,0]",
+          "observation_id": "[\"observation\",\"receipt\",\"[\\\"client\\\",1,1,0]\"]"
+        }
+      ],
+      "subjects": [
+        {
+          "generation": 1,
+          "id": "client",
+          "owner": "owner:client",
+          "retired": 0,
+          "retry_cancelled": 0,
+          "revision": 1
+        },
+        {
+          "generation": 1,
+          "id": "operator",
+          "owner": "owner:operator",
+          "retired": 0,
+          "retry_cancelled": 0,
+          "revision": 1
+        },
+        {
+          "generation": 1,
+          "id": "anchor",
+          "owner": "owner:anchor",
+          "retired": 0,
+          "retry_cancelled": 0,
+          "revision": 1
+        }
+      ],
+      "terminal_obligations": [
+        {
+          "delivery_status": "{}",
+          "destinations": "[]",
+          "generation": 1,
+          "operation_id": "[\"operator\",1,2,0]",
+          "outcome": "{\"PC\":1,\"Data\":{\"pending\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"client\\\",1,1,0]\",\"Flag\":false}},\"Status\":\"cancelled\"}",
+          "sequence": 1,
+          "source_revision": 1,
+          "subject": "client"
+        }
+      ]
+    },
+    "Roots": null
+  },
+  "before_local_store": "/private/tmp/alan-phase2b/docs/foundational/phase2b/evidence/process-normal/TestPhase2BRecordedRecovery_idempotent-replay-after-before-local.sqlite.gz",
+  "before_world_store": "/private/tmp/alan-phase2b/docs/foundational/phase2b/evidence/process-normal/TestPhase2BRecordedRecovery_idempotent-replay-after-before-world.sqlite.gz",
+  "endpoint_after": {
+    "ForeignKeys": 1,
+    "BusyTimeoutMS": 5000,
+    "SQLiteVersion": "3.53.4",
+    "SQLiteSourceID": "2026-07-24 19:02:57 bf7c7f30031888f4e796e429ab3978879485813aaca6f641c7b33e4e09459bcc",
+    "JournalMode": "wal",
+    "Synchronous": 2,
+    "QueryOnly": 1,
+    "Requests": [
+      {
+        "Key": "[2,\"67c076c791b6526be36c194a235a4867209f3318877ecce38e80207c93e2aba3\",\"[\\\"client\\\",1,1,0]\"]",
+        "Profile": "idempotent",
+        "Subject": "client",
+        "Authorization": "[\"authorization\",\"[\\\"client\\\",1,1,0]\"]",
+        "Generation": 1,
+        "Epoch": 2,
+        "Sequence": 1,
+        "Delta": 5
+      }
+    ],
+    "Applications": [
+      {
+        "Key": "[2,\"67c076c791b6526be36c194a235a4867209f3318877ecce38e80207c93e2aba3\",\"[\\\"client\\\",1,1,0]\"]",
+        "Profile": "idempotent",
+        "Delta": 5,
+        "Mutation": 1,
+        "Total": 5,
+        "Process": "phase2-endpoint-1793556269244702000",
+        "PID": 94439
+      }
+    ],
+    "Total": 5,
+    "Contacts": 1
+  },
+  "endpoint_before": {
+    "ForeignKeys": 1,
+    "BusyTimeoutMS": 5000,
+    "SQLiteVersion": "3.53.4",
+    "SQLiteSourceID": "2026-07-24 19:02:57 bf7c7f30031888f4e796e429ab3978879485813aaca6f641c7b33e4e09459bcc",
+    "JournalMode": "wal",
+    "Synchronous": 2,
+    "QueryOnly": 1,
+    "Requests": [
+      {
+        "Key": "[2,\"67c076c791b6526be36c194a235a4867209f3318877ecce38e80207c93e2aba3\",\"[\\\"client\\\",1,1,0]\"]",
+        "Profile": "idempotent",
+        "Subject": "client",
+        "Authorization": "[\"authorization\",\"[\\\"client\\\",1,1,0]\"]",
+        "Generation": 1,
+        "Epoch": 2,
+        "Sequence": 1,
+        "Delta": 5
+      }
+    ],
+    "Applications": [
+      {
+        "Key": "[2,\"67c076c791b6526be36c194a235a4867209f3318877ecce38e80207c93e2aba3\",\"[\\\"client\\\",1,1,0]\"]",
+        "Profile": "idempotent",
+        "Delta": 5,
+        "Mutation": 1,
+        "Total": 5,
+        "Process": "phase2-endpoint-1793556269244702000",
+        "PID": 94439
+      }
+    ],
+    "Total": 5,
+    "Contacts": 1
+  },
+  "ingress_after": "{\"Body\":\"{\\\"Key\\\":\\\"[2,\\\\\\\"67c076c791b6526be36c194a235a4867209f3318877ecce38e80207c93e2aba3\\\\\\\",\\\\\\\"[\\\\\\\\\\\\\\\"client\\\\\\\\\\\\\\\",1,1,0]\\\\\\\"]\\\",\\\"Profile\\\":\\\"idempotent\\\",\\\"Subject\\\":\\\"client\\\",\\\"Authorization\\\":\\\"[\\\\\\\"authorization\\\\\\\",\\\\\\\"[\\\\\\\\\\\\\\\"client\\\\\\\\\\\\\\\",1,1,0]\\\\\\\"]\\\",\\\"Generation\\\":1,\\\"Epoch\\\":2,\\\"Sequence\\\":1,\\\"Delta\\\":5}\",\"Contact\":1,\"Event\":\"ingress\",\"Method\":\"POST\",\"PID\":94439,\"Path\":\"/apply\",\"Process\":\"phase2-endpoint-1793556269244702000\"}\n{\"Contact\":1,\"Event\":\"committed\",\"PID\":94439,\"Process\":\"phase2-endpoint-1793556269244702000\",\"Receipt\":{\"Key\":\"[2,\\\"67c076c791b6526be36c194a235a4867209f3318877ecce38e80207c93e2aba3\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"Profile\":\"idempotent\",\"Delta\":5,\"Mutation\":1,\"Total\":5,\"Process\":\"phase2-endpoint-1793556269244702000\",\"PID\":94439}}\n",
+  "ingress_before": "{\"Body\":\"{\\\"Key\\\":\\\"[2,\\\\\\\"67c076c791b6526be36c194a235a4867209f3318877ecce38e80207c93e2aba3\\\\\\\",\\\\\\\"[\\\\\\\\\\\\\\\"client\\\\\\\\\\\\\\\",1,1,0]\\\\\\\"]\\\",\\\"Profile\\\":\\\"idempotent\\\",\\\"Subject\\\":\\\"client\\\",\\\"Authorization\\\":\\\"[\\\\\\\"authorization\\\\\\\",\\\\\\\"[\\\\\\\\\\\\\\\"client\\\\\\\\\\\\\\\",1,1,0]\\\\\\\"]\\\",\\\"Generation\\\":1,\\\"Epoch\\\":2,\\\"Sequence\\\":1,\\\"Delta\\\":5}\",\"Contact\":1,\"Event\":\"ingress\",\"Method\":\"POST\",\"PID\":94439,\"Path\":\"/apply\",\"Process\":\"phase2-endpoint-1793556269244702000\"}\n{\"Contact\":1,\"Event\":\"committed\",\"PID\":94439,\"Process\":\"phase2-endpoint-1793556269244702000\",\"Receipt\":{\"Key\":\"[2,\\\"67c076c791b6526be36c194a235a4867209f3318877ecce38e80207c93e2aba3\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"Profile\":\"idempotent\",\"Delta\":5,\"Mutation\":1,\"Total\":5,\"Process\":\"phase2-endpoint-1793556269244702000\",\"PID\":94439}}\n",
+  "report": {
+    "Namespace": "67c076c791b6526be36c194a235a4867209f3318877ecce38e80207c93e2aba3",
+    "SQLiteVersion": "3.53.4",
+    "SQLiteSourceID": "2026-07-24 19:02:57 bf7c7f30031888f4e796e429ab3978879485813aaca6f641c7b33e4e09459bcc",
+    "HistoryCount": 3,
+    "IntentCount": 2,
+    "Runs": [
+      {
+        "ID": {
+          "Subject": "anchor",
+          "Generation": 1
+        },
+        "ProgramID": "4a28000c4d55b29783b35a164213536789eb0073a79e5e894b3256ac2f8f2bf3",
+        "Epoch": 3,
+        "Sequence": 0,
+        "Revision": 1,
+        "Projection": {
+          "PC": 0,
+          "Data": {},
+          "Status": "open"
+        }
+      },
+      {
+        "ID": {
+          "Subject": "client",
+          "Generation": 1
+        },
+        "ProgramID": "52d2139d4548d574af0eeca06441a7d82eeb07e33c507fea28bb46f9df63c60b",
+        "Epoch": 2,
+        "Sequence": 1,
+        "Revision": 1,
+        "Projection": {
+          "PC": 1,
+          "Data": {
+            "pending": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"client\",1,1,0]",
+              "Flag": false
+            }
+          },
+          "Status": "cancelled"
+        }
+      },
+      {
+        "ID": {
+          "Subject": "operator",
+          "Generation": 1
+        },
+        "ProgramID": "e245d4971628887625415d638164016dce41005c1191e92b6ea56bb1f1375e4b",
+        "Epoch": 3,
+        "Sequence": 2,
+        "Revision": 1,
+        "Projection": {
+          "PC": 2,
+          "Data": {
+            "control_op": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"operator\",1,2,0]",
+              "Flag": false
+            },
+            "target": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "client",
+              "Flag": false
+            }
+          },
+          "Status": "open"
+        }
+      }
+    ],
+    "Roots": null
+  }
+}
