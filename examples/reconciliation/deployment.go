@@ -3,20 +3,22 @@ package reconciliation
 
 import (
 	"fmt"
+
+	"github.com/JakeFAU/alan/adapters/receiptquery"
 	"github.com/JakeFAU/alan/author"
 	"github.com/JakeFAU/alan/runtime"
 	"github.com/JakeFAU/alan/schema"
 )
 
-const Counter = "phase2c.counter"
-const Lookup = "phase2c.receipt-read"
+const Counter = receiptquery.CounterCapability
+const Lookup = receiptquery.ReadCapability
 
-func target() schema.Record { return schema.Record{"target": {Kind: "string", MaxBytes: 1024}} }
+func target() schema.Record { return receiptquery.ReadInput() }
 func issuance() schema.Record {
 	return schema.Record{"target": {Kind: "string", MaxBytes: 1024}, "issued": {Kind: "bool"}}
 }
 func counter() author.Effect {
-	return author.Effect{Capability: Counter, Input: schema.Record{"delta": {Kind: "int"}}, Output: schema.Record{"mutation": {Kind: "int"}, "total": {Kind: "int"}}}
+	return author.Effect{Capability: Counter, Input: receiptquery.CounterInput(), Output: receiptquery.CounterOutput()}
 }
 
 func source(invoked, observeOriginal bool) (author.Artifact, error) {
@@ -83,9 +85,7 @@ type Options struct {
 	ObserveOriginal bool
 }
 
-func receipt() schema.Record {
-	return schema.Record{"status": {Kind: "string", MaxBytes: 32}, "target": {Kind: "string", MaxBytes: 1024}, "adoption": {Kind: "string", MaxBytes: 128}, "adopted": {Kind: "bool"}, "mutation": {Kind: "int"}, "total": {Kind: "int"}}
-}
+func receipt() schema.Record { return receiptquery.ReadOutput() }
 
 func resolverProgram(queries int) (author.Artifact, error) {
 	ports := map[string]author.Port{
