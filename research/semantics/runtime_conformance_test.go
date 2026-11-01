@@ -1,18 +1,21 @@
 package semantics
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	resourcefixture "github.com/JakeFAU/alan/internal/fixture"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
 	"reflect"
 	"sync/atomic"
 	"testing"
+	"time"
 
+	"github.com/JakeFAU/alan/internal/boundary"
 	ex "github.com/JakeFAU/alan/internal/executor"
+	resourcefixture "github.com/JakeFAU/alan/internal/fixture"
 )
 
 // This bridge runs the preserved step+inspect oracle and independently authored
@@ -752,7 +755,64 @@ func (b *bridge) externalCheck(label, resourcePath string) {
 	}
 	b.checkpoints = append(b.checkpoints, map[string]any{"label": label + " external common projection", "external": views, "independent_resource": world, "limits": "in-process loopback protocol endpoint; endpoint inspection is test evidence only; no resource DB reads by ordinary executor"})
 }
+
+// Hold only this opportunity after admission and before its HTTP call. The
+// private channels order the test. The deadline bounds a missing acknowledgment.
+func (b *bridge) holdAdmittedDispatch(id string) func() {
+	t := b.t
+	t.Helper()
+	ctx, cancel := context.WithTimeout(t.Context(), 30*time.Second)
+	t.Cleanup(cancel)
+	held := make(chan boundary.Event, 1)
+	release := make(chan struct{})
+	ctx = boundary.WithObserver(ctx, func(ctx context.Context, event boundary.Event) error {
+		if event.Boundary == "dispatch.admitted" && event.Phase == "pre-call" && event.Intent == id {
+			held <- event
+			select {
+			case <-release:
+			case <-ctx.Done():
+			}
+		}
+		return ctx.Err()
+	})
+	result := make(chan error, 1)
+	store := b.store
+	go func() {
+		settled, err := store.DispatchExternal(ctx, id)
+		if err == nil && !settled {
+			err = errors.New("admitted original did not settle")
+		}
+		result <- err
+	}()
+	select {
+	case event := <-held:
+		b.actions = append(b.actions, map[string]any{"action": "original re-exposure admitted before failure", "event": event})
+	case err := <-result:
+		t.Fatalf("original re-exposure ended before admission acknowledgment: %v", err)
+	case <-ctx.Done():
+		t.Fatal(ctx.Err())
+	}
+	return func() {
+		t.Helper()
+		close(release)
+		select {
+		case err := <-result:
+			if err != nil {
+				t.Fatal(err)
+			}
+		case <-ctx.Done():
+			t.Fatal(ctx.Err())
+		}
+		b.actions = append(b.actions, map[string]any{"action": "previously admitted original re-exposure settled after retry", "id": id})
+	}
+}
+
 func TestRuntimeConformanceExternalGenerationsAndLateReceipt(t *testing.T) {
+	t.Run("revoked-before-reexposure", func(t *testing.T) { checkExternalGenerations(t, false) })
+	t.Run("admitted-before-revocation", func(t *testing.T) { checkExternalGenerations(t, true) })
+}
+
+func checkExternalGenerations(t *testing.T, admitOld bool) {
 	resourcePath := filepath.Join(t.TempDir(), "resource.sqlite")
 	endpoint, err := resourcefixture.Open(t.Context(), resourcePath, "conformance-endpoint")
 	if err != nil {
@@ -801,6 +861,10 @@ func TestRuntimeConformanceExternalGenerationsAndLateReceipt(t *testing.T) {
 	b.externalCheck("application with missing receipt", resourcePath)
 	b.reopen()
 	b.externalCheck("unknown application survives reopen", resourcePath)
+	var releaseOld func()
+	if admitOld {
+		releaseOld = b.holdAdmittedDispatch(oldID)
+	}
 	b.seedTo(16)
 	b.control(1, "fail")
 	b.externalCheck("old execution fails while effect remains unknown", resourcePath)
@@ -835,8 +899,25 @@ func TestRuntimeConformanceExternalGenerationsAndLateReceipt(t *testing.T) {
 	b.seedTo(38)
 	b.commits("inner", 1, 3)
 	b.externalCheck("inner waits for current generation two", resourcePath)
-	b.reopen()
-	b.externalCheck("retry and old uncertainty survive reopen", resourcePath)
+	if !admitOld {
+		b.reopen()
+		b.externalCheck("retry and old uncertainty survive reopen", resourcePath)
+	}
+	// A fresh attempt on the superseded source cannot use its earlier grant.
+	// Enable a real response so the refusal cannot be explained by the endpoint.
+	reply.Store(true)
+	b.dispatchExternal(oldID, false)
+	worldAtRefusal, err := resourcefixture.Inspect(t.Context(), resourcePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	bridgeEqual(t, "no fresh contact after revocation", int64(1), worldAtRefusal.Contacts)
+	b.externalCheck("fresh old-generation exposure refused after retry", resourcePath)
+	if !admitOld {
+		b.emitRecord("Preserved J seed through accepted Retry. After reopen a fresh old-key exposure is refused. The world retains the one original application. Its receipt remains unavailable locally.")
+		return
+	}
+	reply.Store(false)
 	freshModel := intentID("worker", 2, 1)
 	b.localModel("worker", 2, "")
 	b.commit("worker", 2, "")
@@ -859,7 +940,7 @@ func TestRuntimeConformanceExternalGenerationsAndLateReceipt(t *testing.T) {
 	}
 	b.modelEvents(event{Kind: recordReceipt, ID: oldModel, Attempt: 1})
 	reply.Store(true)
-	b.dispatchExternal(oldID, true)
+	releaseOld()
 	b.externalCheck("late old receipt settles only old execution", resourcePath)
 	bridgeEqual(t, "late old receipt changed successor", newBefore, b.state("worker", 2))
 	bridgeEqual(t, "late receipt changed supervisor pending/budget", innerBefore, b.state("inner", 1))
@@ -911,7 +992,7 @@ func TestRuntimeConformanceExternalGenerationsAndLateReceipt(t *testing.T) {
 		t.Fatalf("business mutation evidence %+v", world)
 	}
 	b.checkpoints = append(b.checkpoints, map[string]any{"label": "runtime-only current receipt consumption after rejection of old receipt", "runtime": b.inspection(), "resource": world, "new_receipt_observation": freshObservation})
-	b.emitRecord("Common J checkpoints compare lifecycle/public status and effect authorization/uncertainty/settlement. Runtime worker adds explicit local input receive and branch to choose failure versus receipt wait; model worker has Emit then Fault. These extra transitions and the final new receipt consumption are a separate runtime contract, not whole-trace equivalence. Original late receipt is retrieved by idempotent HTTP retransmission after prior application; the original endpoint receipt is retained. Distinct execution keys permit two business mutations. In-process endpoint; Task4 owns process isolation.")
+	b.emitRecord("Common J checkpoints compare lifecycle/public status and effect authorization/uncertainty/settlement. Runtime worker adds explicit local input receive and branch to choose failure versus receipt wait; model worker has Emit then Fault. These extra transitions and the final new receipt consumption are a separate runtime contract, not whole-trace equivalence. The idempotent re-exposure was admitted before private Failure, then entered HTTP and retrieved the retained original receipt after Retry. A separately considered re-exposure after Retry was refused. Distinct execution keys permit two business mutations. In-process endpoint; Task4 owns process isolation.")
 }
 
 func TestRuntimeConformanceClosureBeforeExternalAuthorization(t *testing.T) {
