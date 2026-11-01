@@ -20,7 +20,7 @@ func (h *history2c) originalCut(cut *barrier, endpoint *child, raw bool) {
 	t := h.t
 	t.Helper()
 	o := h.owner(cut)
-	h.command(o, "run")
+	started := h.command(o, "run")
 	var ack barrier
 	if endpoint != nil {
 		ack = h.await(endpoint)
@@ -35,17 +35,23 @@ func (h *history2c) originalCut(cut *barrier, endpoint *child, raw bool) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	closed := h.command(o, "closed")
 	if endpoint != nil {
-		if ack.Intent != executor.ExternalKey(closed.Namespace, h.original) || phaseSnapshot(t, h.world).Contacts != 0 {
+		// The source's End and the endpoint's Apply are held independently.
+		// Neither may commit while we capture the admitted packet and open source.
+		staged := h.await(o.child)
+		if ack.Intent != executor.ExternalKey(started.Namespace, h.original) {
 			t.Fatal("held packet identity", ack)
 		}
-		// The original call cannot return while this endpoint barrier is held.
-		// Its owner has independently acknowledged terminal source state via fd5.
-		o.acknowledged = true
+		h.expectWorld(0, 0, 0)
+		h.snapshot("ingress-before-R")
+		h.event("release staged original End", staged)
+		if _, err := o.release.Write([]byte{'c'}); err != nil {
+			t.Fatal(err)
+		}
 	} else if ack.Intent != h.original {
 		t.Fatal("wrong original cut", ack)
 	}
+	h.command(o, "closed")
 	h.kill(o)
 	if h.count(h.db, "SELECT count(*) FROM settlements WHERE intent_id=?", h.original) != 0 ||
 		h.count(h.db, "SELECT count(*) FROM external_receipts")+h.count(h.db, "SELECT count(*) FROM adapter_results") != 0 {
@@ -190,7 +196,9 @@ func TestPhase2CProcessHeld(t *testing.T) {
 			ep, ready := h.endpoint("", cut2c("resource.ingress", "pre-apply", ""))
 			h.apply = ready.URL
 			h.seed(queries)
-			h.originalCut(nil, ep, false)
+			// Until the resolver receives its start input, only the bound source can
+			// reach End. Check its actual retained identity before releasing it.
+			h.originalCut(&barrier{Boundary: "execution.staged", Phase: "terminal", Sequence: 6}, ep, false)
 			var queryCut *barrier
 			if lost {
 				queryCut = cut2c("adapter.response", "pre-record", "resolver")

@@ -89,12 +89,6 @@ func TestPhase2COwner(t *testing.T) {
 			if running != nil {
 				t.Fatal("duplicate active runner")
 			}
-			done := make(chan result, 1)
-			running = done
-			go func() {
-				r, e := s.Run(runCtx, runtime.RunOptions{MaxInFlight: 1, MaxSteps: 240, MaxDispatch: 240, ExternalTimeout: 75 * time.Second, Adapters: registry})
-				done <- result{r, e}
-			}()
 		case "finish":
 			if running == nil {
 				t.Fatal("no runner")
@@ -141,6 +135,16 @@ func TestPhase2COwner(t *testing.T) {
 		}
 		if err = encode.Encode(reply); err != nil {
 			t.Fatal(err)
+		}
+		// A process paused inside staged End holds the Store mutex. Send the
+		// run acknowledgment before such a pause can obstruct its Snapshot.
+		if request.Op == "run" {
+			done := make(chan result, 1)
+			running = done
+			go func() {
+				r, e := s.Run(runCtx, runtime.RunOptions{MaxInFlight: 1, MaxSteps: 240, MaxDispatch: 240, ExternalTimeout: 75 * time.Second, Adapters: registry})
+				done <- result{r, e}
+			}()
 		}
 		if request.Op == "exit" {
 			return
@@ -250,7 +254,12 @@ func (h *history2c) await(c *child) barrier {
 	if b.Token != f.Token || b.Scenario != f.Scenario || b.Store != f.Store || b.PID != c.cmd.Process.Pid || b.Boundary != f.Boundary || b.Phase != f.Phase || (f.Subject != "" && b.Subject != f.Subject) {
 		t.Fatal("uncorrelated barrier", b, f)
 	}
-	if b.Store == h.db {
+	if b.Boundary == "execution.staged" {
+		if b.Store != h.db || b.Phase != "terminal" || b.Sequence != f.Sequence || b.Subject != h.source.Subject || b.Generation != h.source.Generation ||
+			h.count(h.db, `SELECT count(*) FROM runs WHERE subject=? AND generation=? AND epoch=? AND sequence=? AND json_extract(projection,'$.Status')='open' AND json_extract(projection,'$.Data.original.Text')=?`, b.Subject, b.Generation, b.Epoch, b.Sequence-1, h.original) != 1 {
+			t.Fatal("terminal cut lacks an open original source", b)
+		}
+	} else if b.Store == h.db {
 		var subject, authorization string
 		var sequence, generation int64
 		e := h.query(h.db, `SELECT json_extract(i.descriptor,'$.Run.Subject'),json_extract(i.descriptor,'$.Run.Generation'),json_extract(i.descriptor,'$.Sequence'),a.id FROM intents i JOIN attempts a ON a.intent_id=i.id WHERE i.id=? AND json_extract(a.result,'$.Allowed')=1`, b.Intent).Scan(&subject, &generation, &sequence, &authorization)
