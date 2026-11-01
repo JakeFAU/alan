@@ -24,12 +24,13 @@ type AdapterAttempt struct {
 	Reason          string
 }
 type AdapterResult struct {
-	Read        *receiptReadDecision   `json:",omitempty"`
-	Reconciled  *receiptReconstruction `json:",omitempty"`
-	Digest      string
-	Candidate   effects.Candidate
-	Values      map[string]Value
-	Disposition string
+	RefusalWitness string                 `json:",omitempty"`
+	Read           *receiptReadDecision   `json:",omitempty"`
+	Reconciled     *receiptReconstruction `json:",omitempty"`
+	Digest         string
+	Candidate      effects.Candidate
+	Values         map[string]Value
+	Disposition    string
 }
 
 type adapterWork struct {
@@ -354,6 +355,21 @@ func (s *Store) recordAdapterResult(ctx context.Context, a AdapterAttempt, c eff
 	if e = validateAdapterAttempt(ctx, tx, a, s.namespace, s.limits); e != nil {
 		return r, e
 	}
+	if s.reconciliation && a.Intent.Target == receiptReadCapability && a.Allowed {
+		// Only the actual gate may create a local refusal, and only the
+		// ordinal-bound recorder may create a transport result.
+		old, err := loadAdapterResult(ctx, tx, a.Intent.ID)
+		if errors.Is(err, sql.ErrNoRows) {
+			return r, ErrConflict
+		}
+		if err != nil {
+			return r, err
+		}
+		if old.Read != nil || !reflect.DeepEqual(old.Candidate, c) {
+			return r, ErrConflict
+		}
+		return old, nil
+	}
 	if c.Disposition == "unknown" || c.Disposition == "" {
 		return r, fmt.Errorf("unknown outcome has no result")
 	}
@@ -474,6 +490,9 @@ func validateAdapterAttempt(ctx context.Context, q queryer, a AdapterAttempt, na
 	return nil
 }
 func validateAdapterResult(a AdapterAttempt, r AdapterResult, l Limits) error {
+	if r.RefusalWitness != "" && (a.Intent.Target != receiptReadCapability || r.Read != nil || r.Reconciled != nil || (r.Disposition != "original_busy" && r.Disposition != "original_unsettled")) {
+		return corrupt("misplaced read refusal witness")
+	}
 	if r.Digest == "" || r.Digest != adapterResultDigest(r) {
 		return corrupt("adapter result digest")
 	}

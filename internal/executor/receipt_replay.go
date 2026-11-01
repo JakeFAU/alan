@@ -11,7 +11,7 @@ import (
 )
 
 func validateOrdinalBinding(ctx context.Context, q queryer, namespace string, a AdapterAttempt, o receiptReadOrdinal) error {
-	want, reason, err := bindReceiptRead(ctx, q, namespace, a, o.Query.Ordinal)
+	want, reason, err := bindReceiptRead(ctx, q, namespace, a, o.Query.Ordinal, nil)
 	if err != nil {
 		return err
 	}
@@ -66,11 +66,43 @@ func verifyQueryResult(ctx context.Context, q queryer, a AdapterAttempt, r Adapt
 		return corrupt("reconstructed query")
 	}
 	if r.Read == nil {
-		// A local refusal contains no transport metadata or assertion of world state.
-		allowed := map[string]bool{"grant_denied": true, "source_denied": true, "read_denied": true, "read_exhausted": true, "target_missing": true, "target_mismatch": true, "attempt_missing": true, "original_denied": true, "unsupported_original": true, "endpoint_mismatch": true, "original_open": true, "original_busy": true, "original_unsettled": true, "unscoped": true}
-		if !allowed[r.Disposition] || !reflect.DeepEqual(r.Candidate, effects.Candidate{ID: a.Intent.ID, Key: a.Prepared.Request.Key, Disposition: r.Disposition}) || r.Disposition == "read_exhausted" && len(ordinals) != 2 {
-			return corrupt("read without physical ordinal or valid refusal")
+		if !reflect.DeepEqual(r.Candidate, effects.Candidate{ID: a.Intent.ID, Key: a.Prepared.Request.Key, Disposition: r.Disposition}) {
+			return corrupt("read refusal with transport metadata")
 		}
+		if !a.Allowed {
+			want := "source_denied"
+			if a.Reason == "grant_denied" {
+				want = "grant_denied"
+			}
+			if len(ordinals) != 0 || r.Disposition != want {
+				return corrupt("read first-permission denial")
+			}
+			return nil
+		}
+		root, err := compositionMembershipRoot(ctx, q, a.Intent.Run)
+		if err != nil {
+			return err
+		}
+		if root == "" && (r.Disposition != "unscoped" || len(ordinals) != 0) {
+			return corrupt("unscoped read refusal")
+		}
+		if (len(ordinals) == 2) != (r.Disposition == "read_exhausted") {
+			return corrupt("read exhaustion disagrees with allowance")
+		}
+		if len(ordinals) == 2 {
+			current, e := loadRun(ctx, q, a.Intent.Run)
+			if e != nil {
+				return e
+			}
+			if current.Epoch <= ordinals[1].Resolver.Epoch {
+				return corrupt("exhaustion without a successor activation")
+			}
+		}
+		if len(ordinals) == 1 && r.Disposition != "original_unsettled" {
+			return corrupt("refusal contradicts already spent read")
+		}
+		// Scoped refusals are justified at their ordered result fact below.
+
 		return nil
 	}
 	if r.Read.Ordinal != len(ordinals) || len(ordinals) == 0 {
@@ -246,6 +278,100 @@ func verifyReadPrefix(x *compositionPrefix, o receiptReadOrdinal) error {
 	id := o.Resolver.Run
 	if !x.active[id] || x.retired[id] || x.states[id].Status != "open" || x.closed(id) || x.sequences[id] != o.Resolver.Sequence || !x.reservations[o.Query.QueryID] || x.known[o.Query.QueryID] || !x.reservations[o.Query.TargetID] || !x.active[o.OriginalRun] || x.states[o.OriginalRun].Status == "open" || x.sequences[o.OriginalRun] != o.OriginalTerminalSequence {
 		return corrupt("receipt read at ineligible historical prefix")
+	}
+	return nil
+}
+
+// All scoped local refusals are committed under the same exclusion that
+// observed the cause. Reconstruct the durable prerequisites at that prefix.
+func verifyLocalReadAtPrefix(ctx context.Context, q queryer, x *compositionPrefix, f compositionFact) error {
+	version, err := schemaNumber(ctx, q)
+	if err != nil || version != reconciliationSchemaVersion {
+		return err
+	}
+	a, err := loadAdapterAttempt(ctx, q, f.OperationID)
+	if err != nil {
+		return err
+	}
+	r, err := loadAdapterResult(ctx, q, a.Intent.ID)
+	if err != nil || !a.Allowed || r.Read != nil {
+		return err
+	}
+	if x.known[a.Intent.ID] || !x.active[a.Intent.Run] || x.retired[a.Intent.Run] || x.states[a.Intent.Run].Status != "open" || x.closed(a.Intent.Run) {
+		return corrupt("ineligible local receipt refusal")
+	}
+	if r.Disposition == "read_exhausted" {
+		return nil
+	} // allowance equality checked by verifyQueryResult
+	namespace, err := readNamespace(ctx, q)
+	if err != nil {
+		return err
+	}
+	o, reason, err := bindReceiptRead(ctx, q, namespace, a, 1, x)
+	if err != nil {
+		return err
+	}
+	if reason == "" && x.states[o.OriginalRun].Status == "open" {
+		reason = "original_open"
+	}
+	if reason != "" {
+		if r.Disposition != reason {
+			return corrupt("read refusal disagrees with historical binding: %s", reason)
+		}
+		return nil
+	}
+	i, ok := x.intents[r.RefusalWitness]
+	if !ok || i.Run != o.OriginalRun || !x.reservations[i.ID] || (i.Kind != "external" && i.Kind != "adapter") {
+		return corrupt("read refusal lacks original dispatch witness")
+	}
+	switch r.Disposition {
+	case "original_busy":
+		var reservation compositionReservation
+		var raw []byte
+		if err = q.QueryRowContext(ctx, "SELECT descriptor FROM composition_reservations WHERE operation_id=?", i.ID).Scan(&raw); err != nil {
+			return err
+		}
+		if decode(raw, &reservation) != nil || !reservation.Allowed {
+			return corrupt("busy witness has no allowed reservation")
+		}
+		// An earlier successful read of this terminal generation witnessed
+		// its full drain. It cannot later get another original dispatch.
+		var spent int
+		if err = q.QueryRowContext(ctx, "SELECT count(*) FROM receipt_read_ordinals WHERE json_extract(descriptor,'$.OriginalRun.Subject')=? AND json_extract(descriptor,'$.OriginalRun.Generation')=? AND json_extract(descriptor,'$.Prefix')<?", o.OriginalRun.Subject, o.OriginalRun.Generation, f.Order-1).Scan(&spent); err != nil {
+			return err
+		}
+		if spent != 0 {
+			return corrupt("busy witness follows earlier quiescence")
+		}
+	case "original_unsettled":
+		if !x.known[i.ID] {
+			return corrupt("unsettled witness before original result")
+		}
+		// Selection of the authenticated observation requires its settlement.
+		// A later refusal cannot truthfully cite it as pending.
+		var selected bool
+		if err = q.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM settlements st JOIN observations o ON o.id=st.observation_id
+          WHERE st.intent_id=? AND o.consumed_sequence<=?)`, i.ID, x.sequences[i.Run]).Scan(&selected); err != nil {
+			return err
+		}
+		if selected {
+			return corrupt("unsettled witness was already selected")
+		}
+		order, err := resultOrder(ctx, q, i.ID)
+		if err != nil {
+			return err
+		}
+		// A prior proven drain covered every result then available to this
+		// original source. Only a newer result could still await settlement.
+		var laterDrain bool
+		if err = q.QueryRowContext(ctx, "SELECT EXISTS(SELECT 1 FROM receipt_read_ordinals WHERE json_extract(descriptor,'$.OriginalRun.Subject')=? AND json_extract(descriptor,'$.OriginalRun.Generation')=? AND json_extract(descriptor,'$.Prefix')>=? AND json_extract(descriptor,'$.Prefix')<?)", o.OriginalRun.Subject, o.OriginalRun.Generation, order, f.Order-1).Scan(&laterDrain); err != nil {
+			return err
+		}
+		if laterDrain {
+			return corrupt("unsettled witness already drained")
+		}
+	default:
+		return corrupt("read refusal has no cause at its historical prefix")
 	}
 	return nil
 }
