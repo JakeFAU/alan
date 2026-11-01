@@ -30,16 +30,22 @@ func (t Template) ID() string    { b, _ := t.bundle(); return b.Descriptor.ID }
 func (t Template) Bytes() []byte { return []byte(t.raw) }
 
 func NewTemplate(a Application, entryMember, entryPort string) (Template, error) {
-	return newTemplate(a, entryMember, entryPort, nil)
+	return newTemplate(a, entryMember, entryPort, nil, "")
 }
 
 // NewHandoffTemplate adds a single fixed duplex target-ID port to the invocation entry.
 func NewHandoffTemplate(a Application, entryMember, entryPort string, h runtime.InvocationHandoff) (Template, error) {
-	return newTemplate(a, entryMember, entryPort, &h)
+	return newTemplate(a, entryMember, entryPort, &h, "")
 }
 
-func newTemplate(a Application, entryMember, entryPort string, h *runtime.InvocationHandoff) (Template, error) {
-	t := executor.TemplateDescriptor{Handoff: h, Members: map[string]executor.TemplateMember{}, EntryMember: entryMember, EntryPort: entryPort}
+// NewPairedHandoffTemplate declares one of exactly two fixed identity channels
+// from one static caller. The pair is validated together when provisioning.
+func NewPairedHandoffTemplate(a Application, entryMember, entryPort string, h runtime.InvocationHandoff) (Template, error) {
+	return newTemplate(a, entryMember, entryPort, &h, executor.PairedHandoffTemplateVersion)
+}
+
+func newTemplate(a Application, entryMember, entryPort string, h *runtime.InvocationHandoff, version string) (Template, error) {
+	t := executor.TemplateDescriptor{Version: version, Handoff: h, Members: map[string]executor.TemplateMember{}, EntryMember: entryMember, EntryPort: entryPort}
 	entry, ok := a[entryMember]
 	if !ok {
 		return Template{}, fmt.Errorf("missing entry member")

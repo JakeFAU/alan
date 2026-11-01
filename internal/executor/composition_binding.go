@@ -36,6 +36,9 @@ func retainTemplate(t compositionTemplate, l Limits, lookup func(string) (Progra
 			return t, fmt.Errorf("invalid invocation handoff")
 		}
 		version = handoffTemplateVersion
+		if t.Version == PairedHandoffTemplateVersion {
+			version = t.Version
+		}
 	}
 	if t.Version != "" && t.Version != version {
 		return t, ErrVersion
@@ -222,7 +225,7 @@ func retainCompositionBinding(namespace, rootID string, t compositionTemplate, b
 	if err := validateCompositionEncoding(compositionProvision{Templates: []compositionTemplate{t}}); err != nil {
 		return empty, err
 	}
-	if b.Version != compositionBindingVersion || (t.Version != compositionTemplateVersion && t.Version != handoffTemplateVersion) || b.Protocol != "" && b.Protocol != compositionProtocolVersion {
+	if b.Version != compositionBindingVersion || (t.Version != compositionTemplateVersion && t.Version != handoffTemplateVersion && t.Version != PairedHandoffTemplateVersion) || b.Protocol != "" && b.Protocol != compositionProtocolVersion {
 		return empty, ErrVersion
 	}
 	templateID := t.ID
