@@ -1,0 +1,8 @@
+\begin{theorem}[The Cancellation--Authorization Dichotomy]
+\label{thm:dichotomy}
+For any committed intent $\iota \in \Gamma.\mathsf{Int}$ of run $x=(a,g)$ and concurrent closure $c \in \{\mathsf{CancelRun}(a,g,w), \mathsf{RetireSubject}(a,w)\}$:
+\begin{enumerate}
+  \item If $c \prec \mathsf{Authorize}(\iota)$ in the store's serialization order, $\iota$ transitions to the maximal consistent state $\mathsf{Suppressed}(\mathtt{source\_closed})$ and non-execution of $\iota$ in $\mathcal{W}$ is guaranteed under trusted dispatch.
+  \item If $\mathsf{Authorize}(\iota) \prec c$, $\iota$ transitions to $\mathsf{Unknown}$ (refinable to $\mathsf{Known}(v)$ upon late receipt arrival from the pre-cancellation attempt), and no new mutating attempt for $\iota$ may ever be launched after $c$, even with an idempotency key.
+\end{enumerate}
+\end{theorem}
