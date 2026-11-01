@@ -32,6 +32,9 @@ func checkState(p Profile, s State) error {
 		if q.Selected && q.Stage != "handled" || q.Drained && !q.Closed {
 			return fmt.Errorf("improper selection or Q")
 		}
+		if q.Closed && q.Spent == 0 && q.Outcome != "" {
+			return fmt.Errorf("closed resolver acquired result before admission")
+		}
 		if q.Retained != 0 {
 			if q.Retained > s.SnapshotCount {
 				return fmt.Errorf("invented snapshot")
@@ -46,7 +49,7 @@ func checkState(p Profile, s State) error {
 		if q.Adoption == "adopted" && (q.Outcome != "found" || p.ReadOnly || p.Policy != "" || p.BadTarget || s.ReconciliationSource != i+1) {
 			return fmt.Errorf("invalid original import")
 		}
-		used = used || q.Selected && q.Outcome == "found" && (q.Adoption == "adopted" || s.Interaction == "transport_error" && q.Adoption == "existing")
+		used = used || (p.Concurrent || i == p.Queries-1) && q.Selected && q.Outcome == "found" && (q.Adoption == "adopted" || s.Interaction == "transport_error" && q.Adoption == "existing")
 	}
 	if debits != s.ReadDebits {
 		return fmt.Errorf("logical debit")
@@ -58,6 +61,9 @@ func checkState(p Profile, s State) error {
 		}
 	} else if s.ReconciliationSource != 0 {
 		return fmt.Errorf("spurious original result reference")
+	}
+	if s.Rejected && (s.Used || !s.OutcomeSelected || p.Concurrent || !s.Reads[1].Selected || s.Reads[1].Adoption != "duplicate") {
+		return fmt.Errorf("unsupported rejection")
 	}
 	if s.Used && (!s.OutcomeSelected || !used) {
 		return fmt.Errorf("consumer missing selections")
@@ -74,6 +80,9 @@ func checkEdge(p Profile, s State, a string, n State) error {
 	}
 	if s.Interaction != "" && n.Interaction != s.Interaction {
 		return fmt.Errorf("rewritten interaction")
+	}
+	if a == "original.Q" && s.Interaction != "" && !s.Settled {
+		return fmt.Errorf("owner acknowledged Q before surviving original settlement")
 	}
 	if a == "original.admit" && s.Revoked {
 		return fmt.Errorf("original admitted after R")
@@ -144,7 +153,11 @@ func TestCompleteProfiles(t *testing.T) {
 			}
 			switch p.Name {
 			case "matched-original-loss", "held-packet-refresh", "lost-negative-later-found", "admission-race":
-				if !reflect.DeepEqual(sinks, map[string]bool{"not_found": true, "ordinary-continuation": true}) {
+				expected := map[string]bool{"not_found": true, "ordinary-continuation": true}
+				if p.Name == "held-packet-refresh" {
+					expected["final-duplicate-guard-failed"] = true
+				}
+				if !reflect.DeepEqual(sinks, expected) {
 					t.Fatal(sinks)
 				}
 			case "spent-before-send":
@@ -178,6 +191,7 @@ func TestCounterexamples(t *testing.T) {
 		{"absence-then-found", "held-packet-refresh", func(s State) bool {
 			return s.Reads[0].Outcome == "not_found" && s.Reads[1].Outcome == "found" && s.Used
 		}},
+		{"early-import-late-duplicate", "held-packet-refresh", func(s State) bool { return s.Rejected && !s.Used && s.Settled && s.Published }},
 		{"lost-absence-new-snapshot", "lost-negative-later-found", func(s State) bool {
 			return s.Losses == 1 && s.Log[0].Status == "not_found" && s.Log[1].Status == "found" && s.Reads[0].Retained == 2 && s.Used
 		}},

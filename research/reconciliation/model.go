@@ -52,14 +52,14 @@ type Snapshot struct {
 }
 
 type State struct {
-	Original, Interaction                                                       string
-	Revoked, Quiescent, Held, Dead                                              bool
-	OldOwnerLost                                                                bool
-	Losses, Applications, SnapshotCount                                         int
-	Log                                                                         [4]Snapshot
-	Reads                                                                       [2]Query
-	Target, OriginalDebits, ReadDebits, ReconciliationSource                    int
-	Settled, OriginalFailureSelected, Published, OutcomeSelected, Used, PeerRan bool
+	Original, Interaction                                                                 string
+	Revoked, Quiescent, Held, Dead                                                        bool
+	OldOwnerLost                                                                          bool
+	Losses, Applications, SnapshotCount                                                   int
+	Log                                                                                   [4]Snapshot
+	Reads                                                                                 [2]Query
+	Target, OriginalDebits, ReadDebits, ReconciliationSource                              int
+	Settled, OriginalFailureSelected, Published, OutcomeSelected, Used, Rejected, PeerRan bool
 }
 
 func Initial() State {
@@ -89,6 +89,11 @@ func Outgoing(p Profile, s State) []Step {
 		return out
 	}
 	originalSteps(p, s, add)
+	if s.Interaction != "" && !s.Settled && (s.Quiescent || s.Original == "handled" && s.Losses > 0) {
+		n := s
+		n.Settled = true
+		add("original.settle", n)
+	}
 	if !s.Quiescent {
 		return out
 	}
@@ -99,11 +104,6 @@ func Outgoing(p Profile, s State) []Step {
 	}
 	for i := 0; i < p.Queries; i++ {
 		readSteps(p, s, i, add)
-	}
-	if s.Interaction != "" && !s.Settled {
-		n := s
-		n.Settled = true
-		add("original.settle", n)
 	}
 	// The captured aggregate needs an original result. The production contract
 	// permits publication eligibility before the distinct settlement commit.
@@ -117,9 +117,17 @@ func Outgoing(p Profile, s State) []Step {
 		n.OutcomeSelected = true
 		add("parent.select-original", n)
 	}
-	if s.OutcomeSelected && !s.Used {
+	if s.OutcomeSelected && !s.Used && !s.Rejected {
 		for i := 0; i < p.Queries; i++ {
+			if !p.Concurrent && i != p.Queries-1 {
+				continue
+			}
 			q := s.Reads[i]
+			if !p.Concurrent && i == 1 && q.Selected && q.Adoption == "duplicate" {
+				n := s
+				n.Rejected = true
+				add("parent.reject-final-duplicate", n)
+			}
 			if q.Selected && q.Outcome == "found" && (q.Adoption == "adopted" || s.Interaction == "transport_error" && q.Adoption == "existing") {
 				n := s
 				n.Used = true
@@ -196,7 +204,7 @@ func originalSteps(p Profile, s State, add addStep) {
 			n.OriginalFailureSelected = true
 			add("issuer.select-failure", n)
 		}
-		if s.Revoked && !s.Quiescent {
+		if s.Revoked && !s.Quiescent && (s.Interaction == "" || s.Settled) {
 			n := s
 			n.Quiescent = true
 			add("original.Q", n)
@@ -235,14 +243,15 @@ func readSteps(p Profile, s State, i int, add addStep) {
 			step("request", n)
 		}
 	case "ready":
-		if q.Closed || p.BadTarget || q.Spent == 2 {
+		if q.Closed {
+			break
+		}
+		if p.BadTarget || q.Spent == 2 {
 			n := s
 			r := &n.Reads[i]
 			r.Stage = "retained"
 			r.Outcome = "refused"
-			if q.Closed {
-				r.Adoption = "resolver_closed"
-			} else if p.BadTarget {
+			if p.BadTarget {
 				r.Adoption = "unbound"
 			} else {
 				r.Adoption = "exhausted"
@@ -316,7 +325,7 @@ func readSteps(p Profile, s State, i int, add addStep) {
 		}
 		step("retain", n)
 	case "retained":
-		if q.Adoption != "adopted" && q.Adoption != "duplicate" || s.Settled {
+		if q.Adoption != "adopted" || s.Settled {
 			next("handle", "handled")
 		}
 	case "handled":

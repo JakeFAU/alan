@@ -17,6 +17,8 @@ type Graph struct {
 
 func Class(s State) string {
 	switch {
+	case s.Rejected:
+		return "final-duplicate-guard-failed"
 	case s.Dead:
 		return "owner-lost"
 	case s.Used && s.Interaction == "transport_error":
@@ -28,6 +30,9 @@ func Class(s State) string {
 		q := s.Reads[i]
 		if q.Stage == "" {
 			continue
+		}
+		if q.Closed && q.Stage == "ready" {
+			return "revoked-before-admission"
 		}
 		if q.Stage == "retained" {
 			return "accounting-owed"

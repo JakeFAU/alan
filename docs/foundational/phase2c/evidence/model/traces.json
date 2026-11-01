@@ -114,6 +114,7 @@
       "Published": false,
       "OutcomeSelected": false,
       "Used": false,
+      "Rejected": false,
       "PeerRan": false
     }
   },
@@ -218,47 +219,47 @@
       [
         51,
         "q2.snapshot",
-        57
+        56
       ],
       [
-        57,
+        56,
         "q2.return",
-        64
+        62
       ],
       [
-        64,
+        62,
         "q2.retain",
-        71
+        68
       ],
       [
-        71,
+        68,
         "original.settle",
-        78
+        74
       ],
       [
-        78,
+        74,
         "q2.handle",
-        86
+        81
       ],
       [
-        86,
+        81,
         "q2.select-evidence",
-        94
+        88
       ],
       [
-        94,
+        88,
         "aggregate.publish",
-        100
+        93
       ],
       [
-        100,
+        93,
         "parent.select-original",
-        104
+        96
       ],
       [
-        104,
+        96,
         "parent.use-correlated-evidence",
-        106
+        98
       ]
     ],
     "last": {
@@ -337,6 +338,231 @@
       "Published": true,
       "OutcomeSelected": true,
       "Used": true,
+      "Rejected": false,
+      "PeerRan": false
+    }
+  },
+  "final duplicate rejected": {
+    "profile": "held-packet-refresh",
+    "steps": [
+      [
+        0,
+        "original.admit",
+        1
+      ],
+      [
+        1,
+        "original.enter",
+        2
+      ],
+      [
+        2,
+        "world.accept",
+        3
+      ],
+      [
+        3,
+        "world.apply",
+        4
+      ],
+      [
+        4,
+        "original.revoke",
+        6
+      ],
+      [
+        6,
+        "owner.kill-original",
+        8
+      ],
+      [
+        8,
+        "owner.open",
+        10
+      ],
+      [
+        10,
+        "original.Q",
+        12
+      ],
+      [
+        12,
+        "q1.request",
+        14
+      ],
+      [
+        14,
+        "q1.spend-and-admit",
+        16
+      ],
+      [
+        16,
+        "q1.enter",
+        18
+      ],
+      [
+        18,
+        "q1.snapshot",
+        20
+      ],
+      [
+        20,
+        "q1.return",
+        23
+      ],
+      [
+        23,
+        "q1.retain",
+        26
+      ],
+      [
+        26,
+        "original.settle",
+        29
+      ],
+      [
+        29,
+        "q1.handle",
+        33
+      ],
+      [
+        33,
+        "q1.select-evidence",
+        38
+      ],
+      [
+        38,
+        "q2.request",
+        43
+      ],
+      [
+        43,
+        "q2.spend-and-admit",
+        48
+      ],
+      [
+        48,
+        "q2.enter",
+        53
+      ],
+      [
+        53,
+        "q2.snapshot",
+        59
+      ],
+      [
+        59,
+        "q2.return",
+        65
+      ],
+      [
+        65,
+        "q2.retain",
+        71
+      ],
+      [
+        71,
+        "q2.handle",
+        78
+      ],
+      [
+        78,
+        "q2.select-evidence",
+        85
+      ],
+      [
+        85,
+        "aggregate.publish",
+        91
+      ],
+      [
+        91,
+        "parent.select-original",
+        95
+      ],
+      [
+        95,
+        "parent.reject-final-duplicate",
+        97
+      ]
+    ],
+    "last": {
+      "Original": "handled",
+      "Interaction": "reconciled",
+      "Revoked": true,
+      "Quiescent": true,
+      "Held": false,
+      "Dead": false,
+      "OldOwnerLost": true,
+      "Losses": 0,
+      "Applications": 1,
+      "SnapshotCount": 2,
+      "Log": [
+        {
+          "Target": 1,
+          "Query": 1,
+          "Ordinal": 1,
+          "Applications": 1,
+          "Status": "found"
+        },
+        {
+          "Target": 1,
+          "Query": 2,
+          "Ordinal": 1,
+          "Applications": 1,
+          "Status": "found"
+        },
+        {
+          "Target": 0,
+          "Query": 0,
+          "Ordinal": 0,
+          "Applications": 0,
+          "Status": ""
+        },
+        {
+          "Target": 0,
+          "Query": 0,
+          "Ordinal": 0,
+          "Applications": 0,
+          "Status": ""
+        }
+      ],
+      "Reads": [
+        {
+          "Stage": "handled",
+          "Spent": 1,
+          "BoundTo": 1,
+          "Acquired": 0,
+          "Retained": 1,
+          "Outcome": "found",
+          "Adoption": "adopted",
+          "Closed": false,
+          "Drained": false,
+          "Selected": true
+        },
+        {
+          "Stage": "handled",
+          "Spent": 1,
+          "BoundTo": 1,
+          "Acquired": 0,
+          "Retained": 2,
+          "Outcome": "found",
+          "Adoption": "duplicate",
+          "Closed": false,
+          "Drained": false,
+          "Selected": true
+        }
+      ],
+      "Target": 1,
+      "OriginalDebits": 1,
+      "ReadDebits": 2,
+      "ReconciliationSource": 1,
+      "Settled": true,
+      "OriginalFailureSelected": false,
+      "Published": true,
+      "OutcomeSelected": true,
+      "Used": false,
+      "Rejected": true,
       "PeerRan": false
     }
   },
@@ -550,6 +776,7 @@
       "Published": true,
       "OutcomeSelected": true,
       "Used": true,
+      "Rejected": false,
       "PeerRan": false
     }
   },
@@ -723,6 +950,7 @@
       "Published": false,
       "OutcomeSelected": false,
       "Used": false,
+      "Rejected": false,
       "PeerRan": false
     }
   },
@@ -911,6 +1139,7 @@
       "Published": true,
       "OutcomeSelected": true,
       "Used": true,
+      "Rejected": false,
       "PeerRan": false
     }
   },
@@ -1074,6 +1303,7 @@
       "Published": false,
       "OutcomeSelected": false,
       "Used": false,
+      "Rejected": false,
       "PeerRan": false
     }
   },
@@ -1237,6 +1467,7 @@
       "Published": false,
       "OutcomeSelected": false,
       "Used": false,
+      "Rejected": false,
       "PeerRan": false
     }
   },
@@ -1400,6 +1631,7 @@
       "Published": false,
       "OutcomeSelected": false,
       "Used": false,
+      "Rejected": false,
       "PeerRan": false
     }
   },
@@ -1503,38 +1735,38 @@
       ],
       [
         106,
-        "q1.retain",
+        "original.settle",
         136
       ],
       [
         136,
-        "original.settle",
-        172
+        "q1.retain",
+        173
       ],
       [
-        172,
+        173,
         "q2.handle",
-        212
+        218
       ],
       [
-        212,
+        218,
         "q2.select-evidence",
-        253
+        267
       ],
       [
-        253,
+        267,
         "aggregate.publish",
-        292
+        313
       ],
       [
-        292,
+        313,
         "parent.select-original",
-        326
+        350
       ],
       [
-        326,
+        350,
         "parent.use-correlated-evidence",
-        349
+        373
       ]
     ],
     "last": {
@@ -1613,6 +1845,7 @@
       "Published": true,
       "OutcomeSelected": true,
       "Used": true,
+      "Rejected": false,
       "PeerRan": false
     }
   }
