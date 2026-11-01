@@ -228,6 +228,15 @@ func (s *Store) accountExternal(ctx context.Context, result externalCompletion) 
 	if err := s.recordExternalReceipt(ctx, result.work.attempt, *result.receipt); err != nil {
 		return errors.Join(result.err, err)
 	}
+	// Passive observation after the receipt transaction commits and releases mu.
+	// Settlement is a separate transaction; a crash here retains evidence without
+	// making its observation selectable yet.
+	recorded := result.work.event
+	recorded.Boundary = "external.result-recorded"
+	recorded.Phase = "pre-settlement"
+	if err := boundary.Reached(ctx, recorded); err != nil {
+		return errors.Join(result.err, err)
+	}
 	err := s.settleExternal(ctx, ExternalOutcome{Attempt: result.work.attempt, Disposition: "applied", Receipt: result.receipt})
 	if err == nil {
 		event := result.work.event
