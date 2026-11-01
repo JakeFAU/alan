@@ -33,7 +33,20 @@ type compositionTemplateMember struct {
 	ProgramID string
 	Initial   Projection
 }
+
+// InvocationHandoff binds one generation-one caller to the entry of one exact
+// invocation. The payload on this additional ordinary port is only a target ID.
+type InvocationHandoff struct {
+	Caller                RunID
+	Sequence              int64
+	CallerPort, EntryPort string
+}
+
+const HandoffPeer = "phase2c-invoked-entry"
+const handoffTemplateVersion = "alan/identity-handoff-template/v1"
+
 type compositionTemplate struct {
+	Handoff                            *InvocationHandoff `json:",omitempty"`
 	ID, Version                        string
 	Members                            map[string]compositionTemplateMember
 	EntryMember, EntryPort, CallerPeer string
@@ -159,6 +172,11 @@ func validateCompositionEncoding(c compositionProvision) error {
 		}
 	}
 	for _, t := range c.Templates {
+		if t.Handoff != nil {
+			if err := check(t.Handoff.Caller.Subject, t.Handoff.CallerPort, t.Handoff.EntryPort); err != nil {
+				return err
+			}
+		}
 		if err := check(t.ID, t.Version, t.EntryMember, t.EntryPort, t.CallerPeer); err != nil {
 			return err
 		}

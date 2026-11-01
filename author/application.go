@@ -65,6 +65,25 @@ func (a Application) Provision() (runtime.Provision, error) {
 				}
 				continue
 			}
+			if port.Peer == executor.HandoffPeer && instance.Artifact.catalogue != "" {
+				var catalogue templateCatalogue
+				if err := json.Unmarshal([]byte(instance.Artifact.catalogue), &catalogue); err != nil {
+					return p, err
+				}
+				matched := false
+				for _, t := range catalogue.Templates {
+					h := t.Handoff
+					if h != nil && h.Caller.Subject == name && h.CallerPort == portName {
+						matched = true
+					}
+				}
+				if matched {
+					if _, exists := metadata[port.Peer]; exists {
+						return p, fmt.Errorf("handoff peer aliases a component")
+					}
+					continue
+				}
+			}
 			peer, ok := metadata[port.Peer]
 			if !ok {
 				return p, fmt.Errorf("component %q port %q: missing peer %q", name, portName, port.Peer)

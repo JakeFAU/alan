@@ -67,3 +67,8 @@ type InvocationFreeze = executor.InvocationFreeze
 type InvocationPreparation = executor.InvocationPreparation
 
 type RootCompletion = executor.RootCompletion
+
+// InvocationHandoff fixes the two endpoints of a target identity exchange.
+type InvocationHandoff = executor.InvocationHandoff
+
+const HandoffPeer = executor.HandoffPeer

@@ -30,7 +30,16 @@ func (t Template) ID() string    { b, _ := t.bundle(); return b.Descriptor.ID }
 func (t Template) Bytes() []byte { return []byte(t.raw) }
 
 func NewTemplate(a Application, entryMember, entryPort string) (Template, error) {
-	t := executor.TemplateDescriptor{Members: map[string]executor.TemplateMember{}, EntryMember: entryMember, EntryPort: entryPort}
+	return newTemplate(a, entryMember, entryPort, nil)
+}
+
+// NewHandoffTemplate adds a single fixed duplex target-ID port to the invocation entry.
+func NewHandoffTemplate(a Application, entryMember, entryPort string, h runtime.InvocationHandoff) (Template, error) {
+	return newTemplate(a, entryMember, entryPort, &h)
+}
+
+func newTemplate(a Application, entryMember, entryPort string, h *runtime.InvocationHandoff) (Template, error) {
+	t := executor.TemplateDescriptor{Handoff: h, Members: map[string]executor.TemplateMember{}, EntryMember: entryMember, EntryPort: entryPort}
 	entry, ok := a[entryMember]
 	if !ok {
 		return Template{}, fmt.Errorf("missing entry member")
