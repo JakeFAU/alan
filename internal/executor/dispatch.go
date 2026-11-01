@@ -19,6 +19,7 @@ type DispatchAuthority struct {
 var ErrDispatchAuthorityOpen = errors.New("dispatch authority is still open")
 
 type dispatchOpportunity struct {
+	intent      string
 	source      RunID
 	read        *receiptReadOrdinal
 	readRefusal string
@@ -87,7 +88,7 @@ func (s *Store) registerDispatch(ctx context.Context, id string) (*dispatchOppor
 	if err = ctx.Err(); err != nil {
 		return nil, "", err
 	}
-	op := &dispatchOpportunity{source: intent.Run, done: make(chan struct{})}
+	op := &dispatchOpportunity{intent: id, source: intent.Run, done: make(chan struct{})}
 	if s.reconciliation && intent.Kind == "adapter" && intent.Target == receiptReadCapability {
 		op.read, op.readRefusal, err = s.reserveReadLocked(ctx, id)
 		if err != nil {

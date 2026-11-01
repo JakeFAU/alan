@@ -638,6 +638,11 @@ func validateCompositionPrefix(ctx context.Context, q queryer, l Limits, c compo
 				return corrupt("receipt read spend order")
 			}
 		case compositionExternalResultFact:
+			if x.intents[f.OperationID].Target == receiptReadCapability {
+				if err = verifyLocalReadAtPrefix(ctx, q, &x, f); err != nil {
+					return err
+				}
+			}
 			if !x.reservations[f.OperationID] {
 				return corrupt("result before reservation")
 			}

@@ -56,7 +56,7 @@ func controlledCounter(adapter effects.Adapter) bool {
 	return false
 }
 
-func bindReceiptRead(ctx context.Context, q queryer, namespace string, a AdapterAttempt, ordinal int) (receiptReadOrdinal, string, error) {
+func bindReceiptRead(ctx context.Context, q queryer, namespace string, a AdapterAttempt, ordinal int, prefix *compositionPrefix) (receiptReadOrdinal, string, error) {
 	var r receiptReadOrdinal
 	g, run, err := receiptGrantFor(ctx, q, namespace, a)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -65,10 +65,23 @@ func bindReceiptRead(ctx context.Context, q queryer, namespace string, a Adapter
 	if err != nil {
 		return r, "", err
 	}
+	if prefix != nil && g.Invocation != "" && prefix.bindings[run].OperationID != g.Invocation {
+		return r, "read_denied", nil
+	}
 	target := a.Prepared.Request.Payload["target"].Text
 	expected, err := receiptquery.LookupEndpoint(g.Endpoint)
 	if err != nil || expected != a.Prepared.Endpoint {
 		return r, "endpoint_mismatch", nil
+	}
+	root, err := compositionMembershipRoot(ctx, q, run)
+	if err != nil {
+		return r, "", err
+	}
+	if root == "" {
+		return r, "unscoped", nil
+	}
+	if prefix != nil && prefix.intents[target].ID == "" {
+		return r, "target_missing", nil
 	}
 	intent, err := loadIntent(ctx, q, target)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -80,6 +93,9 @@ func bindReceiptRead(ctx context.Context, q queryer, namespace string, a Adapter
 	if intent.Run != run || intent.Sequence != g.Sequence || intent.Ordinal != 0 {
 		return r, "target_mismatch", nil
 	}
+	if prefix != nil && !prefix.authorized[target] {
+		return r, "attempt_missing", nil
+	}
 	auth, err := loadAuthorization(ctx, q, target)
 	if errors.Is(err, sql.ErrNoRows) {
 		return r, "attempt_missing", nil
@@ -89,6 +105,9 @@ func bindReceiptRead(ctx context.Context, q queryer, namespace string, a Adapter
 	}
 	if !auth.Allowed {
 		return r, "original_denied", nil
+	}
+	if prefix != nil && (intent.Kind == "adapter" || intent.Kind == "external") && !prefix.reservations[target] {
+		return r, "attempt_missing", nil
 	}
 	r.OriginalRun = run
 	r.OriginalAuthorization = auth.ID
@@ -193,46 +212,66 @@ func (s *Store) reserveReadLocked(ctx context.Context, id string) (*receiptReadO
 	if err = tx.QueryRowContext(ctx, "SELECT count(*) FROM receipt_read_ordinals WHERE intent_id=?", id).Scan(&n); err != nil {
 		return nil, "", err
 	}
+	// A local gate decision is terminal. Retain it at this very prefix;
+	// later worker accounting only settles the already committed result.
+	refuse := func(reason, witness string) (*receiptReadOrdinal, string, error) {
+		c := effects.Candidate{ID: id, Key: a.Prepared.Request.Key, Disposition: reason}
+		values, d := effects.Result(a.Prepared.Request.Output.Record, c)
+		result := AdapterResult{Candidate: c, Values: values, Disposition: d, RefusalWitness: witness}
+		result.Digest = adapterResultDigest(result)
+		err := s.insertReadResult(ctx, tx, id, result)
+		if err == nil {
+			err = ctx.Err()
+		}
+		if err == nil {
+			err = tx.Commit()
+		}
+		if err != nil && !errors.Is(err, ctx.Err()) {
+			s.rememberDispatchFailure(a.Intent.Run, err)
+		}
+		return nil, reason, err
+	}
+	root, err := compositionMembershipRoot(ctx, tx, a.Intent.Run)
+	if err != nil {
+		return nil, "", err
+	}
+	if root == "" {
+		return refuse("unscoped", "")
+	}
 	if n >= 2 {
-		return nil, "read_exhausted", nil
+		return refuse("read_exhausted", "")
 	}
-	r, refusal, err := bindReceiptRead(ctx, tx, s.namespace, a, n+1)
-	if err != nil || refusal != "" {
-		return nil, refusal, err
+	r, refusal, err := bindReceiptRead(ctx, tx, s.namespace, a, n+1, nil)
+	if err != nil {
+		return nil, "", err
 	}
-	for _, run := range []RunID{r.OriginalRun, a.Intent.Run} {
-		root, e := compositionMembershipRoot(ctx, tx, run)
-		if e != nil {
-			return nil, "", e
-		}
-		if root == "" {
-			return nil, "unscoped", nil
-		}
+	if refusal != "" {
+		return refuse(refusal, "")
 	}
 	state, err := loadRun(ctx, tx, r.OriginalRun)
 	if err != nil {
 		return nil, "", err
 	}
 	if state.Projection.Status == "open" {
-		return nil, "original_open", nil
+		return refuse("original_open", "")
 	}
 	if failure := s.dispatchFailures[r.OriginalRun]; failure != nil {
 		return nil, "", failure
 	}
 	for o := range s.liveDispatch {
 		if o.source == r.OriginalRun {
-			return nil, "original_busy", nil
+			return refuse("original_busy", o.intent)
 		}
 	}
-	var pending int
-	err = tx.QueryRowContext(ctx, `SELECT count(*) FROM intents i WHERE i.subject=? AND i.generation=?
+	var pending string
+	err = tx.QueryRowContext(ctx, `SELECT i.id FROM intents i WHERE i.subject=? AND i.generation=?
 AND (EXISTS (SELECT 1 FROM adapter_results a WHERE a.intent_id=i.id) OR EXISTS (SELECT 1 FROM external_receipts e WHERE e.intent_id=i.id))
-AND NOT EXISTS(SELECT 1 FROM settlements st WHERE st.intent_id=i.id)`, r.OriginalRun.Subject, r.OriginalRun.Generation).Scan(&pending)
-	if err != nil {
-		return nil, "", err
+AND NOT EXISTS(SELECT 1 FROM settlements st WHERE st.intent_id=i.id) ORDER BY i.id LIMIT 1`, r.OriginalRun.Subject, r.OriginalRun.Generation).Scan(&pending)
+	if err == nil {
+		return refuse("original_unsettled", pending)
 	}
-	if pending != 0 {
-		return nil, "original_unsettled", nil
+	if !errors.Is(err, sql.ErrNoRows) {
+		return nil, "", err
 	}
 	resolver, err := loadRun(ctx, tx, a.Intent.Run)
 	if err != nil {
