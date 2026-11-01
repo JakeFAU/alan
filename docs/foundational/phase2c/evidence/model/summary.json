@@ -22,10 +22,11 @@
     },
     {
       "name": "held-packet-refresh",
-      "states": 107,
-      "edges": 160,
+      "states": 99,
+      "edges": 144,
       "sinks": 3,
       "outcomes": [
+        "final-duplicate-guard-failed",
         "not_found",
         "ordinary-continuation"
       ]
@@ -52,8 +53,8 @@
     },
     {
       "name": "retention-cut",
-      "states": 52,
-      "edges": 68,
+      "states": 49,
+      "edges": 63,
       "sinks": 2,
       "outcomes": [
         "ordinary-continuation"
@@ -169,8 +170,8 @@
     },
     {
       "name": "two-resolvers",
-      "states": 370,
-      "edges": 798,
+      "states": 394,
+      "edges": 862,
       "sinks": 4,
       "outcomes": [
         "ordinary-continuation"
@@ -178,19 +179,19 @@
     },
     {
       "name": "resolver-revocation-and-peer",
-      "states": 106,
-      "edges": 215,
+      "states": 98,
+      "edges": 201,
       "sinks": 3,
       "outcomes": [
         "adopted",
         "ordinary-continuation",
-        "resolver_closed"
+        "revoked-before-admission"
       ]
     }
   ],
   "totals": {
-    "states": 1122,
-    "edges": 1807,
+    "states": 1127,
+    "edges": 1836,
     "sinks": 37
   }
 }

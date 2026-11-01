@@ -8,6 +8,7 @@ EVIDENCE = Path(__file__).resolve().parents[2] / "docs/foundational/phase2c/evid
 CASES = {
     'post-Q packet': ('held-packet-refresh', lambda s: s['Quiescent'] and s['Held'] and not s['Applications']),
     'absence then found': ('held-packet-refresh', lambda s: s['Reads'][0]['Outcome']=='not_found' and s['Reads'][1]['Outcome']=='found' and s['Used']),
+    'final duplicate rejected': ('held-packet-refresh', lambda s: s['Rejected'] and not s['Used']),
     'lost absence': ('lost-negative-later-found', lambda s: s['Log'][0]['Status']=='not_found' and s['Log'][1]['Status']=='found' and s['Reads'][0]['Retained']==2 and s['Used']),
     'read without adopt': ('read-without-import', lambda s: s['Reads'][0]['Selected'] and s['Reads'][0]['Adoption']=='denied'),
     'unsupported adapter success': ('selected-error-policy', lambda s: s['Reads'][0]['Selected'] and s['Reads'][0]['Adoption']=='unsupported_policy'),
@@ -41,7 +42,7 @@ def trace(rows, predicate):
 
 if __name__ == '__main__':
     out = EVIDENCE/'model'
-    with gzip.open(EVIDENCE/'commands/model-export.json.gz') as f:
+    with gzip.open(EVIDENCE/'commands/model-reviewed-export.json.gz') as f:
         record = json.load(f)
     assert record['exit']==0
     raw = record['output'].encode()
