@@ -356,7 +356,7 @@ func runAuthority(t *testing.T, c authorityCase) {
 	world := worldAt(t, path)
 	local, _, _ := projection(final, "client", 1)
 	wantApps := 1
-	if c.Cut == "before-permission" || c.Cut == "budget" || c.Cut == "context" || (c.Cut == "after-permission" && c.Member) {
+	if c.Cut == "before-permission" || c.Cut == "budget" || c.Cut == "context" || c.Cut == "after-permission" {
 		wantApps = 0
 	}
 	if c.Cut == "retry" {
@@ -371,8 +371,8 @@ func runAuthority(t *testing.T, c authorityCase) {
 	if c.Target == "client" && c.Cut != "budget" && c.Cut != "context" && local.Status != "cancelled" {
 		t.Fatal("source closure missing", local)
 	}
-	if c.Cut == "relaunch" && world.Contacts != 2 {
-		t.Fatal("missing second POST", world)
+	if c.Cut == "relaunch" && world.Contacts != 1 {
+		t.Fatal("post-cancellation re-exposure reached endpoint", world)
 	}
 	if c.Cut == "retry" && (world.Contacts != 2 || world.Requests[0].Key == world.Requests[1].Key || world.Requests[1].Generation != 2) {
 		t.Fatal("retry identities", world)

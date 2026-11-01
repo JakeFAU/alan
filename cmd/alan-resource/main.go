@@ -29,14 +29,14 @@ func run() error {
 	token := flags.String("token", "", "process-start identity")
 	address := flags.String("listen", "127.0.0.1:0", "loopback listen address")
 	journalPath := flags.String("journal", "", "optional passive ingress/result JSONL journal")
-	responseMode := flags.String("response-mode", "normal", "normal or drop-after-commit")
+	responseMode := flags.String("response-mode", "normal", "normal, drop-after-commit, or finish-accepted")
 	if err := flags.Parse(os.Args[1:]); err != nil {
 		return err
 	}
 	if *path == "" || *token == "" || flags.NArg() != 0 {
 		return fmt.Errorf("db and token required")
 	}
-	if *responseMode != "normal" && *responseMode != "drop-after-commit" {
+	if *responseMode != "normal" && *responseMode != "drop-after-commit" && *responseMode != "finish-accepted" {
 		return fmt.Errorf("unsupported response mode")
 	}
 	var journal *os.File
@@ -128,11 +128,17 @@ func run() error {
 			return
 		}
 		event := boundary.Event{Boundary: "resource.ingress", Phase: "pre-apply", Subject: request.Subject, Generation: request.Generation, Epoch: request.Epoch, Sequence: request.Sequence, Intent: request.Key, Attempt: request.Authorization}
-		if err := boundary.Reached(boundary.Inherit(r.Context(), ctx), event); err != nil {
+		// In this opt-in world the accepted packet belongs to the endpoint.
+		// Client death cannot withdraw it after validation.
+		applyCtx := r.Context()
+		if *responseMode == "finish-accepted" {
+			applyCtx = ctx
+		}
+		if err := boundary.Reached(boundary.Inherit(applyCtx, ctx), event); err != nil {
 			http.Error(w, err.Error(), http.StatusServiceUnavailable)
 			return
 		}
-		receipt, err := resource.Apply(r.Context(), request)
+		receipt, err := resource.Apply(applyCtx, request)
 		if err != nil {
 			status := http.StatusBadRequest
 			if errors.Is(err, fixture.ErrConflict) {

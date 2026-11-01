@@ -5,6 +5,7 @@ package durabletest
 import (
 	"context"
 	"crypto/sha256"
+	"debug/buildinfo"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -108,14 +109,21 @@ func phaseProvenance(t *testing.T, cmd *exec.Cmd) map[string]any {
 	digest := fmt.Sprintf("%x", hash.Sum(nil))
 	phaseEmit(t, "sources-"+digest, sources)
 	build, _ := debug.ReadBuildInfo()
-	environment := map[string]string{"CGO_ENABLED": os.Getenv("CGO_ENABLED"), "GOCACHE": os.Getenv("GOCACHE"), "GOMODCACHE": os.Getenv("GOMODCACHE"), "GOPROXY": os.Getenv("GOPROXY"), "GOFLAGS": os.Getenv("GOFLAGS"), "ALAN_PHASE2_EVIDENCE": os.Getenv("ALAN_PHASE2_EVIDENCE")}
-	for _, entry := range cmd.Env {
-		key, value, found := strings.Cut(entry, "=")
-		if found && (strings.HasPrefix(key, "ALAN_PHASE2_") || key == "ALAN_BARRIER") {
+	binaryBuild, err := buildinfo.ReadFile(cmd.Path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	environment := map[string]string{}
+	// Cmd.Environ resolves inheritance and overrides. Whitelist reproducibility
+	// and fixture variables rather than serializing ambient credentials.
+	for _, entry := range cmd.Environ() {
+		key, value, _ := strings.Cut(entry, "=")
+		switch key {
+		case "PATH", "TMPDIR", "GOTOOLCHAIN", "CGO_ENABLED", "GOCACHE", "GOMODCACHE", "GOPROXY", "GOSUMDB", "GOFLAGS", "LC_ALL", "ALAN_BARRIER", "ALAN_PHASE2_EVIDENCE", "ALAN_PHASE2_CHILD", "ALAN_PHASE2_DB", "ALAN_PHASE2_ENDPOINT", "ALAN_PHASE2_MODE":
 			environment[key] = value
 		}
 	}
-	return map[string]any{"PID": cmd.Process.Pid, "cwd": cwd, "argv": cmd.Args, "executable_sha256": binaryHash(cmd.Path), "source_manifest_sha256": digest, "build_info": build, "environment": environment}
+	return map[string]any{"PID": cmd.Process.Pid, "cwd": cwd, "argv": cmd.Args, "executable_sha256": binaryHash(cmd.Path), "source_manifest_sha256": digest, "build_info": build, "child_build_info": binaryBuild, "environment": environment}
 }
 func phaseEmit(t *testing.T, suffix string, value any) {
 	t.Helper()
@@ -237,11 +245,15 @@ func phaseStopEndpoint(t *testing.T, c *child) {
 }
 func phaseProcess(t *testing.T, db, endpoint, mode string, filter *barrier) *child {
 	t.Helper()
+	return phaseTestProcess(t, db, endpoint, mode, filter, "TestPhase2ExecutorProcess", nil)
+}
+func phaseTestProcess(t *testing.T, db, endpoint, mode string, filter *barrier, testName string, setup func(*exec.Cmd)) *child {
+	t.Helper()
 	executable, err := os.Executable()
 	if err != nil {
 		t.Fatal(err)
 	}
-	cmd := exec.Command(executable, "-test.run=^TestPhase2ExecutorProcess$", "-test.v")
+	cmd := exec.Command(executable, "-test.run=^"+testName+"$", "-test.v")
 	cmd.Env = append(os.Environ(), "ALAN_PHASE2_CHILD=1", "ALAN_PHASE2_DB="+db, "ALAN_PHASE2_ENDPOINT="+endpoint, "ALAN_PHASE2_MODE="+mode)
 	config := barrier{}
 	if filter != nil {
@@ -267,6 +279,9 @@ func phaseProcess(t *testing.T, db, endpoint, mode string, filter *barrier) *chi
 	}
 	cmd.Stdout = log
 	cmd.Stderr = log
+	if setup != nil {
+		setup(cmd)
+	}
 	if err = cmd.Start(); err != nil {
 		t.Fatal(err)
 	}
