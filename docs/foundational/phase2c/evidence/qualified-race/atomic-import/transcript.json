@@ -1,0 +1,847 @@
+[
+  {
+    "Event": "endpoint ready",
+    "Detail": {
+      "PID": 47608,
+      "URL": "http://127.0.0.1:56878/phase2c/8f907da82b3ca528eae3944d0e78f326e37fcc1e28d226e6b127751500a71554/apply",
+      "LookupURL": "http://127.0.0.1:56878/phase2c/8f907da82b3ca528eae3944d0e78f326e37fcc1e28d226e6b127751500a71554/lookup",
+      "LedgerID": "8f907da82b3ca528eae3944d0e78f326e37fcc1e28d226e6b127751500a71554",
+      "Store": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/TestPhase2CProcessAccountingatomic-import4042366032/001/world.sqlite",
+      "Token": "phase2c-1793562242571379000"
+    }
+  },
+  {
+    "Event": "command",
+    "Detail": {
+      "Op": "open",
+      "Source": {
+        "Subject": "",
+        "Generation": 0
+      },
+      "PID": 47687,
+      "Namespace": "adf0a57d321b23d090aa0d81812f1c2bdfdf21bd7e10ccce359301b7da37932c",
+      "Resolver": {
+        "ID": {
+          "Subject": "resolver",
+          "Generation": 1
+        },
+        "ProgramID": "de68e312ac04a50a7a64bebb1c9d1e051c6bc190d8c7664c14dbbcf5eb5a6ed4",
+        "Epoch": 2,
+        "Sequence": 0,
+        "Revision": 1,
+        "Projection": {
+          "PC": 0,
+          "Data": {},
+          "Status": "open"
+        }
+      },
+      "Original": null,
+      "Report": null
+    }
+  },
+  {
+    "Event": "command",
+    "Detail": {
+      "Op": "run",
+      "Source": {
+        "Subject": "",
+        "Generation": 0
+      },
+      "PID": 47687,
+      "Namespace": "adf0a57d321b23d090aa0d81812f1c2bdfdf21bd7e10ccce359301b7da37932c",
+      "Resolver": {
+        "ID": {
+          "Subject": "resolver",
+          "Generation": 1
+        },
+        "ProgramID": "de68e312ac04a50a7a64bebb1c9d1e051c6bc190d8c7664c14dbbcf5eb5a6ed4",
+        "Epoch": 2,
+        "Sequence": 0,
+        "Revision": 1,
+        "Projection": {
+          "PC": 0,
+          "Data": {},
+          "Status": "open"
+        }
+      },
+      "Original": null,
+      "Report": null
+    }
+  },
+  {
+    "Event": "barrier",
+    "Detail": {
+      "Scenario": "TestPhase2CProcessAccounting/atomic-import",
+      "Token": "phase2-runner-1793562242955844000",
+      "Store": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/TestPhase2CProcessAccountingatomic-import4042366032/001/local.sqlite",
+      "Boundary": "adapter.response",
+      "Phase": "pre-record",
+      "Subject": "d3514af20545b946cdaa1745e35a60148084a62d5c25f81a6ef31b7a71f9befc",
+      "PID": 47687,
+      "Generation": 1,
+      "Epoch": 1,
+      "Sequence": 2,
+      "Intent": "[\"d3514af20545b946cdaa1745e35a60148084a62d5c25f81a6ef31b7a71f9befc\",1,2,0]",
+      "Attempt": "[\"authorization\",\"[\\\"d3514af20545b946cdaa1745e35a60148084a62d5c25f81a6ef31b7a71f9befc\\\",1,2,0]\"]",
+      "InFlight": [
+        "[\"authorization\",\"[\\\"d3514af20545b946cdaa1745e35a60148084a62d5c25f81a6ef31b7a71f9befc\\\",1,2,0]\"]"
+      ]
+    }
+  },
+  {
+    "Event": "command",
+    "Detail": {
+      "Op": "closed",
+      "Source": {
+        "Subject": "d3514af20545b946cdaa1745e35a60148084a62d5c25f81a6ef31b7a71f9befc",
+        "Generation": 1
+      },
+      "PID": 47687,
+      "Namespace": "adf0a57d321b23d090aa0d81812f1c2bdfdf21bd7e10ccce359301b7da37932c",
+      "Resolver": {
+        "ID": {
+          "Subject": "resolver",
+          "Generation": 1
+        },
+        "ProgramID": "de68e312ac04a50a7a64bebb1c9d1e051c6bc190d8c7664c14dbbcf5eb5a6ed4",
+        "Epoch": 2,
+        "Sequence": 2,
+        "Revision": 1,
+        "Projection": {
+          "PC": 2,
+          "Data": {
+            "received": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"d3514af20545b946cdaa1745e35a60148084a62d5c25f81a6ef31b7a71f9befc\",1,2,0]",
+              "Flag": false
+            }
+          },
+          "Status": "open"
+        }
+      },
+      "Original": {
+        "ID": {
+          "Subject": "d3514af20545b946cdaa1745e35a60148084a62d5c25f81a6ef31b7a71f9befc",
+          "Generation": 1
+        },
+        "ProgramID": "a0a2215e6b28eae5da4caa78ddb76c9ce507fd1dd2ded9322da81d9a7219f837",
+        "Epoch": 1,
+        "Sequence": 6,
+        "Revision": 1,
+        "Projection": {
+          "PC": 5,
+          "Data": {
+            "echo": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"d3514af20545b946cdaa1745e35a60148084a62d5c25f81a6ef31b7a71f9befc\",1,2,0]",
+              "Flag": false
+            },
+            "original": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"d3514af20545b946cdaa1745e35a60148084a62d5c25f81a6ef31b7a71f9befc\",1,2,0]",
+              "Flag": false
+            }
+          },
+          "Status": "succeeded"
+        }
+      },
+      "Report": null
+    }
+  },
+  {
+    "Event": "SIGKILL",
+    "Detail": {
+      "Binary": "f433b36e5a18e262de842fccdde57510b895d16c294cd7b75952351edd8ca358",
+      "PID": 47687,
+      "Wait": "signal: killed"
+    }
+  },
+  {
+    "Event": "snapshot",
+    "Detail": "original-cut"
+  },
+  {
+    "Event": "snapshot",
+    "Detail": "original-cut-replayed"
+  },
+  {
+    "Event": "replay",
+    "Detail": {
+      "Cut": "original-cut",
+      "HistoryCount": 15
+    }
+  },
+  {
+    "Event": "command",
+    "Detail": {
+      "Op": "open",
+      "Source": {
+        "Subject": "",
+        "Generation": 0
+      },
+      "PID": 47965,
+      "Namespace": "adf0a57d321b23d090aa0d81812f1c2bdfdf21bd7e10ccce359301b7da37932c",
+      "Resolver": {
+        "ID": {
+          "Subject": "resolver",
+          "Generation": 1
+        },
+        "ProgramID": "de68e312ac04a50a7a64bebb1c9d1e051c6bc190d8c7664c14dbbcf5eb5a6ed4",
+        "Epoch": 3,
+        "Sequence": 2,
+        "Revision": 1,
+        "Projection": {
+          "PC": 2,
+          "Data": {
+            "received": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"d3514af20545b946cdaa1745e35a60148084a62d5c25f81a6ef31b7a71f9befc\",1,2,0]",
+              "Flag": false
+            }
+          },
+          "Status": "open"
+        }
+      },
+      "Original": null,
+      "Report": null
+    }
+  },
+  {
+    "Event": "command",
+    "Detail": {
+      "Op": "Q",
+      "Source": {
+        "Subject": "d3514af20545b946cdaa1745e35a60148084a62d5c25f81a6ef31b7a71f9befc",
+        "Generation": 1
+      },
+      "PID": 47965,
+      "Namespace": "adf0a57d321b23d090aa0d81812f1c2bdfdf21bd7e10ccce359301b7da37932c",
+      "Resolver": {
+        "ID": {
+          "Subject": "resolver",
+          "Generation": 1
+        },
+        "ProgramID": "de68e312ac04a50a7a64bebb1c9d1e051c6bc190d8c7664c14dbbcf5eb5a6ed4",
+        "Epoch": 3,
+        "Sequence": 2,
+        "Revision": 1,
+        "Projection": {
+          "PC": 2,
+          "Data": {
+            "received": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"d3514af20545b946cdaa1745e35a60148084a62d5c25f81a6ef31b7a71f9befc\",1,2,0]",
+              "Flag": false
+            }
+          },
+          "Status": "open"
+        }
+      },
+      "Original": {
+        "ID": {
+          "Subject": "d3514af20545b946cdaa1745e35a60148084a62d5c25f81a6ef31b7a71f9befc",
+          "Generation": 1
+        },
+        "ProgramID": "a0a2215e6b28eae5da4caa78ddb76c9ce507fd1dd2ded9322da81d9a7219f837",
+        "Epoch": 1,
+        "Sequence": 6,
+        "Revision": 1,
+        "Projection": {
+          "PC": 5,
+          "Data": {
+            "echo": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"d3514af20545b946cdaa1745e35a60148084a62d5c25f81a6ef31b7a71f9befc\",1,2,0]",
+              "Flag": false
+            },
+            "original": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"d3514af20545b946cdaa1745e35a60148084a62d5c25f81a6ef31b7a71f9befc\",1,2,0]",
+              "Flag": false
+            }
+          },
+          "Status": "succeeded"
+        }
+      },
+      "Report": null
+    }
+  },
+  {
+    "Event": "command",
+    "Detail": {
+      "Op": "start",
+      "Source": {
+        "Subject": "",
+        "Generation": 0
+      },
+      "PID": 47965,
+      "Namespace": "adf0a57d321b23d090aa0d81812f1c2bdfdf21bd7e10ccce359301b7da37932c",
+      "Resolver": {
+        "ID": {
+          "Subject": "resolver",
+          "Generation": 1
+        },
+        "ProgramID": "de68e312ac04a50a7a64bebb1c9d1e051c6bc190d8c7664c14dbbcf5eb5a6ed4",
+        "Epoch": 3,
+        "Sequence": 2,
+        "Revision": 1,
+        "Projection": {
+          "PC": 2,
+          "Data": {
+            "received": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"d3514af20545b946cdaa1745e35a60148084a62d5c25f81a6ef31b7a71f9befc\",1,2,0]",
+              "Flag": false
+            }
+          },
+          "Status": "open"
+        }
+      },
+      "Original": null,
+      "Report": null
+    }
+  },
+  {
+    "Event": "command",
+    "Detail": {
+      "Op": "run",
+      "Source": {
+        "Subject": "",
+        "Generation": 0
+      },
+      "PID": 47965,
+      "Namespace": "adf0a57d321b23d090aa0d81812f1c2bdfdf21bd7e10ccce359301b7da37932c",
+      "Resolver": {
+        "ID": {
+          "Subject": "resolver",
+          "Generation": 1
+        },
+        "ProgramID": "de68e312ac04a50a7a64bebb1c9d1e051c6bc190d8c7664c14dbbcf5eb5a6ed4",
+        "Epoch": 3,
+        "Sequence": 2,
+        "Revision": 1,
+        "Projection": {
+          "PC": 2,
+          "Data": {
+            "received": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"d3514af20545b946cdaa1745e35a60148084a62d5c25f81a6ef31b7a71f9befc\",1,2,0]",
+              "Flag": false
+            }
+          },
+          "Status": "open"
+        }
+      },
+      "Original": null,
+      "Report": null
+    }
+  },
+  {
+    "Event": "barrier",
+    "Detail": {
+      "Scenario": "TestPhase2CProcessAccounting/atomic-import",
+      "Token": "phase2-runner-1793562245920484000",
+      "Store": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/TestPhase2CProcessAccountingatomic-import4042366032/001/local.sqlite",
+      "Boundary": "adapter.result-recorded",
+      "Phase": "pre-settlement",
+      "Subject": "resolver",
+      "PID": 47965,
+      "Generation": 1,
+      "Epoch": 3,
+      "Sequence": 4,
+      "Intent": "[\"resolver\",1,4,0]",
+      "Attempt": "[\"authorization\",\"[\\\"resolver\\\",1,4,0]\"]",
+      "InFlight": null
+    }
+  },
+  {
+    "Event": "SIGKILL",
+    "Detail": {
+      "Binary": "f433b36e5a18e262de842fccdde57510b895d16c294cd7b75952351edd8ca358",
+      "PID": 47965,
+      "Wait": "signal: killed"
+    }
+  },
+  {
+    "Event": "snapshot",
+    "Detail": "atomic-committed"
+  },
+  {
+    "Event": "snapshot",
+    "Detail": "atomic-committed-replayed"
+  },
+  {
+    "Event": "replay",
+    "Detail": {
+      "Cut": "atomic-committed",
+      "HistoryCount": 17
+    }
+  },
+  {
+    "Event": "command",
+    "Detail": {
+      "Op": "open",
+      "Source": {
+        "Subject": "",
+        "Generation": 0
+      },
+      "PID": 48027,
+      "Namespace": "adf0a57d321b23d090aa0d81812f1c2bdfdf21bd7e10ccce359301b7da37932c",
+      "Resolver": {
+        "ID": {
+          "Subject": "resolver",
+          "Generation": 1
+        },
+        "ProgramID": "de68e312ac04a50a7a64bebb1c9d1e051c6bc190d8c7664c14dbbcf5eb5a6ed4",
+        "Epoch": 4,
+        "Sequence": 4,
+        "Revision": 1,
+        "Projection": {
+          "PC": 4,
+          "Data": {
+            "query1": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"resolver\",1,4,0]",
+              "Flag": false
+            },
+            "received": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"d3514af20545b946cdaa1745e35a60148084a62d5c25f81a6ef31b7a71f9befc\",1,2,0]",
+              "Flag": false
+            }
+          },
+          "Status": "open"
+        }
+      },
+      "Original": null,
+      "Report": null
+    }
+  },
+  {
+    "Event": "command",
+    "Detail": {
+      "Op": "Q",
+      "Source": {
+        "Subject": "d3514af20545b946cdaa1745e35a60148084a62d5c25f81a6ef31b7a71f9befc",
+        "Generation": 1
+      },
+      "PID": 48027,
+      "Namespace": "adf0a57d321b23d090aa0d81812f1c2bdfdf21bd7e10ccce359301b7da37932c",
+      "Resolver": {
+        "ID": {
+          "Subject": "resolver",
+          "Generation": 1
+        },
+        "ProgramID": "de68e312ac04a50a7a64bebb1c9d1e051c6bc190d8c7664c14dbbcf5eb5a6ed4",
+        "Epoch": 4,
+        "Sequence": 4,
+        "Revision": 1,
+        "Projection": {
+          "PC": 4,
+          "Data": {
+            "query1": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"resolver\",1,4,0]",
+              "Flag": false
+            },
+            "received": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"d3514af20545b946cdaa1745e35a60148084a62d5c25f81a6ef31b7a71f9befc\",1,2,0]",
+              "Flag": false
+            }
+          },
+          "Status": "open"
+        }
+      },
+      "Original": {
+        "ID": {
+          "Subject": "d3514af20545b946cdaa1745e35a60148084a62d5c25f81a6ef31b7a71f9befc",
+          "Generation": 1
+        },
+        "ProgramID": "a0a2215e6b28eae5da4caa78ddb76c9ce507fd1dd2ded9322da81d9a7219f837",
+        "Epoch": 1,
+        "Sequence": 6,
+        "Revision": 1,
+        "Projection": {
+          "PC": 5,
+          "Data": {
+            "echo": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"d3514af20545b946cdaa1745e35a60148084a62d5c25f81a6ef31b7a71f9befc\",1,2,0]",
+              "Flag": false
+            },
+            "original": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"d3514af20545b946cdaa1745e35a60148084a62d5c25f81a6ef31b7a71f9befc\",1,2,0]",
+              "Flag": false
+            }
+          },
+          "Status": "succeeded"
+        }
+      },
+      "Report": null
+    }
+  },
+  {
+    "Event": "command",
+    "Detail": {
+      "Op": "run",
+      "Source": {
+        "Subject": "",
+        "Generation": 0
+      },
+      "PID": 48027,
+      "Namespace": "adf0a57d321b23d090aa0d81812f1c2bdfdf21bd7e10ccce359301b7da37932c",
+      "Resolver": {
+        "ID": {
+          "Subject": "resolver",
+          "Generation": 1
+        },
+        "ProgramID": "de68e312ac04a50a7a64bebb1c9d1e051c6bc190d8c7664c14dbbcf5eb5a6ed4",
+        "Epoch": 4,
+        "Sequence": 4,
+        "Revision": 1,
+        "Projection": {
+          "PC": 4,
+          "Data": {
+            "query1": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"resolver\",1,4,0]",
+              "Flag": false
+            },
+            "received": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"d3514af20545b946cdaa1745e35a60148084a62d5c25f81a6ef31b7a71f9befc\",1,2,0]",
+              "Flag": false
+            }
+          },
+          "Status": "open"
+        }
+      },
+      "Original": null,
+      "Report": null
+    }
+  },
+  {
+    "Event": "command",
+    "Detail": {
+      "Op": "finish",
+      "Source": {
+        "Subject": "",
+        "Generation": 0
+      },
+      "PID": 48027,
+      "Namespace": "adf0a57d321b23d090aa0d81812f1c2bdfdf21bd7e10ccce359301b7da37932c",
+      "Resolver": {
+        "ID": {
+          "Subject": "resolver",
+          "Generation": 1
+        },
+        "ProgramID": "de68e312ac04a50a7a64bebb1c9d1e051c6bc190d8c7664c14dbbcf5eb5a6ed4",
+        "Epoch": 4,
+        "Sequence": 8,
+        "Revision": 1,
+        "Projection": {
+          "PC": 7,
+          "Data": {
+            "query1": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"resolver\",1,4,0]",
+              "Flag": false
+            },
+            "query1_adopted": {
+              "Kind": "bool",
+              "Number": 0,
+              "Text": "",
+              "Flag": true
+            },
+            "query1_adoption": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "adopted",
+              "Flag": false
+            },
+            "query1_disposition": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "validated",
+              "Flag": false
+            },
+            "query1_mutation": {
+              "Kind": "int",
+              "Number": 1,
+              "Text": "",
+              "Flag": false
+            },
+            "query1_status": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "found",
+              "Flag": false
+            },
+            "query1_target": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"d3514af20545b946cdaa1745e35a60148084a62d5c25f81a6ef31b7a71f9befc\",1,2,0]",
+              "Flag": false
+            },
+            "query1_total": {
+              "Kind": "int",
+              "Number": 1,
+              "Text": "",
+              "Flag": false
+            },
+            "query1_valid": {
+              "Kind": "bool",
+              "Number": 0,
+              "Text": "",
+              "Flag": true
+            },
+            "received": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"d3514af20545b946cdaa1745e35a60148084a62d5c25f81a6ef31b7a71f9befc\",1,2,0]",
+              "Flag": false
+            },
+            "report_ack": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"d3514af20545b946cdaa1745e35a60148084a62d5c25f81a6ef31b7a71f9befc\",1,2,0]",
+              "Flag": false
+            }
+          },
+          "Status": "succeeded"
+        }
+      },
+      "Original": null,
+      "Report": {
+        "Steps": 18,
+        "Dispatches": 4,
+        "Quiescent": true,
+        "OpenRuns": [],
+        "UnresolvedIntents": [],
+        "PendingDeliveries": [],
+        "UnknownExternal": [],
+        "UnknownAdapters": [],
+        "Roots": [
+          {
+            "RootID": "749043cbd1ac6c5e9cde4e6a15839780fbead8cfa5ec9216f12e71bf8aaf6994",
+            "Run": {
+              "Subject": "parent",
+              "Generation": 1
+            },
+            "LocalStatus": "succeeded",
+            "Limits": {
+              "MaxInvocations": 1,
+              "MaxCreatedRuns": 1,
+              "MaxDepth": 1,
+              "MaxEffects": 1,
+              "MaxInFlight": 1
+            },
+            "Charges": {
+              "RootID": "749043cbd1ac6c5e9cde4e6a15839780fbead8cfa5ec9216f12e71bf8aaf6994",
+              "OperationID": "",
+              "Kind": "",
+              "Invocations": 1,
+              "CreatedRuns": 1,
+              "Effects": 1,
+              "DecisionOrder": 0
+            },
+            "Outcome": {
+              "ID": "01139a04da3a6d7f6a20c5af7c64f33214890f1d4027560a6a1f16889b092639",
+              "InvocationID": "root:749043cbd1ac6c5e9cde4e6a15839780fbead8cfa5ec9216f12e71bf8aaf6994",
+              "OperationID": "root:749043cbd1ac6c5e9cde4e6a15839780fbead8cfa5ec9216f12e71bf8aaf6994",
+              "TemplateID": "",
+              "Caller": {
+                "Subject": "parent",
+                "Generation": 1
+              },
+              "Status": "succeeded",
+              "Reason": "member_succeeded",
+              "ResponsePresent": false,
+              "Response": null,
+              "DecisionOrder": 58
+            },
+            "Pending": "",
+            "PendingInvocations": [],
+            "UnresolvedExternal": [],
+            "UnknownExternal": []
+          },
+          {
+            "RootID": "db462aa600c1626ceb46fd57aed372edd952206d7c82f19ceaa70869fb43df8d",
+            "Run": {
+              "Subject": "resolver",
+              "Generation": 1
+            },
+            "LocalStatus": "succeeded",
+            "Limits": {
+              "MaxInvocations": 0,
+              "MaxCreatedRuns": 0,
+              "MaxDepth": 0,
+              "MaxEffects": 1,
+              "MaxInFlight": 1
+            },
+            "Charges": {
+              "RootID": "db462aa600c1626ceb46fd57aed372edd952206d7c82f19ceaa70869fb43df8d",
+              "OperationID": "",
+              "Kind": "",
+              "Invocations": 0,
+              "CreatedRuns": 0,
+              "Effects": 1,
+              "DecisionOrder": 0
+            },
+            "Outcome": {
+              "ID": "606436814028af5d546647ade53ac562ac8243a449cb7ac64b26317457476aac",
+              "InvocationID": "root:db462aa600c1626ceb46fd57aed372edd952206d7c82f19ceaa70869fb43df8d",
+              "OperationID": "root:db462aa600c1626ceb46fd57aed372edd952206d7c82f19ceaa70869fb43df8d",
+              "TemplateID": "",
+              "Caller": {
+                "Subject": "resolver",
+                "Generation": 1
+              },
+              "Status": "succeeded",
+              "Reason": "member_succeeded",
+              "ResponsePresent": false,
+              "Response": null,
+              "DecisionOrder": 46
+            },
+            "Pending": "",
+            "PendingInvocations": [],
+            "UnresolvedExternal": [],
+            "UnknownExternal": []
+          }
+        ],
+        "RejectedAdmissions": 0
+      }
+    }
+  },
+  {
+    "Event": "command",
+    "Detail": {
+      "Op": "exit",
+      "Source": {
+        "Subject": "",
+        "Generation": 0
+      },
+      "PID": 48027,
+      "Namespace": "adf0a57d321b23d090aa0d81812f1c2bdfdf21bd7e10ccce359301b7da37932c",
+      "Resolver": {
+        "ID": {
+          "Subject": "resolver",
+          "Generation": 1
+        },
+        "ProgramID": "de68e312ac04a50a7a64bebb1c9d1e051c6bc190d8c7664c14dbbcf5eb5a6ed4",
+        "Epoch": 4,
+        "Sequence": 8,
+        "Revision": 1,
+        "Projection": {
+          "PC": 7,
+          "Data": {
+            "query1": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"resolver\",1,4,0]",
+              "Flag": false
+            },
+            "query1_adopted": {
+              "Kind": "bool",
+              "Number": 0,
+              "Text": "",
+              "Flag": true
+            },
+            "query1_adoption": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "adopted",
+              "Flag": false
+            },
+            "query1_disposition": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "validated",
+              "Flag": false
+            },
+            "query1_mutation": {
+              "Kind": "int",
+              "Number": 1,
+              "Text": "",
+              "Flag": false
+            },
+            "query1_status": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "found",
+              "Flag": false
+            },
+            "query1_target": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"d3514af20545b946cdaa1745e35a60148084a62d5c25f81a6ef31b7a71f9befc\",1,2,0]",
+              "Flag": false
+            },
+            "query1_total": {
+              "Kind": "int",
+              "Number": 1,
+              "Text": "",
+              "Flag": false
+            },
+            "query1_valid": {
+              "Kind": "bool",
+              "Number": 0,
+              "Text": "",
+              "Flag": true
+            },
+            "received": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"d3514af20545b946cdaa1745e35a60148084a62d5c25f81a6ef31b7a71f9befc\",1,2,0]",
+              "Flag": false
+            },
+            "report_ack": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"d3514af20545b946cdaa1745e35a60148084a62d5c25f81a6ef31b7a71f9befc\",1,2,0]",
+              "Flag": false
+            }
+          },
+          "Status": "succeeded"
+        }
+      },
+      "Original": null,
+      "Report": null
+    }
+  },
+  {
+    "Event": "snapshot",
+    "Detail": "final"
+  },
+  {
+    "Event": "snapshot",
+    "Detail": "final-replayed"
+  },
+  {
+    "Event": "replay",
+    "Detail": {
+      "Cut": "final",
+      "HistoryCount": 35
+    }
+  }
+]

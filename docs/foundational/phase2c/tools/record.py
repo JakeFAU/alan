@@ -43,7 +43,7 @@ def main():
     inputs = {}
     for name in sorted(set(paths)):
         p = source_root / name
-        if (name.endswith(('.go', '.mod', '.sum', '.c', '.h')) or (name.startswith('docs/foundational/phase2c/') and name.endswith('.py'))
+        if (name.endswith(('.go', '.mod', '.sum', '.c', '.h')) or (name.startswith(('docs/foundational/phase2c/', 'research/reconciliation/', 'examples/reconciliation/')) and name.endswith('.py'))
                 or name in {'paper/alan-dissertation.tex', 'paper/alan-dissertation.md', 'paper/references.bib'}) and p.is_file():
             inputs[name] = digest(p)
     args.out.mkdir(parents=True, exist_ok=True)

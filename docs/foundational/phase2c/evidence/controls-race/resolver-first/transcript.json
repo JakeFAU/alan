@@ -1,0 +1,260 @@
+[
+  {
+    "Event": "endpoint ready",
+    "Detail": {
+      "PID": 39018,
+      "URL": "http://127.0.0.1:55539/phase2c/c42cc448618b86afc1c8573ba793a213c2eff40d9473d3379e52085e38db73b9/apply",
+      "LookupURL": "http://127.0.0.1:55539/phase2c/c42cc448618b86afc1c8573ba793a213c2eff40d9473d3379e52085e38db73b9/lookup",
+      "LedgerID": "c42cc448618b86afc1c8573ba793a213c2eff40d9473d3379e52085e38db73b9",
+      "Store": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/TestPhase2CCompetingResolversresolver-first2402009576/001/world.sqlite",
+      "Token": "phase2c-1793561862200671000"
+    }
+  },
+  {
+    "Event": "command",
+    "Detail": {
+      "Op": "open",
+      "Source": {
+        "Subject": "",
+        "Generation": 0
+      },
+      "PID": 39019,
+      "Namespace": "7f4b09623eda49cc57447edeecd493f20b3a66db816ba1759768973a79c02564",
+      "Resolver": {
+        "ID": {
+          "Subject": "resolver",
+          "Generation": 1
+        },
+        "ProgramID": "de68e312ac04a50a7a64bebb1c9d1e051c6bc190d8c7664c14dbbcf5eb5a6ed4",
+        "Epoch": 2,
+        "Sequence": 0,
+        "Revision": 1,
+        "Projection": {
+          "PC": 0,
+          "Data": {},
+          "Status": "open"
+        }
+      },
+      "Original": null,
+      "Report": null
+    }
+  },
+  {
+    "Event": "command",
+    "Detail": {
+      "Op": "run",
+      "Source": {
+        "Subject": "",
+        "Generation": 0
+      },
+      "PID": 39019,
+      "Namespace": "7f4b09623eda49cc57447edeecd493f20b3a66db816ba1759768973a79c02564",
+      "Resolver": {
+        "ID": {
+          "Subject": "resolver",
+          "Generation": 1
+        },
+        "ProgramID": "de68e312ac04a50a7a64bebb1c9d1e051c6bc190d8c7664c14dbbcf5eb5a6ed4",
+        "Epoch": 2,
+        "Sequence": 0,
+        "Revision": 1,
+        "Projection": {
+          "PC": 0,
+          "Data": {},
+          "Status": "open"
+        }
+      },
+      "Original": null,
+      "Report": null
+    }
+  },
+  {
+    "Event": "barrier",
+    "Detail": {
+      "Scenario": "TestPhase2CCompetingResolvers/resolver-first",
+      "Token": "phase2-runner-1793561862404804000",
+      "Store": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/TestPhase2CCompetingResolversresolver-first2402009576/001/local.sqlite",
+      "Boundary": "adapter.response",
+      "Phase": "pre-record",
+      "Subject": "2dbf72e15f03152e8dff3e843cb3194cc09501326b791f797158831dbb5dd1e9",
+      "PID": 39019,
+      "Generation": 1,
+      "Epoch": 1,
+      "Sequence": 2,
+      "Intent": "[\"2dbf72e15f03152e8dff3e843cb3194cc09501326b791f797158831dbb5dd1e9\",1,2,0]",
+      "Attempt": "[\"authorization\",\"[\\\"2dbf72e15f03152e8dff3e843cb3194cc09501326b791f797158831dbb5dd1e9\\\",1,2,0]\"]",
+      "InFlight": [
+        "[\"authorization\",\"[\\\"2dbf72e15f03152e8dff3e843cb3194cc09501326b791f797158831dbb5dd1e9\\\",1,2,0]\"]"
+      ]
+    }
+  },
+  {
+    "Event": "command",
+    "Detail": {
+      "Op": "closed",
+      "Source": {
+        "Subject": "2dbf72e15f03152e8dff3e843cb3194cc09501326b791f797158831dbb5dd1e9",
+        "Generation": 1
+      },
+      "PID": 39019,
+      "Namespace": "7f4b09623eda49cc57447edeecd493f20b3a66db816ba1759768973a79c02564",
+      "Resolver": {
+        "ID": {
+          "Subject": "resolver",
+          "Generation": 1
+        },
+        "ProgramID": "de68e312ac04a50a7a64bebb1c9d1e051c6bc190d8c7664c14dbbcf5eb5a6ed4",
+        "Epoch": 2,
+        "Sequence": 2,
+        "Revision": 1,
+        "Projection": {
+          "PC": 2,
+          "Data": {
+            "received": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"2dbf72e15f03152e8dff3e843cb3194cc09501326b791f797158831dbb5dd1e9\",1,2,0]",
+              "Flag": false
+            }
+          },
+          "Status": "open"
+        }
+      },
+      "Original": {
+        "ID": {
+          "Subject": "2dbf72e15f03152e8dff3e843cb3194cc09501326b791f797158831dbb5dd1e9",
+          "Generation": 1
+        },
+        "ProgramID": "a0a2215e6b28eae5da4caa78ddb76c9ce507fd1dd2ded9322da81d9a7219f837",
+        "Epoch": 1,
+        "Sequence": 6,
+        "Revision": 1,
+        "Projection": {
+          "PC": 5,
+          "Data": {
+            "echo": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"2dbf72e15f03152e8dff3e843cb3194cc09501326b791f797158831dbb5dd1e9\",1,2,0]",
+              "Flag": false
+            },
+            "original": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"2dbf72e15f03152e8dff3e843cb3194cc09501326b791f797158831dbb5dd1e9\",1,2,0]",
+              "Flag": false
+            }
+          },
+          "Status": "succeeded"
+        }
+      },
+      "Report": null
+    }
+  },
+  {
+    "Event": "SIGKILL",
+    "Detail": {
+      "Binary": "8b231ff629312218d7a9fa6196aae3a5896ef7733e8defc37ea15c42b0ba612d",
+      "PID": 39019,
+      "Wait": "signal: killed"
+    }
+  },
+  {
+    "Event": "snapshot",
+    "Detail": "original-cut"
+  },
+  {
+    "Event": "snapshot",
+    "Detail": "original-cut-replayed"
+  },
+  {
+    "Event": "replay",
+    "Detail": {
+      "Cut": "original-cut",
+      "HistoryCount": 15
+    }
+  },
+  {
+    "Event": "successor original Q",
+    "Detail": {
+      "Namespace": "7f4b09623eda49cc57447edeecd493f20b3a66db816ba1759768973a79c02564",
+      "PID": 38508,
+      "Source": {
+        "Subject": "2dbf72e15f03152e8dff3e843cb3194cc09501326b791f797158831dbb5dd1e9",
+        "Generation": 1
+      }
+    }
+  },
+  {
+    "Event": "two held responses",
+    "Detail": [
+      {
+        "Scenario": "",
+        "Token": "",
+        "Store": "",
+        "Boundary": "adapter.response",
+        "Phase": "pre-record",
+        "Subject": "resolver",
+        "PID": 0,
+        "Generation": 1,
+        "Epoch": 3,
+        "Sequence": 4,
+        "Intent": "[\"resolver\",1,4,0]",
+        "Attempt": "[\"authorization\",\"[\\\"resolver\\\",1,4,0]\"]",
+        "InFlight": null
+      },
+      {
+        "Scenario": "",
+        "Token": "",
+        "Store": "",
+        "Boundary": "adapter.response",
+        "Phase": "pre-record",
+        "Subject": "twin",
+        "PID": 0,
+        "Generation": 1,
+        "Epoch": 3,
+        "Sequence": 2,
+        "Intent": "[\"twin\",1,2,0]",
+        "Attempt": "[\"authorization\",\"[\\\"twin\\\",1,2,0]\"]",
+        "InFlight": null
+      }
+    ]
+  },
+  {
+    "Event": "snapshot",
+    "Detail": "both-responses"
+  },
+  {
+    "Event": "winning response settled",
+    "Detail": {
+      "Scenario": "",
+      "Token": "",
+      "Store": "",
+      "Boundary": "adapter.settled",
+      "Phase": "pre-consumption",
+      "Subject": "resolver",
+      "PID": 0,
+      "Generation": 1,
+      "Epoch": 3,
+      "Sequence": 4,
+      "Intent": "[\"resolver\",1,4,0]",
+      "Attempt": "[\"authorization\",\"[\\\"resolver\\\",1,4,0]\"]",
+      "InFlight": null
+    }
+  },
+  {
+    "Event": "snapshot",
+    "Detail": "final"
+  },
+  {
+    "Event": "snapshot",
+    "Detail": "final-replayed"
+  },
+  {
+    "Event": "replay",
+    "Detail": {
+      "Cut": "final",
+      "HistoryCount": 39
+    }
+  }
+]

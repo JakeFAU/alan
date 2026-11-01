@@ -1,0 +1,276 @@
+[
+  {
+    "Event": "endpoint ready",
+    "Detail": {
+      "PID": 37048,
+      "URL": "http://127.0.0.1:55325/phase2c/81270ce6585beac4ccec3254e010dce29c8f96cd91804eea1a418a4cbbfb5c77/apply",
+      "LookupURL": "http://127.0.0.1:55325/phase2c/81270ce6585beac4ccec3254e010dce29c8f96cd91804eea1a418a4cbbfb5c77/lookup",
+      "LedgerID": "81270ce6585beac4ccec3254e010dce29c8f96cd91804eea1a418a4cbbfb5c77",
+      "Store": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/TestPhase2CResolverAuthoritysticky-original-settlement719613740/001/world.sqlite",
+      "Token": "phase2c-1793561783164349000"
+    }
+  },
+  {
+    "Event": "command",
+    "Detail": {
+      "Op": "open",
+      "Source": {
+        "Subject": "",
+        "Generation": 0
+      },
+      "PID": 37049,
+      "Namespace": "eaaba4d6122f21c854ca993951ddfd7e4bd4f7c8240c3c67d39547463a28eeac",
+      "Resolver": {
+        "ID": {
+          "Subject": "resolver",
+          "Generation": 1
+        },
+        "ProgramID": "de68e312ac04a50a7a64bebb1c9d1e051c6bc190d8c7664c14dbbcf5eb5a6ed4",
+        "Epoch": 2,
+        "Sequence": 0,
+        "Revision": 1,
+        "Projection": {
+          "PC": 0,
+          "Data": {},
+          "Status": "open"
+        }
+      },
+      "Original": null,
+      "Report": null
+    }
+  },
+  {
+    "Event": "command",
+    "Detail": {
+      "Op": "run",
+      "Source": {
+        "Subject": "",
+        "Generation": 0
+      },
+      "PID": 37049,
+      "Namespace": "eaaba4d6122f21c854ca993951ddfd7e4bd4f7c8240c3c67d39547463a28eeac",
+      "Resolver": {
+        "ID": {
+          "Subject": "resolver",
+          "Generation": 1
+        },
+        "ProgramID": "de68e312ac04a50a7a64bebb1c9d1e051c6bc190d8c7664c14dbbcf5eb5a6ed4",
+        "Epoch": 2,
+        "Sequence": 0,
+        "Revision": 1,
+        "Projection": {
+          "PC": 0,
+          "Data": {},
+          "Status": "open"
+        }
+      },
+      "Original": null,
+      "Report": null
+    }
+  },
+  {
+    "Event": "barrier",
+    "Detail": {
+      "Scenario": "TestPhase2CResolverAuthority/sticky-original-settlement",
+      "Token": "phase2-runner-1793561783354640000",
+      "Store": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/TestPhase2CResolverAuthoritysticky-original-settlement719613740/001/local.sqlite",
+      "Boundary": "adapter.response",
+      "Phase": "pre-record",
+      "Subject": "787449229b8bfe359e59cd791a220dde59938a823542c186211950620672cbdf",
+      "PID": 37049,
+      "Generation": 1,
+      "Epoch": 1,
+      "Sequence": 2,
+      "Intent": "[\"787449229b8bfe359e59cd791a220dde59938a823542c186211950620672cbdf\",1,2,0]",
+      "Attempt": "[\"authorization\",\"[\\\"787449229b8bfe359e59cd791a220dde59938a823542c186211950620672cbdf\\\",1,2,0]\"]",
+      "InFlight": [
+        "[\"authorization\",\"[\\\"787449229b8bfe359e59cd791a220dde59938a823542c186211950620672cbdf\\\",1,2,0]\"]"
+      ]
+    }
+  },
+  {
+    "Event": "command",
+    "Detail": {
+      "Op": "closed",
+      "Source": {
+        "Subject": "787449229b8bfe359e59cd791a220dde59938a823542c186211950620672cbdf",
+        "Generation": 1
+      },
+      "PID": 37049,
+      "Namespace": "eaaba4d6122f21c854ca993951ddfd7e4bd4f7c8240c3c67d39547463a28eeac",
+      "Resolver": {
+        "ID": {
+          "Subject": "resolver",
+          "Generation": 1
+        },
+        "ProgramID": "de68e312ac04a50a7a64bebb1c9d1e051c6bc190d8c7664c14dbbcf5eb5a6ed4",
+        "Epoch": 2,
+        "Sequence": 2,
+        "Revision": 1,
+        "Projection": {
+          "PC": 2,
+          "Data": {
+            "received": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"787449229b8bfe359e59cd791a220dde59938a823542c186211950620672cbdf\",1,2,0]",
+              "Flag": false
+            }
+          },
+          "Status": "open"
+        }
+      },
+      "Original": {
+        "ID": {
+          "Subject": "787449229b8bfe359e59cd791a220dde59938a823542c186211950620672cbdf",
+          "Generation": 1
+        },
+        "ProgramID": "a0a2215e6b28eae5da4caa78ddb76c9ce507fd1dd2ded9322da81d9a7219f837",
+        "Epoch": 1,
+        "Sequence": 6,
+        "Revision": 1,
+        "Projection": {
+          "PC": 5,
+          "Data": {
+            "echo": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"787449229b8bfe359e59cd791a220dde59938a823542c186211950620672cbdf\",1,2,0]",
+              "Flag": false
+            },
+            "original": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"787449229b8bfe359e59cd791a220dde59938a823542c186211950620672cbdf\",1,2,0]",
+              "Flag": false
+            }
+          },
+          "Status": "succeeded"
+        }
+      },
+      "Report": null
+    }
+  },
+  {
+    "Event": "SIGKILL",
+    "Detail": {
+      "Binary": "a0b802cc5980483d355a2f0f40246ab2851ef58a39e0b4890a08296e39499ddf",
+      "PID": 37049,
+      "Wait": "signal: killed"
+    }
+  },
+  {
+    "Event": "snapshot",
+    "Detail": "original-cut"
+  },
+  {
+    "Event": "snapshot",
+    "Detail": "original-cut-replayed"
+  },
+  {
+    "Event": "replay",
+    "Detail": {
+      "Cut": "original-cut",
+      "HistoryCount": 15
+    }
+  },
+  {
+    "Event": "successor original Q",
+    "Detail": {
+      "Namespace": "eaaba4d6122f21c854ca993951ddfd7e4bd4f7c8240c3c67d39547463a28eeac",
+      "PID": 36816,
+      "Source": {
+        "Subject": "787449229b8bfe359e59cd791a220dde59938a823542c186211950620672cbdf",
+        "Generation": 1
+      }
+    }
+  },
+  {
+    "Event": "barrier",
+    "Detail": {
+      "Scenario": "TestPhase2CResolverAuthority/sticky-original-settlement",
+      "Token": "phase2c-1793561783164349000",
+      "Store": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/TestPhase2CResolverAuthoritysticky-original-settlement719613740/001/world.sqlite",
+      "Boundary": "resource.lookup",
+      "Phase": "pre-snapshot",
+      "Subject": "",
+      "PID": 37048,
+      "Generation": 0,
+      "Epoch": 0,
+      "Sequence": 1,
+      "Intent": "[\"resolver\",1,4,0]",
+      "Attempt": "[2,\"eaaba4d6122f21c854ca993951ddfd7e4bd4f7c8240c3c67d39547463a28eeac\",\"[\\\"resolver\\\",1,4,0]\"]",
+      "InFlight": null
+    }
+  },
+  {
+    "Event": "peer committed and resolver R while endpoint held; Q waited",
+    "Detail": {
+      "Hold": {
+        "Scenario": "TestPhase2CResolverAuthority/sticky-original-settlement",
+        "Token": "phase2c-1793561783164349000",
+        "Store": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/TestPhase2CResolverAuthoritysticky-original-settlement719613740/001/world.sqlite",
+        "Boundary": "resource.lookup",
+        "Phase": "pre-snapshot",
+        "Subject": "",
+        "PID": 37048,
+        "Generation": 0,
+        "Epoch": 0,
+        "Sequence": 1,
+        "Intent": "[\"resolver\",1,4,0]",
+        "Attempt": "[2,\"eaaba4d6122f21c854ca993951ddfd7e4bd4f7c8240c3c67d39547463a28eeac\",\"[\\\"resolver\\\",1,4,0]\"]",
+        "InFlight": null
+      },
+      "Peer": {
+        "ID": {
+          "Subject": "ordinary",
+          "Generation": 1
+        },
+        "ProgramID": "4a28000c4d55b29783b35a164213536789eb0073a79e5e894b3256ac2f8f2bf3",
+        "Epoch": 3,
+        "Sequence": 2,
+        "Revision": 1,
+        "Projection": {
+          "PC": 1,
+          "Data": {
+            "target": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "peer-work",
+              "Flag": false
+            }
+          },
+          "Status": "succeeded"
+        }
+      },
+      "Resolver": {
+        "ID": {
+          "Subject": "resolver",
+          "Generation": 1
+        },
+        "ProgramID": "de68e312ac04a50a7a64bebb1c9d1e051c6bc190d8c7664c14dbbcf5eb5a6ed4",
+        "Epoch": 3,
+        "Sequence": 4,
+        "Revision": 1,
+        "Projection": {
+          "PC": 4,
+          "Data": {
+            "query1": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"resolver\",1,4,0]",
+              "Flag": false
+            },
+            "received": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"787449229b8bfe359e59cd791a220dde59938a823542c186211950620672cbdf\",1,2,0]",
+              "Flag": false
+            }
+          },
+          "Status": "cancelled"
+        }
+      }
+    }
+  }
+]

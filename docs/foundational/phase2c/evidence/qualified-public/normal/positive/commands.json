@@ -1,0 +1,107 @@
+[
+  {
+    "argv": [
+      "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/tmprsn6fh_f/resource",
+      "-receipt-ledger",
+      "-db",
+      "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/tmprsn6fh_f/positive/world.sqlite",
+      "-token",
+      "public-positive",
+      "-journal",
+      "/private/tmp/alan-phase2c/docs/foundational/phase2c/evidence/qualified-public/normal/positive/journal.jsonl",
+      "-response-mode",
+      "normal"
+    ],
+    "cwd": "/private/tmp/alan-phase2c/examples/reconciliation/consumer",
+    "exit": 0,
+    "pid": 45770,
+    "ready": {
+      "LedgerID": "031fe42a8ad41554e555e9e155959aef4e4f62af9f707db4bb556349103dfdc4",
+      "LookupURL": "http://127.0.0.1:56571/phase2c/031fe42a8ad41554e555e9e155959aef4e4f62af9f707db4bb556349103dfdc4/lookup",
+      "PID": 45770,
+      "Store": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/tmprsn6fh_f/positive/world.sqlite",
+      "Token": "public-positive",
+      "URL": "http://127.0.0.1:56571/phase2c/031fe42a8ad41554e555e9e155959aef4e4f62af9f707db4bb556349103dfdc4/apply"
+    },
+    "sha256": "4cd69bf7c070edd54af9205a99c3ca17175c6242b594113b90a9a7b30f6e693b"
+  },
+  {
+    "argv": [
+      "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/tmprsn6fh_f/consumer",
+      "init",
+      "-db",
+      "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/tmprsn6fh_f/positive/retained.sqlite",
+      "-endpoint",
+      "http://127.0.0.1:56571/phase2c/031fe42a8ad41554e555e9e155959aef4e4f62af9f707db4bb556349103dfdc4/apply",
+      "-adopt=true",
+      "-observe-original=false"
+    ],
+    "cwd": "/private/tmp/alan-phase2c/examples/reconciliation/consumer",
+    "exit": 0,
+    "pid": 45772,
+    "sha256": "5b79457ea9b2b4b058d03fa00b57f4e7b346b11be1c35d24f31321603b74b55d",
+    "stderr": "",
+    "stdout": "{\"grant\":{\"Resolver\":{\"Subject\":\"resolver\",\"Generation\":1},\"Original\":{\"Subject\":\"\",\"Generation\":0},\"Invocation\":\"[\\\"parent\\\",1,1,0]\",\"Member\":\"source\",\"Sequence\":2,\"Endpoint\":\"http://127.0.0.1:56571/phase2c/031fe42a8ad41554e555e9e155959aef4e4f62af9f707db4bb556349103dfdc4/apply\",\"Adopt\":true},\"namespace\":\"16ba860e8a884605576329239a815d7eb95f7b458709810bfe2791336cb8da19\"}\n"
+  },
+  {
+    "applied_barrier": {
+      "Attempt": "",
+      "Boundary": "resource.applied",
+      "Epoch": 0,
+      "Generation": 0,
+      "InFlight": null,
+      "Intent": "[2,\"16ba860e8a884605576329239a815d7eb95f7b458709810bfe2791336cb8da19\",\"[\\\"cf1f0a86a989e28736caada2d7f23a88be9a30b110abf1f09864a01f042f7e78\\\",1,2,0]\"]",
+      "PID": 45770,
+      "Phase": "post-commit",
+      "Scenario": "public-qualification",
+      "Sequence": 0,
+      "Store": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/tmprsn6fh_f/positive/world.sqlite",
+      "Subject": "",
+      "Token": "positive"
+    },
+    "argv": [
+      "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/tmprsn6fh_f/consumer",
+      "issue",
+      "-db",
+      "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/tmprsn6fh_f/positive/retained.sqlite",
+      "-endpoint",
+      "http://127.0.0.1:56571/phase2c/031fe42a8ad41554e555e9e155959aef4e4f62af9f707db4bb556349103dfdc4/apply"
+    ],
+    "cwd": "/private/tmp/alan-phase2c/examples/reconciliation/consumer",
+    "exit": -9,
+    "pid": 45773,
+    "sha256": "5b79457ea9b2b4b058d03fa00b57f4e7b346b11be1c35d24f31321603b74b55d",
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "argv": [
+      "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/tmprsn6fh_f/consumer",
+      "resolve",
+      "-db",
+      "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/tmprsn6fh_f/positive/retained.sqlite",
+      "-endpoint",
+      "http://127.0.0.1:56571/phase2c/031fe42a8ad41554e555e9e155959aef4e4f62af9f707db4bb556349103dfdc4/apply"
+    ],
+    "cwd": "/private/tmp/alan-phase2c/examples/reconciliation/consumer",
+    "exit": 0,
+    "pid": 45782,
+    "sha256": "5b79457ea9b2b4b058d03fa00b57f4e7b346b11be1c35d24f31321603b74b55d",
+    "stderr": "",
+    "stdout": "{\"Q\":{\"Subject\":\"cf1f0a86a989e28736caada2d7f23a88be9a30b110abf1f09864a01f042f7e78\",\"Generation\":1},\"after\":{\"Ready\":true,\"Pending\":\"\",\"Freeze\":{\"InvocationID\":\"\",\"Trigger\":\"\",\"Run\":{\"Subject\":\"\",\"Generation\":0},\"Sequence\":0,\"DecisionOrder\":0,\"Status\":\"\",\"ReplyIntents\":null,\"InvocationIntents\":null,\"ExternalIntents\":null},\"Outcome\":{\"ID\":\"a43cc2eb22c7f4795ebd0cd5badb004ac51c936d0efe99f7eafe868690e75cf5\",\"InvocationID\":\"52572be1f029f6b3c1018b201f7dd1e9cb3e37bcb5f9b1fc15dcb8086216e34f\",\"OperationID\":\"[\\\"parent\\\",1,1,0]\",\"TemplateID\":\"9e2b69bf6cbc122224580cf3eeaf39d3a0fde942d91c21cffd7559f00d8f847d\",\"Caller\":{\"Subject\":\"parent\",\"Generation\":1},\"Status\":\"succeeded\",\"Reason\":\"member_succeeded\",\"ResponsePresent\":true,\"Response\":{\"issued\":{\"Kind\":\"bool\",\"Number\":0,\"Text\":\"\",\"Flag\":true},\"target\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"cf1f0a86a989e28736caada2d7f23a88be9a30b110abf1f09864a01f042f7e78\\\",1,2,0]\",\"Flag\":false}},\"DecisionOrder\":34}},\"before\":{\"Ready\":false,\"Pending\":\"external_outcome\",\"Freeze\":{\"InvocationID\":\"52572be1f029f6b3c1018b201f7dd1e9cb3e37bcb5f9b1fc15dcb8086216e34f\",\"Trigger\":\"3c1db1d8040aa78ead892babecfa48b8f17e60519cb032d97dc68cc4e3684da9\",\"Run\":{\"Subject\":\"cf1f0a86a989e28736caada2d7f23a88be9a30b110abf1f09864a01f042f7e78\",\"Generation\":1},\"Sequence\":6,\"DecisionOrder\":26,\"Status\":\"succeeded\",\"ReplyIntents\":[\"[\\\"cf1f0a86a989e28736caada2d7f23a88be9a30b110abf1f09864a01f042f7e78\\\",1,3,0]\"],\"InvocationIntents\":[],\"ExternalIntents\":[\"[\\\"cf1f0a86a989e28736caada2d7f23a88be9a30b110abf1f09864a01f042f7e78\\\",1,2,0]\"]},\"Outcome\":{\"ID\":\"\",\"InvocationID\":\"52572be1f029f6b3c1018b201f7dd1e9cb3e37bcb5f9b1fc15dcb8086216e34f\",\"OperationID\":\"[\\\"parent\\\",1,1,0]\",\"TemplateID\":\"9e2b69bf6cbc122224580cf3eeaf39d3a0fde942d91c21cffd7559f00d8f847d\",\"Caller\":{\"Subject\":\"parent\",\"Generation\":1},\"Status\":\"succeeded\",\"Reason\":\"member_succeeded\",\"ResponsePresent\":false,\"Response\":null,\"DecisionOrder\":0}},\"namespace\":\"16ba860e8a884605576329239a815d7eb95f7b458709810bfe2791336cb8da19\",\"run\":{\"Steps\":20,\"Dispatches\":4,\"Quiescent\":true,\"OpenRuns\":[],\"UnresolvedIntents\":[],\"PendingDeliveries\":[],\"UnknownExternal\":[],\"UnknownAdapters\":[],\"Roots\":[{\"RootID\":\"b424973fdc95ce6845332fee4fc241ecf8d595d3a1878da55be6f036e34f3fa4\",\"Run\":{\"Subject\":\"parent\",\"Generation\":1},\"LocalStatus\":\"succeeded\",\"Limits\":{\"MaxInvocations\":1,\"MaxCreatedRuns\":1,\"MaxDepth\":1,\"MaxEffects\":1,\"MaxInFlight\":1},\"Charges\":{\"RootID\":\"b424973fdc95ce6845332fee4fc241ecf8d595d3a1878da55be6f036e34f3fa4\",\"OperationID\":\"\",\"Kind\":\"\",\"Invocations\":1,\"CreatedRuns\":1,\"Effects\":1,\"DecisionOrder\":0},\"Outcome\":{\"ID\":\"ba7a2c1649d2ef982a412bd44db90937344ce9051a09d809284c63eec8fc1f76\",\"InvocationID\":\"root:b424973fdc95ce6845332fee4fc241ecf8d595d3a1878da55be6f036e34f3fa4\",\"OperationID\":\"root:b424973fdc95ce6845332fee4fc241ecf8d595d3a1878da55be6f036e34f3fa4\",\"TemplateID\":\"\",\"Caller\":{\"Subject\":\"parent\",\"Generation\":1},\"Status\":\"succeeded\",\"Reason\":\"member_succeeded\",\"ResponsePresent\":false,\"Response\":null,\"DecisionOrder\":58},\"Pending\":\"\",\"PendingInvocations\":[],\"UnresolvedExternal\":[],\"UnknownExternal\":[]},{\"RootID\":\"cbe80a4620c9c457372946eefb1157f55b15cd624346aa391c2256ff218b1595\",\"Run\":{\"Subject\":\"resolver\",\"Generation\":1},\"LocalStatus\":\"succeeded\",\"Limits\":{\"MaxInvocations\":0,\"MaxCreatedRuns\":0,\"MaxDepth\":0,\"MaxEffects\":1,\"MaxInFlight\":1},\"Charges\":{\"RootID\":\"cbe80a4620c9c457372946eefb1157f55b15cd624346aa391c2256ff218b1595\",\"OperationID\":\"\",\"Kind\":\"\",\"Invocations\":0,\"CreatedRuns\":0,\"Effects\":1,\"DecisionOrder\":0},\"Outcome\":{\"ID\":\"11bc5a3bd8ee133e40bc0bb77774944661a6276ad54ba05ca57614bc1116ad24\",\"InvocationID\":\"root:cbe80a4620c9c457372946eefb1157f55b15cd624346aa391c2256ff218b1595\",\"OperationID\":\"root:cbe80a4620c9c457372946eefb1157f55b15cd624346aa391c2256ff218b1595\",\"TemplateID\":\"\",\"Caller\":{\"Subject\":\"resolver\",\"Generation\":1},\"Status\":\"succeeded\",\"Reason\":\"member_succeeded\",\"ResponsePresent\":false,\"Response\":null,\"DecisionOrder\":46},\"Pending\":\"\",\"PendingInvocations\":[],\"UnresolvedExternal\":[],\"UnknownExternal\":[]}],\"RejectedAdmissions\":0},\"states\":{\"parent\":{\"ID\":{\"Subject\":\"parent\",\"Generation\":1},\"ProgramID\":\"5a85d9a539e8af9aeda0917e48fadd9408da1b367174e7ad1e4af1d62641defd\",\"Epoch\":3,\"Sequence\":21,\"Revision\":1,\"Projection\":{\"PC\":21,\"Data\":{\"decision\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"applied\",\"Flag\":false},\"invocation\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"parent\\\",1,1,0]\",\"Flag\":false},\"issued\":{\"Kind\":\"bool\",\"Number\":0,\"Text\":\"\",\"Flag\":true},\"issued_present\":{\"Kind\":\"bool\",\"Number\":0,\"Text\":\"\",\"Flag\":true},\"issued_target\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"cf1f0a86a989e28736caada2d7f23a88be9a30b110abf1f09864a01f042f7e78\\\",1,2,0]\",\"Flag\":false},\"original\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"cf1f0a86a989e28736caada2d7f23a88be9a30b110abf1f09864a01f042f7e78\\\",1,2,0]\",\"Flag\":false},\"receipt_adopted\":{\"Kind\":\"bool\",\"Number\":0,\"Text\":\"\",\"Flag\":true},\"receipt_adoption\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"adopted\",\"Flag\":false},\"receipt_mutation\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"receipt_status\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"found\",\"Flag\":false},\"receipt_target\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"cf1f0a86a989e28736caada2d7f23a88be9a30b110abf1f09864a01f042f7e78\\\",1,2,0]\",\"Flag\":false},\"receipt_total\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"resolver_ack\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"cf1f0a86a989e28736caada2d7f23a88be9a30b110abf1f09864a01f042f7e78\\\",1,2,0]\",\"Flag\":false},\"source_reason\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"member_succeeded\",\"Flag\":false},\"source_status\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"succeeded\",\"Flag\":false}},\"Status\":\"succeeded\"}},\"resolver\":{\"ID\":{\"Subject\":\"resolver\",\"Generation\":1},\"ProgramID\":\"de68e312ac04a50a7a64bebb1c9d1e051c6bc190d8c7664c14dbbcf5eb5a6ed4\",\"Epoch\":3,\"Sequence\":8,\"Revision\":1,\"Projection\":{\"PC\":7,\"Data\":{\"query1\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"resolver\\\",1,4,0]\",\"Flag\":false},\"query1_adopted\":{\"Kind\":\"bool\",\"Number\":0,\"Text\":\"\",\"Flag\":true},\"query1_adoption\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"adopted\",\"Flag\":false},\"query1_disposition\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"validated\",\"Flag\":false},\"query1_mutation\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"query1_status\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"found\",\"Flag\":false},\"query1_target\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"cf1f0a86a989e28736caada2d7f23a88be9a30b110abf1f09864a01f042f7e78\\\",1,2,0]\",\"Flag\":false},\"query1_total\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"query1_valid\":{\"Kind\":\"bool\",\"Number\":0,\"Text\":\"\",\"Flag\":true},\"received\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"cf1f0a86a989e28736caada2d7f23a88be9a30b110abf1f09864a01f042f7e78\\\",1,2,0]\",\"Flag\":false},\"report_ack\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"cf1f0a86a989e28736caada2d7f23a88be9a30b110abf1f09864a01f042f7e78\\\",1,2,0]\",\"Flag\":false}},\"Status\":\"succeeded\"}},\"source\":{\"ID\":{\"Subject\":\"cf1f0a86a989e28736caada2d7f23a88be9a30b110abf1f09864a01f042f7e78\",\"Generation\":1},\"ProgramID\":\"a0a2215e6b28eae5da4caa78ddb76c9ce507fd1dd2ded9322da81d9a7219f837\",\"Epoch\":1,\"Sequence\":6,\"Revision\":1,\"Projection\":{\"PC\":5,\"Data\":{\"echo\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"cf1f0a86a989e28736caada2d7f23a88be9a30b110abf1f09864a01f042f7e78\\\",1,2,0]\",\"Flag\":false},\"original\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"cf1f0a86a989e28736caada2d7f23a88be9a30b110abf1f09864a01f042f7e78\\\",1,2,0]\",\"Flag\":false}},\"Status\":\"succeeded\"}}}}\n"
+  },
+  {
+    "argv": [
+      "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/tmprsn6fh_f/consumer",
+      "replay",
+      "-db",
+      "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/tmprsn6fh_f/positive/retained.sqlite"
+    ],
+    "cwd": "/private/tmp/alan-phase2c/examples/reconciliation/consumer",
+    "exit": 0,
+    "pid": 45800,
+    "sha256": "5b79457ea9b2b4b058d03fa00b57f4e7b346b11be1c35d24f31321603b74b55d",
+    "stderr": "",
+    "stdout": "{\"Namespace\":\"16ba860e8a884605576329239a815d7eb95f7b458709810bfe2791336cb8da19\",\"SQLiteVersion\":\"3.53.4\",\"SQLiteSourceID\":\"2026-07-24 19:02:57 bf7c7f30031888f4e796e429ab3978879485813aaca6f641c7b33e4e09459bcc\",\"HistoryCount\":35,\"IntentCount\":10,\"Runs\":[{\"ID\":{\"Subject\":\"cf1f0a86a989e28736caada2d7f23a88be9a30b110abf1f09864a01f042f7e78\",\"Generation\":1},\"ProgramID\":\"a0a2215e6b28eae5da4caa78ddb76c9ce507fd1dd2ded9322da81d9a7219f837\",\"Epoch\":1,\"Sequence\":6,\"Revision\":1,\"Projection\":{\"PC\":5,\"Data\":{\"echo\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"cf1f0a86a989e28736caada2d7f23a88be9a30b110abf1f09864a01f042f7e78\\\",1,2,0]\",\"Flag\":false},\"original\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"cf1f0a86a989e28736caada2d7f23a88be9a30b110abf1f09864a01f042f7e78\\\",1,2,0]\",\"Flag\":false}},\"Status\":\"succeeded\"}},{\"ID\":{\"Subject\":\"parent\",\"Generation\":1},\"ProgramID\":\"5a85d9a539e8af9aeda0917e48fadd9408da1b367174e7ad1e4af1d62641defd\",\"Epoch\":3,\"Sequence\":21,\"Revision\":1,\"Projection\":{\"PC\":21,\"Data\":{\"decision\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"applied\",\"Flag\":false},\"invocation\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"parent\\\",1,1,0]\",\"Flag\":false},\"issued\":{\"Kind\":\"bool\",\"Number\":0,\"Text\":\"\",\"Flag\":true},\"issued_present\":{\"Kind\":\"bool\",\"Number\":0,\"Text\":\"\",\"Flag\":true},\"issued_target\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"cf1f0a86a989e28736caada2d7f23a88be9a30b110abf1f09864a01f042f7e78\\\",1,2,0]\",\"Flag\":false},\"original\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"cf1f0a86a989e28736caada2d7f23a88be9a30b110abf1f09864a01f042f7e78\\\",1,2,0]\",\"Flag\":false},\"receipt_adopted\":{\"Kind\":\"bool\",\"Number\":0,\"Text\":\"\",\"Flag\":true},\"receipt_adoption\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"adopted\",\"Flag\":false},\"receipt_mutation\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"receipt_status\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"found\",\"Flag\":false},\"receipt_target\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"cf1f0a86a989e28736caada2d7f23a88be9a30b110abf1f09864a01f042f7e78\\\",1,2,0]\",\"Flag\":false},\"receipt_total\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"resolver_ack\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"cf1f0a86a989e28736caada2d7f23a88be9a30b110abf1f09864a01f042f7e78\\\",1,2,0]\",\"Flag\":false},\"source_reason\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"member_succeeded\",\"Flag\":false},\"source_status\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"succeeded\",\"Flag\":false}},\"Status\":\"succeeded\"}},{\"ID\":{\"Subject\":\"resolver\",\"Generation\":1},\"ProgramID\":\"de68e312ac04a50a7a64bebb1c9d1e051c6bc190d8c7664c14dbbcf5eb5a6ed4\",\"Epoch\":3,\"Sequence\":8,\"Revision\":1,\"Projection\":{\"PC\":7,\"Data\":{\"query1\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"resolver\\\",1,4,0]\",\"Flag\":false},\"query1_adopted\":{\"Kind\":\"bool\",\"Number\":0,\"Text\":\"\",\"Flag\":true},\"query1_adoption\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"adopted\",\"Flag\":false},\"query1_disposition\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"validated\",\"Flag\":false},\"query1_mutation\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"query1_status\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"found\",\"Flag\":false},\"query1_target\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"cf1f0a86a989e28736caada2d7f23a88be9a30b110abf1f09864a01f042f7e78\\\",1,2,0]\",\"Flag\":false},\"query1_total\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"query1_valid\":{\"Kind\":\"bool\",\"Number\":0,\"Text\":\"\",\"Flag\":true},\"received\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"cf1f0a86a989e28736caada2d7f23a88be9a30b110abf1f09864a01f042f7e78\\\",1,2,0]\",\"Flag\":false},\"report_ack\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"cf1f0a86a989e28736caada2d7f23a88be9a30b110abf1f09864a01f042f7e78\\\",1,2,0]\",\"Flag\":false}},\"Status\":\"succeeded\"}}],\"Roots\":[{\"RootID\":\"b424973fdc95ce6845332fee4fc241ecf8d595d3a1878da55be6f036e34f3fa4\",\"Run\":{\"Subject\":\"parent\",\"Generation\":1},\"LocalStatus\":\"succeeded\",\"Limits\":{\"MaxInvocations\":1,\"MaxCreatedRuns\":1,\"MaxDepth\":1,\"MaxEffects\":1,\"MaxInFlight\":1},\"Charges\":{\"RootID\":\"b424973fdc95ce6845332fee4fc241ecf8d595d3a1878da55be6f036e34f3fa4\",\"OperationID\":\"\",\"Kind\":\"\",\"Invocations\":1,\"CreatedRuns\":1,\"Effects\":1,\"DecisionOrder\":0},\"Outcome\":{\"ID\":\"ba7a2c1649d2ef982a412bd44db90937344ce9051a09d809284c63eec8fc1f76\",\"InvocationID\":\"root:b424973fdc95ce6845332fee4fc241ecf8d595d3a1878da55be6f036e34f3fa4\",\"OperationID\":\"root:b424973fdc95ce6845332fee4fc241ecf8d595d3a1878da55be6f036e34f3fa4\",\"TemplateID\":\"\",\"Caller\":{\"Subject\":\"parent\",\"Generation\":1},\"Status\":\"succeeded\",\"Reason\":\"member_succeeded\",\"ResponsePresent\":false,\"Response\":null,\"DecisionOrder\":58},\"Pending\":\"\",\"PendingInvocations\":[],\"UnresolvedExternal\":[],\"UnknownExternal\":[]},{\"RootID\":\"cbe80a4620c9c457372946eefb1157f55b15cd624346aa391c2256ff218b1595\",\"Run\":{\"Subject\":\"resolver\",\"Generation\":1},\"LocalStatus\":\"succeeded\",\"Limits\":{\"MaxInvocations\":0,\"MaxCreatedRuns\":0,\"MaxDepth\":0,\"MaxEffects\":1,\"MaxInFlight\":1},\"Charges\":{\"RootID\":\"cbe80a4620c9c457372946eefb1157f55b15cd624346aa391c2256ff218b1595\",\"OperationID\":\"\",\"Kind\":\"\",\"Invocations\":0,\"CreatedRuns\":0,\"Effects\":1,\"DecisionOrder\":0},\"Outcome\":{\"ID\":\"11bc5a3bd8ee133e40bc0bb77774944661a6276ad54ba05ca57614bc1116ad24\",\"InvocationID\":\"root:cbe80a4620c9c457372946eefb1157f55b15cd624346aa391c2256ff218b1595\",\"OperationID\":\"root:cbe80a4620c9c457372946eefb1157f55b15cd624346aa391c2256ff218b1595\",\"TemplateID\":\"\",\"Caller\":{\"Subject\":\"resolver\",\"Generation\":1},\"Status\":\"succeeded\",\"Reason\":\"member_succeeded\",\"ResponsePresent\":false,\"Response\":null,\"DecisionOrder\":46},\"Pending\":\"\",\"PendingInvocations\":[],\"UnresolvedExternal\":[],\"UnknownExternal\":[]}]}\n"
+  }
+]
