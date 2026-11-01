@@ -1,0 +1,312 @@
+{
+  "after": {
+    "Namespace": "269c75c74e5281f328b56773afb7315cf5dfec292259e917e81cc06c1a28b86b",
+    "KeyVersion": 2,
+    "Settings": {
+      "JournalMode": "wal",
+      "SQLiteVersion": "3.53.4",
+      "SQLiteSourceID": "2026-07-24 19:02:57 bf7c7f30031888f4e796e429ab3978879485813aaca6f641c7b33e4e09459bcc",
+      "Synchronous": 2,
+      "ForeignKeys": 1,
+      "BusyTimeoutMS": 5000,
+      "QueryOnly": 1
+    },
+    "Tables": {
+      "adapter_attempts": [
+        {
+          "descriptor": "{\"Intent\":{\"ID\":\"[\\\"client\\\",1,1,0]\",\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"Ordinal\":0,\"Kind\":\"adapter\",\"Target\":\"phase2a.counter\",\"Generation\":1,\"Obligation\":\"increment\",\"Payload\":{\"delta\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false}}},\"AuthorizationID\":\"[\\\"authorization\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"Prepared\":{\"Request\":{\"ID\":\"[\\\"client\\\",1,1,0]\",\"Key\":\"[2,\\\"269c75c74e5281f328b56773afb7315cf5dfec292259e917e81cc06c1a28b86b\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"Capability\":\"phase2a.counter\",\"Effect\":\"increment\",\"Input\":{\"ID\":\"3867a437fec79a5ff163eedb2413f1313b0197f7d30d5a504e854e61a910c191\",\"Record\":{\"delta\":{\"Kind\":\"int\",\"MaxBytes\":0,\"Enum\":null}}},\"Output\":{\"ID\":\"f5c8b4f5ada61871444aaea121f28b494f8e98d9d6f95c874b01e5f6f1e54567\",\"Record\":{\"mutation\":{\"Kind\":\"int\",\"MaxBytes\":0,\"Enum\":null},\"total\":{\"Kind\":\"int\",\"MaxBytes\":0,\"Enum\":null}}},\"Payload\":{\"delta\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false}},\"Assets\":[]},\"Digest\":\"88af6db8eb4ad7362ac03be9ca8a67fc83c1bdae80e544f129bd0434fca31469\",\"Protocol\":\"phase2a/counter/v1\",\"Endpoint\":\"http://127.0.0.1:59456/apply\",\"Model\":\"success\",\"MaxOutputTokens\":0,\"MaxResponseBytes\":8192,\"Wire\":\"{\\\"Key\\\":\\\"[2,\\\\\\\"269c75c74e5281f328b56773afb7315cf5dfec292259e917e81cc06c1a28b86b\\\\\\\",\\\\\\\"[\\\\\\\\\\\\\\\"client\\\\\\\\\\\\\\\",1,1,0]\\\\\\\"]\\\",\\\"Profile\\\":\\\"idempotent\\\",\\\"Delta\\\":1}\"},\"Allowed\":true,\"Reason\":\"authorized\"}",
+          "intent_id": "[\"client\",1,1,0]"
+        }
+      ],
+      "adapter_results": [],
+      "admissions": [],
+      "attempts": [
+        {
+          "descriptor": "{\"Intent\":{\"ID\":\"[\\\"client\\\",1,1,0]\",\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"Ordinal\":0,\"Kind\":\"adapter\",\"Target\":\"phase2a.counter\",\"Generation\":1,\"Obligation\":\"increment\",\"Payload\":{\"delta\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false}}},\"Revision\":1}",
+          "id": "[\"authorization\",\"[\\\"client\\\",1,1,0]\"]",
+          "intent_id": "[\"client\",1,1,0]",
+          "result": "{\"ID\":\"[\\\"authorization\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"IntentID\":\"[\\\"client\\\",1,1,0]\",\"Allowed\":true,\"Reason\":\"authorized\",\"Source\":{\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Epoch\":2,\"Sequence\":1,\"Revision\":1},\"ClosureOperation\":\"\"}"
+        }
+      ],
+      "corpus_assets": [],
+      "external_attempts": [],
+      "external_receipts": [],
+      "history": [
+        {
+          "epoch": 2,
+          "generation": 1,
+          "intents": "[{\"ID\":\"[\\\"client\\\",1,1,0]\",\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"Ordinal\":0,\"Kind\":\"adapter\",\"Target\":\"phase2a.counter\",\"Generation\":1,\"Obligation\":\"increment\",\"Payload\":{\"delta\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false}}}]",
+          "selected_observation": null,
+          "sequence": 1,
+          "source_revision": 1,
+          "subject": "client",
+          "successor": "{\"PC\":1,\"Data\":{\"delta\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"operation\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"client\\\",1,1,0]\",\"Flag\":false}},\"Status\":\"open\"}"
+        }
+      ],
+      "intents": [
+        {
+          "descriptor": "{\"ID\":\"[\\\"client\\\",1,1,0]\",\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"Ordinal\":0,\"Kind\":\"adapter\",\"Target\":\"phase2a.counter\",\"Generation\":1,\"Obligation\":\"increment\",\"Payload\":{\"delta\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false}}}",
+          "generation": 1,
+          "id": "[\"client\",1,1,0]",
+          "ordinal": 0,
+          "sequence": 1,
+          "source_revision": 1,
+          "subject": "client"
+        }
+      ],
+      "lifecycle_results": [],
+      "message_acknowledgments": [],
+      "metadata": [
+        {
+          "key_version": 2,
+          "namespace": "269c75c74e5281f328b56773afb7315cf5dfec292259e917e81cc06c1a28b86b",
+          "schema_version": 3,
+          "semantics": "alan/1d/v1",
+          "singleton": 1
+        }
+      ],
+      "observations": [],
+      "permissions": [
+        {
+          "kind": "adapter",
+          "obligation": "increment",
+          "operation": "increment",
+          "revision": 1,
+          "source": "client",
+          "target": "phase2a.counter"
+        }
+      ],
+      "programs": [
+        {
+          "bytes": "{\"Semantics\":\"alan/1e/v1\",\"Code\":[{\"Op\":\"emit\",\"Dst\":\"operation\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":null,\"Bind\":null,\"Effect\":{\"Kind\":\"adapter\",\"Target\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"phase2a.counter\",\"Flag\":false},\"Offset\":null},\"Generation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"Offset\":null},\"Obligation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"increment\",\"Flag\":false},\"Offset\":null},\"Payload\":{\"delta\":{\"Ref\":\"delta\",\"Literal\":null,\"Offset\":null}}},\"Updates\":{},\"Outcome\":\"\"},{\"Op\":\"receive\",\"Dst\":\"\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":{\"Kind\":\"adapter\",\"Provenance\":\"runtime-adapter\",\"Source\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"phase2a.counter\",\"Flag\":false},\"Offset\":null},\"Generation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"Offset\":null},\"Obligation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"increment\",\"Flag\":false},\"Offset\":null},\"Operation\":{\"Ref\":\"operation\",\"Literal\":null,\"Offset\":null}},\"Bind\":{\"disposition\":\"disposition\",\"mutation\":\"mutation\",\"total\":\"total\",\"valid\":\"valid\"},\"Effect\":null,\"Updates\":null,\"Outcome\":\"\"},{\"Op\":\"branch\",\"Dst\":\"\",\"A\":{\"Ref\":\"valid\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"bool\",\"Number\":0,\"Text\":\"\",\"Flag\":true},\"Offset\":null},\"Target\":3,\"Otherwise\":4,\"Match\":null,\"Bind\":null,\"Effect\":null,\"Updates\":null,\"Outcome\":\"\"},{\"Op\":\"end\",\"Dst\":\"\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":null,\"Bind\":null,\"Effect\":null,\"Updates\":null,\"Outcome\":\"succeeded\"},{\"Op\":\"end\",\"Dst\":\"\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":null,\"Bind\":null,\"Effect\":null,\"Updates\":null,\"Outcome\":\"failed\"}],\"Author\":{\"Compiler\":\"alan/author/v1\",\"Name\":\"phase2a-source\",\"Inputs\":{\"ID\":\"3867a437fec79a5ff163eedb2413f1313b0197f7d30d5a504e854e61a910c191\",\"Record\":{\"delta\":{\"Kind\":\"int\",\"MaxBytes\":0,\"Enum\":null}}},\"Outputs\":{\"ID\":\"44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a\",\"Record\":{}},\"Templates\":{},\"Positions\":[\"steps/0:request:incrementoperation\",\"steps/1:await:increment\",\"steps/2:if\",\"steps/2:if/then/0:end:\",\"steps/2:if/else/0:end:\"],\"Labels\":{},\"Effects\":{\"increment\":{\"Capability\":\"phase2a.counter\",\"Input\":{\"ID\":\"3867a437fec79a5ff163eedb2413f1313b0197f7d30d5a504e854e61a910c191\",\"Record\":{\"delta\":{\"Kind\":\"int\",\"MaxBytes\":0,\"Enum\":null}}},\"Output\":{\"ID\":\"f5c8b4f5ada61871444aaea121f28b494f8e98d9d6f95c874b01e5f6f1e54567\",\"Record\":{\"mutation\":{\"Kind\":\"int\",\"MaxBytes\":0,\"Enum\":null},\"total\":{\"Kind\":\"int\",\"MaxBytes\":0,\"Enum\":null}}}}},\"Ports\":{},\"Receives\":{\"1\":{\"ID\":\"d5e6c164945ff53467a4d3c15ce5c2ce5f5127d1af76bd1dbb92f97cd5420cf5\",\"Record\":{\"disposition\":{\"Kind\":\"string\",\"MaxBytes\":128,\"Enum\":null},\"mutation\":{\"Kind\":\"int\",\"MaxBytes\":0,\"Enum\":null},\"total\":{\"Kind\":\"int\",\"MaxBytes\":0,\"Enum\":null},\"valid\":{\"Kind\":\"bool\",\"MaxBytes\":0,\"Enum\":null}}}}}}",
+          "id": "7bded51b5eacb92a78417c99dc330d203572933a4007b8fa0acefd914e495086",
+          "semantics": "alan/1e/v1"
+        }
+      ],
+      "run_origins": [
+        {
+          "descriptor": "{\"Subject\":{\"ID\":\"client\",\"Generation\":1,\"Owner\":\"owner:client\",\"Revision\":1,\"Retired\":false,\"RetryCancelled\":false},\"ProgramID\":\"7bded51b5eacb92a78417c99dc330d203572933a4007b8fa0acefd914e495086\",\"Initial\":{\"PC\":0,\"Data\":{\"delta\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false}},\"Status\":\"open\"}}",
+          "generation": 1,
+          "kind": "root",
+          "operation_id": null,
+          "predecessor_generation": null,
+          "subject": "client"
+        }
+      ],
+      "runs": [
+        {
+          "epoch": 2,
+          "generation": 1,
+          "initial": "{\"PC\":0,\"Data\":{\"delta\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false}},\"Status\":\"open\"}",
+          "program_id": "7bded51b5eacb92a78417c99dc330d203572933a4007b8fa0acefd914e495086",
+          "projection": "{\"PC\":1,\"Data\":{\"delta\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"operation\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"client\\\",1,1,0]\",\"Flag\":false}},\"Status\":\"open\"}",
+          "sequence": 1,
+          "subject": "client"
+        }
+      ],
+      "settlements": [],
+      "subjects": [
+        {
+          "generation": 1,
+          "id": "client",
+          "owner": "owner:client",
+          "retired": 0,
+          "retry_cancelled": 0,
+          "revision": 1
+        }
+      ],
+      "terminal_obligations": []
+    },
+    "Roots": null
+  },
+  "after_local_store": "/private/tmp/alan-phase2a/docs/foundational/phase2a/evidence/process-race/TestPhase2PairedCrashCuts_adapter-replay-U0-cut-after-local.sqlite.gz",
+  "after_world_store": "/private/tmp/alan-phase2a/docs/foundational/phase2a/evidence/process-race/TestPhase2PairedCrashCuts_adapter-replay-U0-cut-after-world.sqlite.gz",
+  "before": {
+    "Namespace": "269c75c74e5281f328b56773afb7315cf5dfec292259e917e81cc06c1a28b86b",
+    "KeyVersion": 2,
+    "Settings": {
+      "JournalMode": "wal",
+      "SQLiteVersion": "3.53.4",
+      "SQLiteSourceID": "2026-07-24 19:02:57 bf7c7f30031888f4e796e429ab3978879485813aaca6f641c7b33e4e09459bcc",
+      "Synchronous": 2,
+      "ForeignKeys": 1,
+      "BusyTimeoutMS": 5000,
+      "QueryOnly": 1
+    },
+    "Tables": {
+      "adapter_attempts": [
+        {
+          "descriptor": "{\"Intent\":{\"ID\":\"[\\\"client\\\",1,1,0]\",\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"Ordinal\":0,\"Kind\":\"adapter\",\"Target\":\"phase2a.counter\",\"Generation\":1,\"Obligation\":\"increment\",\"Payload\":{\"delta\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false}}},\"AuthorizationID\":\"[\\\"authorization\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"Prepared\":{\"Request\":{\"ID\":\"[\\\"client\\\",1,1,0]\",\"Key\":\"[2,\\\"269c75c74e5281f328b56773afb7315cf5dfec292259e917e81cc06c1a28b86b\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"Capability\":\"phase2a.counter\",\"Effect\":\"increment\",\"Input\":{\"ID\":\"3867a437fec79a5ff163eedb2413f1313b0197f7d30d5a504e854e61a910c191\",\"Record\":{\"delta\":{\"Kind\":\"int\",\"MaxBytes\":0,\"Enum\":null}}},\"Output\":{\"ID\":\"f5c8b4f5ada61871444aaea121f28b494f8e98d9d6f95c874b01e5f6f1e54567\",\"Record\":{\"mutation\":{\"Kind\":\"int\",\"MaxBytes\":0,\"Enum\":null},\"total\":{\"Kind\":\"int\",\"MaxBytes\":0,\"Enum\":null}}},\"Payload\":{\"delta\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false}},\"Assets\":[]},\"Digest\":\"88af6db8eb4ad7362ac03be9ca8a67fc83c1bdae80e544f129bd0434fca31469\",\"Protocol\":\"phase2a/counter/v1\",\"Endpoint\":\"http://127.0.0.1:59456/apply\",\"Model\":\"success\",\"MaxOutputTokens\":0,\"MaxResponseBytes\":8192,\"Wire\":\"{\\\"Key\\\":\\\"[2,\\\\\\\"269c75c74e5281f328b56773afb7315cf5dfec292259e917e81cc06c1a28b86b\\\\\\\",\\\\\\\"[\\\\\\\\\\\\\\\"client\\\\\\\\\\\\\\\",1,1,0]\\\\\\\"]\\\",\\\"Profile\\\":\\\"idempotent\\\",\\\"Delta\\\":1}\"},\"Allowed\":true,\"Reason\":\"authorized\"}",
+          "intent_id": "[\"client\",1,1,0]"
+        }
+      ],
+      "adapter_results": [],
+      "admissions": [],
+      "attempts": [
+        {
+          "descriptor": "{\"Intent\":{\"ID\":\"[\\\"client\\\",1,1,0]\",\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"Ordinal\":0,\"Kind\":\"adapter\",\"Target\":\"phase2a.counter\",\"Generation\":1,\"Obligation\":\"increment\",\"Payload\":{\"delta\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false}}},\"Revision\":1}",
+          "id": "[\"authorization\",\"[\\\"client\\\",1,1,0]\"]",
+          "intent_id": "[\"client\",1,1,0]",
+          "result": "{\"ID\":\"[\\\"authorization\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"IntentID\":\"[\\\"client\\\",1,1,0]\",\"Allowed\":true,\"Reason\":\"authorized\",\"Source\":{\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Epoch\":2,\"Sequence\":1,\"Revision\":1},\"ClosureOperation\":\"\"}"
+        }
+      ],
+      "corpus_assets": [],
+      "external_attempts": [],
+      "external_receipts": [],
+      "history": [
+        {
+          "epoch": 2,
+          "generation": 1,
+          "intents": "[{\"ID\":\"[\\\"client\\\",1,1,0]\",\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"Ordinal\":0,\"Kind\":\"adapter\",\"Target\":\"phase2a.counter\",\"Generation\":1,\"Obligation\":\"increment\",\"Payload\":{\"delta\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false}}}]",
+          "selected_observation": null,
+          "sequence": 1,
+          "source_revision": 1,
+          "subject": "client",
+          "successor": "{\"PC\":1,\"Data\":{\"delta\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"operation\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"client\\\",1,1,0]\",\"Flag\":false}},\"Status\":\"open\"}"
+        }
+      ],
+      "intents": [
+        {
+          "descriptor": "{\"ID\":\"[\\\"client\\\",1,1,0]\",\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"Ordinal\":0,\"Kind\":\"adapter\",\"Target\":\"phase2a.counter\",\"Generation\":1,\"Obligation\":\"increment\",\"Payload\":{\"delta\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false}}}",
+          "generation": 1,
+          "id": "[\"client\",1,1,0]",
+          "ordinal": 0,
+          "sequence": 1,
+          "source_revision": 1,
+          "subject": "client"
+        }
+      ],
+      "lifecycle_results": [],
+      "message_acknowledgments": [],
+      "metadata": [
+        {
+          "key_version": 2,
+          "namespace": "269c75c74e5281f328b56773afb7315cf5dfec292259e917e81cc06c1a28b86b",
+          "schema_version": 3,
+          "semantics": "alan/1d/v1",
+          "singleton": 1
+        }
+      ],
+      "observations": [],
+      "permissions": [
+        {
+          "kind": "adapter",
+          "obligation": "increment",
+          "operation": "increment",
+          "revision": 1,
+          "source": "client",
+          "target": "phase2a.counter"
+        }
+      ],
+      "programs": [
+        {
+          "bytes": "{\"Semantics\":\"alan/1e/v1\",\"Code\":[{\"Op\":\"emit\",\"Dst\":\"operation\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":null,\"Bind\":null,\"Effect\":{\"Kind\":\"adapter\",\"Target\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"phase2a.counter\",\"Flag\":false},\"Offset\":null},\"Generation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"Offset\":null},\"Obligation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"increment\",\"Flag\":false},\"Offset\":null},\"Payload\":{\"delta\":{\"Ref\":\"delta\",\"Literal\":null,\"Offset\":null}}},\"Updates\":{},\"Outcome\":\"\"},{\"Op\":\"receive\",\"Dst\":\"\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":{\"Kind\":\"adapter\",\"Provenance\":\"runtime-adapter\",\"Source\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"phase2a.counter\",\"Flag\":false},\"Offset\":null},\"Generation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"Offset\":null},\"Obligation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"increment\",\"Flag\":false},\"Offset\":null},\"Operation\":{\"Ref\":\"operation\",\"Literal\":null,\"Offset\":null}},\"Bind\":{\"disposition\":\"disposition\",\"mutation\":\"mutation\",\"total\":\"total\",\"valid\":\"valid\"},\"Effect\":null,\"Updates\":null,\"Outcome\":\"\"},{\"Op\":\"branch\",\"Dst\":\"\",\"A\":{\"Ref\":\"valid\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"bool\",\"Number\":0,\"Text\":\"\",\"Flag\":true},\"Offset\":null},\"Target\":3,\"Otherwise\":4,\"Match\":null,\"Bind\":null,\"Effect\":null,\"Updates\":null,\"Outcome\":\"\"},{\"Op\":\"end\",\"Dst\":\"\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":null,\"Bind\":null,\"Effect\":null,\"Updates\":null,\"Outcome\":\"succeeded\"},{\"Op\":\"end\",\"Dst\":\"\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":null,\"Bind\":null,\"Effect\":null,\"Updates\":null,\"Outcome\":\"failed\"}],\"Author\":{\"Compiler\":\"alan/author/v1\",\"Name\":\"phase2a-source\",\"Inputs\":{\"ID\":\"3867a437fec79a5ff163eedb2413f1313b0197f7d30d5a504e854e61a910c191\",\"Record\":{\"delta\":{\"Kind\":\"int\",\"MaxBytes\":0,\"Enum\":null}}},\"Outputs\":{\"ID\":\"44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a\",\"Record\":{}},\"Templates\":{},\"Positions\":[\"steps/0:request:incrementoperation\",\"steps/1:await:increment\",\"steps/2:if\",\"steps/2:if/then/0:end:\",\"steps/2:if/else/0:end:\"],\"Labels\":{},\"Effects\":{\"increment\":{\"Capability\":\"phase2a.counter\",\"Input\":{\"ID\":\"3867a437fec79a5ff163eedb2413f1313b0197f7d30d5a504e854e61a910c191\",\"Record\":{\"delta\":{\"Kind\":\"int\",\"MaxBytes\":0,\"Enum\":null}}},\"Output\":{\"ID\":\"f5c8b4f5ada61871444aaea121f28b494f8e98d9d6f95c874b01e5f6f1e54567\",\"Record\":{\"mutation\":{\"Kind\":\"int\",\"MaxBytes\":0,\"Enum\":null},\"total\":{\"Kind\":\"int\",\"MaxBytes\":0,\"Enum\":null}}}}},\"Ports\":{},\"Receives\":{\"1\":{\"ID\":\"d5e6c164945ff53467a4d3c15ce5c2ce5f5127d1af76bd1dbb92f97cd5420cf5\",\"Record\":{\"disposition\":{\"Kind\":\"string\",\"MaxBytes\":128,\"Enum\":null},\"mutation\":{\"Kind\":\"int\",\"MaxBytes\":0,\"Enum\":null},\"total\":{\"Kind\":\"int\",\"MaxBytes\":0,\"Enum\":null},\"valid\":{\"Kind\":\"bool\",\"MaxBytes\":0,\"Enum\":null}}}}}}",
+          "id": "7bded51b5eacb92a78417c99dc330d203572933a4007b8fa0acefd914e495086",
+          "semantics": "alan/1e/v1"
+        }
+      ],
+      "run_origins": [
+        {
+          "descriptor": "{\"Subject\":{\"ID\":\"client\",\"Generation\":1,\"Owner\":\"owner:client\",\"Revision\":1,\"Retired\":false,\"RetryCancelled\":false},\"ProgramID\":\"7bded51b5eacb92a78417c99dc330d203572933a4007b8fa0acefd914e495086\",\"Initial\":{\"PC\":0,\"Data\":{\"delta\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false}},\"Status\":\"open\"}}",
+          "generation": 1,
+          "kind": "root",
+          "operation_id": null,
+          "predecessor_generation": null,
+          "subject": "client"
+        }
+      ],
+      "runs": [
+        {
+          "epoch": 2,
+          "generation": 1,
+          "initial": "{\"PC\":0,\"Data\":{\"delta\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false}},\"Status\":\"open\"}",
+          "program_id": "7bded51b5eacb92a78417c99dc330d203572933a4007b8fa0acefd914e495086",
+          "projection": "{\"PC\":1,\"Data\":{\"delta\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"operation\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"client\\\",1,1,0]\",\"Flag\":false}},\"Status\":\"open\"}",
+          "sequence": 1,
+          "subject": "client"
+        }
+      ],
+      "settlements": [],
+      "subjects": [
+        {
+          "generation": 1,
+          "id": "client",
+          "owner": "owner:client",
+          "retired": 0,
+          "retry_cancelled": 0,
+          "revision": 1
+        }
+      ],
+      "terminal_obligations": []
+    },
+    "Roots": null
+  },
+  "before_local_store": "/private/tmp/alan-phase2a/docs/foundational/phase2a/evidence/process-race/TestPhase2PairedCrashCuts_adapter-replay-U0-cut-before-local.sqlite.gz",
+  "before_world_store": "/private/tmp/alan-phase2a/docs/foundational/phase2a/evidence/process-race/TestPhase2PairedCrashCuts_adapter-replay-U0-cut-before-world.sqlite.gz",
+  "endpoint_after": {
+    "ForeignKeys": 1,
+    "BusyTimeoutMS": 5000,
+    "SQLiteVersion": "3.53.4",
+    "SQLiteSourceID": "2026-07-24 19:02:57 bf7c7f30031888f4e796e429ab3978879485813aaca6f641c7b33e4e09459bcc",
+    "JournalMode": "wal",
+    "Synchronous": 2,
+    "QueryOnly": 1,
+    "Requests": null,
+    "Applications": [],
+    "Total": 0,
+    "Contacts": 0
+  },
+  "endpoint_before": {
+    "ForeignKeys": 1,
+    "BusyTimeoutMS": 5000,
+    "SQLiteVersion": "3.53.4",
+    "SQLiteSourceID": "2026-07-24 19:02:57 bf7c7f30031888f4e796e429ab3978879485813aaca6f641c7b33e4e09459bcc",
+    "JournalMode": "wal",
+    "Synchronous": 2,
+    "QueryOnly": 1,
+    "Requests": null,
+    "Applications": [],
+    "Total": 0,
+    "Contacts": 0
+  },
+  "ingress_after": "",
+  "ingress_before": "",
+  "report": {
+    "Namespace": "269c75c74e5281f328b56773afb7315cf5dfec292259e917e81cc06c1a28b86b",
+    "SQLiteVersion": "3.53.4",
+    "SQLiteSourceID": "2026-07-24 19:02:57 bf7c7f30031888f4e796e429ab3978879485813aaca6f641c7b33e4e09459bcc",
+    "HistoryCount": 1,
+    "IntentCount": 1,
+    "Runs": [
+      {
+        "ID": {
+          "Subject": "client",
+          "Generation": 1
+        },
+        "ProgramID": "7bded51b5eacb92a78417c99dc330d203572933a4007b8fa0acefd914e495086",
+        "Epoch": 2,
+        "Sequence": 1,
+        "Revision": 1,
+        "Projection": {
+          "PC": 1,
+          "Data": {
+            "delta": {
+              "Kind": "int",
+              "Number": 1,
+              "Text": "",
+              "Flag": false
+            },
+            "operation": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"client\",1,1,0]",
+              "Flag": false
+            }
+          },
+          "Status": "open"
+        }
+      }
+    ],
+    "Roots": null
+  }
+}
