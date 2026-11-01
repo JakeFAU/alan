@@ -84,7 +84,7 @@ func validateLedger(ctx context.Context, q queryer, limits Limits) (ReplayReport
 	switch n {
 	case SchemaVersion:
 		return validateOrdinaryLedger(ctx, q, limits)
-	case compositionSchemaVersion:
+	case compositionSchemaVersion, reconciliationSchemaVersion:
 		enabled, err := compositionProtocol(ctx, q)
 		if err != nil {
 			return ReplayReport{}, err

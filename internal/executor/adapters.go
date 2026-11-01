@@ -24,6 +24,8 @@ type AdapterAttempt struct {
 	Reason          string
 }
 type AdapterResult struct {
+	Read        *receiptReadDecision   `json:",omitempty"`
+	Reconciled  *receiptReconstruction `json:",omitempty"`
 	Digest      string
 	Candidate   effects.Candidate
 	Values      map[string]Value
@@ -31,12 +33,15 @@ type AdapterResult struct {
 }
 
 type adapterWork struct {
+	read    *receiptReadOrdinal
+	refusal string
 	attempt AdapterAttempt
 	adapter effects.Adapter
 	timeout time.Duration
 	event   boundary.Event
 }
 type adapterCompletion struct {
+	read      *receiptReadOrdinal
 	attempt   AdapterAttempt
 	candidate effects.Candidate
 	event     boundary.Event
@@ -113,7 +118,7 @@ func loadAdapterResult(ctx context.Context, q queryer, id string) (AdapterResult
 	if e != nil {
 		return r, e
 	}
-	if decode(b, &r) != nil || !sameJSON(b, r) || r.Candidate.ID != id {
+	if decode(b, &r) != nil || !sameJSON(b, r) || (r.Reconciled == nil && r.Candidate.ID != id || r.Reconciled != nil && r.Reconciled.Target != id) {
 		return r, corrupt("adapter result encoding")
 	}
 	return r, nil
@@ -137,8 +142,19 @@ func (s *Store) prepareAdapterWork(ctx context.Context, id string, registry map[
 	if e == nil {
 		s.mu.Unlock()
 		record := recordedDispatch{id: id, kind: "adapter", source: old.Intent.Run}
-		if present, err := s.settleRecordedDispatch(ctx, record); err != nil || present || old.Allowed {
+		if present, err := s.settleRecordedDispatch(ctx, record); err != nil || present {
 			return nil, err
+		}
+		if old.Allowed {
+			if !s.reconciliation || old.Intent.Target != receiptReadCapability {
+				return nil, nil
+			}
+			reader, ok := controlledReader(registry[old.Intent.Target])
+			if !ok || reader.Endpoint != old.Prepared.Endpoint {
+				return nil, fmt.Errorf("bound receipt reader unavailable")
+			}
+			event := boundary.Event{Boundary: "adapter.authorized", Phase: "pre-transport", Subject: old.Intent.Run.Subject, Generation: old.Intent.Run.Generation, Sequence: old.Intent.Sequence, Intent: id, Attempt: old.AuthorizationID}
+			return &adapterWork{attempt: old, adapter: reader, event: event, timeout: timeout}, nil
 		}
 		disposition := "source_denied"
 		if old.Reason == "grant_denied" {
@@ -162,6 +178,16 @@ func (s *Store) prepareAdapterWork(ctx context.Context, id string, registry map[
 	adapter := registry[intent.Target]
 	if adapter == nil {
 		return nil, fmt.Errorf("adapter capability %q unavailable", intent.Target)
+	}
+	if s.reconciliation {
+		if intent.Target == receiptReadCapability {
+			if _, ok := controlledReader(adapter); !ok {
+				return nil, fmt.Errorf("untrusted receipt reader")
+			}
+		}
+		if intent.Target == receiptCounterCapability && !controlledCounter(adapter) {
+			return nil, fmt.Errorf("untrusted controlled counter")
+		}
 	}
 	// No locks, I/O or durable authority are exposed to Prepare. Implementations are
 	// trusted to follow the documented pure/bounded contract.
@@ -241,7 +267,11 @@ func (s *Store) prepareAdapterWork(ctx context.Context, id string, registry map[
 	return &adapterWork{attempt: effects.Copy(a), adapter: adapter, timeout: timeout, event: event}, nil
 }
 func transportAdapter(ctx context.Context, w adapterWork) adapterCompletion {
-	r := adapterCompletion{attempt: w.attempt, event: w.event}
+	r := adapterCompletion{attempt: w.attempt, event: w.event, read: w.read}
+	if w.refusal != "" {
+		r.candidate = effects.Candidate{ID: w.attempt.Intent.ID, Key: w.attempt.Prepared.Request.Key, Disposition: w.refusal}
+		return r
+	}
 	if e := boundary.Reached(ctx, w.event); e != nil {
 		r.err = e
 		return r
@@ -252,7 +282,12 @@ func transportAdapter(ctx context.Context, w adapterWork) adapterCompletion {
 		r.err = err
 		return r
 	}
-	r.candidate = w.adapter.Execute(limited, effects.Copy(w.attempt.Prepared))
+	if w.read != nil {
+		reader, _ := controlledReader(w.adapter)
+		r.candidate = reader.ExecuteRead(limited, effects.Copy(w.attempt.Prepared), w.read.Query)
+	} else {
+		r.candidate = w.adapter.Execute(limited, effects.Copy(w.attempt.Prepared))
+	}
 	r.event.Boundary = "adapter.response"
 	r.event.Phase = "pre-record"
 	r.err = boundary.Reached(ctx, r.event)
@@ -269,7 +304,13 @@ func (s *Store) accountAdapter(ctx context.Context, c adapterCompletion) error {
 		e.Phase = "unresolved"
 		return errors.Join(c.err, boundary.Reached(ctx, e))
 	}
-	r, e := s.recordAdapterResult(ctx, c.attempt, c.candidate)
+	var r AdapterResult
+	var e error
+	if c.read != nil {
+		r, e = s.recordReadResult(ctx, c.attempt, *c.read, c.candidate)
+	} else {
+		r, e = s.recordAdapterResult(ctx, c.attempt, c.candidate)
+	}
 	if e != nil {
 		return errors.Join(c.err, e)
 	}
@@ -279,7 +320,12 @@ func (s *Store) accountAdapter(ctx context.Context, c adapterCompletion) error {
 	if e = boundary.Reached(ctx, event); e != nil {
 		return errors.Join(c.err, e)
 	}
-	if e = s.settleAdapter(ctx, c.attempt, r); e != nil {
+	if r.Read != nil {
+		_, e = s.settleRecordedDispatch(ctx, recordedDispatch{id: c.attempt.Intent.ID, kind: "adapter", source: c.attempt.Intent.Run})
+	} else {
+		e = s.settleAdapter(ctx, c.attempt, r)
+	}
+	if e != nil {
 		return errors.Join(c.err, e)
 	}
 	event.Boundary = "adapter.settled"
@@ -431,6 +477,12 @@ func validateAdapterResult(a AdapterAttempt, r AdapterResult, l Limits) error {
 	if r.Digest == "" || r.Digest != adapterResultDigest(r) {
 		return corrupt("adapter result digest")
 	}
+	if r.Reconciled != nil {
+		if r.Read != nil || !a.Allowed || !reflect.DeepEqual(r.Candidate, effects.Candidate{}) || r.Reconciled.Target != a.Intent.ID || r.Disposition != "validated" || publicschema.ValidateResult(a.Prepared.Request.Output.Record, r.Values) != nil {
+			return corrupt("reconciled result envelope")
+		}
+		return checkSize(r, l.MaxObservationBytes)
+	}
 	c := r.Candidate
 	if c.ID != a.Intent.ID || c.Key != a.Prepared.Request.Key || c.Disposition == "" || c.Disposition == "unknown" {
 		return corrupt("adapter result correlation")
@@ -448,6 +500,10 @@ func validateAdapterResult(a AdapterAttempt, r AdapterResult, l Limits) error {
 		}
 	}
 	values, d := effects.Result(a.Prepared.Request.Output.Record, c)
+	if r.Read != nil && d == "validated" {
+		values["adoption"] = Text(r.Read.Adoption)
+		values["adopted"] = publicschema.Bool(r.Read.Adoption == "adopted")
+	}
 	if d != r.Disposition || !reflect.DeepEqual(values, r.Values) || publicschema.ValidateResult(a.Prepared.Request.Output.Record, r.Values) != nil {
 		return corrupt("adapter result validation")
 	}
@@ -483,6 +539,18 @@ func validateAdapters(ctx context.Context, q queryer, l Limits) error {
 		if e = validateAdapterResult(a, r, l); e != nil {
 			return e
 		}
+		if r.Read != nil || r.Reconciled != nil {
+			version, err := schemaNumber(ctx, q)
+			if err != nil {
+				return err
+			}
+			if version != reconciliationSchemaVersion {
+				return corrupt("receipt proof in legacy schema")
+			}
+		}
+	}
+	if e = validateReceiptLedger(ctx, q, namespace, ids); e != nil {
+		return e
 	}
 	return validateAdapterEdges(ctx, q, l)
 }

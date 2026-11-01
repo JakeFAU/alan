@@ -18,7 +18,7 @@ type compositionReservation struct {
 
 func compositionProtocol(ctx context.Context, q queryer) (bool, error) {
 	n, err := schemaNumber(ctx, q)
-	if err != nil || n != compositionSchemaVersion {
+	if err != nil || !isCompositionSchema(n) {
 		return false, err
 	}
 	var version string

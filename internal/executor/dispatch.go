@@ -19,8 +19,10 @@ type DispatchAuthority struct {
 var ErrDispatchAuthorityOpen = errors.New("dispatch authority is still open")
 
 type dispatchOpportunity struct {
-	source RunID
-	done   chan struct{}
+	source      RunID
+	read        *receiptReadOrdinal
+	readRefusal string
+	done        chan struct{}
 }
 
 // Add and Close's prohibition on further Add calls serialize via ownerMu.
@@ -86,6 +88,12 @@ func (s *Store) registerDispatch(ctx context.Context, id string) (*dispatchOppor
 		return nil, "", err
 	}
 	op := &dispatchOpportunity{source: intent.Run, done: make(chan struct{})}
+	if s.reconciliation && intent.Kind == "adapter" && intent.Target == receiptReadCapability {
+		op.read, op.readRefusal, err = s.reserveReadLocked(ctx, id)
+		if err != nil {
+			return nil, "", err
+		}
+	}
 	if s.liveDispatch == nil {
 		s.liveDispatch = make(map[*dispatchOpportunity]struct{})
 	}
@@ -340,7 +348,10 @@ func (s *Store) settleRecordedDispatch(ctx context.Context, r recordedDispatch) 
 		if err = validateAdapterResult(attempt, result, s.limits); err != nil {
 			return false, err
 		}
-		handlingErr = s.settleAdapterLocked(ctx, attempt, result)
+		handlingErr = s.settleReadOriginalLocked(ctx, attempt, result)
+		if handlingErr == nil {
+			handlingErr = s.settleAdapterLocked(ctx, attempt, result)
+		}
 	default:
 		return false, ErrCorrupt
 	}

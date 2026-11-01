@@ -115,6 +115,8 @@ func appendCompositionFact(ctx context.Context, tx *sql.Tx, f compositionFact) (
 	}
 	var expected compositionFact
 	switch f.Kind {
+	case compositionReadFact:
+		expected, err = receiptReadFact(ctx, tx, f.OperationID, int(f.Sequence))
 	case compositionExecutionFact:
 		expected, err = compositionExecutionEvidence(ctx, tx, f.Run, f.Sequence)
 	case compositionLifecycleFact:

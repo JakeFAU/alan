@@ -11,18 +11,22 @@ import (
 // Schema3 is not altered. Schema4 adds immutable composition evidence. The
 // foundation profile requires empty protocol tables; the complete profile checks
 // every source and reverse link before activation.
-const compositionSchema = `
+const compositionSchemaBeforeRead = `
 CREATE TABLE composition_profile (singleton INTEGER PRIMARY KEY CHECK(singleton=1), version TEXT NOT NULL, descriptor BLOB NOT NULL);
 CREATE TABLE composition_roots (id TEXT PRIMARY KEY, descriptor BLOB NOT NULL);
 CREATE TABLE composition_static_members (subject TEXT NOT NULL, generation INTEGER NOT NULL CHECK(generation=1), root_id TEXT NOT NULL REFERENCES composition_roots(id), descriptor BLOB NOT NULL, PRIMARY KEY(subject,generation), FOREIGN KEY(subject,generation) REFERENCES runs(subject,generation));
 CREATE TABLE composition_templates (id TEXT PRIMARY KEY, descriptor BLOB NOT NULL);
-CREATE TABLE composition_facts (decision_order INTEGER PRIMARY KEY CHECK(decision_order>0), id TEXT NOT NULL UNIQUE, kind TEXT NOT NULL CHECK(kind IN ('execution','lifecycle','admission','reservation','reply','freeze','outcome','authorization','external_result')), descriptor BLOB NOT NULL);
+CREATE TABLE composition_facts (decision_order INTEGER PRIMARY KEY CHECK(decision_order>0), id TEXT NOT NULL UNIQUE, kind TEXT NOT NULL CHECK(kind IN ('execution','lifecycle','admission','reservation','reply','freeze','outcome','authorization','external_result'`
+const compositionSchemaAfterRead = `)), descriptor BLOB NOT NULL);
 CREATE TABLE composition_invocations (id TEXT PRIMARY KEY, operation_id TEXT NOT NULL UNIQUE REFERENCES intents(id), template_id TEXT NOT NULL REFERENCES composition_templates(id), root_id TEXT NOT NULL REFERENCES composition_roots(id), descriptor BLOB NOT NULL, admission BLOB NOT NULL);
 CREATE TABLE composition_bindings (id TEXT PRIMARY KEY, invocation_id TEXT NOT NULL UNIQUE REFERENCES composition_invocations(id), descriptor BLOB NOT NULL);
 CREATE TABLE composition_members (subject TEXT NOT NULL, generation INTEGER NOT NULL CHECK(generation=1), invocation_id TEXT NOT NULL REFERENCES composition_invocations(id), root_id TEXT NOT NULL REFERENCES composition_roots(id), member TEXT NOT NULL, descriptor BLOB NOT NULL, PRIMARY KEY(subject,generation), UNIQUE(invocation_id,member), FOREIGN KEY(subject,generation) REFERENCES runs(subject,generation));
 CREATE TABLE composition_results (invocation_id TEXT PRIMARY KEY REFERENCES composition_invocations(id), decision_order INTEGER NOT NULL UNIQUE REFERENCES composition_facts(decision_order), descriptor BLOB NOT NULL);
 CREATE TABLE composition_charges (operation_id TEXT NOT NULL REFERENCES intents(id), kind TEXT NOT NULL CHECK(kind IN ('invocation','effect')), root_id TEXT NOT NULL REFERENCES composition_roots(id), decision_order INTEGER NOT NULL REFERENCES composition_facts(decision_order), descriptor BLOB NOT NULL, PRIMARY KEY(operation_id,kind));
 `
+
+const compositionSchema = compositionSchemaBeforeRead + compositionSchemaAfterRead
+const compositionReconciliationSchema = compositionSchemaBeforeRead + ",'receipt_read'" + compositionSchemaAfterRead
 
 func createCompositionStore(ctx context.Context, path string, p Provision, c compositionProvision, l Limits) (*Store, error) {
 	return createStore(ctx, path, p, l, &c)
@@ -34,16 +38,6 @@ func schemaNumber(ctx context.Context, q queryer) (int, error) {
 	var n int
 	err := q.QueryRowContext(ctx, "SELECT schema_version FROM metadata WHERE singleton=1").Scan(&n)
 	return n, err
-}
-func requireSchema(ctx context.Context, q queryer, want int) error {
-	n, err := schemaNumber(ctx, q)
-	if err != nil {
-		return err
-	}
-	if n != want {
-		return ErrVersion
-	}
-	return nil
 }
 func retainCompositionProfile(ctx context.Context, q queryer, namespace string, c compositionProvision, l Limits) (*compositionProfile, error) {
 	if err := validateCompositionEncoding(c); err != nil {
@@ -238,8 +232,12 @@ func provisionComposition(ctx context.Context, tx *sql.Tx, namespace string, c c
 	return p, nil
 }
 func readCompositionProfile(ctx context.Context, q queryer, l Limits) (*compositionProfile, error) {
-	if err := requireSchema(ctx, q, compositionSchemaVersion); err != nil {
+	n, err := schemaNumber(ctx, q)
+	if err != nil {
 		return nil, err
+	}
+	if !isCompositionSchema(n) {
+		return nil, ErrVersion
 	}
 	namespace, err := readNamespace(ctx, q)
 	if err != nil {
