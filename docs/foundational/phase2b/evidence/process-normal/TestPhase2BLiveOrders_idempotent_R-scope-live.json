@@ -1,0 +1,1381 @@
+{
+  "events": [
+    {
+      "Scenario": "",
+      "Token": "",
+      "Store": "",
+      "Boundary": "execution.staged",
+      "Phase": "pre-commit",
+      "Subject": "client",
+      "PID": 0,
+      "Generation": 1,
+      "Epoch": 1,
+      "Sequence": 1,
+      "Intent": "[\"client\",1,1,0]",
+      "Attempt": "",
+      "InFlight": null
+    },
+    {
+      "Scenario": "",
+      "Token": "",
+      "Store": "",
+      "Boundary": "execution.committed",
+      "Phase": "post-commit",
+      "Subject": "client",
+      "PID": 0,
+      "Generation": 1,
+      "Epoch": 1,
+      "Sequence": 1,
+      "Intent": "[\"client\",1,1,0]",
+      "Attempt": "",
+      "InFlight": null
+    },
+    {
+      "Scenario": "",
+      "Token": "",
+      "Store": "",
+      "Boundary": "intent.authorized",
+      "Phase": "authorized",
+      "Subject": "client",
+      "PID": 0,
+      "Generation": 1,
+      "Epoch": 1,
+      "Sequence": 1,
+      "Intent": "[\"client\",1,1,0]",
+      "Attempt": "[\"authorization\",\"[\\\"client\\\",1,1,0]\"]",
+      "InFlight": null
+    },
+    {
+      "Scenario": "",
+      "Token": "",
+      "Store": "",
+      "Boundary": "dispatch.consider",
+      "Phase": "pre-admission",
+      "Subject": "client",
+      "PID": 0,
+      "Generation": 1,
+      "Epoch": 1,
+      "Sequence": 1,
+      "Intent": "[\"client\",1,1,0]",
+      "Attempt": "[\"authorization\",\"[\\\"client\\\",1,1,0]\"]",
+      "InFlight": null
+    },
+    "R confirmed against durable source/scope",
+    "successful Q while consideration held before A",
+    "release held opportunity",
+    {
+      "Scenario": "",
+      "Token": "",
+      "Store": "",
+      "Boundary": "dispatch.refused",
+      "Phase": "scope_closed",
+      "Subject": "client",
+      "PID": 0,
+      "Generation": 1,
+      "Epoch": 1,
+      "Sequence": 1,
+      "Intent": "[\"client\",1,1,0]",
+      "Attempt": "[\"authorization\",\"[\\\"client\\\",1,1,0]\"]",
+      "InFlight": null
+    },
+    {
+      "Scenario": "",
+      "Token": "",
+      "Store": "",
+      "Boundary": "execution.staged",
+      "Phase": "terminal",
+      "Subject": "operator",
+      "PID": 0,
+      "Generation": 1,
+      "Epoch": 1,
+      "Sequence": 3,
+      "Intent": "",
+      "Attempt": "",
+      "InFlight": null
+    },
+    {
+      "Scenario": "",
+      "Token": "",
+      "Store": "",
+      "Boundary": "execution.committed",
+      "Phase": "terminal",
+      "Subject": "operator",
+      "PID": 0,
+      "Generation": 1,
+      "Epoch": 1,
+      "Sequence": 3,
+      "Intent": "",
+      "Attempt": "",
+      "InFlight": null
+    },
+    {
+      "Scenario": "",
+      "Token": "",
+      "Store": "",
+      "Boundary": "intent.authorized",
+      "Phase": "authorized",
+      "Subject": "operator",
+      "PID": 0,
+      "Generation": 1,
+      "Epoch": 1,
+      "Sequence": 3,
+      "Intent": "[\"operator\",1,2,0]",
+      "Attempt": "[\"authorization\",\"[\\\"operator\\\",1,2,0]\"]",
+      "InFlight": null
+    },
+    {
+      "Scenario": "",
+      "Token": "",
+      "Store": "",
+      "Boundary": "lifecycle.decided",
+      "Phase": "accepted",
+      "Subject": "operator",
+      "PID": 0,
+      "Generation": 1,
+      "Epoch": 1,
+      "Sequence": 3,
+      "Intent": "[\"operator\",1,2,0]",
+      "Attempt": "[\"authorization\",\"[\\\"operator\\\",1,2,0]\"]",
+      "InFlight": null
+    },
+    "successful Q after Run handling"
+  ],
+  "final": {
+    "Namespace": "f0a9b760e6d8a52fa332c8b0557117ea49d42db823054f3e599a40533bab997a",
+    "KeyVersion": 2,
+    "Settings": {
+      "JournalMode": "wal",
+      "SQLiteVersion": "3.53.4",
+      "SQLiteSourceID": "2026-07-24 19:02:57 bf7c7f30031888f4e796e429ab3978879485813aaca6f641c7b33e4e09459bcc",
+      "Synchronous": 2,
+      "ForeignKeys": 1,
+      "BusyTimeoutMS": 5000,
+      "QueryOnly": 1
+    },
+    "Tables": {
+      "adapter_attempts": [],
+      "adapter_results": [],
+      "admissions": [
+        {
+          "descriptor": "{\"TransportID\":\"operator\",\"Kind\":\"input\",\"LogicalID\":\"operator\",\"Source\":{\"Subject\":\"local\",\"Generation\":1},\"Target\":\"operator\",\"Generation\":1,\"Obligation\":\"control\",\"Operation\":\"\",\"Payload\":{\"target\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"scope\",\"Flag\":false}},\"IntentID\":\"\",\"TerminalSequence\":0}",
+          "domain": "input",
+          "id": "[\"admission\",\"input\",\"operator\"]",
+          "observation_id": "[\"observation\",\"input\",\"operator\"]",
+          "result": "{\"TransportID\":\"operator\",\"Accepted\":true,\"Reason\":\"accepted\",\"Bound\":{\"Subject\":\"operator\",\"Generation\":1},\"ObservationID\":\"[\\\"observation\\\",\\\"input\\\",\\\"operator\\\"]\"}",
+          "transport_id": "operator"
+        },
+        {
+          "descriptor": "{\"TransportID\":\"[\\\"lifecycle-delivery\\\",\\\"[\\\\\\\"operator\\\\\\\",1,2,0]\\\"]\",\"Kind\":\"lifecycle\",\"LogicalID\":\"[\\\"operator\\\",1,2,0]\",\"Source\":{\"Subject\":\"scope\",\"Generation\":1},\"Target\":\"operator\",\"Generation\":1,\"Obligation\":\"control\",\"Operation\":\"[\\\"operator\\\",1,2,0]\",\"Payload\":{\"accepted\":{\"Kind\":\"bool\",\"Number\":0,\"Text\":\"\",\"Flag\":true},\"disposition\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"target_decision\",\"Flag\":false},\"reason\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"closed\",\"Flag\":false},\"successor\":{\"Kind\":\"int\",\"Number\":0,\"Text\":\"\",\"Flag\":false}},\"IntentID\":\"[\\\"operator\\\",1,2,0]\",\"TerminalSequence\":0}",
+          "domain": "lifecycle",
+          "id": "[\"admission\",\"lifecycle\",\"[\\\"lifecycle-delivery\\\",\\\"[\\\\\\\"operator\\\\\\\",1,2,0]\\\"]\"]",
+          "observation_id": "[\"observation\",\"lifecycle\",\"[\\\"operator\\\",1,2,0]\"]",
+          "result": "{\"TransportID\":\"[\\\"lifecycle-delivery\\\",\\\"[\\\\\\\"operator\\\\\\\",1,2,0]\\\"]\",\"Accepted\":true,\"Reason\":\"settled\",\"Bound\":{\"Subject\":\"operator\",\"Generation\":1},\"ObservationID\":\"[\\\"observation\\\",\\\"lifecycle\\\",\\\"[\\\\\\\"operator\\\\\\\",1,2,0]\\\"]\"}",
+          "transport_id": "[\"lifecycle-delivery\",\"[\\\"operator\\\",1,2,0]\"]"
+        }
+      ],
+      "attempts": [
+        {
+          "descriptor": "{\"Intent\":{\"ID\":\"[\\\"client\\\",1,1,0]\",\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"Ordinal\":0,\"Kind\":\"external\",\"Target\":\"http://127.0.0.1:49604/apply\",\"Generation\":1,\"Obligation\":\"receipt\",\"Payload\":{\"delta\":{\"Kind\":\"int\",\"Number\":5,\"Text\":\"\",\"Flag\":false},\"profile\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"idempotent\",\"Flag\":false}}},\"Revision\":1}",
+          "id": "[\"authorization\",\"[\\\"client\\\",1,1,0]\"]",
+          "intent_id": "[\"client\",1,1,0]",
+          "result": "{\"ID\":\"[\\\"authorization\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"IntentID\":\"[\\\"client\\\",1,1,0]\",\"Allowed\":true,\"Reason\":\"authorized\",\"Source\":{\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Epoch\":1,\"Sequence\":1,\"Revision\":1},\"ClosureOperation\":\"\"}"
+        },
+        {
+          "descriptor": "{\"Intent\":{\"ID\":\"[\\\"operator\\\",1,2,0]\",\"Run\":{\"Subject\":\"operator\",\"Generation\":1},\"Sequence\":2,\"Ordinal\":0,\"Kind\":\"lifecycle\",\"Target\":\"scope\",\"Generation\":1,\"Obligation\":\"control\",\"Payload\":{\"operation\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"CancelRun\",\"Flag\":false},\"revision\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false}}},\"Revision\":1}",
+          "id": "[\"authorization\",\"[\\\"operator\\\",1,2,0]\"]",
+          "intent_id": "[\"operator\",1,2,0]",
+          "result": "{\"ID\":\"[\\\"authorization\\\",\\\"[\\\\\\\"operator\\\\\\\",1,2,0]\\\"]\",\"IntentID\":\"[\\\"operator\\\",1,2,0]\",\"Allowed\":true,\"Reason\":\"authorized\",\"Source\":{\"Run\":{\"Subject\":\"operator\",\"Generation\":1},\"Epoch\":1,\"Sequence\":2,\"Revision\":1},\"ClosureOperation\":\"\"}"
+        }
+      ],
+      "composition_admission_decisions": [],
+      "composition_bindings": [],
+      "composition_charges": [
+        {
+          "decision_order": 3,
+          "descriptor": "{\"RootID\":\"6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f\",\"OperationID\":\"[\\\"client\\\",1,1,0]\",\"Kind\":\"effect\",\"Invocations\":0,\"CreatedRuns\":0,\"Effects\":1,\"DecisionOrder\":3}",
+          "kind": "effect",
+          "operation_id": "[\"client\",1,1,0]",
+          "root_id": "6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f"
+        }
+      ],
+      "composition_closures": [],
+      "composition_deployment": [
+        {
+          "descriptor": "{\"Subjects\":[{\"ID\":\"client\",\"Generation\":1,\"Owner\":\"owner:client\",\"Revision\":1,\"Retired\":false,\"RetryCancelled\":false},{\"ID\":\"operator\",\"Generation\":1,\"Owner\":\"owner:operator\",\"Revision\":1,\"Retired\":false,\"RetryCancelled\":false},{\"ID\":\"scope\",\"Generation\":1,\"Owner\":\"owner:scope\",\"Revision\":1,\"Retired\":false,\"RetryCancelled\":false}],\"Runs\":[{\"ID\":{\"Subject\":\"client\",\"Generation\":1},\"ProgramID\":\"cceb9cd6b8e728c9abe306f25b0ad2ee71a29e7331de06763ba50883b658b7d8\",\"Projection\":{\"PC\":0,\"Data\":{},\"Status\":\"open\"}},{\"ID\":{\"Subject\":\"operator\",\"Generation\":1},\"ProgramID\":\"e245d4971628887625415d638164016dce41005c1191e92b6ea56bb1f1375e4b\",\"Projection\":{\"PC\":0,\"Data\":{},\"Status\":\"open\"}},{\"ID\":{\"Subject\":\"scope\",\"Generation\":1},\"ProgramID\":\"4a28000c4d55b29783b35a164213536789eb0073a79e5e894b3256ac2f8f2bf3\",\"Projection\":{\"PC\":0,\"Data\":{},\"Status\":\"open\"}}]}",
+          "singleton": 1
+        }
+      ],
+      "composition_facts": [
+        {
+          "decision_order": 1,
+          "descriptor": "{\"Version\":\"alan/composition-fact/v1\",\"ID\":\"85cd74011527f578c002149b65e2b22b22a22d3fc6145b2d4fd4e55bcd144679\",\"Kind\":\"execution\",\"Order\":1,\"RootIDs\":[\"6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f\"],\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"OperationID\":\"\",\"RecordDigest\":\"8dd6278a80998f4a0383137df419293494df5eecfa41328d7eecf9be72d2f4fe\"}",
+          "id": "85cd74011527f578c002149b65e2b22b22a22d3fc6145b2d4fd4e55bcd144679",
+          "kind": "execution"
+        },
+        {
+          "decision_order": 2,
+          "descriptor": "{\"Version\":\"alan/composition-fact/v1\",\"ID\":\"3f83037a6fbe17bf408e2c4ca7e3c5ead6122e8c995632a617f8de45693610a8\",\"Kind\":\"authorization\",\"Order\":2,\"RootIDs\":[\"6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f\"],\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"OperationID\":\"[\\\"client\\\",1,1,0]\",\"RecordDigest\":\"442b8dcabfa2acac9089475ced635a6f2ada719b85d66aad5aed05053f3a1e78\"}",
+          "id": "3f83037a6fbe17bf408e2c4ca7e3c5ead6122e8c995632a617f8de45693610a8",
+          "kind": "authorization"
+        },
+        {
+          "decision_order": 3,
+          "descriptor": "{\"Version\":\"alan/composition-fact/v1\",\"ID\":\"174a847c26e190bca9b0d6615e84b082f5990ab35d156fa715d5206efb3bb290\",\"Kind\":\"reservation\",\"Order\":3,\"RootIDs\":[\"6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f\"],\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"OperationID\":\"[\\\"client\\\",1,1,0]\",\"RecordDigest\":\"520c1d1da10f711a2e4c1de453dfded7e3d843298883695b97336f46ce1d169d\"}",
+          "id": "174a847c26e190bca9b0d6615e84b082f5990ab35d156fa715d5206efb3bb290",
+          "kind": "reservation"
+        },
+        {
+          "decision_order": 4,
+          "descriptor": "{\"Version\":\"alan/composition-fact/v1\",\"ID\":\"a63ab3e08a82fef3fbeff25e7a376779249c9618dd453307cd08fe38d61121a5\",\"Kind\":\"lifecycle\",\"Order\":4,\"RootIDs\":[\"6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f\"],\"Run\":{\"Subject\":\"scope\",\"Generation\":1},\"Sequence\":0,\"OperationID\":\"[\\\"operator\\\",1,2,0]\",\"RecordDigest\":\"6fb9163e20281005e5633009c1a26311e97927f315adf5d0b15d640d80384172\"}",
+          "id": "a63ab3e08a82fef3fbeff25e7a376779249c9618dd453307cd08fe38d61121a5",
+          "kind": "lifecycle"
+        },
+        {
+          "decision_order": 5,
+          "descriptor": "{\"Version\":\"alan/composition-fact/v1\",\"ID\":\"d4b49178b1b7f68135e260cac116ecb51a6818535702df79c8f54a2539542d65\",\"Kind\":\"freeze\",\"Order\":5,\"RootIDs\":[\"6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f\"],\"Run\":{\"Subject\":\"scope\",\"Generation\":1},\"Sequence\":0,\"OperationID\":\"root:6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f\",\"RecordDigest\":\"08c94605bc992d3adc4e74ee40fa93edaf7615ac1e17fa87af181296df4d5eb0\"}",
+          "id": "d4b49178b1b7f68135e260cac116ecb51a6818535702df79c8f54a2539542d65",
+          "kind": "freeze"
+        },
+        {
+          "decision_order": 6,
+          "descriptor": "{\"Version\":\"alan/composition-fact/v1\",\"ID\":\"a91c2f00dd162cab86d57cbe3280516928a753bf76c38ef284515bc45b71fcc3\",\"Kind\":\"outcome\",\"Order\":6,\"RootIDs\":[\"6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f\"],\"Run\":{\"Subject\":\"scope\",\"Generation\":1},\"Sequence\":0,\"OperationID\":\"root:6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f\",\"RecordDigest\":\"eebd4f2a67d2bbcd0ee78cf68c9fbf55740457a177b95095d2f84045ad505712\"}",
+          "id": "a91c2f00dd162cab86d57cbe3280516928a753bf76c38ef284515bc45b71fcc3",
+          "kind": "outcome"
+        }
+      ],
+      "composition_freezes": [
+        {
+          "descriptor": "{\"InvocationID\":\"root:6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f\",\"Trigger\":\"a63ab3e08a82fef3fbeff25e7a376779249c9618dd453307cd08fe38d61121a5\",\"Run\":{\"Subject\":\"scope\",\"Generation\":1},\"Sequence\":0,\"DecisionOrder\":5,\"Status\":\"cancelled\",\"ReplyIntents\":[],\"InvocationIntents\":[],\"ExternalIntents\":[\"[\\\"client\\\",1,1,0]\"]}",
+          "root_id": "6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f",
+          "scope_id": "root:6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f"
+        }
+      ],
+      "composition_invocations": [],
+      "composition_members": [],
+      "composition_outcome_deliveries": [],
+      "composition_permissions": [
+        {
+          "descriptor": "[{\"Kind\":\"external\",\"Source\":\"client\",\"Target\":\"http://127.0.0.1:49604/apply\",\"Operation\":\"apply\",\"Revision\":1,\"Obligation\":\"\"},{\"Kind\":\"input\",\"Source\":\"local\",\"Target\":\"operator\",\"Operation\":\"input\",\"Revision\":0,\"Obligation\":\"control\"},{\"Kind\":\"lifecycle\",\"Source\":\"operator\",\"Target\":\"scope\",\"Operation\":\"CancelRun\",\"Revision\":1,\"Obligation\":\"\"}]",
+          "singleton": 1
+        }
+      ],
+      "composition_profile": [
+        {
+          "descriptor": "{\"Version\":\"alan/composition/v1\",\"Roots\":[{\"ID\":\"6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f\",\"Version\":\"alan/resource-profile/v1\",\"Run\":{\"Subject\":\"scope\",\"Generation\":1},\"Members\":[{\"Subject\":\"client\",\"Generation\":1},{\"Subject\":\"scope\",\"Generation\":1}],\"Templates\":null,\"Capabilities\":[\"phase2a.counter\"],\"Limits\":{\"MaxInvocations\":0,\"MaxCreatedRuns\":0,\"MaxDepth\":0,\"MaxEffects\":1,\"MaxInFlight\":1}}],\"Templates\":null}",
+          "singleton": 1,
+          "version": "alan/composition/v1"
+        }
+      ],
+      "composition_publications": [],
+      "composition_replies": [],
+      "composition_requests": [],
+      "composition_reservations": [
+        {
+          "descriptor": "{\"OperationID\":\"[\\\"client\\\",1,1,0]\",\"RootID\":\"6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f\",\"Kind\":\"external\",\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"Allowed\":true,\"Reason\":\"authorized\",\"AttemptDigest\":\"9159faf6144cc2b0e0e78d3d1938fab0a42345eaa66c98251098d69dd3a26230\"}",
+          "operation_id": "[\"client\",1,1,0]",
+          "root_id": "6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f"
+        }
+      ],
+      "composition_results": [],
+      "composition_root_publications": [
+        {
+          "decision_order": 6,
+          "descriptor": "{\"ID\":\"e460ba4566a3d162466857160cfaed04eed1ef02287b41b9330478f1e4f394e5\",\"InvocationID\":\"root:6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f\",\"OperationID\":\"root:6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f\",\"TemplateID\":\"\",\"Caller\":{\"Subject\":\"scope\",\"Generation\":1},\"Status\":\"cancelled\",\"Reason\":\"member_cancelled\",\"ResponsePresent\":false,\"Response\":null,\"DecisionOrder\":6}",
+          "root_id": "6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f",
+          "scope_id": "root:6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f"
+        }
+      ],
+      "composition_roots": [
+        {
+          "descriptor": "{\"ID\":\"6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f\",\"Version\":\"alan/resource-profile/v1\",\"Run\":{\"Subject\":\"scope\",\"Generation\":1},\"Members\":[{\"Subject\":\"client\",\"Generation\":1},{\"Subject\":\"scope\",\"Generation\":1}],\"Templates\":null,\"Capabilities\":[\"phase2a.counter\"],\"Limits\":{\"MaxInvocations\":0,\"MaxCreatedRuns\":0,\"MaxDepth\":0,\"MaxEffects\":1,\"MaxInFlight\":1}}",
+          "id": "6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f"
+        }
+      ],
+      "composition_static_members": [
+        {
+          "descriptor": "{\"RootID\":\"6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f\",\"Run\":{\"Subject\":\"client\",\"Generation\":1}}",
+          "generation": 1,
+          "root_id": "6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f",
+          "subject": "client"
+        },
+        {
+          "descriptor": "{\"RootID\":\"6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f\",\"Run\":{\"Subject\":\"scope\",\"Generation\":1}}",
+          "generation": 1,
+          "root_id": "6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f",
+          "subject": "scope"
+        }
+      ],
+      "composition_templates": [],
+      "corpus_assets": [],
+      "external_attempts": [
+        {
+          "descriptor": "{\"Intent\":{\"ID\":\"[\\\"client\\\",1,1,0]\",\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"Ordinal\":0,\"Kind\":\"external\",\"Target\":\"http://127.0.0.1:49604/apply\",\"Generation\":1,\"Obligation\":\"receipt\",\"Payload\":{\"delta\":{\"Kind\":\"int\",\"Number\":5,\"Text\":\"\",\"Flag\":false},\"profile\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"idempotent\",\"Flag\":false}}},\"AuthorizationID\":\"[\\\"authorization\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"Request\":{\"Key\":\"[2,\\\"f0a9b760e6d8a52fa332c8b0557117ea49d42db823054f3e599a40533bab997a\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"Profile\":\"idempotent\",\"Subject\":\"client\",\"Authorization\":\"[\\\"authorization\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"Generation\":1,\"Epoch\":1,\"Sequence\":1,\"Delta\":5},\"Allowed\":true,\"Reason\":\"authorized\"}",
+          "intent_id": "[\"client\",1,1,0]"
+        }
+      ],
+      "external_receipts": [],
+      "history": [
+        {
+          "epoch": 1,
+          "generation": 1,
+          "intents": "[{\"ID\":\"[\\\"client\\\",1,1,0]\",\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"Ordinal\":0,\"Kind\":\"external\",\"Target\":\"http://127.0.0.1:49604/apply\",\"Generation\":1,\"Obligation\":\"receipt\",\"Payload\":{\"delta\":{\"Kind\":\"int\",\"Number\":5,\"Text\":\"\",\"Flag\":false},\"profile\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"idempotent\",\"Flag\":false}}}]",
+          "selected_observation": null,
+          "sequence": 1,
+          "source_revision": 1,
+          "subject": "client",
+          "successor": "{\"PC\":1,\"Data\":{\"pending\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"client\\\",1,1,0]\",\"Flag\":false}},\"Status\":\"open\"}"
+        },
+        {
+          "epoch": 1,
+          "generation": 1,
+          "intents": "[]",
+          "selected_observation": "[\"observation\",\"input\",\"operator\"]",
+          "sequence": 1,
+          "source_revision": 1,
+          "subject": "operator",
+          "successor": "{\"PC\":1,\"Data\":{\"target\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"scope\",\"Flag\":false}},\"Status\":\"open\"}"
+        },
+        {
+          "epoch": 1,
+          "generation": 1,
+          "intents": "[{\"ID\":\"[\\\"operator\\\",1,2,0]\",\"Run\":{\"Subject\":\"operator\",\"Generation\":1},\"Sequence\":2,\"Ordinal\":0,\"Kind\":\"lifecycle\",\"Target\":\"scope\",\"Generation\":1,\"Obligation\":\"control\",\"Payload\":{\"operation\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"CancelRun\",\"Flag\":false},\"revision\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false}}}]",
+          "selected_observation": null,
+          "sequence": 2,
+          "source_revision": 1,
+          "subject": "operator",
+          "successor": "{\"PC\":2,\"Data\":{\"control_op\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"operator\\\",1,2,0]\",\"Flag\":false},\"target\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"scope\",\"Flag\":false}},\"Status\":\"open\"}"
+        },
+        {
+          "epoch": 1,
+          "generation": 1,
+          "intents": "[]",
+          "selected_observation": null,
+          "sequence": 3,
+          "source_revision": 1,
+          "subject": "operator",
+          "successor": "{\"PC\":2,\"Data\":{\"control_op\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"operator\\\",1,2,0]\",\"Flag\":false},\"target\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"scope\",\"Flag\":false}},\"Status\":\"succeeded\"}"
+        }
+      ],
+      "intents": [
+        {
+          "descriptor": "{\"ID\":\"[\\\"client\\\",1,1,0]\",\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"Ordinal\":0,\"Kind\":\"external\",\"Target\":\"http://127.0.0.1:49604/apply\",\"Generation\":1,\"Obligation\":\"receipt\",\"Payload\":{\"delta\":{\"Kind\":\"int\",\"Number\":5,\"Text\":\"\",\"Flag\":false},\"profile\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"idempotent\",\"Flag\":false}}}",
+          "generation": 1,
+          "id": "[\"client\",1,1,0]",
+          "ordinal": 0,
+          "sequence": 1,
+          "source_revision": 1,
+          "subject": "client"
+        },
+        {
+          "descriptor": "{\"ID\":\"[\\\"operator\\\",1,2,0]\",\"Run\":{\"Subject\":\"operator\",\"Generation\":1},\"Sequence\":2,\"Ordinal\":0,\"Kind\":\"lifecycle\",\"Target\":\"scope\",\"Generation\":1,\"Obligation\":\"control\",\"Payload\":{\"operation\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"CancelRun\",\"Flag\":false},\"revision\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false}}}",
+          "generation": 1,
+          "id": "[\"operator\",1,2,0]",
+          "ordinal": 0,
+          "sequence": 2,
+          "source_revision": 1,
+          "subject": "operator"
+        }
+      ],
+      "lifecycle_results": [
+        {
+          "decision_sequence": 1,
+          "descriptor": "{\"Intent\":{\"ID\":\"[\\\"operator\\\",1,2,0]\",\"Run\":{\"Subject\":\"operator\",\"Generation\":1},\"Sequence\":2,\"Ordinal\":0,\"Kind\":\"lifecycle\",\"Target\":\"scope\",\"Generation\":1,\"Obligation\":\"control\",\"Payload\":{\"operation\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"CancelRun\",\"Flag\":false},\"revision\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false}}},\"SourceRevision\":1,\"Operation\":\"CancelRun\",\"ExpectedRevision\":1}",
+          "id": "[\"operator\",1,2,0]",
+          "result": "{\"Request\":{\"Intent\":{\"ID\":\"[\\\"operator\\\",1,2,0]\",\"Run\":{\"Subject\":\"operator\",\"Generation\":1},\"Sequence\":2,\"Ordinal\":0,\"Kind\":\"lifecycle\",\"Target\":\"scope\",\"Generation\":1,\"Obligation\":\"control\",\"Payload\":{\"operation\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"CancelRun\",\"Flag\":false},\"revision\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false}}},\"SourceRevision\":1,\"Operation\":\"CancelRun\",\"ExpectedRevision\":1},\"DecisionSequence\":1,\"Accepted\":true,\"Reason\":\"closed\",\"Successor\":0,\"Before\":{\"Run\":{\"Subject\":\"scope\",\"Generation\":1},\"ProgramID\":\"4a28000c4d55b29783b35a164213536789eb0073a79e5e894b3256ac2f8f2bf3\",\"Owner\":\"owner:scope\",\"Revision\":1,\"Epoch\":1,\"Sequence\":0,\"Retired\":false,\"RetryCancelled\":false,\"Projection\":{\"PC\":0,\"Data\":{},\"Status\":\"open\"}},\"After\":{\"Run\":{\"Subject\":\"scope\",\"Generation\":1},\"ProgramID\":\"4a28000c4d55b29783b35a164213536789eb0073a79e5e894b3256ac2f8f2bf3\",\"Owner\":\"owner:scope\",\"Revision\":1,\"Epoch\":1,\"Sequence\":0,\"Retired\":false,\"RetryCancelled\":false,\"Projection\":{\"PC\":0,\"Data\":{},\"Status\":\"cancelled\"}}}"
+        }
+      ],
+      "message_acknowledgments": [],
+      "metadata": [
+        {
+          "key_version": 2,
+          "namespace": "f0a9b760e6d8a52fa332c8b0557117ea49d42db823054f3e599a40533bab997a",
+          "schema_version": 4,
+          "semantics": "alan/1d/v1",
+          "singleton": 1
+        }
+      ],
+      "observations": [
+        {
+          "consumed_sequence": 1,
+          "descriptor": "{\"ID\":\"[\\\"observation\\\",\\\"input\\\",\\\"operator\\\"]\",\"Run\":{\"Subject\":\"operator\",\"Generation\":1},\"Kind\":\"input\",\"Provenance\":\"local-input\",\"Source\":\"local\",\"SourceGeneration\":1,\"Obligation\":\"control\",\"Operation\":\"\",\"Payload\":{\"target\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"scope\",\"Flag\":false}}}",
+          "generation": 1,
+          "id": "[\"observation\",\"input\",\"operator\"]",
+          "subject": "operator"
+        },
+        {
+          "consumed_sequence": null,
+          "descriptor": "{\"ID\":\"[\\\"observation\\\",\\\"lifecycle\\\",\\\"[\\\\\\\"operator\\\\\\\",1,2,0]\\\"]\",\"Run\":{\"Subject\":\"operator\",\"Generation\":1},\"Kind\":\"lifecycle\",\"Provenance\":\"runtime-lifecycle\",\"Source\":\"scope\",\"SourceGeneration\":1,\"Obligation\":\"control\",\"Operation\":\"[\\\"operator\\\",1,2,0]\",\"Payload\":{\"accepted\":{\"Kind\":\"bool\",\"Number\":0,\"Text\":\"\",\"Flag\":true},\"disposition\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"target_decision\",\"Flag\":false},\"reason\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"closed\",\"Flag\":false},\"successor\":{\"Kind\":\"int\",\"Number\":0,\"Text\":\"\",\"Flag\":false}}}",
+          "generation": 1,
+          "id": "[\"observation\",\"lifecycle\",\"[\\\"operator\\\",1,2,0]\"]",
+          "subject": "operator"
+        }
+      ],
+      "permissions": [
+        {
+          "kind": "external",
+          "obligation": "",
+          "operation": "apply",
+          "revision": 1,
+          "source": "client",
+          "target": "http://127.0.0.1:49604/apply"
+        },
+        {
+          "kind": "input",
+          "obligation": "control",
+          "operation": "input",
+          "revision": 0,
+          "source": "local",
+          "target": "operator"
+        },
+        {
+          "kind": "lifecycle",
+          "obligation": "",
+          "operation": "CancelRun",
+          "revision": 1,
+          "source": "operator",
+          "target": "scope"
+        }
+      ],
+      "programs": [
+        {
+          "bytes": "{\"Semantics\":\"alan/1d/v1\",\"Code\":[{\"Op\":\"emit\",\"Dst\":\"pending\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":null,\"Bind\":null,\"Effect\":{\"Kind\":\"external\",\"Target\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"http://127.0.0.1:49604/apply\",\"Flag\":false},\"Offset\":null},\"Generation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"Offset\":null},\"Obligation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"receipt\",\"Flag\":false},\"Offset\":null},\"Payload\":{\"delta\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"int\",\"Number\":5,\"Text\":\"\",\"Flag\":false},\"Offset\":null},\"profile\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"idempotent\",\"Flag\":false},\"Offset\":null}}},\"Updates\":null,\"Outcome\":\"\"},{\"Op\":\"receive\",\"Dst\":\"\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":{\"Kind\":\"receipt\",\"Provenance\":\"resource-receipt\",\"Source\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"http://127.0.0.1:49604/apply\",\"Flag\":false},\"Offset\":null},\"Generation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"Offset\":null},\"Obligation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"receipt\",\"Flag\":false},\"Offset\":null},\"Operation\":{\"Ref\":\"pending\",\"Literal\":null,\"Offset\":null}},\"Bind\":{\"total\":\"total\"},\"Effect\":null,\"Updates\":null,\"Outcome\":\"\"},{\"Op\":\"end\",\"Dst\":\"\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":null,\"Bind\":null,\"Effect\":null,\"Updates\":null,\"Outcome\":\"succeeded\"}]}",
+          "id": "cceb9cd6b8e728c9abe306f25b0ad2ee71a29e7331de06763ba50883b658b7d8",
+          "semantics": "alan/1d/v1"
+        },
+        {
+          "bytes": "{\"Semantics\":\"alan/1d/v1\",\"Code\":[{\"Op\":\"receive\",\"Dst\":\"\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":{\"Kind\":\"input\",\"Provenance\":\"local-input\",\"Source\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"local\",\"Flag\":false},\"Offset\":null},\"Generation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"Offset\":null},\"Obligation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"control\",\"Flag\":false},\"Offset\":null},\"Operation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"\",\"Flag\":false},\"Offset\":null}},\"Bind\":{\"target\":\"target\"},\"Effect\":null,\"Updates\":null,\"Outcome\":\"\"},{\"Op\":\"emit\",\"Dst\":\"control_op\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":null,\"Bind\":null,\"Effect\":{\"Kind\":\"lifecycle\",\"Target\":{\"Ref\":\"target\",\"Literal\":null,\"Offset\":null},\"Generation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"Offset\":null},\"Obligation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"control\",\"Flag\":false},\"Offset\":null},\"Payload\":{\"operation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"CancelRun\",\"Flag\":false},\"Offset\":null},\"revision\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"Offset\":null}}},\"Updates\":null,\"Outcome\":\"\"},{\"Op\":\"end\",\"Dst\":\"\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":null,\"Bind\":null,\"Effect\":null,\"Updates\":null,\"Outcome\":\"succeeded\"}]}",
+          "id": "e245d4971628887625415d638164016dce41005c1191e92b6ea56bb1f1375e4b",
+          "semantics": "alan/1d/v1"
+        },
+        {
+          "bytes": "{\"Semantics\":\"alan/1d/v1\",\"Code\":[{\"Op\":\"receive\",\"Dst\":\"\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":{\"Kind\":\"input\",\"Provenance\":\"local-input\",\"Source\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"local\",\"Flag\":false},\"Offset\":null},\"Generation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"Offset\":null},\"Obligation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"control\",\"Flag\":false},\"Offset\":null},\"Operation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"\",\"Flag\":false},\"Offset\":null}},\"Bind\":{\"target\":\"target\"},\"Effect\":null,\"Updates\":null,\"Outcome\":\"\"},{\"Op\":\"end\",\"Dst\":\"\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":null,\"Bind\":null,\"Effect\":null,\"Updates\":null,\"Outcome\":\"succeeded\"}]}",
+          "id": "4a28000c4d55b29783b35a164213536789eb0073a79e5e894b3256ac2f8f2bf3",
+          "semantics": "alan/1d/v1"
+        }
+      ],
+      "run_origins": [
+        {
+          "descriptor": "{\"Subject\":{\"ID\":\"client\",\"Generation\":1,\"Owner\":\"owner:client\",\"Revision\":1,\"Retired\":false,\"RetryCancelled\":false},\"ProgramID\":\"cceb9cd6b8e728c9abe306f25b0ad2ee71a29e7331de06763ba50883b658b7d8\",\"Initial\":{\"PC\":0,\"Data\":{},\"Status\":\"open\"}}",
+          "generation": 1,
+          "kind": "root",
+          "operation_id": null,
+          "predecessor_generation": null,
+          "subject": "client"
+        },
+        {
+          "descriptor": "{\"Subject\":{\"ID\":\"operator\",\"Generation\":1,\"Owner\":\"owner:operator\",\"Revision\":1,\"Retired\":false,\"RetryCancelled\":false},\"ProgramID\":\"e245d4971628887625415d638164016dce41005c1191e92b6ea56bb1f1375e4b\",\"Initial\":{\"PC\":0,\"Data\":{},\"Status\":\"open\"}}",
+          "generation": 1,
+          "kind": "root",
+          "operation_id": null,
+          "predecessor_generation": null,
+          "subject": "operator"
+        },
+        {
+          "descriptor": "{\"Subject\":{\"ID\":\"scope\",\"Generation\":1,\"Owner\":\"owner:scope\",\"Revision\":1,\"Retired\":false,\"RetryCancelled\":false},\"ProgramID\":\"4a28000c4d55b29783b35a164213536789eb0073a79e5e894b3256ac2f8f2bf3\",\"Initial\":{\"PC\":0,\"Data\":{},\"Status\":\"open\"}}",
+          "generation": 1,
+          "kind": "root",
+          "operation_id": null,
+          "predecessor_generation": null,
+          "subject": "scope"
+        }
+      ],
+      "runs": [
+        {
+          "epoch": 1,
+          "generation": 1,
+          "initial": "{\"PC\":0,\"Data\":{},\"Status\":\"open\"}",
+          "program_id": "cceb9cd6b8e728c9abe306f25b0ad2ee71a29e7331de06763ba50883b658b7d8",
+          "projection": "{\"PC\":1,\"Data\":{\"pending\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"client\\\",1,1,0]\",\"Flag\":false}},\"Status\":\"open\"}",
+          "sequence": 1,
+          "subject": "client"
+        },
+        {
+          "epoch": 1,
+          "generation": 1,
+          "initial": "{\"PC\":0,\"Data\":{},\"Status\":\"open\"}",
+          "program_id": "e245d4971628887625415d638164016dce41005c1191e92b6ea56bb1f1375e4b",
+          "projection": "{\"PC\":2,\"Data\":{\"control_op\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"operator\\\",1,2,0]\",\"Flag\":false},\"target\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"scope\",\"Flag\":false}},\"Status\":\"succeeded\"}",
+          "sequence": 3,
+          "subject": "operator"
+        },
+        {
+          "epoch": 1,
+          "generation": 1,
+          "initial": "{\"PC\":0,\"Data\":{},\"Status\":\"open\"}",
+          "program_id": "4a28000c4d55b29783b35a164213536789eb0073a79e5e894b3256ac2f8f2bf3",
+          "projection": "{\"PC\":0,\"Data\":{},\"Status\":\"cancelled\"}",
+          "sequence": 0,
+          "subject": "scope"
+        }
+      ],
+      "settlements": [
+        {
+          "descriptor": "{\"Request\":{\"Intent\":{\"ID\":\"[\\\"operator\\\",1,2,0]\",\"Run\":{\"Subject\":\"operator\",\"Generation\":1},\"Sequence\":2,\"Ordinal\":0,\"Kind\":\"lifecycle\",\"Target\":\"scope\",\"Generation\":1,\"Obligation\":\"control\",\"Payload\":{\"operation\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"CancelRun\",\"Flag\":false},\"revision\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false}}},\"SourceRevision\":1,\"Operation\":\"CancelRun\",\"ExpectedRevision\":1},\"Disposition\":\"target_decision\",\"Accepted\":true,\"Reason\":\"closed\",\"Successor\":0}",
+          "id": "[\"lifecycle-outcome\",\"[\\\"operator\\\",1,2,0]\"]",
+          "intent_id": "[\"operator\",1,2,0]",
+          "observation_id": "[\"observation\",\"lifecycle\",\"[\\\"operator\\\",1,2,0]\"]"
+        }
+      ],
+      "subjects": [
+        {
+          "generation": 1,
+          "id": "client",
+          "owner": "owner:client",
+          "retired": 0,
+          "retry_cancelled": 0,
+          "revision": 1
+        },
+        {
+          "generation": 1,
+          "id": "operator",
+          "owner": "owner:operator",
+          "retired": 0,
+          "retry_cancelled": 0,
+          "revision": 1
+        },
+        {
+          "generation": 1,
+          "id": "scope",
+          "owner": "owner:scope",
+          "retired": 0,
+          "retry_cancelled": 0,
+          "revision": 1
+        }
+      ],
+      "terminal_obligations": [
+        {
+          "delivery_status": "{}",
+          "destinations": "[]",
+          "generation": 1,
+          "operation_id": "[\"operator\",1,2,0]",
+          "outcome": "{\"PC\":0,\"Data\":{},\"Status\":\"cancelled\"}",
+          "sequence": 0,
+          "source_revision": 1,
+          "subject": "scope"
+        },
+        {
+          "delivery_status": "{}",
+          "destinations": "[]",
+          "generation": 1,
+          "operation_id": null,
+          "outcome": "{\"PC\":2,\"Data\":{\"control_op\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"operator\\\",1,2,0]\",\"Flag\":false},\"target\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"scope\",\"Flag\":false}},\"Status\":\"succeeded\"}",
+          "sequence": 3,
+          "source_revision": 1,
+          "subject": "operator"
+        }
+      ]
+    },
+    "Roots": [
+      {
+        "RootID": "6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f",
+        "Run": {
+          "Subject": "scope",
+          "Generation": 1
+        },
+        "LocalStatus": "cancelled",
+        "Limits": {
+          "MaxInvocations": 0,
+          "MaxCreatedRuns": 0,
+          "MaxDepth": 0,
+          "MaxEffects": 1,
+          "MaxInFlight": 1
+        },
+        "Charges": {
+          "RootID": "6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f",
+          "OperationID": "",
+          "Kind": "",
+          "Invocations": 0,
+          "CreatedRuns": 0,
+          "Effects": 1,
+          "DecisionOrder": 0
+        },
+        "Outcome": {
+          "ID": "e460ba4566a3d162466857160cfaed04eed1ef02287b41b9330478f1e4f394e5",
+          "InvocationID": "root:6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f",
+          "OperationID": "root:6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f",
+          "TemplateID": "",
+          "Caller": {
+            "Subject": "scope",
+            "Generation": 1
+          },
+          "Status": "cancelled",
+          "Reason": "member_cancelled",
+          "ResponsePresent": false,
+          "Response": null,
+          "DecisionOrder": 6
+        },
+        "Pending": "",
+        "PendingInvocations": [],
+        "UnresolvedExternal": [
+          "[\"client\",1,1,0]"
+        ],
+        "UnknownExternal": [
+          "[\"client\",1,1,0]"
+        ]
+      }
+    ]
+  },
+  "held": {
+    "Namespace": "f0a9b760e6d8a52fa332c8b0557117ea49d42db823054f3e599a40533bab997a",
+    "KeyVersion": 2,
+    "Settings": {
+      "JournalMode": "wal",
+      "SQLiteVersion": "3.53.4",
+      "SQLiteSourceID": "2026-07-24 19:02:57 bf7c7f30031888f4e796e429ab3978879485813aaca6f641c7b33e4e09459bcc",
+      "Synchronous": 2,
+      "ForeignKeys": 1,
+      "BusyTimeoutMS": 5000,
+      "QueryOnly": 1
+    },
+    "Tables": {
+      "adapter_attempts": [],
+      "adapter_results": [],
+      "admissions": [],
+      "attempts": [
+        {
+          "descriptor": "{\"Intent\":{\"ID\":\"[\\\"client\\\",1,1,0]\",\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"Ordinal\":0,\"Kind\":\"external\",\"Target\":\"http://127.0.0.1:49604/apply\",\"Generation\":1,\"Obligation\":\"receipt\",\"Payload\":{\"delta\":{\"Kind\":\"int\",\"Number\":5,\"Text\":\"\",\"Flag\":false},\"profile\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"idempotent\",\"Flag\":false}}},\"Revision\":1}",
+          "id": "[\"authorization\",\"[\\\"client\\\",1,1,0]\"]",
+          "intent_id": "[\"client\",1,1,0]",
+          "result": "{\"ID\":\"[\\\"authorization\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"IntentID\":\"[\\\"client\\\",1,1,0]\",\"Allowed\":true,\"Reason\":\"authorized\",\"Source\":{\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Epoch\":1,\"Sequence\":1,\"Revision\":1},\"ClosureOperation\":\"\"}"
+        }
+      ],
+      "composition_admission_decisions": [],
+      "composition_bindings": [],
+      "composition_charges": [
+        {
+          "decision_order": 3,
+          "descriptor": "{\"RootID\":\"6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f\",\"OperationID\":\"[\\\"client\\\",1,1,0]\",\"Kind\":\"effect\",\"Invocations\":0,\"CreatedRuns\":0,\"Effects\":1,\"DecisionOrder\":3}",
+          "kind": "effect",
+          "operation_id": "[\"client\",1,1,0]",
+          "root_id": "6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f"
+        }
+      ],
+      "composition_closures": [],
+      "composition_deployment": [
+        {
+          "descriptor": "{\"Subjects\":[{\"ID\":\"client\",\"Generation\":1,\"Owner\":\"owner:client\",\"Revision\":1,\"Retired\":false,\"RetryCancelled\":false},{\"ID\":\"operator\",\"Generation\":1,\"Owner\":\"owner:operator\",\"Revision\":1,\"Retired\":false,\"RetryCancelled\":false},{\"ID\":\"scope\",\"Generation\":1,\"Owner\":\"owner:scope\",\"Revision\":1,\"Retired\":false,\"RetryCancelled\":false}],\"Runs\":[{\"ID\":{\"Subject\":\"client\",\"Generation\":1},\"ProgramID\":\"cceb9cd6b8e728c9abe306f25b0ad2ee71a29e7331de06763ba50883b658b7d8\",\"Projection\":{\"PC\":0,\"Data\":{},\"Status\":\"open\"}},{\"ID\":{\"Subject\":\"operator\",\"Generation\":1},\"ProgramID\":\"e245d4971628887625415d638164016dce41005c1191e92b6ea56bb1f1375e4b\",\"Projection\":{\"PC\":0,\"Data\":{},\"Status\":\"open\"}},{\"ID\":{\"Subject\":\"scope\",\"Generation\":1},\"ProgramID\":\"4a28000c4d55b29783b35a164213536789eb0073a79e5e894b3256ac2f8f2bf3\",\"Projection\":{\"PC\":0,\"Data\":{},\"Status\":\"open\"}}]}",
+          "singleton": 1
+        }
+      ],
+      "composition_facts": [
+        {
+          "decision_order": 1,
+          "descriptor": "{\"Version\":\"alan/composition-fact/v1\",\"ID\":\"85cd74011527f578c002149b65e2b22b22a22d3fc6145b2d4fd4e55bcd144679\",\"Kind\":\"execution\",\"Order\":1,\"RootIDs\":[\"6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f\"],\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"OperationID\":\"\",\"RecordDigest\":\"8dd6278a80998f4a0383137df419293494df5eecfa41328d7eecf9be72d2f4fe\"}",
+          "id": "85cd74011527f578c002149b65e2b22b22a22d3fc6145b2d4fd4e55bcd144679",
+          "kind": "execution"
+        },
+        {
+          "decision_order": 2,
+          "descriptor": "{\"Version\":\"alan/composition-fact/v1\",\"ID\":\"3f83037a6fbe17bf408e2c4ca7e3c5ead6122e8c995632a617f8de45693610a8\",\"Kind\":\"authorization\",\"Order\":2,\"RootIDs\":[\"6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f\"],\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"OperationID\":\"[\\\"client\\\",1,1,0]\",\"RecordDigest\":\"442b8dcabfa2acac9089475ced635a6f2ada719b85d66aad5aed05053f3a1e78\"}",
+          "id": "3f83037a6fbe17bf408e2c4ca7e3c5ead6122e8c995632a617f8de45693610a8",
+          "kind": "authorization"
+        },
+        {
+          "decision_order": 3,
+          "descriptor": "{\"Version\":\"alan/composition-fact/v1\",\"ID\":\"174a847c26e190bca9b0d6615e84b082f5990ab35d156fa715d5206efb3bb290\",\"Kind\":\"reservation\",\"Order\":3,\"RootIDs\":[\"6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f\"],\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"OperationID\":\"[\\\"client\\\",1,1,0]\",\"RecordDigest\":\"520c1d1da10f711a2e4c1de453dfded7e3d843298883695b97336f46ce1d169d\"}",
+          "id": "174a847c26e190bca9b0d6615e84b082f5990ab35d156fa715d5206efb3bb290",
+          "kind": "reservation"
+        }
+      ],
+      "composition_freezes": [],
+      "composition_invocations": [],
+      "composition_members": [],
+      "composition_outcome_deliveries": [],
+      "composition_permissions": [
+        {
+          "descriptor": "[{\"Kind\":\"external\",\"Source\":\"client\",\"Target\":\"http://127.0.0.1:49604/apply\",\"Operation\":\"apply\",\"Revision\":1,\"Obligation\":\"\"},{\"Kind\":\"input\",\"Source\":\"local\",\"Target\":\"operator\",\"Operation\":\"input\",\"Revision\":0,\"Obligation\":\"control\"},{\"Kind\":\"lifecycle\",\"Source\":\"operator\",\"Target\":\"scope\",\"Operation\":\"CancelRun\",\"Revision\":1,\"Obligation\":\"\"}]",
+          "singleton": 1
+        }
+      ],
+      "composition_profile": [
+        {
+          "descriptor": "{\"Version\":\"alan/composition/v1\",\"Roots\":[{\"ID\":\"6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f\",\"Version\":\"alan/resource-profile/v1\",\"Run\":{\"Subject\":\"scope\",\"Generation\":1},\"Members\":[{\"Subject\":\"client\",\"Generation\":1},{\"Subject\":\"scope\",\"Generation\":1}],\"Templates\":null,\"Capabilities\":[\"phase2a.counter\"],\"Limits\":{\"MaxInvocations\":0,\"MaxCreatedRuns\":0,\"MaxDepth\":0,\"MaxEffects\":1,\"MaxInFlight\":1}}],\"Templates\":null}",
+          "singleton": 1,
+          "version": "alan/composition/v1"
+        }
+      ],
+      "composition_publications": [],
+      "composition_replies": [],
+      "composition_requests": [],
+      "composition_reservations": [
+        {
+          "descriptor": "{\"OperationID\":\"[\\\"client\\\",1,1,0]\",\"RootID\":\"6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f\",\"Kind\":\"external\",\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"Allowed\":true,\"Reason\":\"authorized\",\"AttemptDigest\":\"9159faf6144cc2b0e0e78d3d1938fab0a42345eaa66c98251098d69dd3a26230\"}",
+          "operation_id": "[\"client\",1,1,0]",
+          "root_id": "6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f"
+        }
+      ],
+      "composition_results": [],
+      "composition_root_publications": [],
+      "composition_roots": [
+        {
+          "descriptor": "{\"ID\":\"6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f\",\"Version\":\"alan/resource-profile/v1\",\"Run\":{\"Subject\":\"scope\",\"Generation\":1},\"Members\":[{\"Subject\":\"client\",\"Generation\":1},{\"Subject\":\"scope\",\"Generation\":1}],\"Templates\":null,\"Capabilities\":[\"phase2a.counter\"],\"Limits\":{\"MaxInvocations\":0,\"MaxCreatedRuns\":0,\"MaxDepth\":0,\"MaxEffects\":1,\"MaxInFlight\":1}}",
+          "id": "6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f"
+        }
+      ],
+      "composition_static_members": [
+        {
+          "descriptor": "{\"RootID\":\"6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f\",\"Run\":{\"Subject\":\"client\",\"Generation\":1}}",
+          "generation": 1,
+          "root_id": "6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f",
+          "subject": "client"
+        },
+        {
+          "descriptor": "{\"RootID\":\"6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f\",\"Run\":{\"Subject\":\"scope\",\"Generation\":1}}",
+          "generation": 1,
+          "root_id": "6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f",
+          "subject": "scope"
+        }
+      ],
+      "composition_templates": [],
+      "corpus_assets": [],
+      "external_attempts": [
+        {
+          "descriptor": "{\"Intent\":{\"ID\":\"[\\\"client\\\",1,1,0]\",\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"Ordinal\":0,\"Kind\":\"external\",\"Target\":\"http://127.0.0.1:49604/apply\",\"Generation\":1,\"Obligation\":\"receipt\",\"Payload\":{\"delta\":{\"Kind\":\"int\",\"Number\":5,\"Text\":\"\",\"Flag\":false},\"profile\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"idempotent\",\"Flag\":false}}},\"AuthorizationID\":\"[\\\"authorization\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"Request\":{\"Key\":\"[2,\\\"f0a9b760e6d8a52fa332c8b0557117ea49d42db823054f3e599a40533bab997a\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"Profile\":\"idempotent\",\"Subject\":\"client\",\"Authorization\":\"[\\\"authorization\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"Generation\":1,\"Epoch\":1,\"Sequence\":1,\"Delta\":5},\"Allowed\":true,\"Reason\":\"authorized\"}",
+          "intent_id": "[\"client\",1,1,0]"
+        }
+      ],
+      "external_receipts": [],
+      "history": [
+        {
+          "epoch": 1,
+          "generation": 1,
+          "intents": "[{\"ID\":\"[\\\"client\\\",1,1,0]\",\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"Ordinal\":0,\"Kind\":\"external\",\"Target\":\"http://127.0.0.1:49604/apply\",\"Generation\":1,\"Obligation\":\"receipt\",\"Payload\":{\"delta\":{\"Kind\":\"int\",\"Number\":5,\"Text\":\"\",\"Flag\":false},\"profile\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"idempotent\",\"Flag\":false}}}]",
+          "selected_observation": null,
+          "sequence": 1,
+          "source_revision": 1,
+          "subject": "client",
+          "successor": "{\"PC\":1,\"Data\":{\"pending\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"client\\\",1,1,0]\",\"Flag\":false}},\"Status\":\"open\"}"
+        }
+      ],
+      "intents": [
+        {
+          "descriptor": "{\"ID\":\"[\\\"client\\\",1,1,0]\",\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"Ordinal\":0,\"Kind\":\"external\",\"Target\":\"http://127.0.0.1:49604/apply\",\"Generation\":1,\"Obligation\":\"receipt\",\"Payload\":{\"delta\":{\"Kind\":\"int\",\"Number\":5,\"Text\":\"\",\"Flag\":false},\"profile\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"idempotent\",\"Flag\":false}}}",
+          "generation": 1,
+          "id": "[\"client\",1,1,0]",
+          "ordinal": 0,
+          "sequence": 1,
+          "source_revision": 1,
+          "subject": "client"
+        }
+      ],
+      "lifecycle_results": [],
+      "message_acknowledgments": [],
+      "metadata": [
+        {
+          "key_version": 2,
+          "namespace": "f0a9b760e6d8a52fa332c8b0557117ea49d42db823054f3e599a40533bab997a",
+          "schema_version": 4,
+          "semantics": "alan/1d/v1",
+          "singleton": 1
+        }
+      ],
+      "observations": [],
+      "permissions": [
+        {
+          "kind": "external",
+          "obligation": "",
+          "operation": "apply",
+          "revision": 1,
+          "source": "client",
+          "target": "http://127.0.0.1:49604/apply"
+        },
+        {
+          "kind": "input",
+          "obligation": "control",
+          "operation": "input",
+          "revision": 0,
+          "source": "local",
+          "target": "operator"
+        },
+        {
+          "kind": "lifecycle",
+          "obligation": "",
+          "operation": "CancelRun",
+          "revision": 1,
+          "source": "operator",
+          "target": "scope"
+        }
+      ],
+      "programs": [
+        {
+          "bytes": "{\"Semantics\":\"alan/1d/v1\",\"Code\":[{\"Op\":\"emit\",\"Dst\":\"pending\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":null,\"Bind\":null,\"Effect\":{\"Kind\":\"external\",\"Target\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"http://127.0.0.1:49604/apply\",\"Flag\":false},\"Offset\":null},\"Generation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"Offset\":null},\"Obligation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"receipt\",\"Flag\":false},\"Offset\":null},\"Payload\":{\"delta\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"int\",\"Number\":5,\"Text\":\"\",\"Flag\":false},\"Offset\":null},\"profile\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"idempotent\",\"Flag\":false},\"Offset\":null}}},\"Updates\":null,\"Outcome\":\"\"},{\"Op\":\"receive\",\"Dst\":\"\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":{\"Kind\":\"receipt\",\"Provenance\":\"resource-receipt\",\"Source\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"http://127.0.0.1:49604/apply\",\"Flag\":false},\"Offset\":null},\"Generation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"Offset\":null},\"Obligation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"receipt\",\"Flag\":false},\"Offset\":null},\"Operation\":{\"Ref\":\"pending\",\"Literal\":null,\"Offset\":null}},\"Bind\":{\"total\":\"total\"},\"Effect\":null,\"Updates\":null,\"Outcome\":\"\"},{\"Op\":\"end\",\"Dst\":\"\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":null,\"Bind\":null,\"Effect\":null,\"Updates\":null,\"Outcome\":\"succeeded\"}]}",
+          "id": "cceb9cd6b8e728c9abe306f25b0ad2ee71a29e7331de06763ba50883b658b7d8",
+          "semantics": "alan/1d/v1"
+        },
+        {
+          "bytes": "{\"Semantics\":\"alan/1d/v1\",\"Code\":[{\"Op\":\"receive\",\"Dst\":\"\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":{\"Kind\":\"input\",\"Provenance\":\"local-input\",\"Source\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"local\",\"Flag\":false},\"Offset\":null},\"Generation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"Offset\":null},\"Obligation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"control\",\"Flag\":false},\"Offset\":null},\"Operation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"\",\"Flag\":false},\"Offset\":null}},\"Bind\":{\"target\":\"target\"},\"Effect\":null,\"Updates\":null,\"Outcome\":\"\"},{\"Op\":\"emit\",\"Dst\":\"control_op\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":null,\"Bind\":null,\"Effect\":{\"Kind\":\"lifecycle\",\"Target\":{\"Ref\":\"target\",\"Literal\":null,\"Offset\":null},\"Generation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"Offset\":null},\"Obligation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"control\",\"Flag\":false},\"Offset\":null},\"Payload\":{\"operation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"CancelRun\",\"Flag\":false},\"Offset\":null},\"revision\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"Offset\":null}}},\"Updates\":null,\"Outcome\":\"\"},{\"Op\":\"end\",\"Dst\":\"\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":null,\"Bind\":null,\"Effect\":null,\"Updates\":null,\"Outcome\":\"succeeded\"}]}",
+          "id": "e245d4971628887625415d638164016dce41005c1191e92b6ea56bb1f1375e4b",
+          "semantics": "alan/1d/v1"
+        },
+        {
+          "bytes": "{\"Semantics\":\"alan/1d/v1\",\"Code\":[{\"Op\":\"receive\",\"Dst\":\"\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":{\"Kind\":\"input\",\"Provenance\":\"local-input\",\"Source\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"local\",\"Flag\":false},\"Offset\":null},\"Generation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"Offset\":null},\"Obligation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"control\",\"Flag\":false},\"Offset\":null},\"Operation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"\",\"Flag\":false},\"Offset\":null}},\"Bind\":{\"target\":\"target\"},\"Effect\":null,\"Updates\":null,\"Outcome\":\"\"},{\"Op\":\"end\",\"Dst\":\"\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":null,\"Bind\":null,\"Effect\":null,\"Updates\":null,\"Outcome\":\"succeeded\"}]}",
+          "id": "4a28000c4d55b29783b35a164213536789eb0073a79e5e894b3256ac2f8f2bf3",
+          "semantics": "alan/1d/v1"
+        }
+      ],
+      "run_origins": [
+        {
+          "descriptor": "{\"Subject\":{\"ID\":\"client\",\"Generation\":1,\"Owner\":\"owner:client\",\"Revision\":1,\"Retired\":false,\"RetryCancelled\":false},\"ProgramID\":\"cceb9cd6b8e728c9abe306f25b0ad2ee71a29e7331de06763ba50883b658b7d8\",\"Initial\":{\"PC\":0,\"Data\":{},\"Status\":\"open\"}}",
+          "generation": 1,
+          "kind": "root",
+          "operation_id": null,
+          "predecessor_generation": null,
+          "subject": "client"
+        },
+        {
+          "descriptor": "{\"Subject\":{\"ID\":\"operator\",\"Generation\":1,\"Owner\":\"owner:operator\",\"Revision\":1,\"Retired\":false,\"RetryCancelled\":false},\"ProgramID\":\"e245d4971628887625415d638164016dce41005c1191e92b6ea56bb1f1375e4b\",\"Initial\":{\"PC\":0,\"Data\":{},\"Status\":\"open\"}}",
+          "generation": 1,
+          "kind": "root",
+          "operation_id": null,
+          "predecessor_generation": null,
+          "subject": "operator"
+        },
+        {
+          "descriptor": "{\"Subject\":{\"ID\":\"scope\",\"Generation\":1,\"Owner\":\"owner:scope\",\"Revision\":1,\"Retired\":false,\"RetryCancelled\":false},\"ProgramID\":\"4a28000c4d55b29783b35a164213536789eb0073a79e5e894b3256ac2f8f2bf3\",\"Initial\":{\"PC\":0,\"Data\":{},\"Status\":\"open\"}}",
+          "generation": 1,
+          "kind": "root",
+          "operation_id": null,
+          "predecessor_generation": null,
+          "subject": "scope"
+        }
+      ],
+      "runs": [
+        {
+          "epoch": 1,
+          "generation": 1,
+          "initial": "{\"PC\":0,\"Data\":{},\"Status\":\"open\"}",
+          "program_id": "cceb9cd6b8e728c9abe306f25b0ad2ee71a29e7331de06763ba50883b658b7d8",
+          "projection": "{\"PC\":1,\"Data\":{\"pending\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"client\\\",1,1,0]\",\"Flag\":false}},\"Status\":\"open\"}",
+          "sequence": 1,
+          "subject": "client"
+        },
+        {
+          "epoch": 1,
+          "generation": 1,
+          "initial": "{\"PC\":0,\"Data\":{},\"Status\":\"open\"}",
+          "program_id": "e245d4971628887625415d638164016dce41005c1191e92b6ea56bb1f1375e4b",
+          "projection": "{\"PC\":0,\"Data\":{},\"Status\":\"open\"}",
+          "sequence": 0,
+          "subject": "operator"
+        },
+        {
+          "epoch": 1,
+          "generation": 1,
+          "initial": "{\"PC\":0,\"Data\":{},\"Status\":\"open\"}",
+          "program_id": "4a28000c4d55b29783b35a164213536789eb0073a79e5e894b3256ac2f8f2bf3",
+          "projection": "{\"PC\":0,\"Data\":{},\"Status\":\"open\"}",
+          "sequence": 0,
+          "subject": "scope"
+        }
+      ],
+      "settlements": [],
+      "subjects": [
+        {
+          "generation": 1,
+          "id": "client",
+          "owner": "owner:client",
+          "retired": 0,
+          "retry_cancelled": 0,
+          "revision": 1
+        },
+        {
+          "generation": 1,
+          "id": "operator",
+          "owner": "owner:operator",
+          "retired": 0,
+          "retry_cancelled": 0,
+          "revision": 1
+        },
+        {
+          "generation": 1,
+          "id": "scope",
+          "owner": "owner:scope",
+          "retired": 0,
+          "retry_cancelled": 0,
+          "revision": 1
+        }
+      ],
+      "terminal_obligations": []
+    },
+    "Roots": [
+      {
+        "RootID": "6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f",
+        "Run": {
+          "Subject": "scope",
+          "Generation": 1
+        },
+        "LocalStatus": "open",
+        "Limits": {
+          "MaxInvocations": 0,
+          "MaxCreatedRuns": 0,
+          "MaxDepth": 0,
+          "MaxEffects": 1,
+          "MaxInFlight": 1
+        },
+        "Charges": {
+          "RootID": "6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f",
+          "OperationID": "",
+          "Kind": "",
+          "Invocations": 0,
+          "CreatedRuns": 0,
+          "Effects": 1,
+          "DecisionOrder": 0
+        },
+        "Outcome": null,
+        "Pending": "members",
+        "PendingInvocations": [],
+        "UnresolvedExternal": [
+          "[\"client\",1,1,0]"
+        ],
+        "UnknownExternal": [
+          "[\"client\",1,1,0]"
+        ]
+      }
+    ]
+  },
+  "ingress": "",
+  "key": "[2,\"f0a9b760e6d8a52fa332c8b0557117ea49d42db823054f3e599a40533bab997a\",\"[\\\"client\\\",1,1,0]\"]",
+  "operation": "[\"client\",1,1,0]",
+  "revoked": {
+    "Namespace": "f0a9b760e6d8a52fa332c8b0557117ea49d42db823054f3e599a40533bab997a",
+    "KeyVersion": 2,
+    "Settings": {
+      "JournalMode": "wal",
+      "SQLiteVersion": "3.53.4",
+      "SQLiteSourceID": "2026-07-24 19:02:57 bf7c7f30031888f4e796e429ab3978879485813aaca6f641c7b33e4e09459bcc",
+      "Synchronous": 2,
+      "ForeignKeys": 1,
+      "BusyTimeoutMS": 5000,
+      "QueryOnly": 1
+    },
+    "Tables": {
+      "adapter_attempts": [],
+      "adapter_results": [],
+      "admissions": [
+        {
+          "descriptor": "{\"TransportID\":\"operator\",\"Kind\":\"input\",\"LogicalID\":\"operator\",\"Source\":{\"Subject\":\"local\",\"Generation\":1},\"Target\":\"operator\",\"Generation\":1,\"Obligation\":\"control\",\"Operation\":\"\",\"Payload\":{\"target\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"scope\",\"Flag\":false}},\"IntentID\":\"\",\"TerminalSequence\":0}",
+          "domain": "input",
+          "id": "[\"admission\",\"input\",\"operator\"]",
+          "observation_id": "[\"observation\",\"input\",\"operator\"]",
+          "result": "{\"TransportID\":\"operator\",\"Accepted\":true,\"Reason\":\"accepted\",\"Bound\":{\"Subject\":\"operator\",\"Generation\":1},\"ObservationID\":\"[\\\"observation\\\",\\\"input\\\",\\\"operator\\\"]\"}",
+          "transport_id": "operator"
+        }
+      ],
+      "attempts": [
+        {
+          "descriptor": "{\"Intent\":{\"ID\":\"[\\\"client\\\",1,1,0]\",\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"Ordinal\":0,\"Kind\":\"external\",\"Target\":\"http://127.0.0.1:49604/apply\",\"Generation\":1,\"Obligation\":\"receipt\",\"Payload\":{\"delta\":{\"Kind\":\"int\",\"Number\":5,\"Text\":\"\",\"Flag\":false},\"profile\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"idempotent\",\"Flag\":false}}},\"Revision\":1}",
+          "id": "[\"authorization\",\"[\\\"client\\\",1,1,0]\"]",
+          "intent_id": "[\"client\",1,1,0]",
+          "result": "{\"ID\":\"[\\\"authorization\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"IntentID\":\"[\\\"client\\\",1,1,0]\",\"Allowed\":true,\"Reason\":\"authorized\",\"Source\":{\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Epoch\":1,\"Sequence\":1,\"Revision\":1},\"ClosureOperation\":\"\"}"
+        },
+        {
+          "descriptor": "{\"Intent\":{\"ID\":\"[\\\"operator\\\",1,2,0]\",\"Run\":{\"Subject\":\"operator\",\"Generation\":1},\"Sequence\":2,\"Ordinal\":0,\"Kind\":\"lifecycle\",\"Target\":\"scope\",\"Generation\":1,\"Obligation\":\"control\",\"Payload\":{\"operation\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"CancelRun\",\"Flag\":false},\"revision\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false}}},\"Revision\":1}",
+          "id": "[\"authorization\",\"[\\\"operator\\\",1,2,0]\"]",
+          "intent_id": "[\"operator\",1,2,0]",
+          "result": "{\"ID\":\"[\\\"authorization\\\",\\\"[\\\\\\\"operator\\\\\\\",1,2,0]\\\"]\",\"IntentID\":\"[\\\"operator\\\",1,2,0]\",\"Allowed\":true,\"Reason\":\"authorized\",\"Source\":{\"Run\":{\"Subject\":\"operator\",\"Generation\":1},\"Epoch\":1,\"Sequence\":2,\"Revision\":1},\"ClosureOperation\":\"\"}"
+        }
+      ],
+      "composition_admission_decisions": [],
+      "composition_bindings": [],
+      "composition_charges": [
+        {
+          "decision_order": 3,
+          "descriptor": "{\"RootID\":\"6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f\",\"OperationID\":\"[\\\"client\\\",1,1,0]\",\"Kind\":\"effect\",\"Invocations\":0,\"CreatedRuns\":0,\"Effects\":1,\"DecisionOrder\":3}",
+          "kind": "effect",
+          "operation_id": "[\"client\",1,1,0]",
+          "root_id": "6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f"
+        }
+      ],
+      "composition_closures": [],
+      "composition_deployment": [
+        {
+          "descriptor": "{\"Subjects\":[{\"ID\":\"client\",\"Generation\":1,\"Owner\":\"owner:client\",\"Revision\":1,\"Retired\":false,\"RetryCancelled\":false},{\"ID\":\"operator\",\"Generation\":1,\"Owner\":\"owner:operator\",\"Revision\":1,\"Retired\":false,\"RetryCancelled\":false},{\"ID\":\"scope\",\"Generation\":1,\"Owner\":\"owner:scope\",\"Revision\":1,\"Retired\":false,\"RetryCancelled\":false}],\"Runs\":[{\"ID\":{\"Subject\":\"client\",\"Generation\":1},\"ProgramID\":\"cceb9cd6b8e728c9abe306f25b0ad2ee71a29e7331de06763ba50883b658b7d8\",\"Projection\":{\"PC\":0,\"Data\":{},\"Status\":\"open\"}},{\"ID\":{\"Subject\":\"operator\",\"Generation\":1},\"ProgramID\":\"e245d4971628887625415d638164016dce41005c1191e92b6ea56bb1f1375e4b\",\"Projection\":{\"PC\":0,\"Data\":{},\"Status\":\"open\"}},{\"ID\":{\"Subject\":\"scope\",\"Generation\":1},\"ProgramID\":\"4a28000c4d55b29783b35a164213536789eb0073a79e5e894b3256ac2f8f2bf3\",\"Projection\":{\"PC\":0,\"Data\":{},\"Status\":\"open\"}}]}",
+          "singleton": 1
+        }
+      ],
+      "composition_facts": [
+        {
+          "decision_order": 1,
+          "descriptor": "{\"Version\":\"alan/composition-fact/v1\",\"ID\":\"85cd74011527f578c002149b65e2b22b22a22d3fc6145b2d4fd4e55bcd144679\",\"Kind\":\"execution\",\"Order\":1,\"RootIDs\":[\"6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f\"],\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"OperationID\":\"\",\"RecordDigest\":\"8dd6278a80998f4a0383137df419293494df5eecfa41328d7eecf9be72d2f4fe\"}",
+          "id": "85cd74011527f578c002149b65e2b22b22a22d3fc6145b2d4fd4e55bcd144679",
+          "kind": "execution"
+        },
+        {
+          "decision_order": 2,
+          "descriptor": "{\"Version\":\"alan/composition-fact/v1\",\"ID\":\"3f83037a6fbe17bf408e2c4ca7e3c5ead6122e8c995632a617f8de45693610a8\",\"Kind\":\"authorization\",\"Order\":2,\"RootIDs\":[\"6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f\"],\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"OperationID\":\"[\\\"client\\\",1,1,0]\",\"RecordDigest\":\"442b8dcabfa2acac9089475ced635a6f2ada719b85d66aad5aed05053f3a1e78\"}",
+          "id": "3f83037a6fbe17bf408e2c4ca7e3c5ead6122e8c995632a617f8de45693610a8",
+          "kind": "authorization"
+        },
+        {
+          "decision_order": 3,
+          "descriptor": "{\"Version\":\"alan/composition-fact/v1\",\"ID\":\"174a847c26e190bca9b0d6615e84b082f5990ab35d156fa715d5206efb3bb290\",\"Kind\":\"reservation\",\"Order\":3,\"RootIDs\":[\"6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f\"],\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"OperationID\":\"[\\\"client\\\",1,1,0]\",\"RecordDigest\":\"520c1d1da10f711a2e4c1de453dfded7e3d843298883695b97336f46ce1d169d\"}",
+          "id": "174a847c26e190bca9b0d6615e84b082f5990ab35d156fa715d5206efb3bb290",
+          "kind": "reservation"
+        },
+        {
+          "decision_order": 4,
+          "descriptor": "{\"Version\":\"alan/composition-fact/v1\",\"ID\":\"a63ab3e08a82fef3fbeff25e7a376779249c9618dd453307cd08fe38d61121a5\",\"Kind\":\"lifecycle\",\"Order\":4,\"RootIDs\":[\"6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f\"],\"Run\":{\"Subject\":\"scope\",\"Generation\":1},\"Sequence\":0,\"OperationID\":\"[\\\"operator\\\",1,2,0]\",\"RecordDigest\":\"6fb9163e20281005e5633009c1a26311e97927f315adf5d0b15d640d80384172\"}",
+          "id": "a63ab3e08a82fef3fbeff25e7a376779249c9618dd453307cd08fe38d61121a5",
+          "kind": "lifecycle"
+        },
+        {
+          "decision_order": 5,
+          "descriptor": "{\"Version\":\"alan/composition-fact/v1\",\"ID\":\"d4b49178b1b7f68135e260cac116ecb51a6818535702df79c8f54a2539542d65\",\"Kind\":\"freeze\",\"Order\":5,\"RootIDs\":[\"6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f\"],\"Run\":{\"Subject\":\"scope\",\"Generation\":1},\"Sequence\":0,\"OperationID\":\"root:6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f\",\"RecordDigest\":\"08c94605bc992d3adc4e74ee40fa93edaf7615ac1e17fa87af181296df4d5eb0\"}",
+          "id": "d4b49178b1b7f68135e260cac116ecb51a6818535702df79c8f54a2539542d65",
+          "kind": "freeze"
+        }
+      ],
+      "composition_freezes": [
+        {
+          "descriptor": "{\"InvocationID\":\"root:6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f\",\"Trigger\":\"a63ab3e08a82fef3fbeff25e7a376779249c9618dd453307cd08fe38d61121a5\",\"Run\":{\"Subject\":\"scope\",\"Generation\":1},\"Sequence\":0,\"DecisionOrder\":5,\"Status\":\"cancelled\",\"ReplyIntents\":[],\"InvocationIntents\":[],\"ExternalIntents\":[\"[\\\"client\\\",1,1,0]\"]}",
+          "root_id": "6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f",
+          "scope_id": "root:6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f"
+        }
+      ],
+      "composition_invocations": [],
+      "composition_members": [],
+      "composition_outcome_deliveries": [],
+      "composition_permissions": [
+        {
+          "descriptor": "[{\"Kind\":\"external\",\"Source\":\"client\",\"Target\":\"http://127.0.0.1:49604/apply\",\"Operation\":\"apply\",\"Revision\":1,\"Obligation\":\"\"},{\"Kind\":\"input\",\"Source\":\"local\",\"Target\":\"operator\",\"Operation\":\"input\",\"Revision\":0,\"Obligation\":\"control\"},{\"Kind\":\"lifecycle\",\"Source\":\"operator\",\"Target\":\"scope\",\"Operation\":\"CancelRun\",\"Revision\":1,\"Obligation\":\"\"}]",
+          "singleton": 1
+        }
+      ],
+      "composition_profile": [
+        {
+          "descriptor": "{\"Version\":\"alan/composition/v1\",\"Roots\":[{\"ID\":\"6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f\",\"Version\":\"alan/resource-profile/v1\",\"Run\":{\"Subject\":\"scope\",\"Generation\":1},\"Members\":[{\"Subject\":\"client\",\"Generation\":1},{\"Subject\":\"scope\",\"Generation\":1}],\"Templates\":null,\"Capabilities\":[\"phase2a.counter\"],\"Limits\":{\"MaxInvocations\":0,\"MaxCreatedRuns\":0,\"MaxDepth\":0,\"MaxEffects\":1,\"MaxInFlight\":1}}],\"Templates\":null}",
+          "singleton": 1,
+          "version": "alan/composition/v1"
+        }
+      ],
+      "composition_publications": [],
+      "composition_replies": [],
+      "composition_requests": [],
+      "composition_reservations": [
+        {
+          "descriptor": "{\"OperationID\":\"[\\\"client\\\",1,1,0]\",\"RootID\":\"6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f\",\"Kind\":\"external\",\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"Allowed\":true,\"Reason\":\"authorized\",\"AttemptDigest\":\"9159faf6144cc2b0e0e78d3d1938fab0a42345eaa66c98251098d69dd3a26230\"}",
+          "operation_id": "[\"client\",1,1,0]",
+          "root_id": "6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f"
+        }
+      ],
+      "composition_results": [],
+      "composition_root_publications": [],
+      "composition_roots": [
+        {
+          "descriptor": "{\"ID\":\"6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f\",\"Version\":\"alan/resource-profile/v1\",\"Run\":{\"Subject\":\"scope\",\"Generation\":1},\"Members\":[{\"Subject\":\"client\",\"Generation\":1},{\"Subject\":\"scope\",\"Generation\":1}],\"Templates\":null,\"Capabilities\":[\"phase2a.counter\"],\"Limits\":{\"MaxInvocations\":0,\"MaxCreatedRuns\":0,\"MaxDepth\":0,\"MaxEffects\":1,\"MaxInFlight\":1}}",
+          "id": "6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f"
+        }
+      ],
+      "composition_static_members": [
+        {
+          "descriptor": "{\"RootID\":\"6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f\",\"Run\":{\"Subject\":\"client\",\"Generation\":1}}",
+          "generation": 1,
+          "root_id": "6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f",
+          "subject": "client"
+        },
+        {
+          "descriptor": "{\"RootID\":\"6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f\",\"Run\":{\"Subject\":\"scope\",\"Generation\":1}}",
+          "generation": 1,
+          "root_id": "6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f",
+          "subject": "scope"
+        }
+      ],
+      "composition_templates": [],
+      "corpus_assets": [],
+      "external_attempts": [
+        {
+          "descriptor": "{\"Intent\":{\"ID\":\"[\\\"client\\\",1,1,0]\",\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"Ordinal\":0,\"Kind\":\"external\",\"Target\":\"http://127.0.0.1:49604/apply\",\"Generation\":1,\"Obligation\":\"receipt\",\"Payload\":{\"delta\":{\"Kind\":\"int\",\"Number\":5,\"Text\":\"\",\"Flag\":false},\"profile\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"idempotent\",\"Flag\":false}}},\"AuthorizationID\":\"[\\\"authorization\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"Request\":{\"Key\":\"[2,\\\"f0a9b760e6d8a52fa332c8b0557117ea49d42db823054f3e599a40533bab997a\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"Profile\":\"idempotent\",\"Subject\":\"client\",\"Authorization\":\"[\\\"authorization\\\",\\\"[\\\\\\\"client\\\\\\\",1,1,0]\\\"]\",\"Generation\":1,\"Epoch\":1,\"Sequence\":1,\"Delta\":5},\"Allowed\":true,\"Reason\":\"authorized\"}",
+          "intent_id": "[\"client\",1,1,0]"
+        }
+      ],
+      "external_receipts": [],
+      "history": [
+        {
+          "epoch": 1,
+          "generation": 1,
+          "intents": "[{\"ID\":\"[\\\"client\\\",1,1,0]\",\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"Ordinal\":0,\"Kind\":\"external\",\"Target\":\"http://127.0.0.1:49604/apply\",\"Generation\":1,\"Obligation\":\"receipt\",\"Payload\":{\"delta\":{\"Kind\":\"int\",\"Number\":5,\"Text\":\"\",\"Flag\":false},\"profile\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"idempotent\",\"Flag\":false}}}]",
+          "selected_observation": null,
+          "sequence": 1,
+          "source_revision": 1,
+          "subject": "client",
+          "successor": "{\"PC\":1,\"Data\":{\"pending\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"client\\\",1,1,0]\",\"Flag\":false}},\"Status\":\"open\"}"
+        },
+        {
+          "epoch": 1,
+          "generation": 1,
+          "intents": "[]",
+          "selected_observation": "[\"observation\",\"input\",\"operator\"]",
+          "sequence": 1,
+          "source_revision": 1,
+          "subject": "operator",
+          "successor": "{\"PC\":1,\"Data\":{\"target\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"scope\",\"Flag\":false}},\"Status\":\"open\"}"
+        },
+        {
+          "epoch": 1,
+          "generation": 1,
+          "intents": "[{\"ID\":\"[\\\"operator\\\",1,2,0]\",\"Run\":{\"Subject\":\"operator\",\"Generation\":1},\"Sequence\":2,\"Ordinal\":0,\"Kind\":\"lifecycle\",\"Target\":\"scope\",\"Generation\":1,\"Obligation\":\"control\",\"Payload\":{\"operation\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"CancelRun\",\"Flag\":false},\"revision\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false}}}]",
+          "selected_observation": null,
+          "sequence": 2,
+          "source_revision": 1,
+          "subject": "operator",
+          "successor": "{\"PC\":2,\"Data\":{\"control_op\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"operator\\\",1,2,0]\",\"Flag\":false},\"target\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"scope\",\"Flag\":false}},\"Status\":\"open\"}"
+        }
+      ],
+      "intents": [
+        {
+          "descriptor": "{\"ID\":\"[\\\"client\\\",1,1,0]\",\"Run\":{\"Subject\":\"client\",\"Generation\":1},\"Sequence\":1,\"Ordinal\":0,\"Kind\":\"external\",\"Target\":\"http://127.0.0.1:49604/apply\",\"Generation\":1,\"Obligation\":\"receipt\",\"Payload\":{\"delta\":{\"Kind\":\"int\",\"Number\":5,\"Text\":\"\",\"Flag\":false},\"profile\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"idempotent\",\"Flag\":false}}}",
+          "generation": 1,
+          "id": "[\"client\",1,1,0]",
+          "ordinal": 0,
+          "sequence": 1,
+          "source_revision": 1,
+          "subject": "client"
+        },
+        {
+          "descriptor": "{\"ID\":\"[\\\"operator\\\",1,2,0]\",\"Run\":{\"Subject\":\"operator\",\"Generation\":1},\"Sequence\":2,\"Ordinal\":0,\"Kind\":\"lifecycle\",\"Target\":\"scope\",\"Generation\":1,\"Obligation\":\"control\",\"Payload\":{\"operation\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"CancelRun\",\"Flag\":false},\"revision\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false}}}",
+          "generation": 1,
+          "id": "[\"operator\",1,2,0]",
+          "ordinal": 0,
+          "sequence": 2,
+          "source_revision": 1,
+          "subject": "operator"
+        }
+      ],
+      "lifecycle_results": [
+        {
+          "decision_sequence": 1,
+          "descriptor": "{\"Intent\":{\"ID\":\"[\\\"operator\\\",1,2,0]\",\"Run\":{\"Subject\":\"operator\",\"Generation\":1},\"Sequence\":2,\"Ordinal\":0,\"Kind\":\"lifecycle\",\"Target\":\"scope\",\"Generation\":1,\"Obligation\":\"control\",\"Payload\":{\"operation\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"CancelRun\",\"Flag\":false},\"revision\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false}}},\"SourceRevision\":1,\"Operation\":\"CancelRun\",\"ExpectedRevision\":1}",
+          "id": "[\"operator\",1,2,0]",
+          "result": "{\"Request\":{\"Intent\":{\"ID\":\"[\\\"operator\\\",1,2,0]\",\"Run\":{\"Subject\":\"operator\",\"Generation\":1},\"Sequence\":2,\"Ordinal\":0,\"Kind\":\"lifecycle\",\"Target\":\"scope\",\"Generation\":1,\"Obligation\":\"control\",\"Payload\":{\"operation\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"CancelRun\",\"Flag\":false},\"revision\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false}}},\"SourceRevision\":1,\"Operation\":\"CancelRun\",\"ExpectedRevision\":1},\"DecisionSequence\":1,\"Accepted\":true,\"Reason\":\"closed\",\"Successor\":0,\"Before\":{\"Run\":{\"Subject\":\"scope\",\"Generation\":1},\"ProgramID\":\"4a28000c4d55b29783b35a164213536789eb0073a79e5e894b3256ac2f8f2bf3\",\"Owner\":\"owner:scope\",\"Revision\":1,\"Epoch\":1,\"Sequence\":0,\"Retired\":false,\"RetryCancelled\":false,\"Projection\":{\"PC\":0,\"Data\":{},\"Status\":\"open\"}},\"After\":{\"Run\":{\"Subject\":\"scope\",\"Generation\":1},\"ProgramID\":\"4a28000c4d55b29783b35a164213536789eb0073a79e5e894b3256ac2f8f2bf3\",\"Owner\":\"owner:scope\",\"Revision\":1,\"Epoch\":1,\"Sequence\":0,\"Retired\":false,\"RetryCancelled\":false,\"Projection\":{\"PC\":0,\"Data\":{},\"Status\":\"cancelled\"}}}"
+        }
+      ],
+      "message_acknowledgments": [],
+      "metadata": [
+        {
+          "key_version": 2,
+          "namespace": "f0a9b760e6d8a52fa332c8b0557117ea49d42db823054f3e599a40533bab997a",
+          "schema_version": 4,
+          "semantics": "alan/1d/v1",
+          "singleton": 1
+        }
+      ],
+      "observations": [
+        {
+          "consumed_sequence": 1,
+          "descriptor": "{\"ID\":\"[\\\"observation\\\",\\\"input\\\",\\\"operator\\\"]\",\"Run\":{\"Subject\":\"operator\",\"Generation\":1},\"Kind\":\"input\",\"Provenance\":\"local-input\",\"Source\":\"local\",\"SourceGeneration\":1,\"Obligation\":\"control\",\"Operation\":\"\",\"Payload\":{\"target\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"scope\",\"Flag\":false}}}",
+          "generation": 1,
+          "id": "[\"observation\",\"input\",\"operator\"]",
+          "subject": "operator"
+        }
+      ],
+      "permissions": [
+        {
+          "kind": "external",
+          "obligation": "",
+          "operation": "apply",
+          "revision": 1,
+          "source": "client",
+          "target": "http://127.0.0.1:49604/apply"
+        },
+        {
+          "kind": "input",
+          "obligation": "control",
+          "operation": "input",
+          "revision": 0,
+          "source": "local",
+          "target": "operator"
+        },
+        {
+          "kind": "lifecycle",
+          "obligation": "",
+          "operation": "CancelRun",
+          "revision": 1,
+          "source": "operator",
+          "target": "scope"
+        }
+      ],
+      "programs": [
+        {
+          "bytes": "{\"Semantics\":\"alan/1d/v1\",\"Code\":[{\"Op\":\"emit\",\"Dst\":\"pending\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":null,\"Bind\":null,\"Effect\":{\"Kind\":\"external\",\"Target\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"http://127.0.0.1:49604/apply\",\"Flag\":false},\"Offset\":null},\"Generation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"Offset\":null},\"Obligation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"receipt\",\"Flag\":false},\"Offset\":null},\"Payload\":{\"delta\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"int\",\"Number\":5,\"Text\":\"\",\"Flag\":false},\"Offset\":null},\"profile\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"idempotent\",\"Flag\":false},\"Offset\":null}}},\"Updates\":null,\"Outcome\":\"\"},{\"Op\":\"receive\",\"Dst\":\"\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":{\"Kind\":\"receipt\",\"Provenance\":\"resource-receipt\",\"Source\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"http://127.0.0.1:49604/apply\",\"Flag\":false},\"Offset\":null},\"Generation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"Offset\":null},\"Obligation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"receipt\",\"Flag\":false},\"Offset\":null},\"Operation\":{\"Ref\":\"pending\",\"Literal\":null,\"Offset\":null}},\"Bind\":{\"total\":\"total\"},\"Effect\":null,\"Updates\":null,\"Outcome\":\"\"},{\"Op\":\"end\",\"Dst\":\"\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":null,\"Bind\":null,\"Effect\":null,\"Updates\":null,\"Outcome\":\"succeeded\"}]}",
+          "id": "cceb9cd6b8e728c9abe306f25b0ad2ee71a29e7331de06763ba50883b658b7d8",
+          "semantics": "alan/1d/v1"
+        },
+        {
+          "bytes": "{\"Semantics\":\"alan/1d/v1\",\"Code\":[{\"Op\":\"receive\",\"Dst\":\"\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":{\"Kind\":\"input\",\"Provenance\":\"local-input\",\"Source\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"local\",\"Flag\":false},\"Offset\":null},\"Generation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"Offset\":null},\"Obligation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"control\",\"Flag\":false},\"Offset\":null},\"Operation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"\",\"Flag\":false},\"Offset\":null}},\"Bind\":{\"target\":\"target\"},\"Effect\":null,\"Updates\":null,\"Outcome\":\"\"},{\"Op\":\"emit\",\"Dst\":\"control_op\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":null,\"Bind\":null,\"Effect\":{\"Kind\":\"lifecycle\",\"Target\":{\"Ref\":\"target\",\"Literal\":null,\"Offset\":null},\"Generation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"Offset\":null},\"Obligation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"control\",\"Flag\":false},\"Offset\":null},\"Payload\":{\"operation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"CancelRun\",\"Flag\":false},\"Offset\":null},\"revision\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"Offset\":null}}},\"Updates\":null,\"Outcome\":\"\"},{\"Op\":\"end\",\"Dst\":\"\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":null,\"Bind\":null,\"Effect\":null,\"Updates\":null,\"Outcome\":\"succeeded\"}]}",
+          "id": "e245d4971628887625415d638164016dce41005c1191e92b6ea56bb1f1375e4b",
+          "semantics": "alan/1d/v1"
+        },
+        {
+          "bytes": "{\"Semantics\":\"alan/1d/v1\",\"Code\":[{\"Op\":\"receive\",\"Dst\":\"\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":{\"Kind\":\"input\",\"Provenance\":\"local-input\",\"Source\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"local\",\"Flag\":false},\"Offset\":null},\"Generation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"int\",\"Number\":1,\"Text\":\"\",\"Flag\":false},\"Offset\":null},\"Obligation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"control\",\"Flag\":false},\"Offset\":null},\"Operation\":{\"Ref\":\"\",\"Literal\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"\",\"Flag\":false},\"Offset\":null}},\"Bind\":{\"target\":\"target\"},\"Effect\":null,\"Updates\":null,\"Outcome\":\"\"},{\"Op\":\"end\",\"Dst\":\"\",\"A\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"B\":{\"Ref\":\"\",\"Literal\":null,\"Offset\":null},\"Target\":0,\"Otherwise\":0,\"Match\":null,\"Bind\":null,\"Effect\":null,\"Updates\":null,\"Outcome\":\"succeeded\"}]}",
+          "id": "4a28000c4d55b29783b35a164213536789eb0073a79e5e894b3256ac2f8f2bf3",
+          "semantics": "alan/1d/v1"
+        }
+      ],
+      "run_origins": [
+        {
+          "descriptor": "{\"Subject\":{\"ID\":\"client\",\"Generation\":1,\"Owner\":\"owner:client\",\"Revision\":1,\"Retired\":false,\"RetryCancelled\":false},\"ProgramID\":\"cceb9cd6b8e728c9abe306f25b0ad2ee71a29e7331de06763ba50883b658b7d8\",\"Initial\":{\"PC\":0,\"Data\":{},\"Status\":\"open\"}}",
+          "generation": 1,
+          "kind": "root",
+          "operation_id": null,
+          "predecessor_generation": null,
+          "subject": "client"
+        },
+        {
+          "descriptor": "{\"Subject\":{\"ID\":\"operator\",\"Generation\":1,\"Owner\":\"owner:operator\",\"Revision\":1,\"Retired\":false,\"RetryCancelled\":false},\"ProgramID\":\"e245d4971628887625415d638164016dce41005c1191e92b6ea56bb1f1375e4b\",\"Initial\":{\"PC\":0,\"Data\":{},\"Status\":\"open\"}}",
+          "generation": 1,
+          "kind": "root",
+          "operation_id": null,
+          "predecessor_generation": null,
+          "subject": "operator"
+        },
+        {
+          "descriptor": "{\"Subject\":{\"ID\":\"scope\",\"Generation\":1,\"Owner\":\"owner:scope\",\"Revision\":1,\"Retired\":false,\"RetryCancelled\":false},\"ProgramID\":\"4a28000c4d55b29783b35a164213536789eb0073a79e5e894b3256ac2f8f2bf3\",\"Initial\":{\"PC\":0,\"Data\":{},\"Status\":\"open\"}}",
+          "generation": 1,
+          "kind": "root",
+          "operation_id": null,
+          "predecessor_generation": null,
+          "subject": "scope"
+        }
+      ],
+      "runs": [
+        {
+          "epoch": 1,
+          "generation": 1,
+          "initial": "{\"PC\":0,\"Data\":{},\"Status\":\"open\"}",
+          "program_id": "cceb9cd6b8e728c9abe306f25b0ad2ee71a29e7331de06763ba50883b658b7d8",
+          "projection": "{\"PC\":1,\"Data\":{\"pending\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"client\\\",1,1,0]\",\"Flag\":false}},\"Status\":\"open\"}",
+          "sequence": 1,
+          "subject": "client"
+        },
+        {
+          "epoch": 1,
+          "generation": 1,
+          "initial": "{\"PC\":0,\"Data\":{},\"Status\":\"open\"}",
+          "program_id": "e245d4971628887625415d638164016dce41005c1191e92b6ea56bb1f1375e4b",
+          "projection": "{\"PC\":2,\"Data\":{\"control_op\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"[\\\"operator\\\",1,2,0]\",\"Flag\":false},\"target\":{\"Kind\":\"string\",\"Number\":0,\"Text\":\"scope\",\"Flag\":false}},\"Status\":\"open\"}",
+          "sequence": 2,
+          "subject": "operator"
+        },
+        {
+          "epoch": 1,
+          "generation": 1,
+          "initial": "{\"PC\":0,\"Data\":{},\"Status\":\"open\"}",
+          "program_id": "4a28000c4d55b29783b35a164213536789eb0073a79e5e894b3256ac2f8f2bf3",
+          "projection": "{\"PC\":0,\"Data\":{},\"Status\":\"cancelled\"}",
+          "sequence": 0,
+          "subject": "scope"
+        }
+      ],
+      "settlements": [],
+      "subjects": [
+        {
+          "generation": 1,
+          "id": "client",
+          "owner": "owner:client",
+          "retired": 0,
+          "retry_cancelled": 0,
+          "revision": 1
+        },
+        {
+          "generation": 1,
+          "id": "operator",
+          "owner": "owner:operator",
+          "retired": 0,
+          "retry_cancelled": 0,
+          "revision": 1
+        },
+        {
+          "generation": 1,
+          "id": "scope",
+          "owner": "owner:scope",
+          "retired": 0,
+          "retry_cancelled": 0,
+          "revision": 1
+        }
+      ],
+      "terminal_obligations": [
+        {
+          "delivery_status": "{}",
+          "destinations": "[]",
+          "generation": 1,
+          "operation_id": "[\"operator\",1,2,0]",
+          "outcome": "{\"PC\":0,\"Data\":{},\"Status\":\"cancelled\"}",
+          "sequence": 0,
+          "source_revision": 1,
+          "subject": "scope"
+        }
+      ]
+    },
+    "Roots": [
+      {
+        "RootID": "6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f",
+        "Run": {
+          "Subject": "scope",
+          "Generation": 1
+        },
+        "LocalStatus": "cancelled",
+        "Limits": {
+          "MaxInvocations": 0,
+          "MaxCreatedRuns": 0,
+          "MaxDepth": 0,
+          "MaxEffects": 1,
+          "MaxInFlight": 1
+        },
+        "Charges": {
+          "RootID": "6037bdbb88edae1fe5a2f25edbd4aeb0d7ff0c30cc8fc036df51d77f28a4766f",
+          "OperationID": "",
+          "Kind": "",
+          "Invocations": 0,
+          "CreatedRuns": 0,
+          "Effects": 1,
+          "DecisionOrder": 0
+        },
+        "Outcome": null,
+        "Pending": "",
+        "PendingInvocations": [],
+        "UnresolvedExternal": [
+          "[\"client\",1,1,0]"
+        ],
+        "UnknownExternal": [
+          "[\"client\",1,1,0]"
+        ]
+      }
+    ]
+  },
+  "route": "idempotent",
+  "target": {
+    "Namespace": "f0a9b760e6d8a52fa332c8b0557117ea49d42db823054f3e599a40533bab997a",
+    "Run": {
+      "Subject": "client",
+      "Generation": 1
+    },
+    "OwningScope": true
+  },
+  "wait_error": "",
+  "world_final": {
+    "ForeignKeys": 1,
+    "BusyTimeoutMS": 5000,
+    "SQLiteVersion": "3.53.4",
+    "SQLiteSourceID": "2026-07-24 19:02:57 bf7c7f30031888f4e796e429ab3978879485813aaca6f641c7b33e4e09459bcc",
+    "JournalMode": "wal",
+    "Synchronous": 2,
+    "QueryOnly": 1,
+    "Requests": null,
+    "Applications": [],
+    "Total": 0,
+    "Contacts": 0
+  },
+  "world_held": {
+    "ForeignKeys": 1,
+    "BusyTimeoutMS": 5000,
+    "SQLiteVersion": "3.53.4",
+    "SQLiteSourceID": "2026-07-24 19:02:57 bf7c7f30031888f4e796e429ab3978879485813aaca6f641c7b33e4e09459bcc",
+    "JournalMode": "wal",
+    "Synchronous": 2,
+    "QueryOnly": 1,
+    "Requests": null,
+    "Applications": [],
+    "Total": 0,
+    "Contacts": 0
+  }
+}

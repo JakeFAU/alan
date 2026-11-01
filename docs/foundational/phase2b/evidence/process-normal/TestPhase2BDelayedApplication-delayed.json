@@ -1,0 +1,372 @@
+{
+  "crashed": [
+    {
+      "PID": 94471,
+      "AnchorEpoch": 2,
+      "Command": "open",
+      "Client": {
+        "ID": {
+          "Subject": "client",
+          "Generation": 1
+        },
+        "ProgramID": "8ebb78e2001a807fe6518718ea39c3a2f98e4e8c4170d6cdc464ad403a543edb",
+        "Epoch": 2,
+        "Sequence": 0,
+        "Revision": 1,
+        "Projection": {
+          "PC": 0,
+          "Data": {},
+          "Status": "open"
+        }
+      },
+      "Report": null
+    },
+    {
+      "PID": 94471,
+      "AnchorEpoch": 2,
+      "Command": "start",
+      "Client": {
+        "ID": {
+          "Subject": "client",
+          "Generation": 1
+        },
+        "ProgramID": "8ebb78e2001a807fe6518718ea39c3a2f98e4e8c4170d6cdc464ad403a543edb",
+        "Epoch": 2,
+        "Sequence": 0,
+        "Revision": 1,
+        "Projection": {
+          "PC": 0,
+          "Data": {},
+          "Status": "open"
+        }
+      },
+      "Report": null
+    },
+    {
+      "PID": 94471,
+      "AnchorEpoch": 2,
+      "Command": "revoke-automatic",
+      "Client": {
+        "ID": {
+          "Subject": "client",
+          "Generation": 1
+        },
+        "ProgramID": "8ebb78e2001a807fe6518718ea39c3a2f98e4e8c4170d6cdc464ad403a543edb",
+        "Epoch": 2,
+        "Sequence": 1,
+        "Revision": 1,
+        "Projection": {
+          "PC": 1,
+          "Data": {
+            "pending": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"client\",1,1,0]",
+              "Flag": false
+            }
+          },
+          "Status": "cancelled"
+        }
+      },
+      "Report": null
+    }
+  ],
+  "endpoint_ingress": {
+    "Scenario": "TestPhase2BDelayedApplication",
+    "Token": "phase2-endpoint-1793556270059460000",
+    "Store": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/TestPhase2BDelayedApplication1135469909/001/world.sqlite",
+    "Boundary": "resource.ingress",
+    "Phase": "pre-apply",
+    "Subject": "client",
+    "PID": 94470,
+    "Generation": 1,
+    "Epoch": 2,
+    "Sequence": 1,
+    "Intent": "[2,\"d3b464ddc02586ae118f08515a9f62300cdbb805d0ab5c85b9ad3c1b26a006bf\",\"[\\\"client\\\",1,1,0]\"]",
+    "Attempt": "[\"authorization\",\"[\\\"client\\\",1,1,0]\"]",
+    "InFlight": null
+  },
+  "executor_barrier": {
+    "Scenario": "TestPhase2BDelayedApplication",
+    "Token": "phase2-runner-1793556270093563000",
+    "Store": "/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/TestPhase2BDelayedApplication1135469909/001/local.sqlite",
+    "Boundary": "fixture.revoked",
+    "Phase": "pre-kill",
+    "Subject": "client",
+    "PID": 94471,
+    "Generation": 1,
+    "Epoch": 2,
+    "Sequence": 1,
+    "Intent": "",
+    "Attempt": "",
+    "InFlight": [
+      "[\"authorization\",\"[\\\"client\\\",1,1,0]\"]"
+    ]
+  },
+  "key": "[2,\"d3b464ddc02586ae118f08515a9f62300cdbb805d0ab5c85b9ad3c1b26a006bf\",\"[\\\"client\\\",1,1,0]\"]",
+  "live_open_refusal": "store already active",
+  "order": [
+    "ingress",
+    "actual revocation returned",
+    "second Open refused",
+    "SIGKILL and Wait",
+    "fresh Open",
+    "successful Q",
+    "endpoint release",
+    "original endpoint application",
+    "no recovery transmission"
+  ],
+  "reopened": [
+    {
+      "PID": 94478,
+      "AnchorEpoch": 3,
+      "Command": "open",
+      "Client": {
+        "ID": {
+          "Subject": "client",
+          "Generation": 1
+        },
+        "ProgramID": "8ebb78e2001a807fe6518718ea39c3a2f98e4e8c4170d6cdc464ad403a543edb",
+        "Epoch": 2,
+        "Sequence": 1,
+        "Revision": 1,
+        "Projection": {
+          "PC": 1,
+          "Data": {
+            "pending": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"client\",1,1,0]",
+              "Flag": false
+            }
+          },
+          "Status": "cancelled"
+        }
+      },
+      "Report": null
+    },
+    {
+      "PID": 94478,
+      "AnchorEpoch": 3,
+      "Command": "quiesce",
+      "Client": {
+        "ID": {
+          "Subject": "client",
+          "Generation": 1
+        },
+        "ProgramID": "8ebb78e2001a807fe6518718ea39c3a2f98e4e8c4170d6cdc464ad403a543edb",
+        "Epoch": 2,
+        "Sequence": 1,
+        "Revision": 1,
+        "Projection": {
+          "PC": 1,
+          "Data": {
+            "pending": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"client\",1,1,0]",
+              "Flag": false
+            }
+          },
+          "Status": "cancelled"
+        }
+      },
+      "Report": null
+    },
+    {
+      "PID": 94478,
+      "AnchorEpoch": 3,
+      "Command": "start",
+      "Client": {
+        "ID": {
+          "Subject": "client",
+          "Generation": 1
+        },
+        "ProgramID": "8ebb78e2001a807fe6518718ea39c3a2f98e4e8c4170d6cdc464ad403a543edb",
+        "Epoch": 2,
+        "Sequence": 1,
+        "Revision": 1,
+        "Projection": {
+          "PC": 1,
+          "Data": {
+            "pending": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"client\",1,1,0]",
+              "Flag": false
+            }
+          },
+          "Status": "cancelled"
+        }
+      },
+      "Report": null
+    },
+    {
+      "PID": 94478,
+      "AnchorEpoch": 3,
+      "Command": "finish",
+      "Client": {
+        "ID": {
+          "Subject": "client",
+          "Generation": 1
+        },
+        "ProgramID": "8ebb78e2001a807fe6518718ea39c3a2f98e4e8c4170d6cdc464ad403a543edb",
+        "Epoch": 2,
+        "Sequence": 1,
+        "Revision": 1,
+        "Projection": {
+          "PC": 1,
+          "Data": {
+            "pending": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"client\",1,1,0]",
+              "Flag": false
+            }
+          },
+          "Status": "cancelled"
+        }
+      },
+      "Report": {
+        "Steps": 0,
+        "Dispatches": 1,
+        "Quiescent": true,
+        "OpenRuns": [
+          {
+            "Subject": "anchor",
+            "Generation": 1
+          }
+        ],
+        "UnresolvedIntents": [
+          {
+            "ID": "[\"client\",1,1,0]",
+            "Run": {
+              "Subject": "client",
+              "Generation": 1
+            },
+            "Sequence": 1,
+            "Ordinal": 0,
+            "Kind": "external",
+            "Target": "http://127.0.0.1:49657/apply",
+            "Generation": 1,
+            "Obligation": "receipt",
+            "Payload": {
+              "delta": {
+                "Kind": "int",
+                "Number": 5,
+                "Text": "",
+                "Flag": false
+              },
+              "profile": {
+                "Kind": "string",
+                "Number": 0,
+                "Text": "idempotent",
+                "Flag": false
+              }
+            }
+          }
+        ],
+        "PendingDeliveries": [
+          "[\"external-delivery\",\"[\\\"client\\\",1,1,0]\"]"
+        ],
+        "UnknownExternal": [
+          "[\"client\",1,1,0]"
+        ],
+        "UnknownAdapters": [],
+        "Roots": null,
+        "RejectedAdmissions": 0
+      }
+    },
+    {
+      "PID": 94478,
+      "AnchorEpoch": 3,
+      "Command": "quiesce",
+      "Client": {
+        "ID": {
+          "Subject": "client",
+          "Generation": 1
+        },
+        "ProgramID": "8ebb78e2001a807fe6518718ea39c3a2f98e4e8c4170d6cdc464ad403a543edb",
+        "Epoch": 2,
+        "Sequence": 1,
+        "Revision": 1,
+        "Projection": {
+          "PC": 1,
+          "Data": {
+            "pending": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"client\",1,1,0]",
+              "Flag": false
+            }
+          },
+          "Status": "cancelled"
+        }
+      },
+      "Report": null
+    },
+    {
+      "PID": 94478,
+      "AnchorEpoch": 3,
+      "Command": "exit",
+      "Client": {
+        "ID": {
+          "Subject": "client",
+          "Generation": 1
+        },
+        "ProgramID": "8ebb78e2001a807fe6518718ea39c3a2f98e4e8c4170d6cdc464ad403a543edb",
+        "Epoch": 2,
+        "Sequence": 1,
+        "Revision": 1,
+        "Projection": {
+          "PC": 1,
+          "Data": {
+            "pending": {
+              "Kind": "string",
+              "Number": 0,
+              "Text": "[\"client\",1,1,0]",
+              "Flag": false
+            }
+          },
+          "Status": "cancelled"
+        }
+      },
+      "Report": null
+    }
+  ],
+  "signal": "SIGKILL",
+  "world_after": {
+    "ForeignKeys": 1,
+    "BusyTimeoutMS": 5000,
+    "SQLiteVersion": "3.53.4",
+    "SQLiteSourceID": "2026-07-24 19:02:57 bf7c7f30031888f4e796e429ab3978879485813aaca6f641c7b33e4e09459bcc",
+    "JournalMode": "wal",
+    "Synchronous": 2,
+    "QueryOnly": 1,
+    "Requests": [
+      {
+        "Key": "[2,\"d3b464ddc02586ae118f08515a9f62300cdbb805d0ab5c85b9ad3c1b26a006bf\",\"[\\\"client\\\",1,1,0]\"]",
+        "Profile": "idempotent",
+        "Subject": "client",
+        "Authorization": "[\"authorization\",\"[\\\"client\\\",1,1,0]\"]",
+        "Generation": 1,
+        "Epoch": 2,
+        "Sequence": 1,
+        "Delta": 5
+      }
+    ],
+    "Applications": [
+      {
+        "Key": "[2,\"d3b464ddc02586ae118f08515a9f62300cdbb805d0ab5c85b9ad3c1b26a006bf\",\"[\\\"client\\\",1,1,0]\"]",
+        "Profile": "idempotent",
+        "Delta": 5,
+        "Mutation": 1,
+        "Total": 5,
+        "Process": "phase2-endpoint-1793556270059460000",
+        "PID": 94470
+      }
+    ],
+    "Total": 5,
+    "Contacts": 1
+  }
+}

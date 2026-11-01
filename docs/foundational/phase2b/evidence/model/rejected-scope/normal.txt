@@ -1,0 +1,103 @@
+=== RUN   TestAllEdges
+=== RUN   TestAllEdges/raw-keyed-cancel
+    model_test.go:100: states=50 edges=89 sinks=3
+=== RUN   TestAllEdges/raw-keyed-root
+    model_test.go:100: states=25 edges=34 sinks=2
+=== RUN   TestAllEdges/adapter-cancel
+    model_test.go:100: states=50 edges=89 sinks=3
+=== RUN   TestAllEdges/adapter-root
+    model_test.go:100: states=25 edges=34 sinks=2
+=== RUN   TestAllEdges/raw-abandon
+    model_test.go:100: states=25 edges=32 sinks=3
+=== RUN   TestAllEdges/raw-retire
+    model_test.go:100: states=25 edges=32 sinks=3
+=== RUN   TestAllEdges/raw-retry
+    model_test.go:100: states=35 edges=54 sinks=2
+=== RUN   TestAllEdges/raw-end
+    model_test.go:100: states=22 edges=29 sinks=2
+=== RUN   TestAllEdges/adapter-failure
+    model_test.go:100: states=22 edges=29 sinks=2
+=== RUN   TestAllEdges/alias-source-failed-scope-open
+    model_test.go:100: states=19 edges=25 sinks=2
+=== RUN   TestAllEdges/nested-fail
+    model_test.go:100: states=25 edges=34 sinks=2
+=== RUN   TestAllEdges/nested-retire
+    model_test.go:100: states=35 edges=53 sinks=2
+=== RUN   TestAllEdges/nested-publish
+    model_test.go:100: states=22 edges=30 sinks=1
+=== RUN   TestAllEdges/two-prepared-direct
+    model_test.go:100: states=231 edges=473 sinks=7
+=== RUN   TestAllEdges/owner-close-open
+    model_test.go:100: states=38 edges=46 sinks=2
+=== RUN   TestAllEdges/no-receipt
+    model_test.go:100: states=35 edges=57 sinks=3
+=== RUN   TestAllEdges/account-error
+    model_test.go:100: states=21 edges=28 sinks=2
+=== RUN   TestAllEdges/raw-keyed-recover-open
+    model_test.go:100: states=47 edges=57 sinks=4
+=== RUN   TestAllEdges/raw-plain-recover-open
+    model_test.go:100: states=20 edges=21 sinks=4
+=== RUN   TestAllEdges/adapter-recover-open
+    model_test.go:100: states=20 edges=21 sinks=4
+=== RUN   TestAllEdges/raw-keyed-recover-revoked
+    model_test.go:100: states=116 edges=179 sinks=11
+--- PASS: TestAllEdges (0.00s)
+    --- PASS: TestAllEdges/raw-keyed-cancel (0.00s)
+    --- PASS: TestAllEdges/raw-keyed-root (0.00s)
+    --- PASS: TestAllEdges/adapter-cancel (0.00s)
+    --- PASS: TestAllEdges/adapter-root (0.00s)
+    --- PASS: TestAllEdges/raw-abandon (0.00s)
+    --- PASS: TestAllEdges/raw-retire (0.00s)
+    --- PASS: TestAllEdges/raw-retry (0.00s)
+    --- PASS: TestAllEdges/raw-end (0.00s)
+    --- PASS: TestAllEdges/adapter-failure (0.00s)
+    --- PASS: TestAllEdges/alias-source-failed-scope-open (0.00s)
+    --- PASS: TestAllEdges/nested-fail (0.00s)
+    --- PASS: TestAllEdges/nested-retire (0.00s)
+    --- PASS: TestAllEdges/nested-publish (0.00s)
+    --- PASS: TestAllEdges/two-prepared-direct (0.00s)
+    --- PASS: TestAllEdges/owner-close-open (0.00s)
+    --- PASS: TestAllEdges/no-receipt (0.00s)
+    --- PASS: TestAllEdges/account-error (0.00s)
+    --- PASS: TestAllEdges/raw-keyed-recover-open (0.00s)
+    --- PASS: TestAllEdges/raw-plain-recover-open (0.00s)
+    --- PASS: TestAllEdges/adapter-recover-open (0.00s)
+    --- PASS: TestAllEdges/raw-keyed-recover-revoked (0.00s)
+=== RUN   TestRaceAndDuplicates
+--- PASS: TestRaceAndDuplicates (0.00s)
+=== RUN   TestScopesAndAccounting
+--- PASS: TestScopesAndAccounting (0.00s)
+=== RUN   TestRecoveryCutsAndAllServicedMaxima
+=== RUN   TestRecoveryCutsAndAllServicedMaxima/raw-keyed-recover-open
+    model_test.go:210: initial applications=0 serviced states=10 maximal=1
+    model_test.go:210: initial applications=1 serviced states=10 maximal=1
+=== RUN   TestRecoveryCutsAndAllServicedMaxima/raw-plain-recover-open
+    model_test.go:210: initial applications=0 serviced states=1 maximal=1
+    model_test.go:210: initial applications=1 serviced states=1 maximal=1
+=== RUN   TestRecoveryCutsAndAllServicedMaxima/adapter-recover-open
+    model_test.go:210: initial applications=0 serviced states=1 maximal=1
+    model_test.go:210: initial applications=1 serviced states=1 maximal=1
+=== RUN   TestRecoveryCutsAndAllServicedMaxima/raw-keyed-recover-revoked
+    model_test.go:210: initial applications=0 serviced states=4 maximal=1
+    model_test.go:210: initial applications=1 serviced states=4 maximal=1
+--- PASS: TestRecoveryCutsAndAllServicedMaxima (0.00s)
+    --- PASS: TestRecoveryCutsAndAllServicedMaxima/raw-keyed-recover-open (0.00s)
+    --- PASS: TestRecoveryCutsAndAllServicedMaxima/raw-plain-recover-open (0.00s)
+    --- PASS: TestRecoveryCutsAndAllServicedMaxima/adapter-recover-open (0.00s)
+    --- PASS: TestRecoveryCutsAndAllServicedMaxima/raw-keyed-recover-revoked (0.00s)
+=== RUN   TestPacketAfterFreshOwnerQAndSurvivingRecord
+--- PASS: TestPacketAfterFreshOwnerQAndSurvivingRecord (0.00s)
+=== RUN   TestShortcutControls
+=== RUN   TestShortcutControls/last-check
+    model_test.go:260: check(open) < release owner lock < R < L(mock call)
+=== RUN   TestShortcutControls/whole-call-owner-lock
+    model_test.go:274: R cannot acquire owner while synthetic transport is held
+    model_test.go:274: peer.commit cannot acquire owner while synthetic transport is held
+    model_test.go:280: owner becomes available only after call releases
+=== RUN   TestShortcutControls/split-check-register
+    model_test.go:311: check(open) < R < empty registry Q < register < L(mock call)
+--- PASS: TestShortcutControls (0.00s)
+    --- PASS: TestShortcutControls/last-check (0.00s)
+    --- PASS: TestShortcutControls/whole-call-owner-lock (0.00s)
+    --- PASS: TestShortcutControls/split-check-register (0.00s)
+PASS

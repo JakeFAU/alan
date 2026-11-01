@@ -1,0 +1,13 @@
+# Independent manuscript source review
+
+## First submission — REVISE
+
+I checked Markdown SHA-256 `8d2cadfadebaa6b078a946f9b8c2ee2c1f0763bc5b90e721167b1b5835352cea` and TeX SHA-256 `b8189524be96fb01115aef5e1e1cedc7c0896fd70754a9cc7c1b9542fc4171c0` against the frozen specification, current core and preliminary selected captures. The two forms of Pillar V both say the host wait adds no observation to the authored program. That statement is too broad. A fresh owner answering Q may invoke the existing settlement procedure, which inserts the authentic original correlation-bound observation. Under scope closure the originating member can still be open and later select it. The host certificate and independent world oracle remain outside the authored interface. Preserve this distinction explicitly in both forms. Also distinguish owner Close from lasting durable source/scope revocation. Fresh Open can admit an otherwise eligible source.
+
+Both manuscripts preserve the withdrawn launch clause and historical Phase 2A falsifier. They describe the two orders of A against R, late entry before Q, separate per-opportunity accounting, immutable key/debit, the terminal-source policy and the positive successful nested ancestor. Their delayed-application conclusion requires a previously accepted packet and the named endpoint service assumption. They keep the future-simulation and effectful-composition obligations open.
+
+I inspected the preliminary world-v3, positive, aggregate/compatibility, consumer and corrected peer command records. The earlier parent/nested command had passing private-failure and nested leaves but exited nonzero on a peer fixture; the corrected peer command exited zero. These are source checks and preliminary observations only. Final normal/race captures, independent raw-row audit, PDF build and visual inspection are separate gates.
+
+## Corrected source — APPROVE for typesetting
+
+I verified Markdown SHA-256 `e997e1f16536471d43ee6f6c7bccb9d8905e525af68ceccfacee72769a7b38c3` and TeX SHA-256 `aa062642020f80f8fad6a57d142b1258973e1c76b5149db8b9c79aa959cd65f4`. Both forms now separate Q's host acknowledgment from the genuine selectable result its settlement service can retain. Both distinguish durable source/scope revocation from owner release and idle scheduling. The changes leave the historical counterexample visible, and the two-stage implication remains conditional on the single-host protocol and later owners enforcing it. I ran the manuscript diff whitespace check and verified that the bibliography had no changes. I found no remaining blocking issue in the submitted source. This source approval precedes final experiment and PDF qualification.
