@@ -1,0 +1,7 @@
+# When an external effect outlives its executor
+
+Can the original local record support a justified and useful continuation after a separately durable counter changes and the executor disappears? The unit of investigation is one committed operation, its original source and an independently authorized lifecycle actor. The outcome measures are authentic world application, retained correlated evidence, and actual consumer selection. Compare the authored adapter route to the raw loopback protocol and separate authority over a child from knowledge of its effects.
+
+Integration base and fetched origin/main were both `18d35a2b312cf7180926d4b4cc5c7c2094cd68e2`, merge of PR 31 at JakeFAU/alan. Verified `git merge-base --is-ancestor 11d1a892c10414362b0b09ff4d17298b8fef3bdb origin/main` and original checkout clean. Work in an isolated worktree. Go 1.27.3 darwin/arm64, CGO, the pinned sqlite3 v1.14.52. The historical pure Store owning-tree result is an input only. See [original assignment](assignment.md), [tree theorem](../phase1t/03-tree-theorem.md), [Series 1 conclusion](../phase1t/07-series1-conclusion.md) and [handoff](../phase1t/08-pillar4-handoff.md).
+
+Phase 2 ultimately needs an effectful composition/recovery argument. This first campaign distinguishes endpoint capabilities, local bookkeeping, host reports and ordinary parent observations. An unresolved mutation is an admissible outcome where the required information is absent. Establish whether work actually continues in each supported profile. No new public policy is selected.
