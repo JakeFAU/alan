@@ -60,13 +60,16 @@ func Inspect(ctx context.Context, path string, limits Limits) (snapshot Inspecti
 		return snapshot, err
 	}
 	tables := inspectionTables
-	if schemaVersion == compositionSchemaVersion {
+	if isCompositionSchema(schemaVersion) {
 		report, e := validateLedger(ctx, tx, limits)
 		if e != nil {
 			return snapshot, e
 		}
 		snapshot.Roots = report.Roots
 		tables = append(append([]string{}, inspectionTables...), compositionInspectionTables...)
+		if schemaVersion == reconciliationSchemaVersion {
+			tables = append(tables, "reconciliation_profile", "receipt_read_ordinals")
+		}
 	} else if schemaVersion != SchemaVersion {
 		return snapshot, ErrVersion
 	}

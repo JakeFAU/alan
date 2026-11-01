@@ -445,6 +445,19 @@ func validateCompositionPrefix(ctx context.Context, q queryer, l Limits, c compo
 			}
 		}
 	}
+	checks, err := receiptPrefixChecks(ctx, q)
+	if err != nil {
+		return err
+	}
+	for _, ordinals := range checks {
+		for _, o := range ordinals {
+			f, err := receiptReadFact(ctx, q, o.Query.QueryID, o.Query.Ordinal)
+			if err != nil {
+				return err
+			}
+			expected[f.ID] = f
+		}
+	}
 	if len(expected) != len(facts) {
 		return corrupt("missing/invented protocol fact")
 	}
@@ -616,6 +629,14 @@ func validateCompositionPrefix(ctx context.Context, q queryer, l Limits, c compo
 			} else if i.Kind == "external" {
 				x.known[i.ID] = true
 			}
+		case compositionReadFact:
+			o, e := readOrdinal(ctx, q, f.OperationID, int(f.Sequence))
+			if e != nil {
+				return e
+			}
+			if o.Prefix != f.Order-1 {
+				return corrupt("receipt read spend order")
+			}
 		case compositionExternalResultFact:
 			if !x.reservations[f.OperationID] {
 				return corrupt("result before reservation")
@@ -748,7 +769,16 @@ func validateCompositionPrefix(ctx context.Context, q queryer, l Limits, c compo
 		default:
 			return ErrVersion
 		}
+		for _, o := range checks[f.Order] {
+			if err = verifyReadPrefix(&x, o); err != nil {
+				return err
+			}
+		}
+		delete(checks, f.Order)
 		seen[f.ID] = true
+	}
+	if len(checks) != 0 {
+		return corrupt("receipt read beyond retained prefix")
 	}
 	if err = compositionExactRows(ctx, q, "composition_freezes", "scope_id,root_id,descriptor", expectedFreezes); err != nil {
 		return err

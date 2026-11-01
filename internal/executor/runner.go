@@ -177,7 +177,7 @@ func (s *Store) Run(ctx context.Context, options RunOptions) (report RunReport, 
 			report.Dispatches++
 			attempted[external.intent] = true
 			var event boundary.Event
-			var transport func() externalCompletion
+			var transport func(*dispatchOpportunity) externalCompletion
 			if external.kind == "adapter" {
 				work, err := s.prepareAdapterWork(ctx, external.intent, options.Adapters, options.ExternalTimeout)
 				if err != nil {
@@ -185,7 +185,11 @@ func (s *Store) Run(ctx context.Context, options RunOptions) (report RunReport, 
 				}
 				if work != nil {
 					event = work.event
-					transport = func() externalCompletion {
+					transport = func(op *dispatchOpportunity) externalCompletion {
+						work.read, work.refusal = op.read, op.readRefusal
+						if op.read != nil {
+							work.event.Epoch = op.read.Resolver.Epoch
+						}
 						result := transportAdapter(ctx, *work)
 						return externalCompletion{adapter: &result}
 					}
@@ -197,7 +201,7 @@ func (s *Store) Run(ctx context.Context, options RunOptions) (report RunReport, 
 				}
 				if work != nil {
 					event = work.event
-					transport = func() externalCompletion { return transportExternal(ctx, *work) }
+					transport = func(*dispatchOpportunity) externalCompletion { return transportExternal(ctx, *work) }
 				}
 			}
 			if transport != nil {
@@ -218,7 +222,7 @@ func (s *Store) Run(ctx context.Context, options RunOptions) (report RunReport, 
 					workers.Add(1)
 					go func() {
 						defer workers.Done()
-						result := transport()
+						result := transport(op)
 						result.opportunity = op
 						completions <- result
 					}()
@@ -618,6 +622,14 @@ func (s *Store) retryEligibleWork(ctx context.Context, d pendingDelivery) (bool,
 	}
 	_, e = loadAdapterResult(ctx, s.conn, d.intent)
 	if errors.Is(e, sql.ErrNoRows) {
+		if a.Allowed && s.reconciliation && a.Intent.Target == receiptReadCapability {
+			var lastEpoch int64
+			if err := s.conn.QueryRowContext(ctx, "SELECT coalesce(max(json_extract(descriptor,'$.Resolver.Epoch')),0) FROM receipt_read_ordinals WHERE intent_id=?", a.Intent.ID).Scan(&lastEpoch); err != nil {
+				return false, err
+			}
+			state, err := loadRun(ctx, s.conn, a.Intent.Run)
+			return state.Epoch > lastEpoch, err
+		}
 		return !a.Allowed, nil
 	}
 	return e == nil, e

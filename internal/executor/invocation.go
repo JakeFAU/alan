@@ -100,7 +100,7 @@ func boundCompositionProgram(ctx context.Context, q queryer, p Program, run RunI
 	if err != nil {
 		return p, err
 	}
-	if n != compositionSchemaVersion {
+	if !isCompositionSchema(n) {
 		return p, nil
 	}
 	b, member, err := loadCompositionBinding(ctx, q, run)

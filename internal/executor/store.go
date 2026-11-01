@@ -48,12 +48,13 @@ type Permission struct {
 	Obligation                      string
 }
 type Provision struct {
-	Composition *CompositionProvision `json:",omitempty"`
-	Assets      []effects.Asset
-	Programs    []Artifact
-	Subjects    []Subject
-	Runs        []InitialRun
-	Permissions []Permission
+	Reconciliation *ReconciliationProfile `json:",omitempty"`
+	Composition    *CompositionProvision  `json:",omitempty"`
+	Assets         []effects.Asset
+	Programs       []Artifact
+	Subjects       []Subject
+	Runs           []InitialRun
+	Permissions    []Permission
 }
 type Authority struct {
 	Run                       RunID
@@ -91,6 +92,7 @@ type Store struct {
 	limits           Limits
 	closed           bool
 	namespace        string
+	reconciliation   bool
 	composition      *compositionProfile
 }
 
@@ -276,6 +278,9 @@ func verifyConnection(ctx context.Context, q queryer, readonly bool) (string, st
 // Create provisions a new store in one transaction; it never re-provisions an
 // existing file. Open is the only recovery path.
 func Create(ctx context.Context, path string, p Provision, limits Limits) (*Store, error) {
+	if p.Reconciliation != nil && p.Composition == nil {
+		return nil, ErrVersion
+	}
 	if p.Composition != nil {
 		c := *p.Composition
 		if c.Version != "" && c.Version != compositionProtocolVersion {
@@ -334,12 +339,23 @@ func createStore(ctx context.Context, path string, p Provision, limits Limits, c
 	version := SchemaVersion
 	if composition != nil {
 		version = compositionSchemaVersion
-		if _, err = tx.ExecContext(ctx, compositionSchema); err != nil {
+		ddl := compositionSchema
+		if p.Reconciliation != nil {
+			ddl = compositionReconciliationSchema
+		}
+		if _, err = tx.ExecContext(ctx, ddl); err != nil {
 			return nil, err
 		}
 	}
 	if composition != nil && composition.Version == compositionProtocolVersion {
 		if _, err = tx.ExecContext(ctx, invocationSchema); err != nil {
+			return nil, err
+		}
+	}
+	if p.Reconciliation != nil {
+		version = reconciliationSchemaVersion
+		s.reconciliation = true
+		if err = createReconciliationProfile(ctx, tx, *p.Reconciliation); err != nil {
 			return nil, err
 		}
 	}
@@ -583,7 +599,7 @@ func openStore(ctx context.Context, path string, limits Limits, composition bool
 			if e != nil {
 				return nil, e
 			}
-			if n == compositionSchemaVersion {
+			if isCompositionSchema(n) {
 				s.composition, err = readCompositionProfile(ctx, tx, limits)
 			}
 		}
@@ -591,6 +607,11 @@ func openStore(ctx context.Context, path string, limits Limits, composition bool
 	if err != nil {
 		return nil, err
 	}
+	n, err := schemaNumber(ctx, tx)
+	if err != nil {
+		return nil, err
+	}
+	s.reconciliation = n == reconciliationSchemaVersion
 	s.namespace = report.Namespace
 	for _, r := range report.Runs {
 		if r.Projection.Status != "open" {
@@ -900,7 +921,7 @@ func readNamespace(ctx context.Context, q queryer) (string, error) {
 	if err := q.QueryRowContext(ctx, "PRAGMA user_version").Scan(&userVersion); err != nil {
 		return "", err
 	}
-	if (schemaVersion != SchemaVersion && schemaVersion != compositionSchemaVersion) || userVersion != schemaVersion || semantics != SemanticVersion {
+	if (schemaVersion != SchemaVersion && !isCompositionSchema(schemaVersion)) || userVersion != schemaVersion || semantics != SemanticVersion {
 		return "", ErrVersion
 	}
 	var namespace string

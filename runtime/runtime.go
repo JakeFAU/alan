@@ -72,3 +72,6 @@ type RootCompletion = executor.RootCompletion
 type InvocationHandoff = executor.InvocationHandoff
 
 const HandoffPeer = executor.HandoffPeer
+
+type ReconciliationProfile = executor.ReconciliationProfile
+type ReceiptGrant = executor.ReceiptGrant
