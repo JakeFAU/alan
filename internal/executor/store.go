@@ -75,19 +75,23 @@ const busyTimeoutMS = 5000
 // Store owns one pinned SQLite connection and an OS lock. It is safe for concurrent
 // callers; serialized transactions preserve the single-owner execution model.
 type Store struct {
-	ownerMu     sync.Mutex
-	runDone     chan struct{}
-	runWake     chan struct{}
-	runCancel   context.CancelFunc
-	closing     bool
-	mu          sync.Mutex
-	db          *sql.DB
-	conn        *sql.Conn
-	lock        *os.File
-	limits      Limits
-	closed      bool
-	namespace   string
-	composition *compositionProfile
+	ownerMu          sync.Mutex
+	runDone          chan struct{}
+	runWake          chan struct{}
+	runCancel        context.CancelFunc
+	closing          bool
+	ownerClosing     chan struct{}                     // closed once by Close, under ownerMu
+	ownerUsers       sync.WaitGroup                    // direct dispatch and Q, registered before closing
+	liveDispatch     map[*dispatchOpportunity]struct{} // protected by mu
+	dispatchFailures map[RunID]error                   // first accounting error per source, protected by mu
+	mu               sync.Mutex
+	db               *sql.DB
+	conn             *sql.Conn
+	lock             *os.File
+	limits           Limits
+	closed           bool
+	namespace        string
+	composition      *compositionProfile
 }
 
 // Every protocol ledger is retained. Later protocol slices supply their operations;
@@ -607,7 +611,12 @@ func openStore(ctx context.Context, path string, limits Limits, composition bool
 }
 func (s *Store) Close() error {
 	s.ownerMu.Lock()
-	s.closing = true
+	if !s.closing {
+		s.closing = true
+		if s.ownerClosing != nil {
+			close(s.ownerClosing)
+		}
+	}
 	done := s.runDone
 	if s.runCancel != nil {
 		s.runCancel()
@@ -616,6 +625,7 @@ func (s *Store) Close() error {
 	if done != nil {
 		<-done
 	}
+	s.ownerUsers.Wait()
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.closed {

@@ -176,27 +176,19 @@ func (s *Store) Run(ctx context.Context, options RunOptions) (report RunReport, 
 			}
 			report.Dispatches++
 			attempted[external.intent] = true
+			var event boundary.Event
+			var transport func() externalCompletion
 			if external.kind == "adapter" {
 				work, err := s.prepareAdapterWork(ctx, external.intent, options.Adapters, options.ExternalTimeout)
 				if err != nil {
 					return report, err
 				}
 				if work != nil {
-					root, _, e := s.deliveryRoot(ctx, external.intent)
-					if e != nil {
-						return report, e
+					event = work.event
+					transport = func() externalCompletion {
+						result := transportAdapter(ctx, *work)
+						return externalCompletion{adapter: &result}
 					}
-					activeOperations[external.intent] = root
-					if root != "" {
-						activeRoots[root]++
-					}
-					active++
-					workers.Add(1)
-					go func(work adapterWork) {
-						defer workers.Done()
-						result := transportAdapter(ctx, work)
-						completions <- externalCompletion{adapter: &result}
-					}(*work)
 				}
 			} else {
 				work, err := s.prepareExternalWork(ctx, external.intent, options.ExternalTimeout)
@@ -204,17 +196,32 @@ func (s *Store) Run(ctx context.Context, options RunOptions) (report RunReport, 
 					return report, err
 				}
 				if work != nil {
-					root, _, e := s.deliveryRoot(ctx, external.intent)
-					if e != nil {
-						return report, e
-					}
+					event = work.event
+					transport = func() externalCompletion { return transportExternal(ctx, *work) }
+				}
+			}
+			if transport != nil {
+				root, _, err := s.deliveryRoot(ctx, external.intent)
+				if err != nil {
+					return report, err
+				}
+				op, err := s.admitDispatch(ctx, event)
+				if err != nil {
+					return report, err
+				}
+				if op != nil {
 					activeOperations[external.intent] = root
 					if root != "" {
 						activeRoots[root]++
 					}
 					active++
 					workers.Add(1)
-					go func(work externalWork) { defer workers.Done(); completions <- transportExternal(ctx, work) }(*work)
+					go func() {
+						defer workers.Done()
+						result := transport()
+						result.opportunity = op
+						completions <- result
+					}()
 				}
 			}
 			progressed = true

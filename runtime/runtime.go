@@ -23,6 +23,7 @@ type RunID = executor.RunID
 type Projection = executor.Projection
 type RunState = executor.RunState
 type Authority = executor.Authority
+type DispatchAuthority = executor.DispatchAuthority
 type Input = executor.Input
 type AdmissionResult = executor.AdmissionResult
 type RunOptions = executor.RunOptions
@@ -39,6 +40,7 @@ var ErrStale = executor.ErrStale
 var ErrLocked = executor.ErrLocked
 var ErrRunActive = executor.ErrRunActive
 var ErrDispatchMode = executor.ErrDispatchMode
+var ErrDispatchAuthorityOpen = executor.ErrDispatchAuthorityOpen
 
 func DefaultLimits() Limits { return executor.DefaultLimits() }
 func Create(ctx context.Context, path string, p Provision, l Limits) (*Store, error) {

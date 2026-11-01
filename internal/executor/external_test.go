@@ -1,7 +1,9 @@
 package executor
 
 import (
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	resourcefixture "github.com/JakeFAU/alan/internal/fixture"
 	"net/http"
@@ -149,21 +151,21 @@ func TestExternalAuthorizationSurvivesClosureAndNewAuthorizationIsDenied(t *test
 			if _, err = s.Commit(t.Context(), state.Authority(), ""); err != nil {
 				t.Fatal(err)
 			}
-			if settled, err := s.DispatchExternal(t.Context(), id); err != nil || !settled {
+			// A prior allowed reservation keeps its historical authority, but this
+			// fresh exposure follows Failure. A first denial still settles normally.
+			if settled, err := s.DispatchExternal(t.Context(), id); err != nil || settled != !authorized {
 				t.Fatalf("settlement %v %v", settled, err)
 			}
 			if current(t, s, "closed").Projection.Status != "failed" {
 				t.Fatal("late receipt resumed run")
 			}
 			outcome, err := s.externalOutcome(t.Context(), id)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if authorized && outcome.Disposition != "applied" {
-				t.Fatal(outcome)
-			}
-			if !authorized && outcome.Disposition != "source_denied" {
-				t.Fatal(outcome)
+			if authorized {
+				if !errors.Is(err, sql.ErrNoRows) || !outcome.Attempt.Allowed {
+					t.Fatal("lost original authority or invented outcome", outcome, err)
+				}
+			} else if err != nil || outcome.Disposition != "source_denied" {
+				t.Fatal(outcome, err)
 			}
 			s.Close()
 			if _, err = Replay(t.Context(), path, DefaultLimits()); err != nil {

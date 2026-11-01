@@ -128,10 +128,11 @@ type externalWork struct {
 	timeout  time.Duration
 }
 type externalCompletion struct {
-	adapter *adapterCompletion
-	work    externalWork
-	receipt *resource.Receipt
-	err     error
+	opportunity *dispatchOpportunity
+	adapter     *adapterCompletion
+	work        externalWork
+	receipt     *resource.Receipt
+	err         error
 }
 
 // prepareExternalWork retains authorization before exposing transport work.
@@ -144,11 +145,8 @@ func (s *Store) prepareExternalWork(ctx context.Context, id string, timeout time
 	if err != nil {
 		return nil, err
 	}
-	outcome, err := s.externalOutcome(ctx, id)
-	if err == nil {
-		return nil, s.settleExternal(ctx, outcome)
-	}
-	if !errors.Is(err, sql.ErrNoRows) {
+	record := recordedDispatch{id: id, kind: "external", source: a.Intent.Run}
+	if present, err := s.settleRecordedDispatch(ctx, record); err != nil || present {
 		return nil, err
 	}
 	if !a.Allowed {
@@ -187,6 +185,10 @@ func exchangeExternal(ctx context.Context, work externalWork) externalCompletion
 	}
 	request.Header.Set("Content-Type", "application/json")
 	client := &http.Client{Timeout: work.timeout, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
+	if err = dispatchEvent(ctx, work.event, "dispatch.admitted", "pre-call"); err != nil {
+		result.err = err
+		return result
+	}
 	response, err := client.Do(request)
 	if err != nil {
 		result.err = ctx.Err()
@@ -219,14 +221,27 @@ func exchangeExternal(ctx context.Context, work externalWork) externalCompletion
 	return result
 }
 func (s *Store) accountExternal(ctx context.Context, result externalCompletion) error {
+	// Transport cancellation or a missing response can be a truthful unknown.
+	// Keep it separate from a failure to record/settle bytes already returned.
+	transportErr := result.err
+	var handlingErr error
 	if result.adapter != nil {
-		return s.accountAdapter(ctx, *result.adapter)
+		c := *result.adapter
+		transportErr, c.err = c.err, nil
+		handlingErr = s.accountAdapter(ctx, c)
+	} else {
+		handlingErr = s.accountReceipt(ctx, result)
 	}
+	s.finishDispatch(result.opportunity, handlingErr)
+	return errors.Join(transportErr, handlingErr)
+}
+
+func (s *Store) accountReceipt(ctx context.Context, result externalCompletion) error {
 	if result.receipt == nil {
-		return result.err
+		return nil
 	}
 	if err := s.recordExternalReceipt(ctx, result.work.attempt, *result.receipt); err != nil {
-		return errors.Join(result.err, err)
+		return err
 	}
 	// Passive observation after the receipt transaction commits and releases mu.
 	// Settlement is a separate transaction; a crash here retains evidence without
@@ -235,7 +250,7 @@ func (s *Store) accountExternal(ctx context.Context, result externalCompletion) 
 	recorded.Boundary = "external.result-recorded"
 	recorded.Phase = "pre-settlement"
 	if err := boundary.Reached(ctx, recorded); err != nil {
-		return errors.Join(result.err, err)
+		return err
 	}
 	err := s.settleExternal(ctx, ExternalOutcome{Attempt: result.work.attempt, Disposition: "applied", Receipt: result.receipt})
 	if err == nil {
@@ -244,7 +259,7 @@ func (s *Store) accountExternal(ctx context.Context, result externalCompletion) 
 		event.Phase = "post-record"
 		err = boundary.Reached(ctx, event)
 	}
-	return errors.Join(result.err, err)
+	return err
 }
 
 // ErrDispatchMode rejects physical transport outside the composition Run owner.
@@ -254,14 +269,11 @@ var ErrDispatchMode = errors.New("composition transport requires Store.Run")
 // DispatchExternal is the legacy synchronous API. Complete composition stores
 // require Run for all physical dispatch, including their unscoped executions.
 func (s *Store) DispatchExternal(ctx context.Context, id string) (bool, error) {
-	s.mu.Lock()
-	if s.closed {
-		s.mu.Unlock()
-		return false, sql.ErrConnDone
+	if _, err := s.pinDispatchOwner(); err != nil {
+		return false, err
 	}
-	composition := s.invocationEnabled()
-	s.mu.Unlock()
-	if composition {
+	defer s.ownerUsers.Done()
+	if s.invocationEnabled() {
 		return false, ErrDispatchMode
 	}
 	work, err := s.prepareExternalWork(ctx, id, DefaultExternalTimeout)
@@ -275,8 +287,15 @@ func (s *Store) DispatchExternal(ctx context.Context, id string) (bool, error) {
 		}
 		return err == nil, err
 	}
+	op, err := s.admitDispatch(ctx, work.event)
+	if err != nil || op == nil {
+		return false, err
+	}
 	result := transportExternal(ctx, *work)
-	err = s.accountExternal(ctx, result)
+	result.opportunity = op
+	cleanup, stop := context.WithTimeout(context.WithoutCancel(ctx), runnerCleanupTimeout)
+	defer stop()
+	err = errors.Join(s.accountExternal(cleanup, result), ctx.Err())
 	return result.receipt != nil && err == nil, err
 }
 func validReceipt(a ExternalAttempt, r resource.Receipt) bool {
@@ -391,6 +410,10 @@ func externalDescriptor(o ExternalOutcome) AdmissionDescriptor {
 func (s *Store) settleExternal(ctx context.Context, o ExternalOutcome) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	return s.settleExternalLocked(ctx, o)
+}
+
+func (s *Store) settleExternalLocked(ctx context.Context, o ExternalOutcome) error {
 	if s.closed {
 		return sql.ErrConnDone
 	}
