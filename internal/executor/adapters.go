@@ -135,26 +135,20 @@ func (s *Store) prepareAdapterWork(ctx context.Context, id string, registry map[
 	}
 	old, e := loadAdapterAttempt(ctx, s.conn, id)
 	if e == nil {
-		r, re := loadAdapterResult(ctx, s.conn, id)
 		s.mu.Unlock()
-		if errors.Is(re, sql.ErrNoRows) {
-			if old.Allowed {
-				return nil, nil
-			}
-			disposition := "source_denied"
-			if old.Reason == "grant_denied" {
-				disposition = "grant_denied"
-			}
-			result, err := s.recordAdapterResult(ctx, old, effects.Candidate{ID: id, Key: old.Prepared.Request.Key, Disposition: disposition})
-			if err != nil {
-				return nil, err
-			}
-			return nil, s.settleAdapter(ctx, old, result)
+		record := recordedDispatch{id: id, kind: "adapter", source: old.Intent.Run}
+		if present, err := s.settleRecordedDispatch(ctx, record); err != nil || present || old.Allowed {
+			return nil, err
 		}
-		if re != nil {
-			return nil, re
+		disposition := "source_denied"
+		if old.Reason == "grant_denied" {
+			disposition = "grant_denied"
 		}
-		return nil, s.settleAdapter(ctx, old, r)
+		result, err := s.recordAdapterResult(ctx, old, effects.Candidate{ID: id, Key: old.Prepared.Request.Key, Disposition: disposition})
+		if err != nil {
+			return nil, err
+		}
+		return nil, s.settleAdapter(ctx, old, result)
 	}
 	if !errors.Is(e, sql.ErrNoRows) {
 		s.mu.Unlock()
@@ -254,6 +248,10 @@ func transportAdapter(ctx context.Context, w adapterWork) adapterCompletion {
 	}
 	limited, cancel := context.WithTimeout(ctx, w.timeout)
 	defer cancel()
+	if err := dispatchEvent(ctx, w.event, "dispatch.admitted", "pre-call"); err != nil {
+		r.err = err
+		return r
+	}
 	r.candidate = w.adapter.Execute(limited, effects.Copy(w.attempt.Prepared))
 	r.event.Boundary = "adapter.response"
 	r.event.Phase = "pre-record"
@@ -349,6 +347,10 @@ func adapterDescriptor(a AdapterAttempt, r AdapterResult) AdmissionDescriptor {
 func (s *Store) settleAdapter(ctx context.Context, a AdapterAttempt, r AdapterResult) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	return s.settleAdapterLocked(ctx, a, r)
+}
+
+func (s *Store) settleAdapterLocked(ctx context.Context, a AdapterAttempt, r AdapterResult) error {
 	if s.closed {
 		return sql.ErrConnDone
 	}
