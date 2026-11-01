@@ -30,10 +30,17 @@ func retainTemplate(t compositionTemplate, l Limits, lookup func(string) (Progra
 		return t, err
 	}
 	t = retained
-	if t.Version != "" && t.Version != compositionTemplateVersion {
+	version := compositionTemplateVersion
+	if h := t.Handoff; h != nil {
+		if h.Caller.Generation != 1 || h.Sequence < 1 || recordschema.CheckIdentifier(h.Caller.Subject) != nil || recordschema.CheckIdentifier(h.CallerPort) != nil || recordschema.CheckIdentifier(h.EntryPort) != nil || h.EntryPort == t.EntryPort {
+			return t, fmt.Errorf("invalid invocation handoff")
+		}
+		version = handoffTemplateVersion
+	}
+	if t.Version != "" && t.Version != version {
 		return t, ErrVersion
 	}
-	t.Version = compositionTemplateVersion
+	t.Version = version
 	if len(t.Members) == 0 || recordschema.CheckIdentifier(t.EntryMember) != nil || recordschema.CheckIdentifier(t.EntryPort) != nil || recordschema.CheckIdentifier(t.CallerPeer) != nil {
 		return t, fmt.Errorf("invalid template boundary")
 	}
@@ -79,6 +86,16 @@ func retainTemplate(t compositionTemplate, l Limits, lookup func(string) (Progra
 		}
 		programs[name] = p
 	}
+	if h := t.Handoff; h != nil {
+		ep := programs[t.EntryMember]
+		if ep.Author == nil {
+			return t, fmt.Errorf("missing handoff entry")
+		}
+		port, ok := ep.Author.Ports[h.EntryPort]
+		if !ok || !validHandoffPort(port, t.CallerPeer) || port.Obligation == ep.Author.Ports[t.EntryPort].Obligation {
+			return t, fmt.Errorf("invalid entry handoff port")
+		}
+	}
 	public := 0
 	for name, p := range programs {
 		for portName, port := range p.Author.Ports {
@@ -86,6 +103,9 @@ func retainTemplate(t compositionTemplate, l Limits, lookup func(string) (Progra
 				return t, fmt.Errorf("template cannot expose local input")
 			}
 			if port.Peer == t.CallerPeer {
+				if h := t.Handoff; h != nil && name == t.EntryMember && portName == h.EntryPort {
+					continue
+				}
 				if name != t.EntryMember || portName != t.EntryPort {
 					return t, fmt.Errorf("extra caller boundary")
 				}
@@ -121,7 +141,7 @@ func retainTemplate(t compositionTemplate, l Limits, lookup func(string) (Progra
 	}
 	id := t.ID
 	t.ID = ""
-	expected := compositionIdentity(compositionTemplateVersion, t)
+	expected := compositionIdentity(t.Version, t)
 	if id != "" && id != expected {
 		return t, fmt.Errorf("template identity mismatch")
 	}
@@ -202,12 +222,12 @@ func retainCompositionBinding(namespace, rootID string, t compositionTemplate, b
 	if err := validateCompositionEncoding(compositionProvision{Templates: []compositionTemplate{t}}); err != nil {
 		return empty, err
 	}
-	if b.Version != compositionBindingVersion || t.Version != compositionTemplateVersion || b.Protocol != "" && b.Protocol != compositionProtocolVersion {
+	if b.Version != compositionBindingVersion || (t.Version != compositionTemplateVersion && t.Version != handoffTemplateVersion) || b.Protocol != "" && b.Protocol != compositionProtocolVersion {
 		return empty, ErrVersion
 	}
 	templateID := t.ID
 	t.ID = ""
-	expected := compositionIdentity(compositionTemplateVersion, t)
+	expected := compositionIdentity(t.Version, t)
 	t.ID = templateID
 	if templateID != expected || !digestIdentity(namespace) || !digestIdentity(rootID) || b.Namespace != namespace || b.RootID != rootID || b.TemplateID != t.ID || recordschema.CheckIdentifier(b.OperationID) != nil || b.InvocationID != compositionInvocationID(namespace, b.OperationID) || recordschema.CheckIdentifier(b.Caller.Subject) != nil || b.Caller.Generation != 1 || b.Depth < 1 {
 		return empty, fmt.Errorf("invalid binding identity")
@@ -314,7 +334,7 @@ func resolveCompositionProgram(p Program, env compositionEnvironment, member str
 			} else {
 				out.Code[pc].Match.Source = Lit(Text(peer.Subject))
 				out.Code[pc].Match.Generation = Lit(Int(peer.Generation))
-				if b.Protocol == compositionProtocolVersion && port.Peer == t.CallerPeer {
+				if b.Protocol == compositionProtocolVersion && port.Peer == t.CallerPeer && port.Obligation == p.Author.Ports[t.EntryPort].Obligation {
 					out.Code[pc].Match.Provenance = "runtime-invocation-request"
 					out.Code[pc].Match.Operation = Lit(Text(b.OperationID))
 				}

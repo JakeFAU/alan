@@ -105,7 +105,7 @@ func boundCompositionProgram(ctx context.Context, q queryer, p Program, run RunI
 	}
 	b, member, err := loadCompositionBinding(ctx, q, run)
 	if errors.Is(err, sql.ErrNoRows) {
-		return p, nil
+		return bindHandoffCaller(ctx, q, p, run)
 	}
 	if err != nil {
 		return p, err
@@ -472,6 +472,11 @@ func (s *Store) AdmitInvocation(ctx context.Context, operation string) (composit
 		p, e := loadProgram(ctx, tx, t.Members[t.EntryMember].ProgramID, s.limits)
 		if e != nil {
 			return a, e
+		}
+		for _, grant := range handoffPermissions(t, invocation, p) {
+			if _, err = tx.ExecContext(ctx, "INSERT INTO permissions VALUES(?,?,?,?,?,?)", grant.Kind, grant.Source, grant.Target, grant.Operation, grant.Revision, grant.Obligation); err != nil {
+				return a, err
+			}
 		}
 		port := p.Author.Ports[t.EntryPort]
 		if err = port.Receive.Record.Validate(intent.Payload); err != nil {

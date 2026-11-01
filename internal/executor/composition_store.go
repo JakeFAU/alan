@@ -170,6 +170,9 @@ func retainCompositionProfile(ctx context.Context, q queryer, namespace string, 
 		}
 		out.Roots[i] = r
 	}
+	if err = validateHandoff(ctx, q, out, l); err != nil {
+		return nil, err
+	}
 	if out.Version == compositionProtocolVersion {
 		if err = validateInvocationCatalogue(ctx, q, out, l); err != nil {
 			return nil, err

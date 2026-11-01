@@ -183,6 +183,9 @@ func validateCompositionProtocol(ctx context.Context, q queryer, l Limits, c com
 		if err != nil {
 			return err
 		}
+		for _, grant := range handoffPermissions(t, i, program) {
+			addPermission(grant)
+		}
 		request := Observation{ID: compositionIdentity("alan/invocation-request/v1", i.ID), Run: b.Members[t.EntryMember], Kind: "message", Provenance: "runtime-invocation-request", Source: i.Caller.Subject, SourceGeneration: i.Caller.Generation, Obligation: program.Author.Ports[t.EntryPort].Obligation, Operation: id, Payload: i.Inputs}
 		tables["composition_requests"] = append(tables["composition_requests"], []any{i.ID, request.ID, compositionJSON(request)})
 		if !reflect.DeepEqual(observations[request.ID].Observation, request) {
