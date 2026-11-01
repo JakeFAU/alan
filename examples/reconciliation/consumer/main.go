@@ -6,9 +6,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
+	"time"
+
 	"github.com/JakeFAU/alan/examples/reconciliation"
 	"github.com/JakeFAU/alan/runtime"
-	"os"
 )
 
 // static schedules only ordinary commits and delivery of the two real intents.
@@ -84,12 +86,11 @@ func static(ctx context.Context, path string) (map[string]any, error) {
 	}
 	return map[string]any{"original": original, "sent": send, "message": msg, "received": rec, "ack": ack, "delivery": echo, "consumed": consume, "end": end, "replay": replay, "closed_template_error": closed.Error()}, nil
 }
+
 func main() {
-	if len(os.Args) != 2 {
-		fmt.Fprintln(os.Stderr, "usage: consumer NEW_DATABASE")
-		os.Exit(2)
-	}
-	e, err := static(context.Background(), os.Args[1])
+	ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
+	defer cancel()
+	e, err := execute(ctx, os.Args[1:])
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
