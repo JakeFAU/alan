@@ -49,7 +49,10 @@ type ReceiveWait struct {
 
 // InspectionFeatures identifies optional protocols actually present in this
 // storage format. A missing older protocol differs from an empty newer journal.
-type InspectionFeatures struct{ Composition, ReceiptReads, ConflictJournal bool }
+type InspectionFeatures struct {
+	Composition, ReceiptReads, ConflictJournal bool
+	DispatchAdmissions                         bool `json:",omitempty"`
+}
 
 // ExecutionRun describes a logical generation, its current subject authority,
 // and its original parentage. InvocationIDs are original invocation operations.
@@ -246,9 +249,10 @@ func InspectExecution(ctx context.Context, path string, limits Limits) (snapshot
 	base := protocolSchemaNumber(s.StorageVersion)
 
 	s.Features = InspectionFeatures{
-		Composition:     isCompositionSchema(base),
-		ReceiptReads:    base == reconciliationSchemaVersion,
-		ConflictJournal: hasReceiptConflictSchema(s.StorageVersion),
+		Composition:        isCompositionSchema(base),
+		ReceiptReads:       base == reconciliationSchemaVersion,
+		ConflictJournal:    hasReceiptConflictSchema(s.StorageVersion),
+		DispatchAdmissions: hasDispatchAdmissionSchema(s.StorageVersion),
 	}
 	tables := protocolTables(s.StorageVersion)
 	if err := checkProtocolTables(ctx, tx, tables); err != nil {
@@ -432,6 +436,9 @@ func protocolTables(stored int) []string {
 	if hasReceiptConflictSchema(stored) {
 		tables = append(tables, "receipt_conflicts")
 	}
+	if hasDispatchAdmissionSchema(stored) {
+		tables = append(tables, "adapter_dispatch_admissions")
+	}
 	return tables
 }
 
@@ -461,7 +468,7 @@ func checkProtocolTables(ctx context.Context, q queryer, tables []string) error 
 			return ErrVersion
 		}
 	}
-	for _, group := range [][]string{compositionInspectionTables, {"reconciliation_profile", "receipt_read_ordinals", "receipt_conflicts"}} {
+	for _, group := range [][]string{compositionInspectionTables, {"reconciliation_profile", "receipt_read_ordinals", "receipt_conflicts", "adapter_dispatch_admissions"}} {
 		for _, name := range group {
 			if _, exists := have[name]; exists && !required[name] {
 				return ErrVersion

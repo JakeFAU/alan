@@ -35,6 +35,7 @@ type AdmissionView = executor.AdmissionView
 type Intent = executor.Intent
 type ExecutionEffect = executor.ExecutionEffect
 type EffectDispatch = executor.EffectDispatch
+type DispatchAdmission = executor.DispatchAdmission
 type EffectSettlement = executor.EffectSettlement
 type EffectRead = executor.EffectRead
 type EffectReceipt = executor.EffectReceipt

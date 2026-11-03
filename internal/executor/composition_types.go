@@ -57,6 +57,9 @@ type compositionProvision struct {
 	Version   string `json:",omitempty"`
 	Roots     []compositionRoot
 	Templates []compositionTemplate
+	// RecordDispatchAdmissions retains admission to the local call gate for
+	// scoped ordinary adapters, separately from their paid reservations.
+	RecordDispatchAdmissions bool `json:",omitempty"`
 }
 
 // Store keeps only encoded profile bytes; callers cannot mutate retained slices

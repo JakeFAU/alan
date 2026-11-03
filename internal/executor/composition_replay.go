@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"slices"
 	"strings"
 )
 
@@ -446,6 +447,13 @@ func validateCompositionPrefix(ctx context.Context, q queryer, l Limits, c compo
 			}
 		}
 	}
+	gates, err := replayDispatchAdmissions(ctx, q, c.RecordDispatchAdmissions, len(facts))
+	if err != nil {
+		return err
+	}
+	if err := checkDispatchCapacity(gates, len(facts), c.Roots, slices.Values(facts)); err != nil {
+		return err
+	}
 	checks, err := receiptPrefixChecks(ctx, q)
 	if err != nil {
 		return err
@@ -787,6 +795,11 @@ func validateCompositionPrefix(ctx context.Context, q queryer, l Limits, c compo
 			}
 		}
 		delete(checks, f.Order)
+		for _, gate := range gates[f.Order] {
+			if err := x.checkDispatchAdmission(ctx, q, gate); err != nil {
+				return err
+			}
+		}
 		seen[f.ID] = true
 	}
 	if len(checks) != 0 {
@@ -819,5 +832,10 @@ func validateCompositionPrefix(ctx context.Context, q queryer, l Limits, c compo
 			}
 		}
 	}
-	return validateLifecycleChronology(ctx, q, compositionProtocolVersion, x.public)
+	if c.RecordDispatchAdmissions {
+		if err := requireDispatchForResults(ctx, q); err != nil {
+			return err
+		}
+	}
+	return validateLifecycleChronology(ctx, q, compositionProtocolVersion, x.public, len(gates) != 0)
 }

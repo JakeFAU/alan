@@ -1,6 +1,10 @@
 package executor
 
-import "github.com/JakeFAU/alan/adapters/receiptquery"
+import (
+	"maps"
+
+	"github.com/JakeFAU/alan/adapters/receiptquery"
+)
 
 // Read the ordered facts once. A final source projection cannot say whether
 // authority, budget, or a drained original was available at an earlier cut.
@@ -16,8 +20,15 @@ type effectPrefix struct {
 }
 
 func (c *effectCut) checkEffectOrder() error {
+	gates, err := indexDispatchAdmissions(c.tables["adapter_dispatch_admissions"], len(c.facts))
+	if err != nil {
+		return err
+	}
 	if len(c.facts) == 0 {
 		return nil
+	}
+	if err := checkDispatchCapacity(gates, len(c.facts), c.snap.Composition.Roots, maps.Values(c.facts)); err != nil {
+		return err
 	}
 	p := effectPrefix{effectCut: c, seq: map[RunID]int64{}, closed: map[RunID]bool{}, retired: map[RunID]bool{},
 		scopeEnd: map[RunID]int64{}, limits: map[string]int64{}, spent: map[string]int64{}, latestRead: map[RunID]int64{}}
@@ -92,7 +103,7 @@ func (c *effectCut) checkEffectOrder() error {
 			}
 		case compositionAuthorizationFact:
 			if e == nil {
-				continue
+				break
 			}
 			a := e.Authorization
 			if a == nil || f.Order != p.order(compositionAuthorizationFact, id) || p.seq[e.Source] < e.Sequence ||
@@ -155,6 +166,25 @@ func (c *effectCut) checkEffectOrder() error {
 				if err := p.checkReadRefusal(e, f.Order); err != nil {
 					return err
 				}
+			}
+		}
+		for _, gate := range gates[f.Order] {
+			e := c.effects[gate.OperationID]
+			if e == nil || e.AdapterAttempt == nil || !e.AdapterAttempt.Allowed || e.DispatchAdmission != nil || gate.PreparedDigest != e.AdapterAttempt.Prepared.Digest || c.membership[e.Source] == "" {
+				return corrupt("dispatch gate differs from original reservation")
+			}
+			res := p.order(compositionReservationFact, gate.OperationID)
+			if res == 0 || res > f.Order || p.closed[e.Source] || p.retired[e.Source] || p.scopeEnd[e.Source] != 0 && p.scopeEnd[e.Source] <= f.Order || c.resultOrder[e.OperationID] != 0 && c.resultOrder[e.OperationID] <= f.Order {
+				return corrupt("dispatch gate outside original authority")
+			}
+			e.DispatchAdmission = &gate
+			e.Dispatch.Maximum = new(1)
+		}
+	}
+	if c.snap.Features.DispatchAdmissions {
+		for _, e := range c.effects {
+			if e.AdapterResult != nil && e.AdapterAttempt.Allowed && c.membership[e.Source] != "" && e.DispatchAdmission == nil {
+				return corrupt("result without its dispatch admission")
 			}
 		}
 	}

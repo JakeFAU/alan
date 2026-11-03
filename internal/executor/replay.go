@@ -89,7 +89,7 @@ func validateLedger(ctx context.Context, q queryer, limits Limits) (ReplayReport
 	case SchemaVersion:
 		report, err := validateOrdinaryLedger(ctx, q, limits)
 		if err == nil {
-			err = validateLifecycleChronology(ctx, q, "", nil)
+			err = validateLifecycleChronology(ctx, q, "", nil, false)
 		}
 		return report, err
 	case compositionSchemaVersion, reconciliationSchemaVersion:

@@ -89,6 +89,11 @@ func (s *Store) registerDispatch(ctx context.Context, id string) (*dispatchOppor
 		return nil, "", err
 	}
 	op := &dispatchOpportunity{intent: id, source: intent.Run, done: make(chan struct{})}
+	if s.dispatchAdmissions && intent.Kind == "adapter" {
+		if err := s.recordDispatchAdmission(ctx, intent.Intent); err != nil {
+			return nil, "", err
+		}
+	}
 	if s.reconciliation && intent.Kind == "adapter" && intent.Target == receiptReadCapability {
 		op.read, op.readRefusal, err = s.reserveReadLocked(ctx, id)
 		if err != nil {

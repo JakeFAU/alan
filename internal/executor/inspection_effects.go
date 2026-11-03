@@ -64,14 +64,17 @@ type ExecutionEffect struct {
 	// Values are no_dispatch, unresolved, receipt_retained, conflicting_receipts
 	// and read_only (the controlled receipt lookup protocol). A retained receipt
 	// is an assertion by the adapter or ledger, not independent remote finality.
-	Consequence          ExternalConsequence
-	Authorization        *Authorization
-	AdapterAttempt       *AdapterAttempt
-	AdapterResult        *AdapterResult
-	ExternalAttempt      *ExternalAttempt
-	ExternalReceipt      *ExternalReceipt
-	Settlement           *EffectSettlement
-	Dispatch             EffectDispatch
+	Consequence     ExternalConsequence
+	Authorization   *Authorization
+	AdapterAttempt  *AdapterAttempt
+	AdapterResult   *AdapterResult
+	ExternalAttempt *ExternalAttempt
+	ExternalReceipt *ExternalReceipt
+	Settlement      *EffectSettlement
+	Dispatch        EffectDispatch
+	// DispatchAdmission is the witnessed local gate in an opted-in scope.
+	// A paid reservation alone does not establish admission or transmission.
+	DispatchAdmission    *DispatchAdmission `json:",omitempty"`
 	Usage                *effects.Usage
 	ReceiptEvidenceState string
 	AdditionalReceipts   []EffectReceipt
@@ -294,6 +297,9 @@ func (c *effectCut) reservation(x *ExecutionEffect, i Intent, authID string, all
 	if allowed {
 		x.State = EffectReservedUnknown
 		x.Dispatch.Maximum = new(1)
+		if c.snap.Features.DispatchAdmissions && scoped && x.Kind == "adapter" {
+			x.Dispatch.Maximum = new(0)
+		}
 		if x.Kind == "external" && x.ExternalAttempt.Request.Profile == "idempotent" {
 			x.Dispatch.Maximum = nil
 		}

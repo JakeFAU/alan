@@ -11,11 +11,18 @@ import (
 // transaction. Versions 6, 7 and 8 retain the protocols of 3, 4 and 5.
 const receiptConflictSchemaOffset = 3
 
+const dispatchAdmissionSchema = 9
+const dispatchAdmissionConflictSchema = 10
+
+func hasDispatchAdmissionSchema(version int) bool {
+	return version == dispatchAdmissionSchema || version == dispatchAdmissionConflictSchema
+}
+
 func hasReceiptConflictSchema(version int) bool {
 	switch version {
 	case SchemaVersion + receiptConflictSchemaOffset,
 		compositionSchemaVersion + receiptConflictSchemaOffset,
-		reconciliationSchemaVersion + receiptConflictSchemaOffset:
+		reconciliationSchemaVersion + receiptConflictSchemaOffset, dispatchAdmissionConflictSchema:
 		return true
 	default:
 		return false
@@ -23,6 +30,9 @@ func hasReceiptConflictSchema(version int) bool {
 }
 
 func protocolSchemaNumber(version int) int {
+	if hasDispatchAdmissionSchema(version) {
+		return compositionSchemaVersion
+	}
 	if hasReceiptConflictSchema(version) {
 		return version - receiptConflictSchemaOffset
 	}
@@ -44,7 +54,7 @@ func ensureReceiptConflictSchema(ctx context.Context, tx *sql.Tx) error {
 	if hasReceiptConflictSchema(version) {
 		return nil
 	}
-	if version != SchemaVersion && !isCompositionSchema(version) {
+	if version != SchemaVersion && !isCompositionSchema(protocolSchemaNumber(version)) {
 		return ErrVersion
 	}
 	if _, err = tx.ExecContext(ctx, `CREATE TABLE receipt_conflicts(
@@ -55,7 +65,11 @@ func ensureReceiptConflictSchema(ctx context.Context, tx *sql.Tx) error {
 		PRIMARY KEY(intent_id,offer_digest))`); err != nil {
 		return err
 	}
-	version += receiptConflictSchemaOffset
+	if version == dispatchAdmissionSchema {
+		version = dispatchAdmissionConflictSchema
+	} else {
+		version += receiptConflictSchemaOffset
+	}
 	if _, err = tx.ExecContext(ctx, "UPDATE metadata SET schema_version=? WHERE singleton=1", version); err != nil {
 		return err
 	}

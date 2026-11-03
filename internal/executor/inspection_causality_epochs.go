@@ -33,7 +33,7 @@ func (g *memberOrder) checkActivationCounts() error {
 		before[0] = append(before[0], i)
 		before[i] = append(before[i], cut)
 	}
-	var equations []reopenEquation
+	equations := g.dispatchOwner
 	valid := true
 	witness := func(n int, r creationRun, epoch int64, open bool) {
 		birth := g.creation[r.ID]

@@ -56,11 +56,12 @@ func Inspect(ctx context.Context, path string, limits Limits) (snapshot Inspecti
 			return snapshot, err
 		}
 	}
-	schemaVersion, err := schemaNumber(ctx, tx)
+	stored, err := storedSchemaNumber(ctx, tx)
 	if err != nil {
 		return snapshot, err
 	}
-	tables := inspectionTables
+	schemaVersion := protocolSchemaNumber(stored)
+	tables := protocolTables(stored)
 	var evidence []ReceiptEvidence
 	if isCompositionSchema(schemaVersion) {
 		report, e := validateLedger(ctx, tx, limits)
@@ -69,11 +70,10 @@ func Inspect(ctx context.Context, path string, limits Limits) (snapshot Inspecti
 		}
 		snapshot.Roots = report.Roots
 		evidence = report.ReceiptEvidence
-		tables = append(append([]string{}, inspectionTables...), compositionInspectionTables...)
-		if schemaVersion == reconciliationSchemaVersion {
-			tables = append(tables, "reconciliation_profile", "receipt_read_ordinals")
-		}
 	} else if schemaVersion == SchemaVersion {
+		if err := checkProtocolTables(ctx, tx, tables); err != nil {
+			return snapshot, err
+		}
 		evidence, err = readReceiptEvidence(ctx, tx, limits)
 		if err != nil {
 			return snapshot, err
@@ -93,9 +93,6 @@ func Inspect(ctx context.Context, path string, limits Limits) (snapshot Inspecti
 		}
 	} else {
 		return snapshot, ErrVersion
-	}
-	if len(evidence) != 0 {
-		tables = append(append([]string{}, tables...), "receipt_conflicts")
 	}
 	snapshot.Namespace, err = readNamespace(ctx, tx)
 	if err != nil {
