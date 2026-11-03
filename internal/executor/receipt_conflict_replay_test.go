@@ -19,6 +19,9 @@ func TestUnversionedReceiptConflictTableRejected(t *testing.T) {
 	if _, err := Inspect(t.Context(), path, DefaultLimits()); !errors.Is(err, ErrVersion) {
 		t.Errorf("Inspect with unversioned conflict table: %v", err)
 	}
+	if _, err := InspectExecution(t.Context(), path, DefaultLimits()); !errors.Is(err, ErrVersion) {
+		t.Errorf("InspectExecution with unversioned conflict table: %v", err)
+	}
 	if err := s.Close(); err != nil {
 		t.Fatal(err)
 	}
@@ -132,6 +135,9 @@ func assertReceiptEvidenceRejected(t *testing.T, s *Store, path string) {
 	}
 	if inspection, err := Inspect(t.Context(), path, DefaultLimits()); err == nil || len(inspection.ReceiptEvidence) != 0 || inspection.Tables["receipt_conflicts"] != nil {
 		t.Errorf("Inspect exported receipt evidence for a damaged ledger: %+v, %v", inspection.ReceiptEvidence, err)
+	}
+	if cut, err := InspectExecution(t.Context(), path, DefaultLimits()); err == nil || cut != nil {
+		t.Errorf("InspectExecution exported a causal graph with damaged receipt evidence: %v", err)
 	}
 	if err := s.Close(); err != nil {
 		t.Fatal(err)

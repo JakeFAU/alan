@@ -122,4 +122,7 @@ func rejectForgedRefusal(t *testing.T, reason string) {
 	if _, e = Replay(t.Context(), path, DefaultLimits()); e == nil {
 		t.Fatal("replay accepted a fabricated refusal for an allowed attempt with an admitted read and matching immutable grant")
 	}
+	if _, e = InspectExecution(t.Context(), path, DefaultLimits()); !errors.Is(e, ErrCorrupt) {
+		t.Fatalf("typed inspection accepted fabricated read refusal %q: %v", reason, e)
+	}
 }

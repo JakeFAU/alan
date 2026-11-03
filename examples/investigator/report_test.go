@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
-	"encoding/json"
+	"database/sql"
+	"errors"
 	"io"
 	"math"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -103,9 +105,9 @@ func TestAnswerRequiresOriginalSelectedEvidence(t *testing.T) {
 	if err := run(t.Context(), []string{"run", db}, io.Discard); err != nil {
 		t.Fatal(err)
 	}
-	source := func(t *testing.T) runtime.Inspection {
+	source := func(t *testing.T) *runtime.ExecutionSnapshot {
 		t.Helper()
-		s, err := runtime.Inspect(t.Context(), db, runtime.DefaultLimits())
+		s, err := runtime.InspectExecution(t.Context(), db, runtime.DefaultLimits())
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -121,6 +123,74 @@ func TestAnswerRequiresOriginalSelectedEvidence(t *testing.T) {
 			t.Fatalf("returned a different original source: %+v", f)
 		}
 	}
+	for _, tc := range []struct {
+		name string
+		edit func(*testing.T, map[string]schema.Value)
+	}{
+		{"agreement claimed for opposite verdicts", func(_ *testing.T, d map[string]schema.Value) {
+			d["completion"] = schema.Text("completed")
+		}},
+		{"disagreement gap omitted", func(_ *testing.T, d map[string]schema.Value) {
+			d["gaps"] = schema.List()
+		}},
+		{"invented question assigned to both workers", func(t *testing.T, d map[string]schema.Value) {
+			gaps, err := d["gaps"].Records()
+			if err != nil || len(gaps) == 0 {
+				t.Fatal("missing genuine disagreement gap", err)
+			}
+			gaps[len(gaps)-1]["question"] = schema.Text("An invented question?")
+			d["gaps"] = schema.List(gaps...)
+		}},
+		{"counter worker suppressed as a plausible partial answer", func(t *testing.T, d map[string]schema.Value) {
+			rows, err := d["findings"].Records()
+			if err != nil || len(rows) != 2 {
+				t.Fatal("missing genuine findings", err)
+			}
+			d["counter_accepted"], d["counter_assessment"] = schema.Bool(false), schema.Text("insufficient")
+			d["completion"], d["findings"] = schema.Text("partial"), schema.List(rows[0])
+			d["gaps"] = schema.List(map[string]schema.Value{
+				"role": schema.Text("counter"), "reason": schema.Text("insufficient"), "question": d["question"],
+			})
+		}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			s := source(t)
+			parent, ok := s.Run(runtime.RunID{Subject: "investigator", Generation: 1})
+			if !ok {
+				t.Fatal("missing parent")
+			}
+			tc.edit(t, parent.Projection.Data)
+			if r, err := reportSnapshot(s); err == nil || len(r.Findings) != 0 {
+				t.Fatalf("contradictory authored answer escaped verification: %+v, %v", r, err)
+			}
+		})
+	}
+	t.Run("invented follow-up copied into worker outcome and parent answer", func(t *testing.T) {
+		s := source(t)
+		parent, ok := s.Run(runtime.RunID{Subject: "investigator", Generation: 1})
+		if !ok {
+			t.Fatal("missing parent")
+		}
+		data := parent.Projection.Data
+		call, ok := s.Invocation(data["counter_call"].Text)
+		if !ok || call.Outcome == nil || call.Outcome.Response["unresolved"].Text != "" {
+			t.Fatal("expected counter worker's original response without a follow-up")
+		}
+		const question = "Who invented this new question?"
+		value := schema.Text(question)
+		call.Outcome.Response["unresolved"] = value
+		data["counter_unresolved"], data["counter_question"] = value, value
+		gaps, err := data["gaps"].Records()
+		if err != nil || len(gaps) != 1 {
+			t.Fatal("expected only disagreement gap", err)
+		}
+		data["gaps"] = schema.List(map[string]schema.Value{
+			"role": schema.Text("counter"), "reason": schema.Text("model_question"), "question": value,
+		}, gaps[0])
+		if r, err := reportSnapshot(s); err == nil || !strings.Contains(err.Error(), "field unresolved differs from the original model result") || len(r.Findings) != 0 {
+			t.Fatalf("model did not return the purported follow-up: %+v, %v", r, err)
+		}
+	})
 	for _, tc := range []struct {
 		name string
 		edit func([]map[string]schema.Value)
@@ -139,62 +209,80 @@ func TestAnswerRequiresOriginalSelectedEvidence(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			s := source(t)
-			for _, row := range s.Tables["runs"] {
-				if row["subject"] != "investigator" {
-					continue
-				}
-				var p runtime.Projection
-				if err := json.Unmarshal([]byte(row["projection"].(string)), &p); err != nil {
-					t.Fatal(err)
-				}
-				f, err := p.Data["findings"].Records()
-				if err != nil {
-					t.Fatal(err)
-				}
-				tc.edit(f)
-				p.Data["findings"] = schema.List(f...)
-				raw, err := json.Marshal(p)
-				if err != nil {
-					t.Fatal(err)
-				}
-				row["projection"] = string(raw)
+			parent, ok := s.Run(runtime.RunID{Subject: "investigator", Generation: 1})
+			if !ok {
+				t.Fatal("missing parent")
 			}
+			f, err := parent.Projection.Data["findings"].Records()
+			if err != nil {
+				t.Fatal(err)
+			}
+			tc.edit(f)
+			parent.Projection.Data["findings"] = schema.List(f...)
 			if r, err := reportSnapshot(s); err == nil || len(r.Findings) != 0 {
 				t.Fatalf("unsupported finding escaped independent check: %+v, %v", r.Findings, err)
 			}
 		})
 	}
-	s := source(t)
-	observed := s.Tables["composition_outcome_deliveries"][0]["observation_id"]
-	for _, row := range s.Tables["observations"] {
-		if row["id"] == observed {
-			row["consumed_sequence"] = nil
-		}
-	}
-	if r, err := reportSnapshot(s); err == nil || len(r.Findings) != 0 {
-		t.Fatal("published but unselected outcome counted toward the final answer")
-	}
-	s = source(t)
-	deliveries := s.Tables["composition_outcome_deliveries"]
-	deliveries[0]["observation_id"], deliveries[1]["observation_id"] = deliveries[1]["observation_id"], deliveries[0]["observation_id"]
-	if r, err := reportSnapshot(s); err == nil || len(r.Findings) != 0 {
-		t.Fatal("the other selected invocation authenticated the claimed worker")
-	}
-	s = source(t)
-	for _, row := range s.Tables["runs"] {
-		if row["subject"] == "investigator" {
-			var p runtime.Projection
-			if err := json.Unmarshal([]byte(row["projection"].(string)), &p); err != nil {
-				t.Fatal(err)
+	// These are protocol relationships now owned by the runtime. Attack the
+	// actual durable evidence on isolated copies, before a typed view is built.
+	for _, mutation := range []string{"publication not selected", "other published observation"} {
+		t.Run(mutation, func(t *testing.T) {
+			path := filepath.Join(t.TempDir(), "mutant.sqlite")
+			for _, suffix := range []string{"", "-wal"} {
+				b, err := os.ReadFile(db + suffix)
+				if os.IsNotExist(err) && suffix == "-wal" {
+					continue
+				}
+				if err != nil {
+					t.Fatal(err)
+				}
+				if err := os.WriteFile(path+suffix, b, 0600); err != nil {
+					t.Fatal(err)
+				}
 			}
-			p.Data["findings"] = schema.List()
-			raw, err := json.Marshal(p)
+			writer, err := sql.Open("sqlite3", path)
 			if err != nil {
 				t.Fatal(err)
 			}
-			row["projection"] = string(raw)
-		}
+			defer writer.Close()
+			tx, err := writer.Begin()
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer tx.Rollback()
+			if mutation == "publication not selected" {
+				result, err := tx.Exec("UPDATE observations SET consumed_sequence=NULL WHERE id=(SELECT observation_id FROM composition_outcome_deliveries ORDER BY operation_id LIMIT 1)")
+				if err != nil {
+					t.Fatal(err)
+				}
+				if n, err := result.RowsAffected(); err != nil || n != 1 {
+					t.Fatal("failed to remove one selection", n, err)
+				}
+			} else {
+				// Exchange the real deliveries while preserving both unique IDs.
+				if _, err := tx.Exec(`CREATE TEMP TABLE original_deliveries AS SELECT * FROM composition_outcome_deliveries;
+					DELETE FROM composition_outcome_deliveries;
+					INSERT INTO composition_outcome_deliveries(operation_id, observation_id)
+					SELECT a.operation_id, b.observation_id FROM original_deliveries a
+					JOIN original_deliveries b ON a.operation_id != b.operation_id`); err != nil {
+					t.Fatal(err)
+				}
+			}
+			if err := tx.Commit(); err != nil {
+				t.Fatal(err)
+			}
+			if report, err := readReport(t.Context(), path, runtime.DefaultLimits()); !errors.Is(err, runtime.ErrCorrupt) || len(report.Findings) != 0 {
+				t.Fatal("expected corrupt parent selection without findings", err)
+			}
+		})
 	}
+	s := source(t)
+	parent, ok := s.Run(runtime.RunID{Subject: "investigator", Generation: 1})
+	if !ok {
+		t.Fatal("missing parent")
+	}
+	parent.Projection.Data["findings"] = schema.List()
 	if r, err := reportSnapshot(s); err == nil || len(r.Findings) != 0 {
 		t.Fatal("a completed disagreement omitted its authored findings")
 	}
@@ -206,12 +294,22 @@ func TestAccountingSeparatesReservedFromProviderContact(t *testing.T) {
 	zero := int64(0)
 	candidate.Usage = &effects.Usage{OutputTokens: &zero}
 	failed := &runtime.AdapterResult{Disposition: "http_rejected", Candidate: candidate}
+	// The inspector supplies the adapter execution bounds. These independent
+	// values exercise the application's distinct provider-contact presentation.
+	report := func(id string, a *runtime.AdapterAttempt, r *runtime.AdapterResult, min, max int) effectReport {
+		e := &runtime.ExecutionEffect{OperationID: id, AdapterAttempt: a, AdapterResult: r}
+		e.Dispatch.Minimum, e.Dispatch.Maximum = min, new(max)
+		if r != nil {
+			e.Usage = r.Candidate.Usage
+		}
+		return describeEffect(e)
+	}
 	account := accounting{}
-	known := describeEffect("model-1", attempt, failed)
+	known := report("model-1", attempt, failed, 1, 1)
 	account.countModel(known)
-	account.countModel(describeEffect("model-2", attempt, nil))
-	account.countModel(describeEffect("model-3", &runtime.AdapterAttempt{Reason: "effect_limit"}, nil))
-	account.countModel(describeEffect("model-4", nil, nil))
+	account.countModel(report("model-2", attempt, nil, 0, 1))
+	account.countModel(report("model-3", &runtime.AdapterAttempt{Reason: "effect_limit"}, nil, 0, 0))
+	account.countModel(report("model-4", nil, nil, 0, 0))
 	if account.ModelExecutions != (bounds{Minimum: 1, Maximum: 2}) ||
 		account.ProviderContacts != (bounds{Minimum: 1, Maximum: 2}) {
 		t.Fatalf("retained decisions misreported as contact: %+v", account)
@@ -220,11 +318,11 @@ func TestAccountingSeparatesReservedFromProviderContact(t *testing.T) {
 		known.Usage.TotalTokens != nil || known.Usage.InputTokens != nil {
 		t.Fatalf("partial usage lost or invented: %+v", known.Usage)
 	}
-	if describeEffect("unknown", attempt, nil).Usage != nil {
+	if report("unknown", attempt, nil, 0, 1).Usage != nil {
 		t.Fatal("unknown attempt acquired reported usage")
 	}
 	local := &runtime.AdapterResult{Candidate: candidate, Disposition: invalidInterpretation}
-	if describeEffect("model-5", attempt, local).State != "local_validation_failed" {
+	if report("model-5", attempt, local, 1, 1).State != "local_validation_failed" {
 		t.Fatal("local proposal rejection indistinguishable from provider failure")
 	}
 }

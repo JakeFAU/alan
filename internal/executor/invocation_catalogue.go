@@ -23,52 +23,7 @@ func validateInvocationCatalogue(ctx context.Context, q queryer, c compositionPr
 		templates[t.ID] = t
 	}
 	validate := func(p Program, allowed []string) error {
-		if p.Author == nil {
-			if programHasInvocations(p) {
-				return fmt.Errorf("invocation requires author declaration")
-			}
-			return nil
-		}
-		for _, d := range p.Author.Invocations {
-			t, ok := templates[d.TemplateID]
-			if !ok {
-				return fmt.Errorf("undeployed invocation declaration")
-			}
-			if allowed != nil && !slices.Contains(allowed, d.TemplateID) {
-				return fmt.Errorf("undeclared child template")
-			}
-			entry, err := loadProgram(ctx, q, t.Members[t.EntryMember].ProgramID, l)
-			if err != nil {
-				return err
-			}
-			port := entry.Author.Ports[t.EntryPort]
-			if d.Input.ID != port.Receive.ID || d.Output.ID != port.Send.ID {
-				return fmt.Errorf("invocation public schema mismatch")
-			}
-		}
-		for _, in := range p.Code {
-			if in.Effect != nil && in.Effect.Kind == "invocation" {
-				e := in.Effect
-				if e.Obligation.Literal == nil || e.Target.Literal == nil || e.Generation.Literal == nil {
-					return fmt.Errorf("dynamic invocation authority")
-				}
-				d, ok := p.Author.Invocations[e.Obligation.Literal.Text]
-				if !ok || d.TemplateID != e.Target.Literal.Text || e.Generation.Literal.Number != 1 {
-					return fmt.Errorf("undeclared invocation instruction")
-				}
-			}
-			if in.Match != nil && in.Match.Kind == "invocation" {
-				m := in.Match
-				if m.Obligation.Literal == nil || m.Source.Literal == nil || m.Generation.Literal == nil || m.Provenance != "runtime-invocation" {
-					return fmt.Errorf("invalid invocation outcome boundary")
-				}
-				d, ok := p.Author.Invocations[m.Obligation.Literal.Text]
-				if !ok || m.Source.Literal.Text != d.TemplateID || m.Generation.Literal.Number != 1 {
-					return fmt.Errorf("undeclared invocation outcome")
-				}
-			}
-		}
-		return nil
+		return validateInvocationDeclarations(p, allowed, templates, func(id string) (Program, error) { return loadProgram(ctx, q, id, l) })
 	}
 	staticMembers := map[RunID]bool{}
 	for _, root := range c.Roots {
@@ -134,6 +89,55 @@ func validateInvocationCatalogue(ctx context.Context, q queryer, c compositionPr
 			}
 			if err = validate(p, allowed); err != nil {
 				return err
+			}
+		}
+	}
+	return nil
+}
+
+func validateInvocationDeclarations(p Program, allowed []string, templates map[string]compositionTemplate, lookup func(string) (Program, error)) error {
+	if p.Author == nil {
+		if programHasInvocations(p) {
+			return fmt.Errorf("invocation requires author declaration")
+		}
+		return nil
+	}
+	for _, d := range p.Author.Invocations {
+		t, ok := templates[d.TemplateID]
+		if !ok {
+			return fmt.Errorf("undeployed invocation declaration")
+		}
+		if allowed != nil && !slices.Contains(allowed, d.TemplateID) {
+			return fmt.Errorf("undeclared child template")
+		}
+		entry, err := lookup(t.Members[t.EntryMember].ProgramID)
+		if err != nil {
+			return err
+		}
+		port := entry.Author.Ports[t.EntryPort]
+		if d.Input.ID != port.Receive.ID || d.Output.ID != port.Send.ID {
+			return fmt.Errorf("invocation public schema mismatch")
+		}
+	}
+	for _, in := range p.Code {
+		if in.Effect != nil && in.Effect.Kind == "invocation" {
+			e := in.Effect
+			if e.Obligation.Literal == nil || e.Target.Literal == nil || e.Generation.Literal == nil {
+				return fmt.Errorf("dynamic invocation authority")
+			}
+			d, ok := p.Author.Invocations[e.Obligation.Literal.Text]
+			if !ok || d.TemplateID != e.Target.Literal.Text || e.Generation.Literal.Number != 1 {
+				return fmt.Errorf("undeclared invocation instruction")
+			}
+		}
+		if in.Match != nil && in.Match.Kind == "invocation" {
+			m := in.Match
+			if m.Obligation.Literal == nil || m.Source.Literal == nil || m.Generation.Literal == nil || m.Provenance != "runtime-invocation" {
+				return fmt.Errorf("invalid invocation outcome boundary")
+			}
+			d, ok := p.Author.Invocations[m.Obligation.Literal.Text]
+			if !ok || m.Source.Literal.Text != d.TemplateID || m.Generation.Literal.Number != 1 {
+				return fmt.Errorf("undeclared invocation outcome")
 			}
 		}
 	}

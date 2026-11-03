@@ -169,6 +169,7 @@ func TestMessageCommitAdmissionAndLostAcknowledgment(t *testing.T) {
 	if err != nil || !reflect.DeepEqual(first, again) {
 		t.Fatalf("lost acknowledgment %+v %v", again, err)
 	}
+	requireInspectionAcknowledgment(t, path, first, "message_awaiting_acknowledgment")
 	if err = reopened.AcknowledgeMessage(t.Context(), intentID, "transport"); err != nil {
 		t.Fatal(err)
 	}
@@ -213,6 +214,7 @@ func TestTerminalDeliveryAfterClosureAndLostAcknowledgment(t *testing.T) {
 	if err != nil || !reflect.DeepEqual(first, again) {
 		t.Fatalf("notice replay %+v %v", again, err)
 	}
+	requireInspectionAcknowledgment(t, path, first, "terminal_awaiting_acknowledgment")
 	if err = s.AcknowledgeTerminal(t.Context(), RunID{"child", 1}, destination, "notice"); err != nil {
 		t.Fatal(err)
 	}

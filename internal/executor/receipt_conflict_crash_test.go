@@ -114,6 +114,16 @@ func TestReceiptConflictCrash(t *testing.T) {
 				if got := seen.Tables["metadata"][0]["schema_version"]; got != int64(wantVersion) {
 					t.Fatalf("physical format %v, want %d", got, wantVersion)
 				}
+				typed, err := InspectExecution(ctx, path, DefaultLimits())
+				if err != nil {
+					t.Fatal(err)
+				}
+				e, ok := typed.Effect(id)
+				if !ok || typed.StorageVersion != wantVersion || e.Source != a.Intent.Run || e.Sequence != a.Intent.Sequence ||
+					e.State != "result_unsettled" || e.Settlement != nil || !reflect.DeepEqual(e.ExternalReceipt, new(receiptFor(a.Request))) ||
+					len(e.AdditionalReceipts) != len(replayed.ReceiptEvidence) || (e.ReceiptEvidenceState == "conflict") != (cut == "acknowledged") {
+					t.Fatalf("typed crash cut does not preserve original receipt and later evidence: %+v", e)
+				}
 				s, err = Open(ctx, path, DefaultLimits())
 				if err != nil {
 					t.Fatal(err)
@@ -131,6 +141,18 @@ func TestReceiptConflictCrash(t *testing.T) {
 				again, err := Replay(ctx, path, DefaultLimits())
 				if err != nil || !reflect.DeepEqual(again.ReceiptEvidence, replayed.ReceiptEvidence) {
 					t.Fatalf("settlement altered receipt evidence: %+v, %v", again.ReceiptEvidence, err)
+				}
+				recovered, err := InspectExecution(ctx, path, DefaultLimits())
+				if err != nil {
+					t.Fatal(err)
+				}
+				settled, ok := recovered.Effect(id)
+				if !ok || settled.Settlement == nil || settled.State != "settled" || !reflect.DeepEqual(settled.ExternalReceipt, e.ExternalReceipt) {
+					t.Fatalf("typed reopened settlement lost its original receipt: %+v", settled)
+				}
+				obs, ok := recovered.Observation(settled.Settlement.ObservationID)
+				if !ok || obs.Operation != id || obs.SelectedAt == nil || obs.SelectedAt.Run != a.Intent.Run {
+					t.Fatalf("typed reopened settlement lost its original consumer: %+v", obs)
 				}
 			})
 		}

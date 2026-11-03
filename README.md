@@ -32,6 +32,16 @@ go build -o "$work/investigator" ./examples/investigator
 "$work/investigator" answer "$work/case.sqlite"
 ```
 
+## Inspect an execution
+
+An application can inspect a live, interrupted or completed store through `runtime.InspectExecution`. The returned snapshot connects each caller to its invoked members, the original effect and result, and the exact parent reduction that consumed a published outcome. A missing provider response remains attached to the original operation.
+
+```sh
+go run ./examples/inspect-execution "$work/case.sqlite"
+```
+
+The reader takes no ownership and needs no adapter registry. See the [typed inspection contract](docs/inspection.md) and the [completed, failed and interrupted investigator examples](examples/inspect-execution/README.md).
+
 ## Authorize and register an adapter
 
 In the quickstart, the definition declares an effect named `search`, its capability `corpus`, and its input and output schemas. Provisioning derives an adapter grant in `p.Permissions` for subject `reader`, revision 1, capability `corpus` and operation/obligation `search`. Review the grants when creating the store. To withhold this authority, omit that adapter grant before calling `runtime.Create`.

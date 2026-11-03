@@ -180,21 +180,26 @@ func bindHandoffPorts(ctx context.Context, q queryer, p Program, run RunID) (Pro
 		if err = decode(raw, &t); err != nil {
 			return p, err
 		}
-		h := t.Handoff
-		peer := compositionMemberID(compositionInvocationID(namespace, handoffOperation(h)), t.EntryMember)
-		hp := p.Author.Ports[h.CallerPort]
-		for i, in := range p.Code {
-			if e := in.Effect; e != nil && e.Kind == "message" && reflect.DeepEqual(e.Target, Lit(Text(HandoffPeer))) && reflect.DeepEqual(e.Obligation, Lit(Text(hp.Obligation))) {
-				p.Code[i].Effect.Target = Lit(Text(peer.Subject))
-			}
-			if m := in.Match; m != nil && m.Kind == "message" && reflect.DeepEqual(m.Source, Lit(Text(HandoffPeer))) && reflect.DeepEqual(m.Obligation, Lit(Text(hp.Obligation))) {
-				p.Code[i].Match.Source = Lit(Text(peer.Subject))
-			}
-		}
-		hp.Peer = peer.Subject
-		p.Author.Ports[h.CallerPort] = hp
+		bindHandoffPort(&p, namespace, t)
 	}
 	return p, rows.Err()
+}
+
+// bindHandoffPort resolves one immutable caller port in an exclusively owned program.
+func bindHandoffPort(p *Program, namespace string, t compositionTemplate) {
+	h := t.Handoff
+	peer := compositionMemberID(compositionInvocationID(namespace, handoffOperation(h)), t.EntryMember)
+	hp := p.Author.Ports[h.CallerPort]
+	for i, in := range p.Code {
+		if e := in.Effect; e != nil && e.Kind == "message" && reflect.DeepEqual(e.Target, Lit(Text(HandoffPeer))) && reflect.DeepEqual(e.Obligation, Lit(Text(hp.Obligation))) {
+			p.Code[i].Effect.Target = Lit(Text(peer.Subject))
+		}
+		if m := in.Match; m != nil && m.Kind == "message" && reflect.DeepEqual(m.Source, Lit(Text(HandoffPeer))) && reflect.DeepEqual(m.Obligation, Lit(Text(hp.Obligation))) {
+			p.Code[i].Match.Source = Lit(Text(peer.Subject))
+		}
+	}
+	hp.Peer = peer.Subject
+	p.Author.Ports[h.CallerPort] = hp
 }
 
 // The grant exists only after admission of the exact authorized invocation.

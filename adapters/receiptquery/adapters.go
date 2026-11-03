@@ -35,13 +35,17 @@ func checkRequest(r effects.Request, capability string, input, output schema.Rec
 	return nil
 }
 func (a Counter) Prepare(r effects.Request) (effects.Prepared, error) {
+	return counterPreparation(a.Endpoint, a.Mode, r)
+}
+
+// The retained policy can be checked without registering or invoking an adapter.
+func counterPreparation(endpoint, mode string, r effects.Request) (effects.Prepared, error) {
 	if err := checkRequest(r, CounterCapability, CounterInput(), CounterOutput()); err != nil {
 		return effects.Prepared{}, err
 	}
-	if _, err := EndpointID(a.Endpoint, "apply"); err != nil {
+	if _, err := EndpointID(endpoint, "apply"); err != nil {
 		return effects.Prepared{}, err
 	}
-	mode := a.Mode
 	if mode == "" {
 		mode = "success"
 	}
@@ -50,10 +54,10 @@ func (a Counter) Prepare(r effects.Request) (effects.Prepared, error) {
 		return effects.Prepared{}, errors.New("unsupported counter mode or delta")
 	}
 	b, _ := json.Marshal(shortMutation{Key: r.Key, Profile: "idempotent", Delta: delta})
-	return effects.Prepared{Request: r, Protocol: CounterProtocol, Endpoint: a.Endpoint, Model: mode, MaxResponseBytes: MaxMutationBytes, Wire: string(b)}, nil
+	return effects.Prepared{Request: r, Protocol: CounterProtocol, Endpoint: endpoint, Model: mode, MaxResponseBytes: MaxMutationBytes, Wire: string(b)}, nil
 }
 func CounterPrepared(p effects.Prepared) error {
-	expected, err := (Counter{Endpoint: p.Endpoint, Mode: p.Model}).Prepare(p.Request)
+	expected, err := counterPreparation(p.Endpoint, p.Model, p.Request)
 	if err != nil {
 		return err
 	}

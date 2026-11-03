@@ -152,6 +152,14 @@ func TestInvestigatorDecisions(t *testing.T) {
 			if len(r.OpenRuns) != 0 || data["completion"].Text != tc.completion || data["counter_assessment"].Text != tc.assessment {
 				t.Fatalf("parent %s, counter assessment %s, open %v; counter outcome %v", data["completion"].Text, data["counter_assessment"].Text, r.OpenRuns, data["counter_status"])
 			}
+			cut, err := runtime.InspectExecution(t.Context(), path, runtime.DefaultLimits())
+			if err != nil {
+				t.Fatal(err)
+			}
+			answer, err := reportSnapshot(cut)
+			if err != nil || answer.Status != tc.completion || len(answer.Findings) != tc.findings {
+				t.Fatalf("typed answer %q, %d findings, %v", answer.Status, len(answer.Findings), err)
+			}
 			if tc.counter == "refusal" && (data["counter_status"].Text != "failed" || data["counter_model_disposition"].Text != "refusal") {
 				t.Fatalf("worker did not retain failed outcome and provider refusal: %v", data)
 			}

@@ -99,6 +99,16 @@ func TestPhase2COriginalBindingControls(t *testing.T) {
 			if e = s.AwaitDispatchQuiescence(t.Context(), dispatchTarget(s, o, false)); e != nil {
 				t.Fatal(e)
 			}
+			if name == "unknown-policy" {
+				cut, err := rt.InspectExecution(t.Context(), h.db, rt.DefaultLimits())
+				if err != nil {
+					t.Fatal(err)
+				}
+				e, ok := cut.Effect(h.original)
+				if !ok || e.Consequence != "unresolved" || e.State != "reserved_unknown" || e.Usage != nil {
+					t.Fatalf("local drain claimed a remote outcome: %+v", e)
+				}
+			}
 			if name == "denied-authorization" {
 				auth, err := s.AuthorizeIntent(t.Context(), h.original)
 				if err != nil || auth.Allowed {
@@ -160,6 +170,24 @@ func TestPhase2COriginalBindingControls(t *testing.T) {
 				} else {
 					h.expectWorld(1, 1, 0)
 				}
+			}
+			cut, err := rt.InspectExecution(t.Context(), h.db, rt.DefaultLimits())
+			if err != nil {
+				t.Fatal(err)
+			}
+			read, ok := cut.Effect(query)
+			if !ok || read.AdapterResult == nil || read.Consequence != "read_only" || read.ResultDisposition != data["outcome"].Text {
+				t.Fatalf("typed query differs from the actual selected result: %+v", read)
+			}
+			if name == "unknown-policy" || name == "existing-selected-error" {
+				e, ok := cut.Effect(h.original)
+				if !ok || e.ReceiptEvidenceState != "known" || e.Consequence != "receipt_retained" || len(e.ReadsOfOriginal) != 1 ||
+					len(read.ReadOpportunities) != 1 || read.ReadOpportunities[0].Adoption != data["decision"].Text ||
+					(name == "existing-selected-error") != (e.ResultDisposition == "selected_error") {
+					t.Fatalf("inspection obscured the original and its later read: %+v, %+v", e, read)
+				}
+			} else if len(read.ReadOpportunities) != 0 || read.Dispatch.Maximum == nil || *read.Dispatch.Maximum != 0 {
+				t.Fatalf("local refusal reported an external read: %+v", read)
 			}
 			h.event("ordinary reader selected", got)
 			h.replay("final")

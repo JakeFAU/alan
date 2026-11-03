@@ -282,6 +282,12 @@ func resolveCompositionProgram(p Program, env compositionEnvironment, member str
 	if validated != env {
 		return Program{}, fmt.Errorf("noncanonical retained binding")
 	}
+	return resolveMemberProgram(p, t, b, member)
+}
+
+// resolveMemberProgram takes a checked template and binding. Snapshot readers
+// can validate the shared environment once for all of its member programs.
+func resolveMemberProgram(p Program, t compositionTemplate, b compositionBinding, member string) (Program, error) {
 	m, ok := t.Members[member]
 	if !ok {
 		return Program{}, fmt.Errorf("unknown bound member")
@@ -360,4 +366,65 @@ func resolveCompositionProgram(p Program, env compositionEnvironment, member str
 		out.Author.Ports[name] = port
 	}
 	return out, nil
+}
+
+// memberPermissions describes the grants introduced for a newly admitted member.
+func memberPermissions(run, caller RunID, program Program) []Permission {
+	var grants []Permission
+	for _, port := range program.Author.Ports {
+		if port.SendUsed && port.Peer != caller.Subject {
+			grants = append(grants, Permission{Kind: "message", Source: run.Subject, Target: port.Peer, Operation: "message", Revision: 1, Obligation: port.Obligation})
+		}
+	}
+	for effect, d := range program.Author.Effects {
+		grants = append(grants, Permission{Kind: "adapter", Source: run.Subject, Target: d.Capability, Operation: effect, Revision: 1, Obligation: effect})
+	}
+	return grants
+}
+
+// Admission checks use the source authority and resource balance at the
+// original decision. Both read-only validators use these same policy rules.
+func admissionEligibility(i Intent, depth int64, program Program, auth Authorization, sourceClosed, scopeClosed bool, root compositionRoot, templatePresent bool) string {
+	var declaration InvocationDeclaration
+	var declared bool
+	if program.Author != nil {
+		declaration, declared = program.Author.Invocations[i.Obligation]
+	}
+	switch {
+	case !auth.Allowed:
+		return "source_denied:" + auth.Reason
+	case sourceClosed:
+		return "source_closed"
+	case scopeClosed:
+		return "scope_closed"
+	case !declared || declaration.TemplateID != i.Target || i.Generation != 1:
+		return "declaration_denied"
+	case !templatePresent:
+		return "template_missing"
+	case !slices.Contains(root.Templates, i.Target):
+		return "template_denied"
+	case depth > root.Limits.MaxDepth:
+		return "depth_limit"
+	case declaration.Input.Record.Validate(i.Payload) != nil:
+		return "schema_invalid"
+	}
+	return "accepted"
+}
+
+func admissionAllowance(root compositionRoot, t compositionTemplate, parent *compositionTemplate, spent compositionCharge) string {
+	if parent != nil && !slices.Contains(parent.Templates, t.ID) {
+		return "template_denied"
+	}
+	for _, capability := range t.Capabilities {
+		if !slices.Contains(root.Capabilities, capability) {
+			return "capability_denied"
+		}
+	}
+	switch {
+	case spent.Invocations >= root.Limits.MaxInvocations:
+		return "invocation_limit"
+	case int64(len(t.Members)) > root.Limits.MaxCreatedRuns-spent.CreatedRuns:
+		return "created_run_limit"
+	}
+	return "accepted"
 }
