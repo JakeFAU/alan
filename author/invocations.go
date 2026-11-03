@@ -64,9 +64,15 @@ func newTemplate(a Application, entryMember, entryPort string, h *runtime.Invoca
 		if instance.Artifact.ID() == "" {
 			return Template{}, fmt.Errorf("empty artifact")
 		}
+		data := schema.CloneValues(instance.Inputs)
+		if data == nil {
+			// As in Application.Provision, an omitted input map is an empty
+			// record. RetainTemplate still checks every declared input.
+			data = map[string]schema.Value{}
+		}
 		t.Members[name] = executor.TemplateMember{ProgramID: instance.Artifact.ID(),
 			Initial: runtime.Projection{Status: "open",
-				Data: schema.CloneValues(instance.Inputs)}}
+				Data: data}}
 		programs[instance.Artifact.ID()] = runtime.Artifact{ID: instance.Artifact.ID(),
 			Semantics: artifactSemantics(instance.Artifact),
 			Bytes:     instance.Artifact.Bytes()}
