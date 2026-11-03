@@ -21,7 +21,7 @@ func secondApproval(t *testing.T, s *runtime.ExecutionSnapshot) *runtime.Observa
 	t.Helper()
 	var approval *runtime.ObservationView
 	for _, o := range s.Observations {
-		if o.Run.Subject == "weather-2" && o.Obligation == "approve-refresh" {
+		if o.Run.Subject == "weather-2" && o.Obligation == declaredWeatherSlot(t, s, 2).Obligation {
 			if o.Run.Generation != 1 || o.Provenance != "local-input" || approval != nil {
 				t.Fatalf("spurious or repeated approval for read two: %+v", o)
 			}
@@ -68,7 +68,7 @@ func verifyContinuationProof(t *testing.T, s *runtime.ExecutionSnapshot, target 
 	}
 	admission, ok := s.Admission(o.Admissions[0])
 	if !ok || !admission.Accepted || admission.ObservationID != o.ID || admission.Target != target.ID.Subject ||
-		admission.RequestedGeneration != target.ID.Generation || admission.Obligation != "approve-refresh" || admission.TransportID != "weather-refresh-2" ||
+		admission.RequestedGeneration != target.ID.Generation || admission.Obligation != declaredWeatherSlot(t, s, 2).Obligation || admission.TransportID != declaredWeatherSlot(t, s, 2).ApprovalID ||
 		admission.LogicalID != admission.TransportID {
 		t.Fatalf("approval lost its scoped admission: %+v", admission)
 	}
@@ -221,7 +221,7 @@ func TestWeatherContinuationProcess(t *testing.T) {
 				filter := weatherCut{Subject: "weather-2", Generation: 1, Boundary: c.boundary, Phase: c.phase, Sequence: c.sequence}
 				switch {
 				case c.boundary == "continuation.approval":
-					filter.Intent, filter.Attempt = first.OperationID, "weather-refresh-2"
+					filter.Intent, filter.Attempt = first.OperationID, declaredWeatherSlot(t, initial, 2).ApprovalID
 				case c.sequence == at.request || c.effect != "" && c.sequence != at.terminal:
 					filter.Intent = at.operation
 				}
@@ -277,4 +277,32 @@ func TestWeatherContinuationProcess(t *testing.T) {
 			recordContinuationCase(t, final, p, continuationStop(t, witness, owner.cmd.Process.Pid, 1+c.contacts, stopped))
 		})
 	}
+}
+
+// Check current slots against their compiled source declaration, independently
+// of the history's approval observation and admission joins above.
+func declaredWeatherSlot(t *testing.T, s *runtime.ExecutionSnapshot, n int) runtime.ContinuationSlot {
+	t.Helper()
+	c, err := retainedConfiguration(s)
+	if err != nil {
+		t.Fatal(err)
+	}
+	p, err := c.provision(false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, slot := range p.Composition.Continuations {
+		if slot.Target == readID(n) {
+			for _, actual := range s.Composition.Continuations {
+				if actual.Target == slot.Target {
+					if actual != slot {
+						t.Fatal("retained slot differs from current source")
+					}
+					return slot
+				}
+			}
+		}
+	}
+	t.Fatal("missing declared current slot")
+	return runtime.ContinuationSlot{}
 }

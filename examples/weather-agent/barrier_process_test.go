@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"syscall"
 	"testing"
 	"time"
@@ -26,8 +27,12 @@ func TestWeatherBoundaryOwner(t *testing.T) {
 	ctx, err := boundary.FromEnvironment(t.Context(), db)
 	if err == nil {
 		args := []string{action, "--db", db, "--json"}
-		if action == "approve-second" {
-			args = []string{"refresh", "--db", db, "--read", "2", "--json"}
+		if strings.HasPrefix(action, "approve-") {
+			n := strings.TrimPrefix(action, "approve-")
+			if n == "second" {
+				n = "2"
+			}
+			args = []string{"refresh", "--db", db, "--read", n, "--json"}
 		}
 		err = run(ctx, args, os.Stdout)
 	}

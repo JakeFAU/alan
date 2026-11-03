@@ -1,5 +1,136 @@
 # Bounded observation series
 
+## Declare once
+
+An observation is an ordinary `author.Definition` with one adapter request, one
+await, and the application's result checks. It declares the effect and input and
+output schemas as usual. Wrap that definition once to obtain eight separately
+accounted observations:
+
+```go
+series, err := author.BoundedSeries(observation, author.SeriesOptions{
+    ID: "weather", Count: 8, Inputs: inputs,
+    First: author.ApproveAtProvision,
+    ApprovalReasons: []string{"operator_requested"},
+})
+if err != nil { return err }
+provision, err := series.Provision()
+if err != nil { return err }
+owner, err := runtime.Create(ctx, path, provision, runtime.DefaultLimits())
+if err != nil { return err }
+defer owner.Close()
+_, err = owner.Run(ctx, options) // normal adapter registry and runner limits
+```
+
+`Count: 1` uses the unchanged single-observation program. `Count: 8` derives eight
+original subjects, eight independent one-opportunity roots and seven protected
+continuation slots. The compiler derives the required grants. The application
+does not construct these records. Zero is rejected. The count and one-opportunity
+limit per position form the finite resource envelope; the adapter's existing
+prepared request retains provider configuration and response limits.
+
+`First: author.ApproveAtProvision` is required and authorizes only the first
+observation. Creation itself makes no contact. There is no implicit approval of
+the other seven. An empty `ApprovalReasons` list accepts any reason allowed by the
+existing bounded approval schema; a nonempty list restricts it to those strings.
+The owner authenticates the operator and the application decides whether to spend.
+
+After reviewing the original evidence, explicitly authorize a particular next
+position. Use the same ordinary Store APIs as a separately authored continuation:
+
+```go
+cut, err := runtime.InspectExecution(ctx, path, runtime.DefaultLimits())
+if err != nil { return err }
+next, err := series.Run(2)
+if err != nil { return err }
+basis, err := cut.ContinuationBasis(next)
+if err != nil { return err } // the predecessor must have a paid opportunity
+_, err = owner.ApproveContinuation(ctx, basis, "operator_requested")
+if err != nil { return err } // stale evidence or wrong authority fails closed
+_, err = owner.Run(ctx, options)
+```
+
+This remains a distinct physical operation with its own original identity and
+expenditure. Approval alone spends nothing. Redelivery of the same decision
+cannot spend twice. To recover, use `runtime.Open` on the original database and
+`owner.Run`. No reconstruction of a volatile series counter is needed. A retained
+response can finish locally; a paid operation with a missing response keeps its
+original uncertainty. A new owner never approves the next position.
+
+## Inspect the whole declaration
+
+```go
+view, err := series.Inspect(cut)
+if err != nil { return err }
+for _, position := range view.Positions {
+    fmt.Println(position.Index, position.State, position.Root.Charges.Effects)
+    if position.Observation != nil {
+        // This is the actual selected result, including its original reduction.
+        fmt.Println(position.Observation.ID, position.Observation.Payload)
+    }
+}
+```
+
+The handle checks the original deployment against its declaration. It orders
+existing typed evidence by position, so applications need no joins on raw rows or
+payload strings. `SeriesPosition` references the original run, effect, protected
+approval, actual selected observation and resource root. `SeriesView` carries
+the Store namespace, series ID, declared bound, positions and aggregate counts.
+Rebuild the declaration from the application's original definition and inputs
+after a process restart. This rebuild performs authoring only; it neither creates
+a new Store nor grants additional authority. The runtime's general inspection
+API remains available for a Store whose original authoring source is unavailable.
+
+| Position state | Meaning |
+|---|---|
+| `not_eligible` | The preceding position has no paid original opportunity. |
+| `awaiting_request` | The explicitly provisioned first observation has no effect yet. |
+| `awaiting_approval` | A paid predecessor exists; this position has no approval. |
+| `approved` | The protected approval exists, but no new effect is committed. Its selection is independently visible. |
+| `committed`, `authorized` | The original effect exists, with source authorization separately established in the latter case. |
+| `spent_before_dispatch` | Its opportunity was charged without a local dispatch admission. |
+| `outcome_unknown` | Dispatch was admitted and no original result is retained. |
+| `result_unselected` | An open run has a retained result that has not been consumed. Settlement is separately visible. |
+| `selected` | The original result was consumed; local work remains. |
+| `completed` | The selected result is validated, the run succeeded and local obligations are settled. |
+| `failed`, `refused` | Local failure or runtime refusal is retained. The original effect and its uncertainty remain visible. |
+
+`Selected` counts consumption, independently of success. `Completed`, `Failed`
+and `Pending` classify positions. `Unresolved` separately follows retained
+external uncertainty, including a local transport failure or conflicting receipt.
+`Spent` counts paid opportunities. `BoundExhausted` means all N opportunities
+were spent; it does not establish success. Position N+1 is never available, even
+when fewer opportunities were spent. Provider usage remains on the typed effect,
+with nil for unknown quantities. No token-to-price conversion is introduced.
+
+This first construct supports standalone finite deployments of the same
+self-contained adapter action. It does not create a parent invocation outcome.
+Definitions with peer/local ports, invocation templates or repeated requests are
+rejected. Application policy can stop before approving the next position, and a
+failure before expenditure cannot make that next position eligible. An unresolved
+paid original can be followed only by an explicit new approval. There is no global
+physical single-flight guarantee across independently approved roots.
+
+Construction expands O(N) static records and shares at most two program artifacts.
+Input-copy cost also depends on the retained input size. The additional view uses
+indexed runtime lookups and O(N log N) work, including approval searches; it does
+not re-read the database. Ordinary `InspectExecution` and `Replay` retain their
+existing snapshot contracts and costs. Default encoded-program/profile limits
+apply, rather than an eight-position limit in the public authoring API. Historical
+storage contracts remain unchanged: a single dispatched observation uses format
+9, protected series use 11, and existing conflict retention can promote them to
+12. Older readers that support these formats can read the ordinary lowered runs.
+
+For multiple positions, the generated predecessor operation identity must fit
+the existing 4,096-byte continuation field, including JSON escaping. Construction
+checks this before any Store or expenditure exists. A collection loop before the
+request reserves the full sequence-counter width conservatively. A single
+observation has no continuation-field restriction.
+
+[Weather application](../examples/weather-agent/README.md) ·
+[Executable public example](../author/series_test.go) ·
+[Protected approval protocol](continuations.md)
+
 ## Frozen authoring contract
 
 This contract precedes implementation. The verified base is

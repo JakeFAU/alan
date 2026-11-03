@@ -18,6 +18,8 @@ go build -o "$work/weather-agent" ./examples/weather-agent
 
 If you kill the running process, use `resume --db "$work/weather.sqlite"`. A retained response can finish the report locally. A spent opportunity with a missing response remains attached to the original request. To authorize one more lookup, use `refresh --db "$work/weather.sqlite" --read 2`, then `resume`. Inspect and replay need no provider connection. The successor selects one protected local approval. ALAN binds that decision to the original request and charges the new operation separately. [Authorize and inspect a continuation](docs/continuations.md#using-a-continuation)
 
+Declare a finite sequence with `author.BoundedSeries(observation, author.SeriesOptions{ID: "weather", Count: 8, Inputs: inputs, First: author.ApproveAtProvision})`. ALAN derives the individual runs, grants, resource scopes and continuation relationships. Only the first observation is approved at provisioning; each later one still needs its own explicit approval. `series.Inspect(cut)` presents the ordered original results, selections, spending and unresolved work. [Bounded observation series](docs/bounded-series.md)
+
 ## Run a computation
 
 Use Go 1.27.3, CGO, a C compiler and a local Unix filesystem. In your application module, run `go get github.com/JakeFAU/alan/runtime`. Import `github.com/JakeFAU/alan/author` to define a program and `github.com/JakeFAU/alan/runtime` to run it. From a checkout, run the [quickstart](examples/quickstart/main.go).

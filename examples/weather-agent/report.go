@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/JakeFAU/alan/adapters/openmeteo"
+	"github.com/JakeFAU/alan/author"
 	"github.com/JakeFAU/alan/runtime"
 )
 
@@ -47,7 +48,19 @@ func (s summary) writeReport(out io.Writer) error {
 	return err
 }
 
+type seriesSummary struct {
+	ID             string `json:"id"`
+	Bound          int    `json:"bound"`
+	Selected       int    `json:"selected"`
+	Completed      int    `json:"completed"`
+	Failed         int    `json:"failed"`
+	Pending        int    `json:"pending"`
+	Unresolved     int    `json:"unresolved"`
+	BoundExhausted bool   `json:"bound_exhausted"`
+}
+
 type summary struct {
+	Series             *seriesSummary              `json:"series,omitempty"`
 	Namespace          string                      `json:"namespace"`
 	Latitude           string                      `json:"latitude"`
 	Longitude          string                      `json:"longitude"`
@@ -70,6 +83,7 @@ type contactBounds struct {
 }
 
 type readSummary struct {
+	SeriesState            author.SeriesState         `json:"series_state,omitempty"`
 	Read                   int                        `json:"read"`
 	Agent                  runtime.RunID              `json:"agent"`
 	State                  string                     `json:"state"`
@@ -121,10 +135,25 @@ func summarize(s, before *runtime.ExecutionSnapshot, c configuration, detailed b
 	for _, root := range s.Roots {
 		out.OpportunitiesSpent += root.Charges.Effects
 	}
+	var positions []author.SeriesPosition
+	if c.Allowance > 0 {
+		if series, err := c.series(); err == nil {
+			if view, err := series.Inspect(s); err == nil {
+				positions = view.Positions
+				out.Series = &seriesSummary{ID: view.ID, Bound: view.Bound, Selected: view.Selected, Completed: view.Completed, Failed: view.Failed, Pending: view.Pending, Unresolved: view.Unresolved, BoundExhausted: view.BoundExhausted}
+			}
+		}
+	}
 	for n := 1; n <= max(1, c.Allowance); n++ {
 		run, _ := s.Run(readID(n)) // retainedConfiguration verified all original runs.
+		if positions != nil {
+			run = positions[n-1].Run
+		}
 		read := readSummary{Read: n, Agent: run.ID, LocalStatus: run.Projection.Status,
 			PreviousOperationID: run.Projection.Data["previous_operation_id"].Text, State: "awaiting_request"}
+		if positions != nil {
+			read.SeriesState = positions[n-1].State
+		}
 		if n > 1 {
 			read.State = "awaiting_refresh_approval"
 			read.Continuation, _ = s.Continuation(run.ID)
@@ -132,6 +161,7 @@ func summarize(s, before *runtime.ExecutionSnapshot, c configuration, detailed b
 			var err error
 			if read.Continuation != nil {
 				o, _ = s.Observation(read.Continuation.ObservationID)
+				read.PreviousOperationID = read.Continuation.Approval.PredecessorID
 			} else if len(s.Composition.Continuations) == 0 {
 				o, err = legacyApproval(s, n)
 			}

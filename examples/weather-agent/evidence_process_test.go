@@ -19,10 +19,20 @@ func weatherFacts(t *testing.T, s *runtime.ExecutionSnapshot) []map[string]any {
 		run, _ := s.Run(e.Source)
 		f := map[string]any{"operation": e.OperationID, "stage": e.State, "run": run.Projection.Status}
 		f["execution_bounds"] = []int{e.Dispatch.Minimum, *e.Dispatch.Maximum}
-		if previous := run.Projection.Data["previous_operation_id"].Text; previous != "" {
+		previous := run.Projection.Data["previous_operation_id"].Text
+		obligation := "approve-refresh"
+		if v, ok := s.Continuation(run.ID); ok {
+			previous = v.Approval.PredecessorID
+			for _, slot := range s.Composition.Continuations {
+				if slot.Target == run.ID {
+					obligation = slot.Obligation
+				}
+			}
+		}
+		if previous != "" {
 			f["previous_operation"] = previous
 			for _, o := range s.Observations {
-				if o.Run == e.Source && o.Provenance == "local-input" && o.Obligation == "approve-refresh" && o.SelectedAt != nil {
+				if o.Run == e.Source && o.Provenance == "local-input" && o.Obligation == obligation && o.SelectedAt != nil {
 					f["selected_approval"] = o.ID
 					f["approval_reason"] = o.Payload["purpose"].Text
 					f["approved_prepared_digest"] = o.Payload["prepared_digest"].Text
