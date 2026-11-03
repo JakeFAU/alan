@@ -239,11 +239,11 @@ func provisionComposition(ctx context.Context, tx *sql.Tx, namespace string, c c
 	return p, nil
 }
 func readCompositionProfile(ctx context.Context, q queryer, l Limits) (*compositionProfile, error) {
-	n, err := schemaNumber(ctx, q)
+	stored, err := storedSchemaNumber(ctx, q)
 	if err != nil {
 		return nil, err
 	}
-	if !isCompositionSchema(n) {
+	if !isCompositionSchema(protocolSchemaNumber(stored)) {
 		return nil, ErrVersion
 	}
 	namespace, err := readNamespace(ctx, q)
@@ -262,7 +262,7 @@ func readCompositionProfile(ctx context.Context, q queryer, l Limits) (*composit
 	if err = decode(raw, &c); err != nil {
 		return nil, err
 	}
-	if version != compositionVersion(c) {
+	if version != compositionVersion(c) || c.RecordDispatchAdmissions != hasDispatchAdmissionSchema(stored) {
 		return nil, ErrVersion
 	}
 	retained, err := retainCompositionProfile(ctx, q, namespace, c, l)
@@ -381,7 +381,7 @@ func validateCompositionStore(ctx context.Context, q queryer, l Limits) (ReplayR
 		}
 	}
 	if err = validateCompositionFacts(ctx, q); err == nil {
-		err = validateLifecycleChronology(ctx, q, compositionProfileVersion, nil)
+		err = validateLifecycleChronology(ctx, q, compositionProfileVersion, nil, false)
 	}
 	return report, err
 }

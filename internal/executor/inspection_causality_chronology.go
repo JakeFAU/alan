@@ -7,7 +7,7 @@ import "strings"
 // the source refused the request. Missing transports to later-created members
 // need the same test, including when there is no lifecycle request at this cut.
 func (b *inspectionBuilder) checkCreationChronology() error {
-	needed := len(b.snap.LifecycleDecisions) > 0
+	needed := len(b.snap.LifecycleDecisions) > 0 || len(b.tables["adapter_dispatch_admissions"]) > 0
 	if !needed {
 		for id := range b.authorizations {
 			if b.intents[id].Kind == "lifecycle" {
@@ -65,6 +65,7 @@ type memberOrder struct {
 	successor        map[RunID]int
 	retirement       map[string]int
 	readWitnesses    map[int]Authority
+	dispatchOwner    []reopenEquation
 }
 
 func checkMemberOrder(tables map[string][]map[string]any, publicReplies map[string]bool) error {
@@ -240,6 +241,30 @@ func (g *memberOrder) indexTransactions() error {
 		}
 		g.closure[run] = n
 		g.appendRecord(&prev, n)
+	}
+	// The paid one-shot opportunity lives only in the original owner. Place
+	// its gate between committed fact groups and constrain both events to the
+	// same owner even when intervening events belong to other open runs.
+	prev = 0
+	for _, row := range g.tables["adapter_dispatch_admissions"] {
+		prefix := inspectInt(row, "after_fact")
+		first, next := factOrder[prefix], factOrder[prefix+1]
+		id := inspectText(row, "intent_id")
+		reservation := g.records[protocolRecord{compositionReservationFact, id}]
+		if first == 0 || first == next || reservation == 0 {
+			return corrupt("dispatch gate outside a committed fact boundary")
+		}
+		gate := g.transaction()
+		g.before(first, gate)
+		g.before(gate, next)
+		g.appendRecord(&prev, gate)
+		g.dispatchOwner = append(g.dispatchOwner, reopenEquation{from: reservation, to: gate, delta: 0})
+		// Only this owner's worker can return the first ordinary adapter result.
+		// A fresh owner can still settle and select that retained result.
+		if result := g.records[protocolRecord{compositionExternalResultFact, id}]; result != 0 {
+			g.before(gate, result)
+			g.dispatchOwner = append(g.dispatchOwner, reopenEquation{from: gate, to: result, delta: 0})
+		}
 	}
 	return g.orderMirroredRows(factOrder, readOrder)
 }

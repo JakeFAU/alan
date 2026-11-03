@@ -71,7 +71,7 @@ func (b *inspectionBuilder) buildDeployment() error {
 	if err != nil {
 		return err
 	}
-	if profile.Version != compositionProtocolVersion || profiles[0]["version"] != compositionProtocolVersion {
+	if profile.Version != compositionProtocolVersion || profiles[0]["version"] != compositionProtocolVersion || profile.RecordDispatchAdmissions != b.snap.Features.DispatchAdmissions {
 		return ErrVersion
 	}
 	if len(profile.Roots) == 0 || validateCompositionEncoding(profile) != nil {

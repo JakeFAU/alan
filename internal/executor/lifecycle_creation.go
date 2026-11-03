@@ -6,7 +6,7 @@ import "context"
 // protocols and before leaving the validating transaction. A lifecycle-free
 // history needs no additional order check unless a transport claimed absence
 // for a member created in this cut.
-func validateLifecycleChronology(ctx context.Context, q queryer, profile string, publicReplies map[string]bool) error {
+func validateLifecycleChronology(ctx context.Context, q queryer, profile string, publicReplies map[string]bool, hasDispatches bool) error {
 	query := `SELECT EXISTS (SELECT 1 FROM lifecycle_results)
 		OR EXISTS (SELECT 1 FROM attempts
 			WHERE json_extract(CAST(descriptor AS TEXT),'$.Intent.Kind')='lifecycle')`
@@ -15,9 +15,11 @@ func validateLifecycleChronology(ctx context.Context, q queryer, profile string,
 			ON m.subject=json_extract(CAST(a.descriptor AS TEXT),'$.Target')
 			WHERE json_extract(CAST(a.result AS TEXT),'$.Bound') IS NULL)`
 	}
-	var needed bool
-	if err := q.QueryRowContext(ctx, query).Scan(&needed); err != nil || !needed {
-		return err
+	if !hasDispatches {
+		var needed bool
+		if err := q.QueryRowContext(ctx, query).Scan(&needed); err != nil || !needed {
+			return err
+		}
 	}
 	names := []string{
 		"subjects", "runs", "run_origins", "history", "intents", "attempts", "lifecycle_results",
@@ -26,6 +28,9 @@ func validateLifecycleChronology(ctx context.Context, q queryer, profile string,
 	}
 	if profile != "" {
 		names = append(names, "composition_facts")
+	}
+	if hasDispatches {
+		names = append(names, "adapter_dispatch_admissions")
 	}
 	if profile == compositionProtocolVersion {
 		names = append(names, "composition_members", "composition_invocations",

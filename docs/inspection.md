@@ -88,11 +88,14 @@ The root reports separate limits and debits for invocations, created runs and ef
 | 3 and 6 | Ordinary provisioned runs, retry origins, operations, admissions, effects, settlements and consumption. No structured composition deployment, root expenditure or receipt-read protocol. |
 | 4 and 7 | Complete public finite composition, root limits/debits, original admissions, bindings, committed decisions and publications. |
 | 5 and 8 | Composition plus the controlled receipt-read grant, ordinal and adoption protocol. |
-| 6, 7 and 8 | Also retain distinct valid receipts rejected for settlement in an append-only evidence journal. Earlier formats have no independent journal for those offers. |
+| 9 and 10 | Composition with opt-in local dispatch admission for scoped ordinary adapters. `Features.DispatchAdmissions` identifies the protocol. `ExecutionEffect.DispatchAdmission` records the gate after the named composition prefix. |
+| 6, 7, 8 and 10 | Also retain distinct valid receipts rejected for settlement in an append-only evidence journal. Earlier formats have no independent journal for those offers. |
 
 `StorageVersion` reports the physical number. `Features` reports which optional protocols the store can describe. Formats 1–2, the private foundation-only profile and unknown versions are unsupported. Inspection never promotes a store. An empty composition or read history is distinguishable from a format without that protocol. The conflict journal appears atomically with its first distinct rejected offer. An empty journal in a promoted store fails validation.
 
 The reader opens an existing path with SQLite `mode=ro` and query-only mode. All ledger reads share one transaction and one WAL snapshot. It releases that transaction before building the semantic indexes in memory. It can run while another process owns the executor. Writer ownership, epochs and grants remain under the existing exclusive owner lock. SQLite locking, filesystem permissions or cancellation can make inspection fail. There is no fallback to a writable or stale immutable-file connection.
+
+For a scoped ordinary adapter in format 9 or 10, a spent reservation with an absent gate has a physical execution bound of 0. Once the local gate admits the operation the bound becomes 0..1. Transmitting the request and receiving it at the provider are separate events. A retained adapter result can establish local execution. [Dispatch evidence and recovery](dispatch-admissions.md)
 
 The database and durable WAL frames are unchanged by inspection. SQLite may create an empty `-wal` and initialize or update the transient `-shm` WAL index and reader lock marks. In tests, opening a bare checkpointed database created a zero-byte WAL and a 32,768-byte shared-memory file. Reading such a database from an unwritable directory without usable sidecars can fail. When archiving an interrupted store, capture a coherent database **and its WAL**. Concurrent executor commits can change those bytes independently of the reader.
 

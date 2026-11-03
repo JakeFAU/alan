@@ -94,6 +94,8 @@ type Store struct {
 	namespace        string
 	reconciliation   bool
 	composition      *compositionProfile
+
+	dispatchAdmissions bool // scoped ordinary adapter admissions are journaled in this format
 }
 
 // Every protocol ledger is retained. Later protocol slices supply their operations;
@@ -278,7 +280,7 @@ func verifyConnection(ctx context.Context, q queryer, readonly bool) (string, st
 // Create provisions a new store in one transaction; it never re-provisions an
 // existing file. Open is the only recovery path.
 func Create(ctx context.Context, path string, p Provision, limits Limits) (*Store, error) {
-	if p.Reconciliation != nil && p.Composition == nil {
+	if p.Reconciliation != nil && (p.Composition == nil || p.Composition.RecordDispatchAdmissions) {
 		return nil, ErrVersion
 	}
 	if p.Composition != nil {
@@ -350,6 +352,13 @@ func createStore(ctx context.Context, path string, p Provision, limits Limits, c
 	if composition != nil && composition.Version == compositionProtocolVersion {
 		if _, err = tx.ExecContext(ctx, invocationSchema); err != nil {
 			return nil, err
+		}
+		if composition.RecordDispatchAdmissions {
+			version = dispatchAdmissionSchema
+			if _, err = tx.ExecContext(ctx, dispatchAdmissionDDL); err != nil {
+				return nil, err
+			}
+			s.dispatchAdmissions = true
 		}
 	}
 	if p.Reconciliation != nil {
@@ -627,11 +636,12 @@ func openStore(ctx context.Context, path string, limits Limits, composition bool
 	if err != nil {
 		return nil, err
 	}
-	n, err := schemaNumber(ctx, tx)
+	stored, err := storedSchemaNumber(ctx, tx)
 	if err != nil {
 		return nil, err
 	}
-	s.reconciliation = n == reconciliationSchemaVersion
+	s.reconciliation = protocolSchemaNumber(stored) == reconciliationSchemaVersion
+	s.dispatchAdmissions = hasDispatchAdmissionSchema(stored)
 	s.namespace = report.Namespace
 	for _, r := range report.Runs {
 		if r.Projection.Status != "open" {
