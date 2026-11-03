@@ -392,23 +392,13 @@ func weatherRefresh(t *testing.T, binary string, lose bool) {
 		t.Fatal("fresh authorization lost or overwrote the original evidence")
 	}
 	authenticWeather(t, s, v.read(t, 2), 2, p.contacts()[1])
-	var approvals, handles int
-	for _, o := range s.Observations {
-		if o.Run.Subject != "weather-2" || o.Obligation != "approve-refresh" && o.Obligation != "previous-read" {
-			continue
-		}
-		if o.SelectedAt == nil || o.Payload["previous_operation_id"].Text != contact.operation {
-			t.Fatalf("new weather action did not select the matched prior operation and approval: %+v", o)
-		}
-		if o.Obligation == "approve-refresh" && o.Kind == "input" && o.Provenance == "local-input" {
-			approvals++
-		}
-		if o.Obligation == "previous-read" && o.ProducerRun != nil && *o.ProducerRun == original.Source {
-			handles++
-		}
+	authority, ok := s.Continuation(runtime.RunID{Subject: "weather-2", Generation: 1})
+	if !ok || authority.SelectedAt == nil || authority.Approval.PredecessorID != contact.operation || authority.SuccessorOperationID != p.contacts()[1].operation {
+		t.Fatalf("new read has no selected authority from the independently observed original: %+v", authority)
 	}
-	if approvals != 1 || handles != 1 {
-		t.Fatalf("original handle deliveries %d, operator approvals %d; both must select exactly once", handles, approvals)
+	obs, ok := s.Observation(authority.ObservationID)
+	if !ok || obs.Kind != "input" || obs.Provenance != "local-input" || obs.SelectedAt == nil || *obs.SelectedAt != *authority.SelectedAt || obs.Payload["previous_operation_id"].Text != contact.operation {
+		t.Fatalf("continuation approval does not match the original selected local input: %+v", obs)
 	}
 	if lose {
 		unresolvedWeather(t, s, v.read(t, 1), contact.operation)

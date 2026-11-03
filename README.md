@@ -16,7 +16,7 @@ go build -o "$work/weather-agent" ./examples/weather-agent
 "$work/weather-agent" replay --db "$work/weather.sqlite"
 ```
 
-If you kill the running process, use `resume --db "$work/weather.sqlite"`. A retained response can finish the report locally. A spent opportunity with a missing response remains attached to the original request. To authorize one more lookup, use `refresh --db "$work/weather.sqlite" --read 2`, then `resume`. Inspect and replay need no provider connection.
+If you kill the running process, use `resume --db "$work/weather.sqlite"`. A retained response can finish the report locally. A spent opportunity with a missing response remains attached to the original request. To authorize one more lookup, use `refresh --db "$work/weather.sqlite" --read 2`, then `resume`. Inspect and replay need no provider connection. The successor selects one protected local approval. ALAN binds that decision to the original request and charges the new operation separately. [Authorize and inspect a continuation](docs/continuations.md#using-a-continuation)
 
 ## Run a computation
 

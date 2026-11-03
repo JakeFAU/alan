@@ -24,3 +24,54 @@ Baseline `7b9ecccea2beaff0c6bf6825a5af98de4e88971f` has the same tree as weather
 Exercise successful, refused, unspent, reserved without a gate, admitted without a result, and retained-but-unselected originals. Compare duplicate approval with a copied or reordered approval carrying matching final counters. Mutate namespace, subject and generation, logical correlation, prepared and result digests, parameter scope, missing original, fake completion, duplicate dispatch, authority and expenditure on disposable copies. A negative must fail before additional contact or debit. A forged retained relationship must fail inspection, Replay and reopen. A legitimate late result must remain valid. Exercise SIGKILL around approval, selection, successor commitment, reservation, gate, endpoint acceptance, result, settlement and terminal output, including repeated owners. Compare independent endpoint logs with the original identities and charges.
 
 Existing formats 3–10 keep their old contracts. The live M4 fixture remains an offline regression. Stop at the smallest protected same-action, one-successor slot that meets these checks. Additional providers, general retries, reconciliation adoption, authentication services and arbitrary policy execution are outside this contract.
+
+## Using a continuation
+
+Declare one ordinary effect in each program. In the weather example, the first program starts at the request. A later program adds one local input before that same request. The application can bind values from the input if it wants to display them.
+
+```go
+ports["approval"] = author.ContinuationPort("approve-refresh", "operator_requested")
+steps := []author.Step{
+    author.Receive("approval", nil), // successor only
+    author.Request("op", "forecast", arguments, nil),
+    author.Await("forecast", "op", resultBindings),
+    // Check the disposition and measurements before author.Success().
+}
+```
+
+Provision an ordinary finite composition with dispatch admissions enabled. Give the successor its own one-member root, one effect opportunity, a grant for the same declared adapter, and a distinct local approval identity. Both source and successor must be static generation-one members. A deployment may declare several slots. Each target has one predecessor, and the declarations must be acyclic.
+
+```go
+profile.Continuations = []runtime.ContinuationSlot{{
+    Predecessor: first, Target: next, Effect: "forecast",
+    Obligation: "approve-refresh", ApprovalID: "weather-refresh-2",
+}}
+```
+
+Open the original database and run normally after a process loss. If the original result exists, its settlement and selection need no new request. Inspecting the database before deciding to spend again needs neither ownership nor a registered adapter.
+
+```go
+cut, err := runtime.InspectExecution(ctx, path, limits)
+if err != nil { return err }
+basis, err := cut.ContinuationBasis(next)
+if err != nil { return err }
+original, _ := cut.Effect(basis.PredecessorID)
+if !operatorWantsNewObservation(original) { return nil } // application policy
+
+owner, err := runtime.Open(ctx, path, limits)
+if err != nil { return err }
+defer owner.Close()
+if _, err := owner.ApproveContinuation(ctx, basis, "operator_requested"); err != nil {
+    return err
+}
+_, err = owner.Run(ctx, options) // contains the configured adapter
+return err
+```
+
+For deployment code, pass the original effect to the application's policy or display its fields. To resume existing work without approving anything, just open the same database and call `Run`. After execution, inspect again and follow `cut.Continuation(next)` to its approval and actual successor. Each `cut.Effect(id)` has its own reservation, gate and result. A nil selection or empty successor ID means that step has not happened. Repeating the same explicit approval returns the first local decision. A later observation can report a different provider time.
+
+Only the holder of the local owner API may submit an approval. The application authenticates the operator and chooses which reasons to accept. The reason is retained as submitted. ALAN verifies the independently recorded predecessor evidence, selected approval and separately charged action. Machine identity, an authenticated human signature or remote deduplication is outside this single-host contract. The legacy weather CLI remains the trusted ingress for older multi-read stores.
+
+Approval writes one existing local admission and observation, plus one ordered fact in format 11 or 12. Each public inspection reads a single database snapshot. Validation indexes protected slots and admissions, walks the existing composition order and checks a successor's original prepared bytes. Storage and additional validation work scale with retained input and action size and the number of slots, admissions and facts. An inspection lookup by target uses a binary search over approvals. `ContinuationBasis` also examines the declared predecessor's effects when there is no prior approval. If several matching operations were paid, the caller must choose the original explicitly and supply its exact basis.
+
+[Run, kill and reopen the example](../examples/weather-agent/README.md#kill-and-resume) · [Inspect the unchanged M4 live response offline](../examples/weather-agent/README.md#live-run-and-offline-reproduction)

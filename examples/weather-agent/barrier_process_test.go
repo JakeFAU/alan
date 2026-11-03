@@ -25,7 +25,11 @@ func TestWeatherBoundaryOwner(t *testing.T) {
 	}
 	ctx, err := boundary.FromEnvironment(t.Context(), db)
 	if err == nil {
-		err = run(ctx, []string{action, "--db", db, "--json"}, os.Stdout)
+		args := []string{action, "--db", db, "--json"}
+		if action == "approve-second" {
+			args = []string{"refresh", "--db", db, "--read", "2", "--json"}
+		}
+		err = run(ctx, args, os.Stdout)
 	}
 	if err != nil {
 		t.Fatal(err)
@@ -136,7 +140,7 @@ func (c *weatherOwner) awaitCut(t *testing.T) weatherCut {
 	f := c.cut
 	if e.PID != c.cmd.Process.Pid || e.Token != f.Token || e.Scenario != f.Scenario || e.Store != f.Store ||
 		e.Subject != f.Subject || e.Generation != f.Generation || e.Boundary != f.Boundary || (f.Phase != "" && e.Phase != f.Phase) ||
-		(f.Sequence != 0 && e.Sequence != f.Sequence) || (f.Intent != "" && e.Intent != f.Intent) {
+		(f.Sequence != 0 && e.Sequence != f.Sequence) || (f.Intent != "" && e.Intent != f.Intent) || (f.Attempt != "" && e.Attempt != f.Attempt) {
 		t.Fatalf("acknowledgment does not identify requested boundary: %+v, want %+v", e, f)
 	}
 	return e
