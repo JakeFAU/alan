@@ -82,7 +82,7 @@ func validateLedger(ctx context.Context, q queryer, limits Limits) (ReplayReport
 	if err != nil {
 		return ReplayReport{}, err
 	}
-	if err := checkProtocolTables(ctx, q, protocolTables(stored)); err != nil {
+	if err := checkProtocolTables(ctx, q, stored); err != nil {
 		return ReplayReport{}, err
 	}
 	switch protocolSchemaNumber(stored) {

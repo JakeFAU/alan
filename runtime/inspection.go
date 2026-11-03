@@ -36,6 +36,11 @@ type Intent = executor.Intent
 type ExecutionEffect = executor.ExecutionEffect
 type EffectDispatch = executor.EffectDispatch
 type DispatchAdmission = executor.DispatchAdmission
+
+type ContinuationSlot = executor.ContinuationSlot
+type ContinuationBasis = executor.ContinuationBasis
+type ContinuationApproval = executor.ContinuationApproval
+type ContinuationView = executor.ContinuationView
 type EffectSettlement = executor.EffectSettlement
 type EffectRead = executor.EffectRead
 type EffectReceipt = executor.EffectReceipt

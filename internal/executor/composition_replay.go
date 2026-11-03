@@ -447,6 +447,14 @@ func validateCompositionPrefix(ctx context.Context, q queryer, l Limits, c compo
 			}
 		}
 	}
+	continuations, err := replayContinuations(ctx, q, c, expected, &x)
+	if err != nil {
+		return err
+	}
+	var admittedGates map[string]bool
+	if continuations != nil {
+		admittedGates = make(map[string]bool)
+	}
 	gates, err := replayDispatchAdmissions(ctx, q, c.RecordDispatchAdmissions, len(facts))
 	if err != nil {
 		return err
@@ -489,7 +497,18 @@ func validateCompositionPrefix(ctx context.Context, q queryer, l Limits, c compo
 				return err
 			}
 			var successor, raw []byte
-			if err = q.QueryRowContext(ctx, "SELECT successor,intents FROM history WHERE subject=? AND generation=? AND sequence=?", f.Run.Subject, f.Run.Generation, f.Sequence).Scan(&successor, &raw); err != nil {
+			var selected string
+			var revision int64
+			var protected *continuationWitness
+			if continuations != nil {
+				protected = continuations.bySubject[f.Run.Subject]
+			}
+			if protected == nil {
+				err = q.QueryRowContext(ctx, "SELECT successor,intents FROM history WHERE subject=? AND generation=? AND sequence=?", f.Run.Subject, f.Run.Generation, f.Sequence).Scan(&successor, &raw)
+			} else {
+				err = q.QueryRowContext(ctx, "SELECT successor,intents,coalesce(selected_observation,''),source_revision FROM history WHERE subject=? AND generation=? AND sequence=?", f.Run.Subject, f.Run.Generation, f.Sequence).Scan(&successor, &raw, &selected, &revision)
+			}
+			if err != nil {
 				return err
 			}
 			var p Projection
@@ -499,6 +518,11 @@ func validateCompositionPrefix(ctx context.Context, q queryer, l Limits, c compo
 			}
 			if err = decode(raw, &intents); err != nil {
 				return err
+			}
+			if protected != nil {
+				if err := protected.reduction(ReductionRef{f.Run, f.Sequence}, selected, intents, revision); err != nil {
+					return err
+				}
 			}
 			x.states[f.Run] = p
 			x.sequences[f.Run] = f.Sequence
@@ -630,6 +654,17 @@ func validateCompositionPrefix(ctx context.Context, q queryer, l Limits, c compo
 			if r.Allowed != allowed || r.Reason != reason || r.RootID != root.ID || r.Run != i.Run || r.Sequence != i.Sequence {
 				return corrupt("reservation prefix decision")
 			}
+			if continuations != nil {
+				if w := continuations.bySubject[f.Run.Subject]; w != nil {
+					prepared, err := loadAdapterAttempt(ctx, q, i.ID)
+					if err != nil {
+						return err
+					}
+					if err := w.reservation(&prepared); err != nil {
+						return err
+					}
+				}
+			}
 			x.reservations[i.ID] = true
 			if allowed {
 				spent := x.charges[root.ID]
@@ -637,6 +672,10 @@ func validateCompositionPrefix(ctx context.Context, q queryer, l Limits, c compo
 				x.charges[root.ID] = spent
 			} else if i.Kind == "external" {
 				x.known[i.ID] = true
+			}
+		case compositionContinuationFact:
+			if err := x.continuationDecision(ctx, q, continuations, f, admittedGates); err != nil {
+				return err
 			}
 		case compositionReadFact:
 			o, e := readOrdinal(ctx, q, f.OperationID, int(f.Sequence))
@@ -796,6 +835,9 @@ func validateCompositionPrefix(ctx context.Context, q queryer, l Limits, c compo
 		}
 		delete(checks, f.Order)
 		for _, gate := range gates[f.Order] {
+			if admittedGates != nil {
+				admittedGates[gate.OperationID] = true
+			}
 			if err := x.checkDispatchAdmission(ctx, q, gate); err != nil {
 				return err
 			}
@@ -837,5 +879,5 @@ func validateCompositionPrefix(ctx context.Context, q queryer, l Limits, c compo
 			return err
 		}
 	}
-	return validateLifecycleChronology(ctx, q, compositionProtocolVersion, x.public, len(gates) != 0)
+	return validateLifecycleChronology(ctx, q, compositionProtocolVersion, x.public, len(gates) != 0 || continuations != nil)
 }

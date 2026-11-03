@@ -7,7 +7,7 @@ import "strings"
 // the source refused the request. Missing transports to later-created members
 // need the same test, including when there is no lifecycle request at this cut.
 func (b *inspectionBuilder) checkCreationChronology() error {
-	needed := len(b.snap.LifecycleDecisions) > 0 || len(b.tables["adapter_dispatch_admissions"]) > 0
+	needed := len(b.snap.Continuations) > 0 || len(b.snap.LifecycleDecisions) > 0 || len(b.tables["adapter_dispatch_admissions"]) > 0
 	if !needed {
 		for id := range b.authorizations {
 			if b.intents[id].Kind == "lifecycle" {
@@ -425,6 +425,12 @@ func (g *memberOrder) transportOrder() error {
 		}
 		op := d.IntentID
 		n := 0
+		if d.Continuation != nil {
+			n = g.records[protocolRecord{compositionContinuationFact, d.TransportID}]
+			if n == 0 {
+				return corrupt("continuation admission has no atomic decision")
+			}
+		}
 		if d.Kind == "message" {
 			if first := g.records[protocolRecord{compositionReplyFact, op}]; first != 0 && !firstReply[op] {
 				n = first // first delivery recorded the reply fact in this transaction

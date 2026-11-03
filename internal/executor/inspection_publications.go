@@ -70,7 +70,7 @@ func (b *inspectionBuilder) checkPublicationPrefixes(roots map[string]*RootCompl
 			if successJoin && outstanding[scope] != 0 {
 				return corrupt("successful publication with unresolved original dependencies")
 			}
-		case compositionAuthorizationFact, compositionLifecycleFact, compositionReplyFact:
+		case compositionAuthorizationFact, compositionLifecycleFact, compositionReplyFact, compositionContinuationFact:
 			// These facts and their exact source bytes were checked with their owning protocol.
 		default:
 			return corrupt("unknown ordered fact kind")

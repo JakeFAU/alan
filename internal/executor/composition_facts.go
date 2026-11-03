@@ -16,6 +16,7 @@ type compositionFactKind string
 const (
 	compositionAuthorizationFact  compositionFactKind = "authorization"
 	compositionExternalResultFact compositionFactKind = "external_result"
+	compositionContinuationFact   compositionFactKind = "continuation"
 	compositionExecutionFact      compositionFactKind = "execution"
 	compositionLifecycleFact      compositionFactKind = "lifecycle"
 	compositionAdmissionFact      compositionFactKind = "admission"
@@ -117,6 +118,8 @@ func appendCompositionFact(ctx context.Context, tx *sql.Tx, f compositionFact) (
 	}
 	var expected compositionFact
 	switch f.Kind {
+	case compositionContinuationFact:
+		expected, err = continuationFactEvidence(ctx, tx, f.OperationID)
 	case compositionReadFact:
 		expected, err = receiptReadFact(ctx, tx, f.OperationID, int(f.Sequence))
 	case compositionExecutionFact:

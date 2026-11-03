@@ -71,7 +71,8 @@ func (b *inspectionBuilder) buildDeployment() error {
 	if err != nil {
 		return err
 	}
-	if profile.Version != compositionProtocolVersion || profiles[0]["version"] != compositionProtocolVersion || profile.RecordDispatchAdmissions != b.snap.Features.DispatchAdmissions {
+	if profile.Version != compositionProtocolVersion || profiles[0]["version"] != compositionProtocolVersion || profile.RecordDispatchAdmissions != b.snap.Features.DispatchAdmissions ||
+		(len(profile.Continuations) != 0) != hasContinuationSchema(b.snap.StorageVersion) {
 		return ErrVersion
 	}
 	if len(profile.Roots) == 0 || validateCompositionEncoding(profile) != nil {
@@ -115,6 +116,13 @@ func (b *inspectionBuilder) buildDeployment() error {
 			return p, ErrCorrupt
 		}
 		return p, nil
+	}
+	if len(profile.Continuations) != 0 {
+		if err := validateContinuationSlots(profile, deploy, perms, lookup); err != nil {
+			return corrupt("invalid continuation deployment: %v", err)
+		}
+		x := indexContinuations(profile.Continuations)
+		b.continuations = &x
 	}
 	for _, t := range profile.Templates {
 		checked, err := retainTemplate(t, b.limits, lookup)
