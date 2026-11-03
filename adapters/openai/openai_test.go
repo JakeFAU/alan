@@ -24,6 +24,10 @@ func request(t *testing.T) effects.Request {
 	return effects.Request{ID: "local", Key: "global-key", Capability: "model", Effect: "plan", Input: in, Output: out, Payload: map[string]schema.Value{"instructions": schema.Text("retained instructions"), "input": schema.Text("complete question")}}
 }
 func TestResponsesProtocol(t *testing.T) {
+	const originalID = "alan-af6d3819c129198f750cfa1ed8ccf95d8fc6450894888079813c03db8b1da3d0"
+	if openai.ClientRequestID("global-key") != originalID {
+		t.Fatal("established outgoing request identity changed")
+	}
 	var contacts atomic.Int64
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		contacts.Add(1)
@@ -44,7 +48,7 @@ func TestResponsesProtocol(t *testing.T) {
 				t.Errorf("unexpected %s", field)
 			}
 		}
-		if r.Header.Get("Authorization") != "Bearer runtime-secret" || r.Header.Get("X-Client-Request-Id") == "" {
+		if r.Header.Get("Authorization") != "Bearer runtime-secret" || r.Header.Get("X-Client-Request-Id") != openai.ClientRequestID("global-key") {
 			t.Error("missing runtime authorization/correlation")
 		}
 		f := body["text"].(map[string]any)["format"].(map[string]any)

@@ -160,7 +160,7 @@ func (a *Adapter) Execute(ctx context.Context, p effects.Prepared) (c effects.Ca
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+a.config.APIKey)
 	// Use a fixed ASCII digest-sized identifier, without interpreting it as deduplication.
-	req.Header.Set("X-Client-Request-Id", clientID(p.Request.Key))
+	req.Header.Set("X-Client-Request-Id", ClientRequestID(p.Request.Key))
 	// A fresh transport and non-rewindable body disable net/http's connection retry path.
 	req.GetBody = nil
 	transport := &http.Transport{DisableKeepAlives: true, TLSHandshakeTimeout: 10 * time.Second}
@@ -184,6 +184,17 @@ func (a *Adapter) Execute(ctx context.Context, p effects.Prepared) (c effects.Ca
 		return c
 	}
 	c.Response = cleanText(string(raw))
+	c = decodeResponse(p.Request.Output.Record, c)
+	if c.Disposition == "validated" && string(raw) != c.Response {
+		c.Payload = nil
+		c.Disposition = "credential_redacted"
+	}
+	return c
+}
+
+// decodeResponse interprets the body after the adapter's initial credential scrub.
+// The transport and the offline verifier share all protocol and output-schema checks.
+func decodeResponse(output schema.Record, c effects.Candidate) effects.Candidate {
 	if !utf8.ValidString(c.Response) {
 		c.Response = strings.ToValidUTF8(c.Response, "�")
 		c.Disposition = "protocol_invalid"
@@ -271,13 +282,9 @@ func (a *Adapter) Execute(ctx context.Context, p effects.Prepared) (c effects.Ca
 		c.Disposition = "protocol_invalid"
 		return c
 	}
-	payload, e := parsePayload(texts[0], p.Request.Output.Record)
+	payload, e := parsePayload(texts[0], output)
 	if e != nil {
 		c.Disposition = "schema_invalid"
-		return c
-	}
-	if string(raw) != c.Response {
-		c.Disposition = "credential_redacted"
 		return c
 	}
 	c.Payload = payload

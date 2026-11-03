@@ -20,6 +20,18 @@ go build -o "$work/quickstart" ./examples/quickstart
 3. `resume` uses `runtime.Open` to validate the ledger and renew the open run's activation epoch. It supplies a `continue` event with `Store.AdmitInput` and calls `Store.Run` with a lookup adapter. The program consumes the correlated result and takes its success branch.
 4. `replay` uses `runtime.Replay` to reconstruct the six commits and one intent in a read-only transaction. It prints `reader succeeded line="SQLite retains its state."`. Both read APIs work without a registered adapter. Run `inspect` again to see the settled projection and the single attempt and result.
 
+## Run a document investigation
+
+The [investigator example](examples/investigator/README.md) starts two retained workers, verifies their model-proposed quotations against local documents, and preserves agreement, disagreement or an unresolved call across process restarts. Run the bundled loopback provider in one terminal with `python3 examples/investigator/testdata/responses.py`, then use a second terminal.
+
+```sh
+work=$(mktemp -d)
+go build -o "$work/investigator" ./examples/investigator
+"$work/investigator" init "$work/case.sqlite" examples/investigator/testdata/case.json
+"$work/investigator" run "$work/case.sqlite"
+"$work/investigator" answer "$work/case.sqlite"
+```
+
 ## Authorize and register an adapter
 
 In the quickstart, the definition declares an effect named `search`, its capability `corpus`, and its input and output schemas. Provisioning derives an adapter grant in `p.Permissions` for subject `reader`, revision 1, capability `corpus` and operation/obligation `search`. Review the grants when creating the store. To withhold this authority, omit that adapter grant before calling `runtime.Create`.
