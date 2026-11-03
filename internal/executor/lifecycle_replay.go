@@ -30,6 +30,29 @@ func projectionAt(ctx context.Context, q queryer, id RunID, sequence int64) (Pro
 	err = decode(raw, &projection)
 	return projection, err
 }
+
+// A reopen can advance an epoch without writing a reduction. The adjacent
+// reductions still bound the epoch of a witness at this sequence.
+func validateWitnessEpoch(ctx context.Context, q queryer, run RunState, seq, epoch int64) error {
+	if seq < 0 || seq > run.Sequence || epoch < 1 || epoch > run.Epoch {
+		return corrupt("authority outside run history")
+	}
+	if run.Epoch == 1 || seq == run.Sequence && epoch == run.Epoch {
+		return nil
+	}
+	var prev, next int64
+	err := q.QueryRowContext(ctx, `SELECT
+		coalesce((SELECT epoch FROM history WHERE subject=?1 AND generation=?2 AND sequence=?3),1),
+		coalesce((SELECT epoch FROM history WHERE subject=?1 AND generation=?2 AND sequence=?3+1),?4)`,
+		run.ID.Subject, run.ID.Generation, seq, run.Epoch).Scan(&prev, &next)
+	if err != nil {
+		return err
+	}
+	if epoch < prev || epoch > next {
+		return corrupt("authority epoch outside its reduction prefix")
+	}
+	return nil
+}
 func reconcileProjection(ctx context.Context, q queryer, run RunState, ordinary Projection) error {
 	var operation sql.NullString
 	var sequence int64
@@ -82,8 +105,8 @@ func validateLifecycle(ctx context.Context, q queryer) error {
 	}
 	results := map[string]LifecycleResult{}
 	closures := map[RunID]retainedClosure{}
-	lastSequence := map[RunID]int64{}
-	for _, id := range ids {
+	last := map[RunID]Authority{}
+	for index, id := range ids {
 		result, e := loadLifecycleResult(ctx, q, id)
 		if e != nil {
 			return e
@@ -92,7 +115,7 @@ func validateLifecycle(ctx context.Context, q queryer) error {
 		if e != nil {
 			return e
 		}
-		if !reflect.DeepEqual(request, result.Request) {
+		if result.DecisionSequence != int64(index+1) || !reflect.DeepEqual(request, result.Request) {
 			return corrupt("lifecycle request changed")
 		}
 		auth, e := loadAuthorization(ctx, q, id)
@@ -103,17 +126,39 @@ func validateLifecycle(ctx context.Context, q queryer) error {
 			return corrupt("target decision without source authorization")
 		}
 		subject, exists := states[request.Intent.Target]
+		if exists && result.Before == nil {
+			// Only an admitted invocation can introduce a new subject name.
+			// Its creation order is checked after validating the composition protocol.
+			var dynamic bool
+			enabled, err := compositionProtocol(ctx, q)
+			if err != nil {
+				return err
+			}
+			if enabled {
+				err = q.QueryRowContext(ctx, "SELECT EXISTS(SELECT 1 FROM composition_members WHERE subject=?)", subject.ID).Scan(&dynamic)
+				if err != nil {
+					return err
+				}
+			}
+			exists = !dynamic
+		}
 		if (result.Before != nil) != exists {
 			return corrupt("lifecycle target existence")
 		}
 		if exists {
 			before := result.Before
+			if before.Run != (RunID{subject.ID, subject.Generation}) {
+				return corrupt("lifecycle target generation")
+			}
 			run, e := loadRun(ctx, q, before.Run)
 			if e != nil {
 				return e
 			}
-			if before.Run != (RunID{subject.ID, subject.Generation}) || before.Owner != subject.Owner || before.Revision != subject.Revision || before.Retired != subject.Retired || before.RetryCancelled != subject.RetryCancelled || before.ProgramID != roots[subject.ID].ProgramID || before.Sequence < lastSequence[before.Run] || before.Sequence > run.Sequence || before.Epoch < 1 || before.Epoch > run.Epoch {
+			if before.Owner != subject.Owner || before.Revision != subject.Revision || before.Retired != subject.Retired || before.RetryCancelled != subject.RetryCancelled || before.ProgramID != roots[subject.ID].ProgramID || before.Sequence < last[before.Run].Sequence || before.Epoch < last[before.Run].Epoch {
 				return corrupt("lifecycle before-state authority")
+			}
+			if e := validateWitnessEpoch(ctx, q, run, before.Sequence, before.Epoch); e != nil {
+				return e
 			}
 			projected, e := projectionAt(ctx, q, before.Run, before.Sequence)
 			if e != nil {
@@ -125,10 +170,10 @@ func validateLifecycle(ctx context.Context, q queryer) error {
 				}
 				projected = closure.projection
 			}
-			if !reflect.DeepEqual(before.Projection, projected) {
+			if !reflect.DeepEqual(before.Projection, projected) || projected.Status != "open" && before.Epoch != run.Epoch {
 				return corrupt("lifecycle before-state projection")
 			}
-			lastSequence[before.Run] = before.Sequence
+			last[before.Run] = Authority{Sequence: before.Sequence, Epoch: before.Epoch}
 		}
 		grant, e := lifecycleGrant(ctx, q, request)
 		if e != nil {

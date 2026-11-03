@@ -3,6 +3,8 @@ package executor
 import (
 	"errors"
 	"testing"
+
+	recordschema "github.com/JakeFAU/alan/schema"
 )
 
 func TestInspectContradictoryHistoryOrder(t *testing.T) {
@@ -49,14 +51,25 @@ func TestInspectRefusalRequiresItsTransportAndTarget(t *testing.T) {
 		{"open target is not retired", "receiver", "ungranted", "target_retired"},
 		{"wildcard cannot have wrong generation", "receiver", "ungranted", "target_generation_changed"},
 		{"permitted schema reason requires a grant", "receiver", "ungranted", "schema_invalid"},
+		{"granted route refused for invalid schema", "receiver", "work", "route_denied"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			s, path := messageStore(t, inputFixture(t))
-			a, err := s.AdmitInput(t.Context(), Input{TransportID: "t", LogicalID: "id", Target: tc.target, Obligation: tc.obligation, Payload: map[string]Value{"number": Int(42)}})
+			value := Int(42)
+			if tc.reason == "route_denied" {
+				value = recordschema.List()
+			}
+			a, err := s.AdmitInput(t.Context(), Input{TransportID: "t", LogicalID: "id", Target: tc.target, Obligation: tc.obligation, Payload: map[string]Value{"number": value}})
 			if err != nil || a.Accepted {
 				t.Fatal(a, err)
 			}
 			if _, err := InspectExecution(t.Context(), path, DefaultLimits()); err != nil {
+				t.Fatal("genuine refusal", err)
+			}
+			if tc.reason == "route_denied" && a.Reason != "schema_invalid" {
+				t.Fatal(a)
+			}
+			if _, err := Replay(t.Context(), path, DefaultLimits()); err != nil {
 				t.Fatal("genuine refusal", err)
 			}
 			a.Reason = tc.reason
@@ -69,6 +82,20 @@ func TestInspectRefusalRequiresItsTransportAndTarget(t *testing.T) {
 			if cut, err := InspectExecution(t.Context(), path, DefaultLimits()); cut != nil || !errors.Is(err, ErrCorrupt) {
 				t.Fatalf("accepted impossible transport refusal %s: %v", a.Reason, err)
 			}
+			if _, err := Replay(t.Context(), path, DefaultLimits()); !errors.Is(err, ErrCorrupt) {
+				t.Fatalf("replayed impossible transport refusal %s: %v", a.Reason, err)
+			}
+			if err := s.Close(); err != nil {
+				t.Fatal(err)
+			}
+			owner, err := Open(t.Context(), path, DefaultLimits())
+			if owner != nil {
+				owner.Close()
+			}
+			if owner != nil || !errors.Is(err, ErrCorrupt) {
+				t.Fatalf("opened impossible transport refusal %s: %v", a.Reason, err)
+			}
+
 		})
 	}
 }

@@ -11,6 +11,18 @@ type reopenEquation struct {
 }
 
 func (g *memberOrder) checkActivationCounts() error {
+	// Both readers already authenticated each witness against its own run.
+	// With no reactivations, every epoch equation is satisfied at time zero.
+	reactivated := false
+	for _, r := range g.runs {
+		if r.epoch > 1 {
+			reactivated = true
+			break
+		}
+	}
+	if !reactivated {
+		return nil
+	}
 	// Index zero is the common provision event. The extra last index is the
 	// inspected cut. Every retained transaction falls between them.
 	cut := len(g.edges)
@@ -23,9 +35,9 @@ func (g *memberOrder) checkActivationCounts() error {
 	}
 	var equations []reopenEquation
 	valid := true
-	witness := func(n int, r *ExecutionRun, epoch int64, open bool) {
+	witness := func(n int, r creationRun, epoch int64, open bool) {
 		birth := g.creation[r.ID]
-		if n == 0 || (birth == 0 && r.Origin != "root") || epoch < 1 || epoch > r.Epoch {
+		if n == 0 || (birth == 0 && r.origin != "root") || epoch < 1 || epoch > r.epoch {
 			valid = false
 			return
 		}
@@ -36,29 +48,29 @@ func (g *memberOrder) checkActivationCounts() error {
 		// A closed generation keeps its final epoch through later reopens.
 		// The record proves only that closure already happened.
 		closure := g.closure[r.ID]
-		if closure == 0 || r.Epoch != epoch {
+		if closure == 0 || r.epoch != epoch {
 			valid = false
 			return
 		}
 		before[closure] = append(before[closure], n)
 	}
-	for _, r := range g.snap.Runs {
+	for _, r := range g.runs {
 		end := g.closure[r.ID]
-		if r.Projection.Status == "open" {
+		if r.open {
 			end = cut
 		}
-		witness(end, r, r.Epoch, true)
+		witness(end, r, r.epoch, true)
 	}
-	for _, s := range g.snap.history {
+	for _, s := range g.history {
 		witness(g.reductions[s.ReductionRef], g.runs[s.Run], s.Epoch, true)
 	}
 	for id, a := range g.authorizations {
 		n := g.records[protocolRecord{compositionAuthorizationFact, id}]
 		ref := ReductionRef{a.Source.Run, a.Source.Sequence}
-		open := a.ClosureOperation == "" && g.after[ref].Status == "open"
+		open := a.ClosureOperation == "" && g.openAfter[ref]
 		witness(n, g.runs[a.Source.Run], a.Source.Epoch, open)
 	}
-	for _, d := range g.snap.LifecycleDecisions {
+	for _, d := range g.decisions {
 		if w := d.Before; w != nil {
 			n := g.records[protocolRecord{compositionLifecycleFact, d.Request.Intent.ID}]
 			witness(n, g.runs[w.Run], w.Epoch, w.Projection.Status == "open")
@@ -68,7 +80,7 @@ func (g *memberOrder) checkActivationCounts() error {
 		witness(n, g.runs[a.Run], a.Epoch, true)
 	}
 	if !valid || !feasibleReopens(before, equations) {
-		return corrupt("target creation contradicts shared activation epochs")
+		return corrupt("retained authority contradicts shared activation epochs")
 	}
 	return nil
 }

@@ -10,6 +10,32 @@ type transportBounds struct {
 }
 
 func (c *causalCut) validTransport(d AdmissionDescriptor, r AdmissionResult, seen *transportBounds, routes map[Permission]bool, terminal map[RunID]terminalSource) bool {
+	var w transportWitness
+	w.source = c.auth[d.IntentID]
+	if bound := r.Bound; bound != nil {
+		s := c.runs[*bound].Subject
+		w.retired = s.Retired && s.Generation == bound.Generation
+		t, closed := terminal[*bound]
+		w.closed = closed && c.lifecycle[t.closure].Request.Operation != "RetireSubject"
+		revision := int64(0)
+		if d.Kind == "message" {
+			revision = c.intents[d.IntentID].revision
+		}
+		w.permitted = d.Kind == "terminal" || routes[Permission{Kind: d.Kind, Source: d.Source.Subject, Target: d.Target, Operation: d.Kind, Revision: revision, Obligation: d.Obligation}]
+		w.schemaValid = authorAdmissionValid(c.resolved[*bound], d)
+	}
+	return seen.valid(d, r, w)
+}
+
+// Immutable route and program evidence determines the admission after source,
+// generation, retirement and closure precedence. The latter two may also have
+// happened later, so a refusal requires a compatible retained transition.
+type transportWitness struct {
+	source                                  Authorization
+	retired, closed, permitted, schemaValid bool
+}
+
+func (seen *transportBounds) valid(d AdmissionDescriptor, r AdmissionResult, w transportWitness) bool {
 	previous := seen.generation[d.Target]
 	bound := r.Bound
 	if bound == nil {
@@ -23,7 +49,7 @@ func (c *causalCut) validTransport(d AdmissionDescriptor, r AdmissionResult, see
 		seen.generation[d.Target] = bound.Generation
 	}
 	if d.Kind == "message" {
-		a := c.auth[d.IntentID]
+		a := w.source
 		if !a.Allowed {
 			return !r.Accepted && r.Reason == "source_denied:"+a.Reason
 		}
@@ -32,9 +58,8 @@ func (c *causalCut) validTransport(d AdmissionDescriptor, r AdmissionResult, see
 		// A dynamic member may not yet have existed at this unordered input.
 		return !r.Accepted && r.Reason == "target_missing"
 	}
-	target := c.runs[*bound]
 	if !r.Accepted && r.Reason == "target_retired" {
-		if !target.Subject.Retired || target.Subject.Generation != bound.Generation {
+		if !w.retired {
 			return false
 		}
 		seen.retired[d.Target] = true
@@ -47,8 +72,7 @@ func (c *causalCut) validTransport(d AdmissionDescriptor, r AdmissionResult, see
 		return !r.Accepted && r.Reason == "target_generation_changed"
 	}
 	if !r.Accepted && r.Reason == "target_closed" {
-		t, closed := terminal[*bound]
-		if !closed || c.lifecycle[t.closure].Request.Operation == "RetireSubject" {
+		if !w.closed {
 			return false
 		}
 		seen.closed[*bound] = true
@@ -59,15 +83,10 @@ func (c *causalCut) validTransport(d AdmissionDescriptor, r AdmissionResult, see
 	}
 	// No ordinary transport timestamp orders it against a later closure.
 	// Immutable route and program witnesses still determine these decisions.
-	revision := int64(0)
-	if d.Kind == "message" {
-		revision = c.intents[d.IntentID].revision
-	}
-	permitted := d.Kind == "terminal" || routes[Permission{Kind: d.Kind, Source: d.Source.Subject, Target: d.Target, Operation: d.Kind, Revision: revision, Obligation: d.Obligation}]
-	if !permitted {
+	if !w.permitted {
 		return !r.Accepted && r.Reason == "route_denied"
 	}
-	if !authorAdmissionValid(c.resolved[*bound], d) {
+	if !w.schemaValid {
 		return !r.Accepted && r.Reason == "schema_invalid"
 	}
 	return r.Accepted && r.Reason == "accepted"

@@ -571,6 +571,14 @@ func openStore(ctx context.Context, path string, limits Limits, composition bool
 			err = errors.Join(err, lock.Close())
 		}
 	}()
+	// Check the retained journal mode before the writer can change it. Keep
+	// the reader alive across a failed writer close: otherwise SQLite can
+	// checkpoint a killed owner's committed WAL even after a rollback.
+	reader, err := connect(ctx, real, true)
+	if err != nil {
+		return nil, err
+	}
+	defer reader.Close()
 	s, err := connect(ctx, real, false)
 	if err != nil {
 		return nil, err
@@ -581,7 +589,19 @@ func openStore(ctx context.Context, path string, limits Limits, composition bool
 		}
 	}()
 	s.limits = limits
-	tx, err := s.conn.BeginTx(ctx, nil)
+	// SQLite only applies its spill policy outside a transaction. Use a
+	// separate writer for validation and activation so a failed large renewal
+	// cannot leave uncommitted WAL frames, and normal execution keeps its
+	// original pager settings. Both connections are under the same owner lock.
+	renewal, err := connect(ctx, real, false)
+	if err != nil {
+		return nil, err
+	}
+	defer renewal.Close()
+	if _, err = renewal.conn.ExecContext(ctx, "PRAGMA cache_spill=OFF"); err != nil {
+		return nil, err
+	}
+	tx, err := renewal.conn.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
 	}

@@ -2,29 +2,46 @@ package executor
 
 import "strings"
 
-// Most cuts do not contain a negative existence claim about a subject that
-// exists now. In the exceptional case, ask whether every journal could have
-// been written in a single order respecting the claimed absence. The order
-// is a consistency test; it is never exposed as reconstructed history.
+// An authorization can outlive the source state that allowed or refused it.
+// Check its place among the other journals even if the target is present or
+// the source refused the request. Missing transports to later-created members
+// need the same test, including when there is no lifecycle request at this cut.
 func (b *inspectionBuilder) checkCreationChronology() error {
-	if !b.snap.Features.Composition {
+	needed := len(b.snap.LifecycleDecisions) > 0
+	if !needed {
+		for id := range b.authorizations {
+			if b.intents[id].Kind == "lifecycle" {
+				needed = true
+				break
+			}
+		}
+	}
+	if !needed {
+		for _, a := range b.snap.Admissions {
+			run := b.runs[RunID{a.Target, 1}]
+			if a.Bound == nil && run != nil && run.Origin == "invocation" {
+				needed = true
+				break
+			}
+		}
+	}
+	if !needed {
 		return nil
 	}
-	futureMember := func(subject string) bool {
-		run := b.runs[RunID{subject, 1}]
-		return run != nil && run.Origin == "invocation"
-	}
-	for _, d := range b.snap.LifecycleDecisions {
-		if d.Before == nil && futureMember(d.Request.Intent.Target) {
-			return b.checkMemberOrder()
+	// Reply authorization is the sole retirement exception, even before delivery.
+	publicReplies := map[string]bool{}
+	if b.snap.Composition != nil {
+		c := causalCut{inspectionBuilder: b, templates: map[string]compositionTemplate{}}
+		for _, t := range b.snap.Composition.Templates {
+			c.templates[t.ID] = t
+		}
+		for id := range b.authorizations {
+			i := b.intents[id]
+			v := b.invocations[b.runs[i.Run].OriginOperationID]
+			publicReplies[id] = v != nil && c.isInvocationReply(v, i.Intent)
 		}
 	}
-	for _, a := range b.snap.Admissions {
-		if a.Bound == nil && futureMember(a.Target) {
-			return b.checkMemberOrder()
-		}
-	}
-	return nil
+	return checkMemberOrder(b.tables, publicReplies)
 }
 
 type protocolRecord struct {
@@ -36,7 +53,7 @@ type protocolRecord struct {
 // denotes an absent predecessor, for example a provisioned run's first step.
 // Records known to be written atomically use the same index across journals.
 type memberOrder struct {
-	*inspectionBuilder
+	*creationEvidence
 	edges            [][]int
 	incoming         []int
 	records          map[protocolRecord]int
@@ -50,10 +67,14 @@ type memberOrder struct {
 	readWitnesses    map[int]Authority
 }
 
-func (b *inspectionBuilder) checkMemberOrder() error {
+func checkMemberOrder(tables map[string][]map[string]any, publicReplies map[string]bool) error {
+	evidence, err := indexCreationEvidence(tables, publicReplies)
+	if err != nil {
+		return err
+	}
 	g := memberOrder{
-		inspectionBuilder: b,
-		edges:             make([][]int, 1), incoming: make([]int, 1),
+		creationEvidence: evidence,
+		edges:            make([][]int, 1), incoming: make([]int, 1),
 		records: map[protocolRecord]int{}, reductions: map[ReductionRef]int{},
 		creation: map[RunID]int{}, member: map[string]int{},
 		closure: map[RunID]int{}, closedByDecision: map[RunID]bool{},
@@ -64,7 +85,9 @@ func (b *inspectionBuilder) checkMemberOrder() error {
 		return err
 	}
 	g.authorityOrder()
-	g.transportOrder()
+	if err := g.transportOrder(); err != nil {
+		return err
+	}
 	// Kahn's algorithm checks all negative existence claims jointly. For
 	// example, a path from a child's admission to an allegedly earlier
 	// missing-target decision now forms a cycle.
@@ -83,7 +106,7 @@ func (b *inspectionBuilder) checkMemberOrder() error {
 		}
 	}
 	if len(ready) != len(g.incoming)-1 {
-		return corrupt("missing target contradicts retained creation chronology")
+		return corrupt("lifecycle or transport observations contradict retained transaction order")
 	}
 	return g.checkActivationCounts()
 }
@@ -126,15 +149,24 @@ func (g *memberOrder) indexTransactions() error {
 		}
 		group[compositionIdentity("alan/fact/freeze/v1", f.InvocationID)] = f.Trigger
 	}
-	for _, x := range g.effects {
-		if r := x.AdapterResult; r != nil && r.Reconciled != nil {
-			group[compositionIdentity("alan/fact/external_result/v1", x.OperationID)] = compositionIdentity("alan/fact/external_result/v1", r.Reconciled.QueryID)
+	for _, row := range g.tables["adapter_results"] {
+		r, err := inspectionDecode[AdapterResult](row, "descriptor")
+		if err != nil {
+			return err
+		}
+		if r.Reconciled != nil {
+			group[compositionIdentity("alan/fact/external_result/v1", inspectText(row, "intent_id"))] = compositionIdentity("alan/fact/external_result/v1", r.Reconciled.QueryID)
 		}
 	}
 	facts := map[string]int{}
+	factOrder := map[int64]int{}
+	readOrder := map[readOrdinalKey]int{}
 	var prev int
 	for _, row := range g.tables["composition_facts"] {
-		f := g.facts[inspectText(row, "id")]
+		f, err := inspectionDecode[compositionFact](row, "descriptor")
+		if err != nil {
+			return err
+		}
 		var node int
 		if first, same := group[f.ID]; same {
 			node = facts[first]
@@ -145,32 +177,35 @@ func (g *memberOrder) indexTransactions() error {
 			node = g.transaction()
 		}
 		facts[f.ID] = node
+		factOrder[f.Order] = node
 		switch f.Kind {
 		case compositionExecutionFact:
 			g.reductions[ReductionRef{f.Run, f.Sequence}] = node
 		case compositionReadFact:
 			// Each spent ordinal has its own resolver activation witness.
-			x := g.effects[f.OperationID]
-			if x == nil || f.Sequence < 1 || f.Sequence > int64(len(x.ReadOpportunities)) {
+			w, ok := g.reads[readOrdinalKey{f.OperationID, f.Sequence}]
+			if !ok {
 				return corrupt("receipt-read fact without historical resolver")
 			}
-			g.readWitnesses[node] = x.ReadOpportunities[f.Sequence-1].Resolver
+			g.readWitnesses[node] = w
+			readOrder[readOrdinalKey{f.OperationID, f.Sequence}] = node
 		default:
 			g.records[protocolRecord{f.Kind, f.OperationID}] = node
 		}
 		g.appendRecord(&prev, node)
 	}
 	prev = 0
-	for _, s := range g.snap.history {
+	for _, s := range g.history {
 		n := g.reductions[s.ReductionRef]
 		if n == 0 {
 			n = g.transaction()
 			g.reductions[s.ReductionRef] = n
 		}
 		g.appendRecord(&prev, n)
+
 	}
 	prev = 0
-	for _, d := range g.snap.LifecycleDecisions {
+	for _, d := range g.decisions {
 		n := g.record(compositionLifecycleFact, d.Request.Intent.ID)
 		if d.Accepted && d.Successor != 0 {
 			g.successor[d.Before.Run] = n
@@ -184,20 +219,16 @@ func (g *memberOrder) indexTransactions() error {
 	for _, row := range g.tables["lifecycle_results"] {
 		g.appendRecord(&prev, g.record(compositionLifecycleFact, inspectText(row, "id")))
 	}
-	prev = 0
 	for _, row := range g.tables["runs"] {
 		r := g.runs[inspectionRun(row)]
-		switch r.Origin {
+		switch r.origin {
 		case "invocation":
-			g.creation[r.ID] = g.record(compositionAdmissionFact, r.OriginOperationID)
+			g.creation[r.ID] = g.record(compositionAdmissionFact, r.operation)
 			g.member[r.ID.Subject] = g.creation[r.ID]
 		case "retry":
-			g.creation[r.ID] = g.record(compositionLifecycleFact, r.OriginOperationID)
+			g.creation[r.ID] = g.record(compositionLifecycleFact, r.operation)
 		}
-		if n := g.creation[r.ID]; n != 0 {
-			g.appendRecord(&prev, n)
-			g.before(n, g.reductions[ReductionRef{r.ID, 1}])
-		}
+		g.before(g.creation[r.ID], g.reductions[ReductionRef{r.ID, 1}])
 	}
 	prev = 0
 	for _, row := range g.tables["terminal_obligations"] {
@@ -209,6 +240,65 @@ func (g *memberOrder) indexTransactions() error {
 		}
 		g.closure[run] = n
 		g.appendRecord(&prev, n)
+	}
+	return g.orderMirroredRows(factOrder, readOrder)
+}
+
+func (g *memberOrder) orderMirroredRows(factOrder map[int64]int, readOrder map[readOrdinalKey]int) error {
+	var prev int
+	// These journals mirror transactions indexed above. Their rowids impose
+	// an independent order even if every retained descriptor is authentic.
+	for _, field := range []struct {
+		table, key string
+		kind       compositionFactKind
+	}{
+		{"composition_admission_decisions", "operation_id", compositionAdmissionFact},
+		{"composition_invocations", "operation_id", compositionAdmissionFact},
+		{"composition_bindings", "invocation_id", compositionAdmissionFact},
+		{"composition_members", "invocation_id", compositionAdmissionFact},
+		{"composition_requests", "invocation_id", compositionAdmissionFact},
+		{"composition_reservations", "operation_id", compositionReservationFact},
+		{"composition_replies", "operation_id", compositionReplyFact},
+		{"composition_freezes", "scope_id", compositionFreezeFact},
+		{"composition_publications", "operation_id", compositionOutcomeFact},
+		{"composition_outcome_deliveries", "operation_id", compositionOutcomeFact},
+	} {
+		prev = 0
+		for _, row := range g.tables[field.table] {
+			op := inspectText(row, field.key)
+			if field.key == "invocation_id" {
+				op = g.invocationOperations[op]
+			}
+			g.appendRecord(&prev, g.records[protocolRecord{field.kind, op}])
+		}
+	}
+	for _, table := range []string{"composition_charges", "composition_closures", "composition_results", "composition_root_publications"} {
+		prev = 0
+		for _, row := range g.tables[table] {
+			g.appendRecord(&prev, factOrder[inspectInt(row, "decision_order")])
+		}
+	}
+	prev = 0
+	for _, row := range g.tables["receipt_read_ordinals"] {
+		g.appendRecord(&prev, readOrder[readOrdinalKey{inspectText(row, "intent_id"), inspectInt(row, "ordinal")}])
+	}
+	prev = 0
+	for _, row := range g.tables["intents"] {
+		g.appendRecord(&prev, g.reductions[ReductionRef{inspectionRun(row), inspectInt(row, "sequence")}])
+	}
+	// Provision precedes all later subject, generation and origin insertions.
+	for _, table := range []string{"subjects", "runs", "run_origins"} {
+		prev = 0
+		for _, row := range g.tables[table] {
+			n := g.creation[inspectionRun(row)]
+			if table == "subjects" {
+				n = g.member[inspectText(row, "id")]
+			}
+			if n == 0 && prev != 0 {
+				return corrupt("provisioned identity inserted after a derived generation")
+			}
+			g.appendRecord(&prev, n)
+		}
 	}
 	return nil
 }
@@ -222,10 +312,6 @@ func (g *memberOrder) witness(node int, run RunID, seq int64) {
 }
 
 func (g *memberOrder) authorityOrder() {
-	c := causalCut{inspectionBuilder: g.inspectionBuilder, templates: map[string]compositionTemplate{}}
-	for _, t := range g.snap.Composition.Templates {
-		c.templates[t.ID] = t
-	}
 	var prev int
 	for _, row := range g.tables["attempts"] {
 		op := inspectText(row, "intent_id")
@@ -249,14 +335,13 @@ func (g *memberOrder) authorityOrder() {
 		} else if a.Allowed || a.Reason == "source_closed" {
 			// An entry member can authorize its public reply after retirement,
 			// including a still-undelivered reply without a transport record.
-			v := g.invocations[g.runs[r].OriginOperationID]
-			if v == nil || !c.isInvocationReply(v, g.intents[op].Intent) {
+			if !g.publicReplies[op] {
 				g.before(n, g.retirement[r.Subject])
 			}
 		}
 		g.appendRecord(&prev, n)
 	}
-	for _, d := range g.snap.LifecycleDecisions {
+	for _, d := range g.decisions {
 		op := d.Request.Intent.ID
 		n := g.record(compositionLifecycleFact, op)
 		g.before(g.record(compositionAuthorizationFact, op), n)
@@ -277,10 +362,9 @@ func (g *memberOrder) authorityOrder() {
 			g.before(n, g.member[d.Request.Intent.Target])
 		}
 	}
-	for _, v := range g.invocations {
-		if v.Admission != nil {
-			g.before(g.record(compositionAuthorizationFact, v.OperationID), g.record(compositionAdmissionFact, v.OperationID))
-		}
+	for _, row := range g.tables["composition_admission_decisions"] {
+		op := inspectText(row, "operation_id")
+		g.before(g.record(compositionAuthorizationFact, op), g.record(compositionAdmissionFact, op))
 	}
 	for _, field := range []struct {
 		table string
@@ -300,20 +384,23 @@ func (g *memberOrder) authorityOrder() {
 	}
 }
 
-func (g *memberOrder) transportOrder() {
-	admissions := map[string]*AdmissionView{}
-	for _, a := range g.snap.Admissions {
-		admissions[a.ID] = a
-	}
+func (g *memberOrder) transportOrder() error {
 	firstReply := map[string]bool{}
 	observation := map[string]int{}
 	originalSettlement := map[string]int{}
 	var prev int
 	for _, row := range g.tables["admissions"] {
-		a := admissions[inspectText(row, "id")]
-		op := a.SourceOperationID
+		a, err := inspectionDecode[AdmissionResult](row, "result")
+		if err != nil {
+			return err
+		}
+		d, err := inspectionDecode[AdmissionDescriptor](row, "descriptor")
+		if err != nil {
+			return err
+		}
+		op := d.IntentID
 		n := 0
-		if a.Domain == "message" {
+		if d.Kind == "message" {
 			if first := g.records[protocolRecord{compositionReplyFact, op}]; first != 0 && !firstReply[op] {
 				n = first // first delivery recorded the reply fact in this transaction
 				firstReply[op] = true
@@ -324,24 +411,33 @@ func (g *memberOrder) transportOrder() {
 		}
 		g.appendRecord(&prev, n)
 		if a.Bound == nil {
-			g.before(n, g.member[a.Target])
+			if g.provisioned[d.Target] {
+				return corrupt("transport missing a provisioned target")
+			}
+			if a.Accepted || (a.Reason != "target_missing" && !strings.HasPrefix(a.Reason, "source_denied:")) {
+				return corrupt("transport refusal lacks its target witness")
+			}
+			g.before(n, g.member[d.Target])
 		} else {
+			if _, ok := g.runs[*a.Bound]; !ok || a.Bound.Subject != d.Target || a.Reason == "target_missing" {
+				return corrupt("transport cites a foreign target witness")
+			}
 			g.before(g.creation[*a.Bound], n)
 		}
-		switch a.Domain {
+		switch d.Kind {
 		case "terminal":
-			g.before(g.closure[a.Source], n)
+			g.before(g.closure[d.Source], n)
 		case "input":
 		default:
 			g.before(g.record(compositionAuthorizationFact, op), n)
 		}
-		switch a.Domain {
+		switch d.Kind {
 		case "lifecycle", "adapter", "receipt":
 			if originalSettlement[op] == 0 {
 				originalSettlement[op] = n
 			}
-			if d := g.records[protocolRecord{compositionLifecycleFact, op}]; a.Domain == "lifecycle" {
-				g.before(d, n) // source-denied settlements have no target decision
+			if d.Kind == "lifecycle" {
+				g.before(g.records[protocolRecord{compositionLifecycleFact, op}], n) // source-denied settlements have no target decision
 			} else {
 				g.before(g.records[protocolRecord{compositionReservationFact, op}], n)
 				g.before(g.records[protocolRecord{compositionExternalResultFact, op}], n)
@@ -370,26 +466,26 @@ func (g *memberOrder) transportOrder() {
 	for _, row := range g.tables["settlements"] {
 		g.appendRecord(&prev, originalSettlement[inspectText(row, "intent_id")])
 	}
-	for _, v := range g.invocations {
-		if v.RequestObservationID != "" {
-			observation[v.RequestObservationID] = g.record(compositionAdmissionFact, v.OperationID)
-		}
-		if v.OutcomeObservationID != "" {
-			observation[v.OutcomeObservationID] = g.record(compositionOutcomeFact, v.OperationID)
-		}
+	for _, row := range g.tables["composition_requests"] {
+		op := g.invocationOperations[inspectText(row, "invocation_id")]
+		observation[inspectText(row, "observation_id")] = g.record(compositionAdmissionFact, op)
+	}
+	for _, row := range g.tables["composition_outcome_deliveries"] {
+		observation[inspectText(row, "observation_id")] = g.record(compositionOutcomeFact, inspectText(row, "operation_id"))
 	}
 	prev = 0
 	for _, row := range g.tables["observations"] {
 		id := inspectText(row, "id")
-		o := g.observations[id]
+		run := inspectionRun(row)
 		n := observation[id]
 		if n == 0 {
 			n = g.transaction() // trusted envelope with no represented transport
 		}
-		g.before(g.creation[o.Run], n)
-		if o.SelectedAt != nil {
-			g.before(n, g.reductions[*o.SelectedAt])
+		g.before(g.creation[run], n)
+		if seq, ok := row["consumed_sequence"].(int64); ok {
+			g.before(n, g.reductions[ReductionRef{run, seq}])
 		}
 		g.appendRecord(&prev, n)
 	}
+	return nil
 }

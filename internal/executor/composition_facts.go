@@ -71,10 +71,12 @@ func compositionExecutionEvidence(ctx context.Context, q queryer, run RunID, seq
 func compositionLifecycleEvidence(ctx context.Context, q queryer, result LifecycleResult) (compositionFact, error) {
 	roots := []string{}
 	target := RunID{Subject: result.Request.Intent.Target, Generation: result.Request.Intent.Generation}
+	participants := []RunID{result.Request.Intent.Run}
 	if result.Before != nil {
 		target = result.Before.Run
+		participants = append(participants, target)
 	}
-	for _, run := range []RunID{result.Request.Intent.Run, target} {
+	for _, run := range participants {
 		root, err := compositionMembershipRoot(ctx, q, run)
 		if err != nil {
 			return compositionFact{}, err
