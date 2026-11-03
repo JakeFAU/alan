@@ -24,9 +24,12 @@ func retainedConfiguration(s *runtime.ExecutionSnapshot) (configuration, error) 
 		Latitude: data[openmeteo.Latitude].Text, Longitude: data[openmeteo.Longitude].Text, Units: data[openmeteo.Units].Text,
 		Endpoint: data["endpoint"].Text, Allowance: int(data["allowance"].Number),
 	}
-	want, err := c.provision()
+	want, err := c.provision(len(s.Composition.Continuations) == 0)
 	if err != nil {
 		return c, fmt.Errorf("retained weather configuration: %w", err)
+	}
+	if len(s.Composition.Continuations) != 0 && !slices.Equal(s.Composition.Continuations, want.Composition.Continuations) {
+		return c, errors.New("original weather continuation slots differ")
 	}
 	d := s.Deployment
 	if !slices.Equal(d.Subjects, want.Subjects) || !reflect.DeepEqual(d.Runs, want.Runs) || !slices.Equal(d.Permissions, want.Permissions) ||

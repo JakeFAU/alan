@@ -56,7 +56,7 @@ func TestWeatherApprovalIntegrity(t *testing.T) {
 	reply := weatherReply{status: 200, body: morningWeather}
 	p := newWeatherProvider(t, reply, reply, reply, reply, reply)
 	source := filepath.Join(t.TempDir(), "weather.sqlite")
-	appCommand(t, provisioning(source, p.endpoint(), 2)...)
+	createM4Weather(t, source, p.endpoint(), 2)
 	r := appCommand(t, "run", "--db", source)
 	if r.Reads[0].State != "reported" || r.OpportunitiesSpent != 1 {
 		t.Fatal("expected a completed first observation")
@@ -66,7 +66,7 @@ func TestWeatherApprovalIntegrity(t *testing.T) {
 	appCommand(t, "refresh", "--db", source, "--read", "2")
 	control := retainedWeatherApproval(t, source)
 	foreign := filepath.Join(t.TempDir(), "weather.sqlite")
-	if got := appCommand(t, provisioning(foreign, p.endpoint(), 2)...); got.Namespace == r.Namespace || got.OpportunitiesSpent != 0 {
+	if got := createM4Weather(t, foreign, p.endpoint(), 2); got.Namespace == r.Namespace || got.OpportunitiesSpent != 0 {
 		t.Fatal("expected an unrelated, unstarted computation")
 	}
 

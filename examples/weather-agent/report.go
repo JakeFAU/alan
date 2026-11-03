@@ -75,6 +75,7 @@ type readSummary struct {
 	State                  string                     `json:"state"`
 	LocalStatus            string                     `json:"local_status"`
 	PreviousOperationID    string                     `json:"previous_operation_id,omitempty"`
+	Continuation           *runtime.ContinuationView  `json:"continuation,omitempty"`
 	ApprovalObservationID  string                     `json:"approval_observation_id,omitempty"`
 	ApprovalReason         string                     `json:"approval_reason,omitempty"`
 	ApprovalPreparedDigest string                     `json:"approval_prepared_digest,omitempty"`
@@ -126,7 +127,14 @@ func summarize(s, before *runtime.ExecutionSnapshot, c configuration, detailed b
 			PreviousOperationID: run.Projection.Data["previous_operation_id"].Text, State: "awaiting_request"}
 		if n > 1 {
 			read.State = "awaiting_refresh_approval"
-			o, err := verifiedApproval(s, n)
+			read.Continuation, _ = s.Continuation(run.ID)
+			var o *runtime.ObservationView
+			var err error
+			if read.Continuation != nil {
+				o, _ = s.Observation(read.Continuation.ObservationID)
+			} else if len(s.Composition.Continuations) == 0 {
+				o, err = legacyApproval(s, n)
+			}
 			if err != nil {
 				if len(run.EffectIDs) != 0 {
 					return out, err

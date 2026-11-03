@@ -37,6 +37,25 @@ func provisioning(db, endpoint string, allowance int) []string {
 	return []string{"start", "--db", db, "--lat", "26.93", "--lon", "-80.08", "--units", "fahrenheit", "--endpoint", endpoint, "--allowance", fmt.Sprint(allowance)}
 }
 
+// Existing multi-read deployments keep the original M4 input contract. Create
+// this compatibility fixture without any protected slot, as the old CLI did.
+func createM4Weather(t *testing.T, db, endpoint string, allowance int) summary {
+	t.Helper()
+	c := configuration{Latitude: "26.93", Longitude: "-80.08", Units: "fahrenheit", Endpoint: endpoint, Allowance: allowance}
+	provision, err := c.provision(true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	owner, err := runtime.Create(t.Context(), db, provision, runtime.DefaultLimits())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := owner.Close(); err != nil {
+		t.Fatal(err)
+	}
+	return appCommand(t, "inspect", "--db", db)
+}
+
 func TestWeatherApplicationApprovesEachRead(t *testing.T) {
 	var contacts atomic.Int32
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -198,7 +217,7 @@ func TestWeatherApplicationRejectsUnrelatedPeerHandle(t *testing.T) {
 	}))
 	defer server.Close()
 	db := filepath.Join(t.TempDir(), "weather.sqlite")
-	_ = appCommand(t, provisioning(db, server.URL+"/v1/forecast", 2)...)
+	_ = createM4Weather(t, db, server.URL+"/v1/forecast", 2)
 	s, err := runtime.Open(t.Context(), db, runtime.DefaultLimits())
 	if err != nil {
 		t.Fatal(err)

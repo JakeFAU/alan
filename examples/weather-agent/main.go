@@ -66,7 +66,7 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 		return errUsage
 	}
 	if action == "start" {
-		p, err := c.provision()
+		p, err := c.provision(false)
 		if err != nil {
 			return err
 		}
@@ -157,11 +157,12 @@ func operate(ctx context.Context, path, namespace string, c configuration, actio
 	if owner.Namespace() != namespace || before.Namespace != namespace || c != saved {
 		return nil, nil, errors.New("weather store changed while acquiring ownership")
 	}
-	// A caller of the lower-level Store API can supply other local inputs.
-	// Check the retained consent before handing this owner a physical adapter.
-	for read := 2; read <= c.Allowance; read++ {
-		if _, err := verifiedApproval(before, read); err != nil {
-			return nil, nil, err
+	// Only old deployments still rely on the weather owner's ingress checks.
+	if len(before.Composition.Continuations) == 0 {
+		for read := 2; read <= c.Allowance; read++ {
+			if _, err := legacyApproval(before, read); err != nil {
+				return nil, nil, err
+			}
 		}
 	}
 	if action == "refresh" {
@@ -194,22 +195,19 @@ func approve(ctx context.Context, s *runtime.Store, cut *runtime.ExecutionSnapsh
 	if n > allowance {
 		return fmt.Errorf("read %d exceeds the original allowance of %d", n, allowance)
 	}
-	payload, err := approvalPayload(cut, n)
+	if len(cut.Composition.Continuations) == 0 {
+		return admitLegacyApproval(ctx, s, cut, n)
+	}
+	basis, err := cut.ContinuationBasis(readID(n))
 	if err != nil {
 		return err
 	}
-	id := approvalID(n)
-	decision, err := s.AdmitInput(ctx, runtime.Input{
-		TransportID: id, LogicalID: id, Target: readID(n).Subject, Generation: 1, Obligation: approval,
-		Payload: payload,
-	})
+	reason, err := weatherReason(cut, basis, n)
 	if err != nil {
 		return err
 	}
-	if !decision.Accepted {
-		return fmt.Errorf("refresh approval refused: %s", decision.Reason)
-	}
-	return nil
+	_, err = s.ApproveContinuation(ctx, basis, reason)
+	return err
 }
 
 func main() {
