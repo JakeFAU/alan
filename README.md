@@ -2,6 +2,22 @@
 
 ALAN (Agentic Lambda Abstraction Network) is a Go library for computations that can outlive the process running them. It retains the program, its next instruction, typed data, observations and effect requests in SQLite. An application can inspect the state, resume execution in a new process, or replay the recorded decisions.
 
+## Hello World: A Durable Weather Agent
+
+The [weather agent](examples/weather-agent/README.md) requests current temperature and humidity for a location you supply. The authored program waits for its own weather response and retains the provider's time and reported grid coordinates. Open-Meteo supplies modeled current conditions. [Provider documentation](https://open-meteo.com/en/docs)
+
+```sh
+work=$(mktemp -d)
+go build -o "$work/weather-agent" ./examples/weather-agent
+"$work/weather-agent" start --db "$work/weather.sqlite" --lat 26.93 --lon -80.08 \
+  --units fahrenheit --endpoint https://api.open-meteo.com/v1/forecast --allowance 2
+"$work/weather-agent" run --db "$work/weather.sqlite"
+"$work/weather-agent" inspect --db "$work/weather.sqlite"
+"$work/weather-agent" replay --db "$work/weather.sqlite"
+```
+
+If you kill the running process, use `resume --db "$work/weather.sqlite"`. A retained response can finish the report locally. A spent opportunity with a missing response remains attached to the original request. To authorize one more lookup, use `refresh --db "$work/weather.sqlite" --read 2`, then `resume`. Inspect and replay need no provider connection.
+
 ## Run a computation
 
 Use Go 1.27.3, CGO, a C compiler and a local Unix filesystem. In your application module, run `go get github.com/JakeFAU/alan/runtime`. Import `github.com/JakeFAU/alan/author` to define a program and `github.com/JakeFAU/alan/runtime` to run it. From a checkout, run the [quickstart](examples/quickstart/main.go).
@@ -55,7 +71,7 @@ At execution time the host sets `Adapters: map[string]effects.Adapter{"corpus": 
 - Revocation closes admission for covered dispatches. An already admitted call can still reach the endpoint. `Store.AwaitDispatchQuiescence` waits for covered local work and its accounting after revocation. An earlier remote mutation can still be unresolved.
 - A missing ordinary adapter result stays unknown across recovery. The built-in external protocol can retry its idempotent profile with the original key when the endpoint honors it. An unknown non-idempotent request stays unresolved. The controlled reconciliation profile separates permission to read an original receipt from permission to adopt it. A published historical outcome stays fixed.
 - Finite composition invokes retained templates under shared root bounds for depth, invocations, created runs and effects. The runner limits its own in-flight calls. A quiescent runner can have open runs waiting for input, a receipt or service. Distributed ownership, general dynamic spawning, PostgreSQL, history compaction and a managed provider or tool catalog remain unimplemented.
-- Supported SQLite storage formats are 3 (ordinary), 4 (complete composition) and 5 (reconciliation), plus 6, 7 and 8 after the corresponding store records a distinct valid receipt rejected for settlement. Opening or replaying preserves the format. The original result and version-2 external key survive promotion. Program semantics remain `alan/1d/v1`, `alan/1e/v1` and `alan/1g/v1`. Authored scalar and collection/invocation programs retain compiler versions `alan/author/v1` and `alan/author/v2`, respectively.
+- Supported SQLite formats are 3 (ordinary), 4 (complete composition) and 5 (reconciliation), plus 6, 7 and 8 after the corresponding store retains conflicting receipt evidence. A composition created with local dispatch-admission evidence uses 9, or 10 after a conflicting receipt. Opening or replaying preserves the format. The original result and version-2 external key survive promotion. Program semantics remain `alan/1d/v1`, `alan/1e/v1` and `alan/1g/v1`. Authored scalar and collection/invocation programs retain compiler versions `alan/author/v1` and `alan/author/v2`, respectively. [Local dispatch admission](docs/dispatch-admissions.md)
 
 ## Development
 
