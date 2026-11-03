@@ -1,0 +1,158 @@
+//go:build integration
+
+package executor
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"net/http"
+	"net/http/httptest"
+	"path/filepath"
+	"sync/atomic"
+	"testing"
+	"time"
+
+	"github.com/JakeFAU/alan/effects"
+	"github.com/JakeFAU/alan/internal/boundary"
+	resourcefixture "github.com/JakeFAU/alan/internal/fixture"
+)
+
+// Cancellation after dequeue must not discard evidence now owned by Run.
+func TestCancellationAfterDequeueAccountsCompletion(t *testing.T) {
+	for _, kind := range []string{"adapter", "fixture"} {
+		t.Run(kind, func(t *testing.T) {
+			var s *Store
+			var path, subject, table string
+			var contacts atomic.Int64
+			options := RunOptions{MaxSteps: 20, MaxDispatch: 20, MaxInFlight: 1}
+			if kind == "adapter" {
+				s, path, _ = committedAdapter(t)
+				subject, table = "agent", "adapter_results"
+				options.Adapters = map[string]effects.Adapter{"model": callbackAdapter{execute: func(ctx context.Context, p effects.Prepared) effects.Candidate {
+					contacts.Add(1)
+					return callbackAdapter{}.Execute(ctx, p)
+				}}}
+			} else {
+				resource, err := resourcefixture.Open(t.Context(), filepath.Join(t.TempDir(), "resource.sqlite"), "cancellation")
+				if err != nil {
+					t.Fatal(err)
+				}
+				defer resource.Close()
+				server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					contacts.Add(1)
+					var request resourcefixture.Request
+					if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+						t.Error(err)
+						return
+					}
+					receipt, err := resource.Apply(r.Context(), request)
+					if err != nil {
+						t.Error(err)
+						return
+					}
+					if err := json.NewEncoder(w).Encode(receipt); err != nil {
+						t.Error(err)
+					}
+				}))
+				defer server.Close()
+				s, path = messageStore(t, externalProvision(t, server.URL, "non-idempotent"))
+				subject, table = "client", "external_receipts"
+				if _, err := s.Commit(t.Context(), current(t, s, subject).Authority(), ""); err != nil {
+					t.Fatal(err)
+				}
+			}
+			before := current(t, s, subject)
+			ctx, cancel := context.WithCancel(t.Context())
+			defer cancel()
+			received := 0
+			ctx = boundary.WithObserver(ctx, func(ctx context.Context, event boundary.Event) error {
+				if event.Boundary == "runner.received" {
+					received++
+					if count(t, s, table) != 0 {
+						t.Error("completion recorded before dequeue boundary")
+					}
+					cancel()
+					return ctx.Err()
+				}
+				return nil
+			})
+			report, err := s.Run(ctx, options)
+			if !errors.Is(err, context.Canceled) || received != 1 {
+				t.Fatalf("missing canceled dequeue: received=%d report=%+v err=%v", received, report, err)
+			}
+			if count(t, s, table) != 1 || count(t, s, "settlements") != 1 || count(t, s, "observations") != 1 {
+				t.Fatal("dequeued evidence lost during cancellation")
+			}
+			after := current(t, s, subject)
+			if after.Sequence != before.Sequence || after.Projection.Status != "open" || report.Steps != 0 || report.Dispatches != 1 || contacts.Load() != 1 {
+				t.Fatalf("cancellation allowed further work: before=%+v after=%+v report=%+v contacts=%d", before, after, report, contacts.Load())
+			}
+			if _, err := Replay(t.Context(), path, DefaultLimits()); err != nil {
+				t.Fatal(err)
+			}
+			if _, err := s.Run(t.Context(), options); err != nil {
+				t.Fatal(err)
+			}
+			if contacts.Load() != 1 || count(t, s, table) != 1 || count(t, s, "settlements") != 1 || current(t, s, subject).Projection.Status != "succeeded" {
+				t.Fatal("recovery repeated accounted work or failed to consume it")
+			}
+		})
+	}
+}
+
+func TestCancellationDuringAdapterSettlementPreservesEvidence(t *testing.T) {
+	s, _, _ := committedAdapter(t)
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
+	observed := false
+	ctx = boundary.WithObserver(ctx, func(accounting context.Context, event boundary.Event) error {
+		if event.Boundary == "adapter.result-recorded" {
+			observed = true
+			cancel()
+			if deadline, ok := accounting.Deadline(); !ok || time.Until(deadline) > runnerCleanupTimeout {
+				t.Error("accounting has no bounded deadline")
+			}
+		}
+		return nil
+	})
+	report, err := s.Run(ctx, RunOptions{MaxSteps: 20, MaxDispatch: 20, Adapters: map[string]effects.Adapter{"model": callbackAdapter{}}})
+	if !observed || !errors.Is(err, context.Canceled) {
+		t.Fatal("missing cancellation", observed, err)
+	}
+	if count(t, s, "adapter_results") != 1 || count(t, s, "settlements") != 1 || report.Steps != 0 || current(t, s, "agent").Projection.Status != "open" {
+		t.Fatal("cancellation interrupted owned settlement or advanced program", report)
+	}
+}
+
+func TestCancellationAccountingErrorRetainsKnownPendingResult(t *testing.T) {
+	s, _, _ := committedAdapter(t)
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
+	stopped := errors.New("stop before settlement")
+	ctx = boundary.WithObserver(ctx, func(ctx context.Context, event boundary.Event) error {
+		if event.Boundary == "adapter.result-recorded" {
+			cancel()
+			return stopped
+		}
+		return nil
+	})
+	var contacts atomic.Int64
+	options := RunOptions{MaxSteps: 20, MaxDispatch: 20, Adapters: map[string]effects.Adapter{"model": callbackAdapter{execute: func(ctx context.Context, p effects.Prepared) effects.Candidate {
+		contacts.Add(1)
+		return callbackAdapter{}.Execute(ctx, p)
+	}}}}
+	report, err := s.Run(ctx, options)
+	if !errors.Is(err, stopped) || !errors.Is(err, context.Canceled) {
+		t.Fatal("accounting or cancellation error swallowed", err)
+	}
+	if count(t, s, "adapter_results") != 1 || count(t, s, "settlements") != 0 || len(report.UnknownAdapters) != 0 || len(report.PendingDeliveries) != 1 || report.Steps != 0 {
+		t.Fatal("known pending result misreported or retried", report)
+	}
+	if _, err := s.Run(t.Context(), options); err != nil {
+		t.Fatal(err)
+	}
+	if contacts.Load() != 1 || count(t, s, "adapter_results") != 1 || count(t, s, "settlements") != 1 || current(t, s, "agent").Projection.Status != "succeeded" {
+		t.Fatal("pending recovery repeated work")
+	}
+}

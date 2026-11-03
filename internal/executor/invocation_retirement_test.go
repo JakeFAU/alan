@@ -1,0 +1,407 @@
+package executor
+
+import (
+	"encoding/json"
+	"reflect"
+	"testing"
+)
+
+func addRetirementController(t *testing.T, p *Provision, operations []string) {
+	t.Helper()
+	code := []Instruction{{Op: "receive", Match: &Match{Kind: "input", Provenance: "local-input", Source: Lit(Text("local")), Generation: Lit(Int(1)), Obligation: Lit(Text("control")), Operation: Lit(Text(""))}, Bind: map[string]string{"target": "target"}}}
+	for _, operation := range operations {
+		code = append(code, Instruction{Op: "emit", Dst: "pending", Effect: &Effect{Kind: "lifecycle", Target: Ref("target"), Generation: Lit(Int(1)), Obligation: Lit(Text("control")), Payload: map[string]Operand{"operation": Lit(Text(operation)), "revision": Lit(Int(1))}}})
+	}
+	code = append(code, Instruction{Op: "end", Outcome: "succeeded"})
+	addProgram(t, p, "retirement-controller", code, map[string]Value{})
+	p.Permissions = append(p.Permissions, Permission{Kind: "input", Source: "local", Target: "retirement-controller", Operation: "input", Obligation: "control"})
+}
+func retirementFixture(t *testing.T, outcome string, nested bool, operations ...string) (*Store, compositionAdmission) {
+	t.Helper()
+	return retirementFixtureReplies(t, outcome, nested, 1, operations...)
+}
+func retirementFixtureReplies(t *testing.T, outcome string, nested bool, replies int, operations ...string) (*Store, compositionAdmission) {
+	t.Helper()
+	p, c := invocationFixture(t, outcome, replies)
+	if nested {
+		p, c = nestedInvocationFixture(t, false)
+	}
+	addRetirementController(t, &p, operations)
+	s, err := createInvocationStore(t.Context(), t.TempDir()+"/retirement.sqlite", p, c, DefaultLimits())
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { s.Close() })
+	a := invokeOnce(t, s)
+	target := compositionMemberID(a.Invocation.ID, "helper")
+	// Trusted test deployment fixture: namespace-derived subjects cannot be named
+	// before Create. Seed only this exact lifecycle grant, never a wildcard or
+	// production delegation API; all subsequent protocol transitions are real.
+	for _, op := range operations {
+		if _, err = s.conn.ExecContext(t.Context(), "INSERT OR IGNORE INTO permissions VALUES('lifecycle',?,?,?,1,'')", "retirement-controller", target.Subject, op); err != nil {
+			t.Fatal(err)
+		}
+	}
+	input, err := s.AdmitInput(t.Context(), Input{TransportID: "control-target", LogicalID: "control-target", Target: "retirement-controller", Generation: 1, Obligation: "control", Payload: map[string]Value{"target": Text(target.Subject)}})
+	if err != nil || !input.Accepted {
+		t.Fatal(input, err)
+	}
+	if _, err = s.Commit(t.Context(), current(t, s, "retirement-controller").Authority(), input.ObservationID); err != nil {
+		t.Fatal(err)
+	}
+	return s, a
+}
+func retirementStep(t *testing.T, s *Store, run RunID, observation string) RunState {
+	t.Helper()
+	state, err := s.Commit(t.Context(), mustSnapshot(t, s, run).Authority(), observation)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return state
+}
+func retirementDescriptor(t *testing.T, s *Store, table, scope string) []byte {
+	t.Helper()
+	var raw []byte
+	if err := s.conn.QueryRowContext(t.Context(), "SELECT descriptor FROM "+table+" WHERE scope_id=?", scope).Scan(&raw); err != nil {
+		t.Fatal(err)
+	}
+	return raw
+}
+func retirementOutcome(t *testing.T, s *Store, operation string) compositionOutcome {
+	t.Helper()
+	var raw []byte
+	var o compositionOutcome
+	if err := s.conn.QueryRowContext(t.Context(), "SELECT descriptor FROM composition_publications WHERE operation_id=?", operation).Scan(&raw); err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal(raw, &o); err != nil {
+		t.Fatal(err)
+	}
+	return o
+}
+
+func TestRetirementDynamicSucceededMemberClosesScope(t *testing.T) {
+	s, a := retirementFixture(t, "succeeded", true, "RetireSubject", "RetireSubject")
+	helper := compositionMemberID(a.Invocation.ID, "helper")
+	entry := compositionMemberID(a.Invocation.ID, "entry")
+	retirementStep(t, s, helper, "")
+	retirementStep(t, s, entry, compositionIdentity("alan/invocation-request/v1", a.Invocation.ID))
+	peer := retirementStep(t, s, entry, "")
+	pending := peer.Projection.Data["pending"].Text
+	auth, err := s.AuthorizeIntent(t.Context(), pending)
+	if err != nil || !auth.Allowed {
+		t.Fatal(auth, err)
+	}
+	request := committedRequest(t, s, "retirement-controller")
+	result := authorizedDecision(t, s, request)
+	if !result.Accepted || !result.After.Retired || result.After.Projection.Status != "succeeded" {
+		t.Fatal(result)
+	}
+	denied, err := s.AdmitInvocation(t.Context(), pending)
+	if err != nil || denied.Accepted || denied.Reason != "scope_closed" {
+		t.Fatal(denied, err)
+	}
+	if count(t, s, "composition_charges") != 1 || count(t, s, "composition_members") != 2 {
+		t.Fatal("retirement admitted or charged a child")
+	}
+	again, err := s.AuthorizeIntent(t.Context(), pending)
+	if err != nil || !reflect.DeepEqual(auth, again) {
+		t.Fatal("rewritten authorization", again, err)
+	}
+	prepared, err := s.PrepareInvocation(t.Context(), a.Invocation.OperationID)
+	if err != nil || !prepared.Ready || prepared.Outcome.Status != "cancelled" || prepared.Outcome.Reason != "subject_retired" {
+		t.Fatal(prepared, err)
+	}
+	closure, err := loadCompositionClosure(t.Context(), s.conn, a.Invocation.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	linkedFacts, err := readCompositionFacts(t.Context(), s.conn)
+	if err != nil {
+		t.Fatal(err)
+	}
+	linked := false
+	for _, fact := range linkedFacts {
+		if fact.Kind == compositionLifecycleFact && fact.OperationID == request.Intent.ID {
+			linked = closure.Freeze.DecisionOrder == fact.Order && closure.Freeze.Trigger == fact.ID
+		}
+	}
+	if !linked || closure.LifecycleOperationID != request.Intent.ID || closure.Freeze.Run != helper || closure.Freeze.Sequence != 1 || !reflect.DeepEqual(closure.Freeze.InvocationIntents, []string{pending}) {
+		t.Fatal("closure lost exact lifecycle cause or prefix", closure)
+	}
+	facts := count(t, s, "composition_facts")
+	duplicate, err := s.DecideLifecycle(t.Context(), request)
+	if err != nil || !reflect.DeepEqual(result, duplicate) || count(t, s, "composition_facts") != facts || count(t, s, "composition_closures") != 1 {
+		t.Fatal(duplicate, err)
+	}
+	second := authorizedDecision(t, s, committedRequest(t, s, "retirement-controller"))
+	if second.Accepted || count(t, s, "composition_closures") != 1 {
+		t.Fatal("repeated retirement changed closure", second)
+	}
+}
+func TestRetirementAfterSuccessFreezePreventsPublication(t *testing.T) {
+	s, a := retirementFixture(t, "succeeded", false, "RetireSubject")
+	entry := compositionMemberID(a.Invocation.ID, "entry")
+	helper := compositionMemberID(a.Invocation.ID, "helper")
+	retirementStep(t, s, entry, compositionIdentity("alan/invocation-request/v1", a.Invocation.ID))
+	for range 2 {
+		retirementStep(t, s, entry, "")
+	}
+	retirementStep(t, s, helper, "")
+	original := retirementDescriptor(t, s, "composition_freezes", a.Invocation.ID)
+	result := authorizedDecision(t, s, committedRequest(t, s, "retirement-controller"))
+	if result.After.Projection.Status != "succeeded" {
+		t.Fatal(result)
+	}
+	pending, err := s.PrepareInvocation(t.Context(), a.Invocation.OperationID)
+	if err != nil || pending.Ready || pending.Pending != "reply_admission" {
+		t.Fatal(pending, err)
+	}
+	if _, err = s.DeliverMessage(t.Context(), identity(entry.Subject, 1, 2, 0), "reply-after-retire"); err != nil {
+		t.Fatal(err)
+	}
+	settled, err := s.SettleInvocation(t.Context(), a.Invocation.OperationID)
+	if err != nil || !settled.Accepted {
+		t.Fatal(settled, err)
+	}
+	outcome := retirementOutcome(t, s, a.Invocation.OperationID)
+	if outcome.Status != "cancelled" || outcome.Reason != "subject_retired" || !outcome.ResponsePresent || outcome.Response["result"].Text != "ok" {
+		t.Fatal(outcome)
+	}
+	if string(original) != string(retirementDescriptor(t, s, "composition_freezes", a.Invocation.ID)) {
+		t.Fatal("historical success freeze rewritten")
+	}
+}
+func TestRetirementAfterPublishedSuccessPreservesOutcome(t *testing.T) {
+	s, a := retirementFixture(t, "succeeded", false, "RetireSubject")
+	entry := compositionMemberID(a.Invocation.ID, "entry")
+	helper := compositionMemberID(a.Invocation.ID, "helper")
+	retirementStep(t, s, entry, compositionIdentity("alan/invocation-request/v1", a.Invocation.ID))
+	for range 2 {
+		retirementStep(t, s, entry, "")
+	}
+	retirementStep(t, s, helper, "")
+	if _, err := s.DeliverMessage(t.Context(), identity(entry.Subject, 1, 2, 0), "reply"); err != nil {
+		t.Fatal(err)
+	}
+	first, err := s.SettleInvocation(t.Context(), a.Invocation.OperationID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	outcome := retirementOutcome(t, s, a.Invocation.OperationID)
+	if outcome.Status != "succeeded" {
+		t.Fatal(outcome)
+	}
+	authorizedDecision(t, s, committedRequest(t, s, "retirement-controller"))
+	again, err := s.SettleInvocation(t.Context(), a.Invocation.OperationID)
+	if err != nil || !reflect.DeepEqual(first, again) || !reflect.DeepEqual(outcome, retirementOutcome(t, s, a.Invocation.OperationID)) {
+		t.Fatal(again, err)
+	}
+	prepared, err := s.PrepareInvocation(t.Context(), a.Invocation.OperationID)
+	if err != nil || !prepared.Ready || prepared.Outcome.Status != "succeeded" {
+		t.Fatal(prepared, err)
+	}
+}
+func TestRetirementNoOpCancelAbandonDoNotCloseScope(t *testing.T) {
+	for _, op := range []string{"CancelRun", "AbandonRun"} {
+		t.Run(op, func(t *testing.T) {
+			s, a := retirementFixture(t, "succeeded", true, op)
+			helper := compositionMemberID(a.Invocation.ID, "helper")
+			entry := compositionMemberID(a.Invocation.ID, "entry")
+			retirementStep(t, s, helper, "")
+			retirementStep(t, s, entry, compositionIdentity("alan/invocation-request/v1", a.Invocation.ID))
+			peer := retirementStep(t, s, entry, "")
+			result := authorizedDecision(t, s, committedRequest(t, s, "retirement-controller"))
+			if !result.Accepted || result.Reason != "already_terminal" {
+				t.Fatal(result)
+			}
+			admission, err := s.AdmitInvocation(t.Context(), peer.Projection.Data["pending"].Text)
+			if err != nil || !admission.Accepted {
+				t.Fatal(admission, err)
+			}
+		})
+	}
+}
+func TestRetirementFirstCauseSurvivesDrainingFailure(t *testing.T) {
+	s, a := retirementFixture(t, "failed", false, "RetireSubject")
+	entry := compositionMemberID(a.Invocation.ID, "entry")
+	helper := compositionMemberID(a.Invocation.ID, "helper")
+	retirementStep(t, s, helper, "")
+	authorizedDecision(t, s, committedRequest(t, s, "retirement-controller"))
+	original := retirementDescriptor(t, s, "composition_closures", a.Invocation.ID)
+	retirementStep(t, s, entry, compositionIdentity("alan/invocation-request/v1", a.Invocation.ID))
+	for range 2 {
+		retirementStep(t, s, entry, "")
+	}
+	if _, err := s.DeliverMessage(t.Context(), identity(entry.Subject, 1, 2, 0), "late-diagnostic"); err != nil {
+		t.Fatal(err)
+	}
+	prepared, err := s.PrepareInvocation(t.Context(), a.Invocation.OperationID)
+	if err != nil || !prepared.Ready || prepared.Outcome.Status != "cancelled" || prepared.Outcome.Reason != "subject_retired" || prepared.Outcome.ResponsePresent {
+		t.Fatal(prepared, err)
+	}
+	if string(original) != string(retirementDescriptor(t, s, "composition_closures", a.Invocation.ID)) {
+		t.Fatal("closure prefix rewritten")
+	}
+}
+func TestRetirementPreservesEarlierFailureDiagnostic(t *testing.T) {
+	s, a := retirementFixture(t, "failed", false, "RetireSubject")
+	entry := compositionMemberID(a.Invocation.ID, "entry")
+	retirementStep(t, s, entry, compositionIdentity("alan/invocation-request/v1", a.Invocation.ID))
+	for range 2 {
+		retirementStep(t, s, entry, "")
+	}
+	original := retirementDescriptor(t, s, "composition_freezes", a.Invocation.ID)
+	authorizedDecision(t, s, committedRequest(t, s, "retirement-controller"))
+	if _, err := s.DeliverMessage(t.Context(), identity(entry.Subject, 1, 2, 0), "diagnostic"); err != nil {
+		t.Fatal(err)
+	}
+	prepared, err := s.PrepareInvocation(t.Context(), a.Invocation.OperationID)
+	if err != nil || !prepared.Ready || prepared.Outcome.Status != "failed" || !prepared.Outcome.ResponsePresent || prepared.Outcome.Response["result"].Text != "invalid_result" {
+		t.Fatal(prepared, err)
+	}
+	if string(original) != string(retirementDescriptor(t, s, "composition_freezes", a.Invocation.ID)) {
+		t.Fatal("failure prefix rewritten")
+	}
+}
+func TestRetirementAndClosureRollbackTogether(t *testing.T) {
+	s, a := retirementFixture(t, "succeeded", false, "RetireSubject")
+	helper := compositionMemberID(a.Invocation.ID, "helper")
+	retirementStep(t, s, helper, "")
+	request := committedRequest(t, s, "retirement-controller")
+	auth, err := s.AuthorizeIntent(t.Context(), request.Intent.ID)
+	if err != nil || !auth.Allowed {
+		t.Fatal(auth, err)
+	}
+	before := mustSnapshot(t, s, helper)
+	facts := count(t, s, "composition_facts")
+	if _, err = s.conn.ExecContext(t.Context(), "CREATE TRIGGER reject_closure BEFORE INSERT ON composition_closures BEGIN SELECT RAISE(ABORT,'injected closure'); END"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = s.DecideLifecycle(t.Context(), request); err == nil {
+		t.Fatal("closure failure not propagated")
+	}
+	subject, err := loadSubject(t.Context(), s.conn, helper.Subject)
+	if err != nil || subject.Retired || !reflect.DeepEqual(before, mustSnapshot(t, s, helper)) || count(t, s, "composition_facts") != facts || count(t, s, "lifecycle_results") != 0 {
+		t.Fatal("partial retirement", subject, err)
+	}
+	if _, err = s.conn.ExecContext(t.Context(), "DROP TRIGGER reject_closure"); err != nil {
+		t.Fatal(err)
+	}
+	result := authorizedDecision(t, s, request)
+	if !result.Accepted || count(t, s, "composition_closures") != 1 {
+		t.Fatal(result)
+	}
+}
+
+// Fully supported provisioning control: retiring an explicitly assigned static
+// member fences a previously admitted dynamic descendant through the root.
+func TestRetirementStaticAncestorClosesAdmittedDescendants(t *testing.T) {
+	p, c := nestedInvocationFixture(t, false)
+	addProgram(t, &p, "static-helper", []Instruction{{Op: "end", Outcome: "succeeded"}}, map[string]Value{})
+	c.Roots[0].Members = append(c.Roots[0].Members, RunID{Subject: "static-helper", Generation: 1})
+	addRetirementController(t, &p, []string{"RetireSubject"})
+	p.Permissions = append(p.Permissions, Permission{Kind: "lifecycle", Source: "retirement-controller", Target: "static-helper", Operation: "RetireSubject", Revision: 1})
+	s, err := createInvocationStore(t.Context(), t.TempDir()+"/ancestor.sqlite", p, c, DefaultLimits())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+	outer := invokeOnce(t, s)
+	entry := compositionMemberID(outer.Invocation.ID, "entry")
+	retirementStep(t, s, RunID{Subject: "static-helper", Generation: 1}, "")
+	retirementStep(t, s, entry, compositionIdentity("alan/invocation-request/v1", outer.Invocation.ID))
+	peer := retirementStep(t, s, entry, "")
+	pending := peer.Projection.Data["pending"].Text
+	auth, err := s.AuthorizeIntent(t.Context(), pending)
+	if err != nil || !auth.Allowed {
+		t.Fatal(auth, err)
+	}
+	input, err := s.AdmitInput(t.Context(), Input{TransportID: "target", LogicalID: "target", Target: "retirement-controller", Generation: 1, Obligation: "control", Payload: map[string]Value{"target": Text("static-helper")}})
+	if err != nil || !input.Accepted {
+		t.Fatal(input, err)
+	}
+	retirementStep(t, s, RunID{Subject: "retirement-controller", Generation: 1}, input.ObservationID)
+	result := authorizedDecision(t, s, committedRequest(t, s, "retirement-controller"))
+	if !result.Accepted || result.After.Projection.Status != "succeeded" {
+		t.Fatal(result)
+	}
+	denied, err := s.AdmitInvocation(t.Context(), pending)
+	if err != nil || denied.Accepted || denied.Reason != "scope_closed" {
+		t.Fatal(denied, err)
+	}
+	if count(t, s, "composition_members") != 2 || count(t, s, "composition_charges") != 1 {
+		t.Fatal("descendant admitted after ancestor retirement")
+	}
+	again, err := s.AuthorizeIntent(t.Context(), pending)
+	if err != nil || !reflect.DeepEqual(auth, again) {
+		t.Fatal(again, err)
+	}
+	if mustSnapshot(t, s, entry).Projection.Status != "open" {
+		t.Fatal("ancestor retirement cancelled admitted peer")
+	}
+	retirementDescriptor(t, s, "composition_closures", "root:"+outer.Invocation.RootID)
+	if _, err = validateCompositionStore(t.Context(), s.conn, DefaultLimits()); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestRetirementOnlyReopenValidatesClosure(t *testing.T) {
+	p, c := invocationFixture(t, "succeeded", 1)
+	addProgram(t, &p, "static-helper", []Instruction{{Op: "end", Outcome: "succeeded"}}, map[string]Value{})
+	c.Roots[0].Members = append(c.Roots[0].Members, RunID{Subject: "static-helper", Generation: 1})
+	addRetirementController(t, &p, []string{"RetireSubject"})
+	p.Permissions = append(p.Permissions, Permission{Kind: "lifecycle", Source: "retirement-controller", Target: "static-helper", Operation: "RetireSubject", Revision: 1})
+	path := t.TempDir() + "/retirement-only.sqlite"
+	s, err := createInvocationStore(t.Context(), path, p, c, DefaultLimits())
+	if err != nil {
+		t.Fatal(err)
+	}
+	retirementStep(t, s, RunID{Subject: "static-helper", Generation: 1}, "")
+	input, err := s.AdmitInput(t.Context(), Input{TransportID: "target", LogicalID: "target", Target: "retirement-controller", Generation: 1, Obligation: "control", Payload: map[string]Value{"target": Text("static-helper")}})
+	if err != nil || !input.Accepted {
+		t.Fatal(input, err)
+	}
+	retirementStep(t, s, RunID{Subject: "retirement-controller", Generation: 1}, input.ObservationID)
+	authorizedDecision(t, s, committedRequest(t, s, "retirement-controller"))
+	if err = s.Close(); err != nil {
+		t.Fatal(err)
+	}
+	opened, err := openCompositionStore(t.Context(), path, DefaultLimits())
+	if opened != nil {
+		opened.Close()
+	}
+	if err != nil {
+		t.Fatal("valid retirement closure did not reopen", err)
+	}
+}
+
+func TestRetirementCauseWinsOverConflictingReplyEvidence(t *testing.T) {
+	s, a := retirementFixtureReplies(t, "succeeded", false, 2, "RetireSubject")
+	entry := compositionMemberID(a.Invocation.ID, "entry")
+	helper := compositionMemberID(a.Invocation.ID, "helper")
+	retirementStep(t, s, entry, compositionIdentity("alan/invocation-request/v1", a.Invocation.ID))
+	for range 3 {
+		retirementStep(t, s, entry, "")
+	}
+	retirementStep(t, s, helper, "")
+	authorizedDecision(t, s, committedRequest(t, s, "retirement-controller"))
+	for _, seq := range []int{3, 2} {
+		if _, err := s.DeliverMessage(t.Context(), identity(entry.Subject, 1, seq, 0), identity("reply", seq)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	settled, err := s.SettleInvocation(t.Context(), a.Invocation.OperationID)
+	if err != nil || !settled.Accepted {
+		t.Fatal(settled, err)
+	}
+	outcome := retirementOutcome(t, s, a.Invocation.OperationID)
+	if outcome.Status != "cancelled" || outcome.Reason != "subject_retired" || outcome.ResponsePresent {
+		t.Fatal("reply conflict replaced first closure", outcome)
+	}
+	closure, err := loadCompositionClosure(t.Context(), s.conn, a.Invocation.ID)
+	want := []string{identity(entry.Subject, 1, 2, 0), identity(entry.Subject, 1, 3, 0)}
+	if err != nil || !reflect.DeepEqual(closure.Freeze.ReplyIntents, want) || count(t, s, "composition_replies") != 2 {
+		t.Fatal("conflict evidence lost", closure, err)
+	}
+}
