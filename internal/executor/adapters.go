@@ -533,7 +533,10 @@ func validateAdapterResult(a AdapterAttempt, r AdapterResult, l Limits) error {
 		if a.Reason == "grant_denied" {
 			expected = "grant_denied"
 		}
-		if c.Disposition != expected || len(c.Payload) > 0 || c.Response != "" {
+		// No adapter ran. Only the synthetic denial made by the runtime can
+		// explain this result; even an HTTP status would claim a contact.
+		want := effects.Candidate{ID: a.Intent.ID, Key: a.Prepared.Request.Key, Disposition: expected}
+		if !reflect.DeepEqual(c, want) || r.Read != nil || r.RefusalWitness != "" {
 			return corrupt("denied adapter result")
 		}
 	}
