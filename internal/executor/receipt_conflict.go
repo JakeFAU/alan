@@ -14,15 +14,22 @@ const receiptConflictSchemaOffset = 3
 const dispatchAdmissionSchema = 9
 const dispatchAdmissionConflictSchema = 10
 
+const continuationSchema = 11
+const continuationConflictSchema = 12
+
+func hasContinuationSchema(version int) bool {
+	return version == continuationSchema || version == continuationConflictSchema
+}
+
 func hasDispatchAdmissionSchema(version int) bool {
-	return version == dispatchAdmissionSchema || version == dispatchAdmissionConflictSchema
+	return hasContinuationSchema(version) || version == dispatchAdmissionSchema || version == dispatchAdmissionConflictSchema
 }
 
 func hasReceiptConflictSchema(version int) bool {
 	switch version {
 	case SchemaVersion + receiptConflictSchemaOffset,
 		compositionSchemaVersion + receiptConflictSchemaOffset,
-		reconciliationSchemaVersion + receiptConflictSchemaOffset, dispatchAdmissionConflictSchema:
+		reconciliationSchemaVersion + receiptConflictSchemaOffset, dispatchAdmissionConflictSchema, continuationConflictSchema:
 		return true
 	default:
 		return false
@@ -65,9 +72,12 @@ func ensureReceiptConflictSchema(ctx context.Context, tx *sql.Tx) error {
 		PRIMARY KEY(intent_id,offer_digest))`); err != nil {
 		return err
 	}
-	if version == dispatchAdmissionSchema {
+	switch version {
+	case dispatchAdmissionSchema:
 		version = dispatchAdmissionConflictSchema
-	} else {
+	case continuationSchema:
+		version = continuationConflictSchema
+	default:
 		version += receiptConflictSchemaOffset
 	}
 	if _, err = tx.ExecContext(ctx, "UPDATE metadata SET schema_version=? WHERE singleton=1", version); err != nil {

@@ -98,6 +98,7 @@ type ExecutionSnapshot struct {
 	Effects            []*ExecutionEffect
 	Observations       []*ObservationView
 	Admissions         []*AdmissionView
+	Continuations      []*ContinuationView `json:",omitempty"`
 	LifecycleDecisions []LifecycleResult
 	Operations         []Intent
 	Roots              []RootCompletion
@@ -199,6 +200,7 @@ func (s *ExecutionSnapshot) History(offset, limit int) (HistoryPage, error) {
 }
 
 type inspectionBuilder struct {
+	continuations  *continuationIndex
 	limits         Limits
 	tables         map[string][]map[string]any
 	snap           *ExecutionSnapshot
@@ -255,7 +257,7 @@ func InspectExecution(ctx context.Context, path string, limits Limits) (snapshot
 		DispatchAdmissions: hasDispatchAdmissionSchema(s.StorageVersion),
 	}
 	tables := protocolTables(s.StorageVersion)
-	if err := checkProtocolTables(ctx, tx, tables); err != nil {
+	if err := checkProtocolTables(ctx, tx, s.StorageVersion); err != nil {
 		return nil, err
 	}
 	if err := checkForeignKeys(ctx, tx); err != nil {
@@ -288,7 +290,7 @@ func InspectExecution(ctx context.Context, path string, limits Limits) (snapshot
 	if err = tx.Commit(); err != nil {
 		return nil, err
 	}
-	for _, build := range []func() error{b.buildRuns, b.buildDeployment, b.buildHistory, b.buildCausality, b.buildEffects, b.checkCreationChronology, b.finishInspection} {
+	for _, build := range []func() error{b.buildRuns, b.buildDeployment, b.buildHistory, b.buildCausality, b.buildEffects, b.finishContinuations, b.checkCreationChronology, b.finishInspection} {
 		if err = ctx.Err(); err != nil {
 			return nil, err
 		}
@@ -444,25 +446,35 @@ func protocolTables(stored int) []string {
 
 // Check the physical format before selecting validators. Editing both version
 // numbers cannot hide retained membership, expenditure or receipt evidence.
-func checkProtocolTables(ctx context.Context, q queryer, tables []string) error {
-	rows, err := q.QueryContext(ctx, "SELECT lower(name), type FROM sqlite_schema WHERE type IN ('table','view')")
+func checkProtocolTables(ctx context.Context, q queryer, version int) error {
+	// Formats 9 and 11 have the same tables. The journal CHECK independently
+	// distinguishes the continuation contract even before its first approval.
+	rows, err := q.QueryContext(ctx, `SELECT lower(name), type,
+		CASE WHEN lower(name)='composition_facts' THEN instr(lower(sql),?)>0 ELSE 0 END
+		FROM sqlite_schema WHERE type IN ('table','view')`, "'continuation'")
 	if err != nil {
 		return err
 	}
 	have := map[string]bool{}
+	var continuationJournal bool
 	for rows.Next() {
 		var name, kind string
-		if err := rows.Scan(&name, &kind); err != nil {
+		var permits bool
+		if err := rows.Scan(&name, &kind, &permits); err != nil {
 			rows.Close()
 			return err
 		}
 		have[name] = kind == "table"
+		continuationJournal = continuationJournal || permits
 	}
 	if err := errors.Join(rows.Err(), rows.Close()); err != nil {
 		return err
 	}
+	if continuationJournal != hasContinuationSchema(version) {
+		return ErrVersion
+	}
 	required := map[string]bool{}
-	for _, name := range tables {
+	for _, name := range protocolTables(version) {
 		required[name] = true
 		if !have[name] {
 			return ErrVersion

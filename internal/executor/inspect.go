@@ -71,7 +71,7 @@ func Inspect(ctx context.Context, path string, limits Limits) (snapshot Inspecti
 		snapshot.Roots = report.Roots
 		evidence = report.ReceiptEvidence
 	} else if schemaVersion == SchemaVersion {
-		if err := checkProtocolTables(ctx, tx, tables); err != nil {
+		if err := checkProtocolTables(ctx, tx, stored); err != nil {
 			return snapshot, err
 		}
 		evidence, err = readReceiptEvidence(ctx, tx, limits)
@@ -116,6 +116,16 @@ func Inspect(ctx context.Context, path string, limits Limits) (snapshot Inspecti
 		records, e := inspectTable(ctx, tx, table)
 		if e != nil {
 			return snapshot, e
+		}
+		if schemaVersion == SchemaVersion && table == "admissions" {
+			// Older raw inspection does not run messaging Replay. A format
+			// without slots still cannot present operator continuation evidence.
+			for _, row := range records {
+				var tag struct{ Continuation json.RawMessage }
+				if err := json.Unmarshal([]byte(inspectText(row, "descriptor")), &tag); err != nil || tag.Continuation != nil {
+					return snapshot, ErrVersion
+				}
+			}
 		}
 		snapshot.Tables[table] = records
 	}

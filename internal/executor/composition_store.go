@@ -26,6 +26,7 @@ CREATE TABLE composition_charges (operation_id TEXT NOT NULL REFERENCES intents(
 `
 
 const compositionSchema = compositionSchemaBeforeRead + compositionSchemaAfterRead
+const compositionContinuationSchema = compositionSchemaBeforeRead + ",'continuation'" + compositionSchemaAfterRead
 const compositionReconciliationSchema = compositionSchemaBeforeRead + ",'receipt_read'" + compositionSchemaAfterRead
 
 func createCompositionStore(ctx context.Context, path string, p Provision, c compositionProvision, l Limits) (*Store, error) {
@@ -204,7 +205,19 @@ func retainCompositionProfile(ctx context.Context, q queryer, namespace string, 
 	if len(raw) > l.MaxProgramBytes {
 		return nil, ErrLimit
 	}
-	return &compositionProfile{raw: string(raw)}, nil
+	profile := &compositionProfile{raw: string(raw)}
+	if len(out.Continuations) != 0 {
+		if err = loadContinuationSlots(ctx, q, out, l); err != nil {
+			return nil, err
+		}
+		profile.slots = make(map[RunID]ContinuationSlot, len(out.Continuations))
+		profile.approvalIDs = make(map[string]bool, len(out.Continuations))
+		for _, slot := range out.Continuations {
+			profile.slots[slot.Target] = slot
+			profile.approvalIDs[slot.ApprovalID] = true
+		}
+	}
+	return profile, nil
 }
 func provisionComposition(ctx context.Context, tx *sql.Tx, namespace string, c compositionProvision, l Limits) (*compositionProfile, error) {
 	p, err := retainCompositionProfile(ctx, tx, namespace, c, l)
@@ -262,7 +275,7 @@ func readCompositionProfile(ctx context.Context, q queryer, l Limits) (*composit
 	if err = decode(raw, &c); err != nil {
 		return nil, err
 	}
-	if version != compositionVersion(c) || c.RecordDispatchAdmissions != hasDispatchAdmissionSchema(stored) {
+	if version != compositionVersion(c) || c.RecordDispatchAdmissions != hasDispatchAdmissionSchema(stored) || (len(c.Continuations) > 0) != hasContinuationSchema(stored) {
 		return nil, ErrVersion
 	}
 	retained, err := retainCompositionProfile(ctx, q, namespace, c, l)

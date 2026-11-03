@@ -225,6 +225,12 @@ func (s *Store) prepareAdapterWork(ctx context.Context, id string, registry map[
 		s.mu.Unlock()
 		return nil, ErrConflict
 	}
+	if slot, guarded := s.continuationSlot(intent.Run); guarded {
+		if e = checkContinuationPreparation(ctx, tx, slot, intent, p); e != nil {
+			s.mu.Unlock()
+			return nil, e
+		}
+	}
 	grant, e := adapterGrant(ctx, tx, intent)
 	if e != nil {
 		s.mu.Unlock()

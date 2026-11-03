@@ -60,11 +60,17 @@ type compositionProvision struct {
 	// RecordDispatchAdmissions retains admission to the local call gate for
 	// scoped ordinary adapters, separately from their paid reservations.
 	RecordDispatchAdmissions bool `json:",omitempty"`
+	// Continuations protect one separately approved same-action request per slot.
+	Continuations []ContinuationSlot `json:",omitempty"`
 }
 
-// Store keeps only encoded profile bytes; callers cannot mutate retained slices
-// or maps after construction. Decoding returns a fresh independent value.
-type compositionProfile struct{ raw string }
+// Profile bytes and slot indexes are privately owned. Decoding returns an
+// independent descriptor without exposing the enforcement indexes.
+type compositionProfile struct {
+	raw         string
+	slots       map[RunID]ContinuationSlot
+	approvalIDs map[string]bool
+}
 
 func (p *compositionProfile) descriptor() (compositionProvision, error) {
 	var c compositionProvision
@@ -173,6 +179,11 @@ func validateCompositionEncoding(c compositionProvision) error {
 			if err := check(m.Subject); err != nil {
 				return err
 			}
+		}
+	}
+	for _, slot := range c.Continuations {
+		if err := check(slot.Predecessor.Subject, slot.Target.Subject, slot.Effect, slot.Obligation, slot.ApprovalID); err != nil {
+			return err
 		}
 	}
 	for _, t := range c.Templates {

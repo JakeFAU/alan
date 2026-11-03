@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/JakeFAU/alan/internal/boundary"
 	"reflect"
+	"unicode/utf8"
 )
 
 // Input is the local operator ingress. Its origin/type are fixed by this API;
@@ -41,6 +42,7 @@ type AdmissionDescriptor struct {
 	Payload                      map[string]Value
 	IntentID                     string
 	TerminalSequence             int64
+	Continuation                 *ContinuationApproval `json:",omitempty"`
 }
 type Authorization struct {
 	ID, IntentID     string
@@ -66,6 +68,12 @@ func (s *Store) AdmitInput(ctx context.Context, input Input) (AdmissionResult, e
 		return AdmissionResult{}, err
 	}
 	defer tx.Rollback()
+	if s.composition != nil && (s.composition.approvalIDs[input.TransportID] || s.composition.approvalIDs[input.LogicalID]) {
+		return AdmissionResult{}, fmt.Errorf("reserved continuation identity: %w", ErrConflict)
+	}
+	if slot, ok := s.continuationSlot(RunID{input.Target, 1}); ok && slot.Obligation == input.Obligation {
+		return AdmissionResult{}, fmt.Errorf("reserved continuation input: %w", ErrConflict)
+	}
 	result, err := admit(ctx, tx, d, s.limits, "")
 	if err != nil {
 		return result, err
@@ -386,12 +394,14 @@ func observationFor(d AdmissionDescriptor, bound RunID) Observation {
 // The writer checks these fields before looking up the target. A malformed
 // transport cannot supply a historical witness of presence or absence.
 func validAdmissionHeader(d AdmissionDescriptor) bool {
-	return d.TransportID != "" && d.LogicalID != "" && d.Target != "" && d.Generation >= 0 && d.Payload != nil
+	return d.TransportID != "" && d.LogicalID != "" && d.Target != "" && d.Generation >= 0 && d.Payload != nil &&
+		utf8.ValidString(d.TransportID) && utf8.ValidString(d.LogicalID) && utf8.ValidString(d.Target) &&
+		utf8.ValidString(d.Obligation) && utf8.ValidString(d.Operation)
 }
 
 func validAdmissionPayload(payload map[string]Value) bool {
 	for name, value := range payload {
-		if name == "" || !validValue(value) {
+		if name == "" || !utf8.ValidString(name) || !validValue(value) {
 			return false
 		}
 	}
@@ -677,6 +687,15 @@ func validateMessaging(ctx context.Context, q queryer, limits Limits) error {
 		d, r, e := loadAdmissionKey(ctx, q, id)
 		if e != nil {
 			return e
+		}
+		if d.Continuation != nil {
+			version, e := storedSchemaNumber(ctx, q)
+			if e != nil {
+				return e
+			}
+			if !hasContinuationSchema(version) {
+				return corrupt("continuation evidence in older format")
+			}
 		}
 		if !validAdmissionHeader(d) || !validAdmissionPayload(d.Payload) {
 			return corrupt("invalid admission descriptor")

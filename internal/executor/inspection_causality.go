@@ -301,6 +301,13 @@ func (c *causalCut) readAdmissions() error {
 		if !validAdmissionPayload(d.Payload) {
 			return corrupt("admission payload")
 		}
+		if c.continuations != nil {
+			if err := c.continuations.admission(d, r); err != nil {
+				return err
+			}
+		} else if d.Continuation != nil {
+			return corrupt("continuation provenance without its protocol")
+		}
 		view := &AdmissionView{AdmissionResult: r, ID: id, Domain: d.Kind, LogicalID: d.LogicalID, Target: d.Target, RequestedGeneration: d.Generation, Source: d.Source, Obligation: d.Obligation, Correlation: d.Operation, SourceOperationID: d.IntentID}
 		c.snap.Admissions = append(c.snap.Admissions, view)
 		switch d.Kind {

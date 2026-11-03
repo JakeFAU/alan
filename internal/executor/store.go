@@ -342,6 +342,12 @@ func createStore(ctx context.Context, path string, p Provision, limits Limits, c
 	if composition != nil {
 		version = compositionSchemaVersion
 		ddl := compositionSchema
+		if len(composition.Continuations) > 0 {
+			if !composition.RecordDispatchAdmissions || composition.Version != compositionProtocolVersion {
+				return nil, ErrVersion
+			}
+			ddl = compositionContinuationSchema
+		}
 		if p.Reconciliation != nil {
 			ddl = compositionReconciliationSchema
 		}
@@ -355,6 +361,9 @@ func createStore(ctx context.Context, path string, p Provision, limits Limits, c
 		}
 		if composition.RecordDispatchAdmissions {
 			version = dispatchAdmissionSchema
+			if len(composition.Continuations) != 0 {
+				version = continuationSchema
+			}
 			if _, err = tx.ExecContext(ctx, dispatchAdmissionDDL); err != nil {
 				return nil, err
 			}
@@ -838,6 +847,11 @@ func (s *Store) Commit(ctx context.Context, a Authority, selected string) (RunSt
 	reduction, err := Reduce(p, r.Projection, observation, r.ID, r.Sequence+1, s.limits)
 	if err != nil {
 		return RunState{}, err
+	}
+	if slot, guarded := s.continuationSlot(r.ID); guarded {
+		if err = checkContinuationIntents(ctx, tx, slot, r, reduction.Intents); err != nil {
+			return RunState{}, err
+		}
 	}
 	r.Sequence++
 	r.Projection = reduction.Projection

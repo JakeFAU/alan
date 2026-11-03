@@ -61,6 +61,17 @@ func (c *effectCut) checkEffectOrder() error {
 			if seq, active := p.seq[f.Run]; !active || step == nil || seq+1 != f.Sequence || p.closed[f.Run] || p.retired[f.Run] {
 				return corrupt("misordered source reduction")
 			}
+			if c.continuations != nil {
+				if w := c.continuations.bySubject[f.Run.Subject]; w != nil {
+					var intents []Intent
+					for _, op := range step.OperationIDs {
+						intents = append(intents, c.intents[op].Intent)
+					}
+					if err := w.reduction(step.ReductionRef, step.SelectedObservationID, intents, step.SourceRevision); err != nil {
+						return err
+					}
+				}
+			}
 			p.seq[f.Run], p.closed[f.Run] = f.Sequence, step.Status != "open"
 		case compositionLifecycleFact:
 			r, ok := c.lifecycle[id]
@@ -141,8 +152,19 @@ func (c *effectCut) checkEffectOrder() error {
 					return corrupt("reservation contradicts historical scope or budget")
 				}
 			}
+			if c.continuations != nil {
+				if w := c.continuations.bySubject[f.Run.Subject]; w != nil {
+					if err := w.reservation(e.AdapterAttempt); err != nil {
+						return err
+					}
+				}
+			}
 			if r.Allowed {
 				p.spent[r.RootID]++
+			}
+		case compositionContinuationFact:
+			if err := p.continuationDecision(f); err != nil {
+				return err
 			}
 		case compositionReadFact:
 			ord := c.ordinals[id]
