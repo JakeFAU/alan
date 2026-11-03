@@ -160,7 +160,7 @@ func (a *Adapter) Execute(ctx context.Context, p effects.Prepared) (c effects.Ca
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+a.config.APIKey)
 	// Use a fixed ASCII digest-sized identifier, without interpreting it as deduplication.
-	req.Header.Set("X-Client-Request-Id", clientID(p.Request.Key))
+	req.Header.Set("X-Client-Request-Id", ClientRequestID(p.Request.Key))
 	// A fresh transport and non-rewindable body disable net/http's connection retry path.
 	req.GetBody = nil
 	transport := &http.Transport{DisableKeepAlives: true, TLSHandshakeTimeout: 10 * time.Second}
