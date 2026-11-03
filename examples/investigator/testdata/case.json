@@ -1,0 +1,19 @@
+{
+  "question": "Is the reading room ready to reopen?",
+  "queries": ["ventilation inspection", "wheelchair ramp"],
+  "documents": [
+    {"id": "inspection", "path": "inspection.txt"},
+    {"id": "access", "path": "access.txt"}
+  ],
+  "provider": {
+    "model": "controlled-reading-room",
+    "endpoint": "http://127.0.0.1:18483/v1/responses",
+    "max_output_tokens": 128,
+    "max_response_bytes": 16384
+  },
+  "limits": {
+    "max_effects": 4,
+    "max_in_flight": 2,
+    "max_total_output_tokens": 256
+  }
+}
