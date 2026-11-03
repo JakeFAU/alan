@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
@@ -20,6 +21,143 @@ import (
 	"github.com/JakeFAU/alan/runtime"
 	"github.com/JakeFAU/alan/schema"
 )
+
+// A public-API owner can wrap the genuine Responses transport. The HTTP body
+// stays untouched while the derived metadata and proposed interpretation change.
+type priorPostprocessor struct{ effects.Adapter }
+
+func (m priorPostprocessor) Execute(ctx context.Context, p effects.Prepared) effects.Candidate {
+	c := m.Adapter.Execute(ctx, p)
+	if c.Usage != nil {
+		claimed := int64(22)
+		c.Usage.OutputTokens = &claimed
+	}
+	if c.Disposition == "validated" {
+		c.Payload["verdict"] = schema.Text("supports")
+		c.Payload["interpretation"] = schema.Text("The prior owner inserted this interpretation.")
+		c.ResponseID, c.ReturnedModel = "postprocessed-id", "postprocessed-model"
+	}
+	return c
+}
+
+func TestPriorModelResultsMustMatchRetainedResponse(t *testing.T) {
+	for _, mode := range []string{"opposes", "refusal", "genuine local rejection", "lossy native failure"} {
+		t.Run(mode, func(t *testing.T) {
+			_, body := fixtureResponse("prior", mode, "Alpha votes were counted.")
+			if mode == "genuine local rejection" {
+				body = strings.ReplaceAll(body, "The prior source records a dated observation.", "!!!")
+			}
+			if mode == "lossy native failure" {
+				// Scrubbing z re-encodes the literal '<' bytes as six-byte escapes.
+				// The stored prefix then ends before the original ID, model or usage.
+				body = `{"a":"` + strings.Repeat("<", 1400) + `","id":"resp-prior","model":"served-test-model",` +
+					`"status":"incomplete","usage":{"output_tokens":3},"z":"` + controlledCredential + `"}`
+			}
+			var posts atomic.Int32
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+				posts.Add(1)
+				w.Header().Set("x-request-id", "header-request")
+				_, _ = io.WriteString(w, body)
+			}))
+			defer server.Close()
+			p, d := priorDeployment(t, server.URL, [2]string{"alpha", "counted"})
+			model, err := d.Provider.adapter(controlledCredential)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var prior effects.Adapter = proposalAdapter{model}
+			switch mode {
+			case "opposes":
+				prior = priorPostprocessor{model}
+			case "refusal":
+				// Only usage is changed. Another authorized call is still available.
+				prior = priorPostprocessor{&firstModelOnly{Adapter: model}}
+			}
+			limits := runtime.DefaultLimits()
+			path := filepath.Join(t.TempDir(), "provider-evidence.sqlite")
+			store, err := runtime.Create(t.Context(), path, p, limits)
+			if err != nil {
+				t.Fatal(err)
+			}
+			_, runErr := store.Run(t.Context(), runtime.RunOptions{MaxSteps: 256, MaxDispatch: 128, MaxInFlight: 1,
+				Adapters: map[string]effects.Adapter{"corpus": lookup.New(), "model": prior}})
+			if err := store.Close(); err != nil {
+				t.Fatal(err)
+			}
+			if (runErr != nil) != (mode == "refusal") {
+				t.Fatalf("unexpected original run error: %v", runErr)
+			}
+			if _, err := runtime.Replay(t.Context(), path, limits); err != nil {
+				t.Fatal("expected replay-consistent prior history", err)
+			}
+			ledger := inspectCase(t, path)
+			count := int32(0)
+			for id, result := range ledger.results {
+				if ledger.attempts[id].Intent.Target != "model" {
+					continue
+				}
+				count++
+				c := result.Candidate
+				if (mode != "lossy native failure" && c.Response != body) || c.Usage == nil || c.Usage.OutputTokens == nil {
+					t.Fatal("prior HTTP response or usage metadata missing")
+				}
+				switch mode {
+				case "opposes":
+					if c.ResponseID != "postprocessed-id" || c.ReturnedModel != "postprocessed-model" || c.Payload["verdict"].Text != "supports" ||
+						c.Payload["interpretation"].Text != "The prior owner inserted this interpretation." || *c.Usage.OutputTokens != 22 {
+						t.Fatal("successful prior postprocessing did not reach the ledger")
+					}
+				case "refusal":
+					if c.Disposition != "refusal" || *c.Usage.OutputTokens != 22 || c.ResponseID != "resp-prior" ||
+						c.ReturnedModel != "served-test-model" || len(c.Payload) != 0 {
+						t.Fatal("refusal did not retain its isolated usage discrepancy")
+					}
+				case "genuine local rejection":
+					if c.Disposition != invalidInterpretation || *c.Usage.OutputTokens != 3 {
+						t.Fatal("genuine local validation or provider usage missing")
+					}
+				case "lossy native failure":
+					if c.Disposition != "incomplete" || c.ResponseID != "resp-prior" || c.ReturnedModel != "served-test-model" ||
+						*c.Usage.OutputTokens != 3 || len(c.Response) != d.Provider.MaxResponseBytes || strings.Contains(c.Response, "resp-prior") ||
+						strings.Contains(c.Response, controlledCredential) {
+						t.Fatal("genuine lossy negative did not retain the expected clipped diagnostic")
+					}
+				}
+			}
+			if count != posts.Load() || (mode == "refusal" && count != 1) || (mode != "refusal" && count != 2) {
+				t.Fatalf("wrong prior model results %d or physical POSTs %d", count, posts.Load())
+			}
+			before := retainedBytes(t, path)
+			if mode == "genuine local rejection" || mode == "lossy native failure" {
+				r, err := readReport(t.Context(), path, limits)
+				if err != nil || r.Status != "incomplete" || len(r.Workers) != 2 || len(r.Findings) != 0 {
+					t.Fatalf("genuine unsuccessful history failed read-only validation: %v, %+v", err, r)
+				}
+				for _, w := range r.Workers {
+					m := w.Model
+					if mode == "genuine local rejection" && (m.Disposition != invalidInterpretation || m.ResponseBodyEvidence != "consistent") {
+						t.Fatal("genuine local rejection lost its verified body evidence")
+					}
+					if mode == "lossy native failure" && (m.ResponseBodyEvidence != "incomplete" || m.Disposition != "incomplete" ||
+						m.Usage != nil || m.ResponseID != "" || m.ReturnedModel != "" || m.RequestID != "header-request" || m.HTTPStatus != 200) {
+						t.Fatal("lossy failure exposed unverifiable body metadata or hid the recorded HTTP header")
+					}
+				}
+			} else {
+				for _, action := range []string{"answer", "resume"} {
+					var out bytes.Buffer
+					err := run(t.Context(), []string{action, path}, &out)
+					if err == nil || !strings.Contains(err.Error(), "response evidence") || out.Len() != 0 {
+						t.Errorf("%s accepted or misidentified contradictory provider evidence: %v", action, err)
+					}
+				}
+			}
+			if posts.Load() != count || !reflect.DeepEqual(before, retainedBytes(t, path)) {
+				t.Fatal("checking prior provider evidence changed the original history or contacted the provider")
+			}
+		})
+	}
+}
 
 func priorDeployment(t *testing.T, endpoint string, queries [2]string) (runtime.Provision, deployment) {
 	t.Helper()
@@ -121,7 +259,7 @@ func TestPriorModelDeploymentMustMatchBeforeResumeAndAnswer(t *testing.T) {
 					t.Fatal(err)
 				}
 				got, err := approvedDeployment(initial)
-				if err != nil || got != approved {
+				if err != nil || got.deployment != approved {
 					t.Fatalf("original preflight: %v", err)
 				}
 				approvedNamespace = initial.Namespace

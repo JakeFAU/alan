@@ -76,20 +76,21 @@ type reportedUsage struct {
 }
 
 type effectReport struct {
-	OperationID       string         `json:"operation_id,omitempty"`
-	State             string         `json:"state"`
-	ReservationReason string         `json:"reservation_reason,omitempty"`
-	Disposition       string         `json:"disposition,omitempty"`
-	Model             string         `json:"configured_model,omitempty"`
-	ReturnedModel     string         `json:"returned_model,omitempty"`
-	HTTPStatus        int            `json:"http_status,omitempty"`
-	ClientRequestID   string         `json:"client_request_id,omitempty"`
-	RequestID         string         `json:"provider_request_id,omitempty"`
-	ResponseID        string         `json:"provider_response_id,omitempty"`
-	Usage             *reportedUsage `json:"provider_reported_usage"`
-	Diagnostic        string         `json:"diagnostic_response,omitempty"`
-	attempt           *runtime.AdapterAttempt
-	result            *runtime.AdapterResult
+	OperationID          string         `json:"operation_id,omitempty"`
+	State                string         `json:"state"`
+	ReservationReason    string         `json:"reservation_reason,omitempty"`
+	Disposition          string         `json:"disposition,omitempty"`
+	ResponseBodyEvidence string         `json:"response_body_evidence,omitempty"`
+	Model                string         `json:"configured_model,omitempty"`
+	ReturnedModel        string         `json:"returned_model,omitempty"`
+	HTTPStatus           int            `json:"http_status,omitempty"`
+	ClientRequestID      string         `json:"client_request_id,omitempty"`
+	RequestID            string         `json:"provider_request_id,omitempty"`
+	ResponseID           string         `json:"provider_response_id,omitempty"`
+	Usage                *reportedUsage `json:"provider_reported_usage"`
+	Diagnostic           string         `json:"diagnostic_response,omitempty"`
+	attempt              *runtime.AdapterAttempt
+	result               *runtime.AdapterResult
 }
 
 func describeEffect(id string, attempt *runtime.AdapterAttempt, result *runtime.AdapterResult) effectReport {
@@ -209,10 +210,28 @@ func readReport(ctx context.Context, path string, limits runtime.Limits) (invest
 	if err != nil {
 		return investigationReport{}, err
 	}
-	if _, err := approvedDeployment(s); err != nil {
+	approval, err := approvedDeployment(s)
+	if err != nil {
 		return investigationReport{}, err
 	}
-	return reportSnapshot(s)
+	r, err := reportSnapshot(s)
+	if err != nil {
+		return investigationReport{}, err
+	}
+	for i := range r.Workers {
+		m := &r.Workers[i].Model
+		if m.result == nil || !m.attempt.Allowed {
+			continue
+		}
+		m.ResponseBodyEvidence = "consistent"
+		if approval.incompleteBodies[m.OperationID] {
+			// The retained negative is compatible with the surviving diagnostic.
+			// The raw inspector still exposes the adapter's original claims.
+			m.ResponseBodyEvidence = "incomplete"
+			m.ReturnedModel, m.ResponseID, m.Usage = "", "", nil
+		}
+	}
+	return r, nil
 }
 
 func reportSnapshot(s runtime.Inspection) (investigationReport, error) {

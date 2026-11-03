@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/JakeFAU/alan/adapters/lookup"
+	"github.com/JakeFAU/alan/adapters/openai"
 	"github.com/JakeFAU/alan/effects"
 	"github.com/JakeFAU/alan/runtime"
 )
@@ -54,10 +55,15 @@ func initialize(ctx context.Context, path, specification string, out io.Writer) 
 	}{path, len(assets)})
 }
 
+type deploymentApproval struct {
+	deployment
+	incompleteBodies map[string]bool
+}
+
 // The number of chargeable calls follows from the original program and its
 // resource root. A different valid ALAN database can contain other programs.
-func approvedDeployment(snapshot runtime.Inspection) (deployment, error) {
-	var d deployment
+func approvedDeployment(snapshot runtime.Inspection) (deploymentApproval, error) {
+	var d deploymentApproval
 	root := runtime.RunID{Subject: "investigator", Generation: 1}
 	origins := snapshot.Tables["run_origins"]
 	if len(snapshot.Roots) != 1 || snapshot.Roots[0].Run != root ||
@@ -72,7 +78,7 @@ func approvedDeployment(snapshot runtime.Inspection) (deployment, error) {
 	}
 	data := initial.Data
 	settings := data["settings"].Text
-	if err := decodeSettings([]byte(settings), &d); err != nil {
+	if err := decodeSettings([]byte(settings), &d.deployment); err != nil {
 		return d, fmt.Errorf("investigator deployment settings: %w", err)
 	}
 	if err := d.validate(); err != nil {
@@ -109,7 +115,7 @@ func approvedDeployment(snapshot runtime.Inspection) (deployment, error) {
 	return d, nil
 }
 
-func (d deployment) checkReservations(snapshot runtime.Inspection) error {
+func (d *deploymentApproval) checkReservations(snapshot runtime.Inspection) error {
 	// JSON marshaling escapes tabs, so this verification-only credential cannot
 	// collide with any serialized prompt. Pure Prepare requires no real secret.
 	model, err := d.Provider.adapter("investigator\tverification")
@@ -144,12 +150,25 @@ func (d deployment) checkReservations(snapshot runtime.Inspection) error {
 		if err != nil {
 			return err
 		}
-		if result != nil {
-			switch disposition := result.Candidate.Disposition; disposition {
+		if a.Allowed && result != nil {
+			c := result.Candidate
+			switch c.Disposition {
 			case "validated", invalidInterpretation, invalidQuestion:
-				if disposition != proposalDisposition(result.Candidate.Payload) {
+				if c.Disposition != proposalDisposition(c.Payload) {
 					return fmt.Errorf("retained model proposal %s differs from the investigator's validation policy", a.Intent.ID)
 				}
+				// The app may reject a well-formed provider proposal. Check its
+				// native verdict on a copy while preserving the retained rejection.
+				c.Disposition = "validated"
+			}
+			if err := openai.VerifyResponseEvidence(a.Prepared, c); err != nil {
+				if c.Disposition == "validated" || !errors.Is(err, openai.ErrUnverifiableResponseEvidence) {
+					return fmt.Errorf("retained model response evidence for %s: %w", a.Intent.ID, err)
+				}
+				if d.incompleteBodies == nil {
+					d.incompleteBodies = map[string]bool{}
+				}
+				d.incompleteBodies[a.Intent.ID] = true
 			}
 		}
 		if a.Allowed {
@@ -210,7 +229,7 @@ func (d deployment) runOwned(ctx context.Context, path, namespace string, model 
 	if err != nil {
 		return err
 	}
-	if current != d {
+	if current.deployment != d {
 		return errors.New("investigator deployment settings changed while acquiring ownership")
 	}
 	report, err := store.Run(ctx, runtime.RunOptions{
