@@ -9,6 +9,9 @@ import (
 func TestInspectRejectsFabricatedAuthority(t *testing.T) {
 	reject := func(t *testing.T, path string) {
 		t.Helper()
+		if _, err := Replay(t.Context(), path, DefaultLimits()); !errors.Is(err, ErrCorrupt) {
+			t.Errorf("replay accepted impossible authority: %v", err)
+		}
 		snapshot, err := InspectExecution(t.Context(), path, DefaultLimits())
 		if snapshot != nil || !errors.Is(err, ErrCorrupt) {
 			t.Fatalf("inspection accepted impossible authority: %v", err)
@@ -111,6 +114,17 @@ func TestInspectMissingTargetBeforeInvocationCreatesIt(t *testing.T) {
 	if err != nil {
 		t.Fatal("later creation invalidated earlier decision", err)
 	}
+	if _, err := Replay(ctx, path, DefaultLimits()); err != nil {
+		t.Fatal("replay of a genuine absence followed by member creation", err)
+	}
+	if err := s.Close(); err != nil {
+		t.Fatal(err)
+	}
+	reopened, err := Open(ctx, path, DefaultLimits())
+	if err != nil {
+		t.Fatal("reopen of a genuine absence followed by member creation", err)
+	}
+	defer reopened.Close()
 	retained, found := after.LifecycleDecision(decision.Request.Intent.ID)
 	if !found || retained.Before != nil || retained.Reason != "target_missing" {
 		t.Fatal("original absence lost", retained)
@@ -118,6 +132,18 @@ func TestInspectMissingTargetBeforeInvocationCreatesIt(t *testing.T) {
 	if _, ok := after.Run(future); !ok {
 		t.Fatal("created run missing")
 	}
+	// Each intent was inserted atomically with its reduction. Reversing only
+	// this journal while retaining both descriptors is independently detectable.
+	if _, err = reopened.conn.ExecContext(ctx, "UPDATE intents SET rowid=(SELECT max(rowid)+1 FROM intents) WHERE id=?", request.Intent.ID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = Replay(ctx, path, DefaultLimits()); !errors.Is(err, ErrCorrupt) {
+		t.Errorf("replay accepted reversed intent history: %v", err)
+	}
+	if _, err = InspectExecution(ctx, path, DefaultLimits()); !errors.Is(err, ErrCorrupt) {
+		t.Errorf("inspection accepted reversed intent history: %v", err)
+	}
+
 }
 
 func TestInspectRejectsMissingTargetAfterPriorWitness(t *testing.T) {

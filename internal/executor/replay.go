@@ -78,13 +78,20 @@ type historyRow struct {
 // must separately reconcile authority-caused closure and successor creation here;
 // a projection mismatch is never treated as an acceptable lifecycle shortcut.
 func validateLedger(ctx context.Context, q queryer, limits Limits) (ReplayReport, error) {
-	n, err := schemaNumber(ctx, q)
+	stored, err := storedSchemaNumber(ctx, q)
 	if err != nil {
 		return ReplayReport{}, err
 	}
-	switch n {
+	if err := checkProtocolTables(ctx, q, protocolTables(stored)); err != nil {
+		return ReplayReport{}, err
+	}
+	switch protocolSchemaNumber(stored) {
 	case SchemaVersion:
-		return validateOrdinaryLedger(ctx, q, limits)
+		report, err := validateOrdinaryLedger(ctx, q, limits)
+		if err == nil {
+			err = validateLifecycleChronology(ctx, q, "", nil)
+		}
+		return report, err
 	case compositionSchemaVersion, reconciliationSchemaVersion:
 		enabled, err := compositionProtocol(ctx, q)
 		if err != nil {
@@ -119,21 +126,8 @@ func validateOrdinaryLedger(ctx context.Context, q queryer, limits Limits) (Repl
 	if integrity != "ok" {
 		return report, corrupt("SQLite integrity: %s", integrity)
 	}
-	fk, err := q.QueryContext(ctx, "PRAGMA foreign_key_check")
-	if err != nil {
+	if err := checkForeignKeys(ctx, q); err != nil {
 		return report, err
-	}
-	hasViolation := fk.Next()
-	fkErr := fk.Err()
-	closeErr := fk.Close()
-	if fkErr != nil {
-		return report, fkErr
-	}
-	if closeErr != nil {
-		return report, closeErr
-	}
-	if hasViolation {
-		return report, corrupt("foreign key violation")
 	}
 	ids, err := stringList(ctx, q, "SELECT id FROM programs ORDER BY id")
 	if err != nil {
@@ -197,7 +191,9 @@ func validateOrdinaryLedger(ctx context.Context, q queryer, limits Limits) (Repl
 		}
 		var previousEpoch int64
 		for i, h := range history {
-			if h.seq != int64(i+1) || h.epoch < 1 || h.epoch < previousEpoch || h.epoch > run.Epoch || h.revision < 1 || h.revision > run.Revision {
+			// Formats 3–8 retain one authority revision for a subject. Neither
+			// reopening nor Retry changes the revision in its original grant.
+			if h.seq != int64(i+1) || h.epoch < 1 || h.epoch < previousEpoch || h.epoch > run.Epoch || h.revision != run.Revision {
 				return report, corrupt("history identity/authority for %+v sequence %d", id, h.seq)
 			}
 			previousEpoch = h.epoch

@@ -382,6 +382,22 @@ func observationFor(d AdmissionDescriptor, bound RunID) Observation {
 	provenance := map[string]string{"input": "local-input", "message": "ordinary-message", "terminal": "runtime-terminal", "lifecycle": "runtime-lifecycle", "receipt": "resource-receipt", "adapter": "runtime-adapter"}[d.Kind]
 	return Observation{ID: identity("observation", d.Kind, d.LogicalID), Run: bound, Kind: d.Kind, Provenance: provenance, Source: d.Source.Subject, SourceGeneration: d.Source.Generation, Obligation: d.Obligation, Operation: d.Operation, Payload: d.Payload}
 }
+
+// The writer checks these fields before looking up the target. A malformed
+// transport cannot supply a historical witness of presence or absence.
+func validAdmissionHeader(d AdmissionDescriptor) bool {
+	return d.TransportID != "" && d.LogicalID != "" && d.Target != "" && d.Generation >= 0 && d.Payload != nil
+}
+
+func validAdmissionPayload(payload map[string]Value) bool {
+	for name, value := range payload {
+		if name == "" || !validValue(value) {
+			return false
+		}
+	}
+	return true
+}
+
 func admit(ctx context.Context, tx *sql.Tx, d AdmissionDescriptor, limits Limits, sourceDenial string) (AdmissionResult, error) {
 	result := AdmissionResult{TransportID: d.TransportID}
 	switch d.Kind {
@@ -390,16 +406,14 @@ func admit(ctx context.Context, tx *sql.Tx, d AdmissionDescriptor, limits Limits
 		return result, fmt.Errorf("invalid trusted admission domain")
 	}
 	key := admissionKey(d.Kind, d.TransportID)
-	if d.TransportID == "" || d.LogicalID == "" || d.Target == "" || d.Generation < 0 || d.Payload == nil {
+	if !validAdmissionHeader(d) {
 		return result, fmt.Errorf("invalid admission descriptor")
 	}
 	if err := checkSize(d, limits.MaxObservationBytes); err != nil {
 		return result, err
 	}
-	for key, value := range d.Payload {
-		if key == "" || !validValue(value) {
-			return result, fmt.Errorf("invalid admission payload")
-		}
+	if !validAdmissionPayload(d.Payload) {
+		return result, fmt.Errorf("invalid admission payload")
 	}
 	encoded, err := json.Marshal(d)
 	if err != nil {
@@ -535,8 +549,11 @@ func validatedAuthorization(ctx context.Context, q queryer, id string) (Authoriz
 	if e != nil {
 		return auth, e
 	}
-	if auth.Source.Sequence > source.Sequence || auth.Source.Epoch > source.Epoch {
+	if auth.Source.Revision != source.Revision {
 		return auth, corrupt("authorization source boundary %s", id)
+	}
+	if e := validateWitnessEpoch(ctx, q, source, auth.Source.Sequence, auth.Source.Epoch); e != nil {
+		return auth, e
 	}
 	projection, e := authorizationProjection(ctx, q, auth)
 	if e != nil {
@@ -553,6 +570,9 @@ func validatedAuthorization(ctx context.Context, q queryer, id string) (Authoriz
 			return auth, e
 		}
 	}
+	if projection.Status != "open" && auth.Source.Epoch != source.Epoch {
+		return auth, corrupt("authorization epoch differs from closed source")
+	}
 	if auth.Allowed {
 		if auth.Reason != "authorized" || auth.Source.Revision != intent.revision || (projection.Status != "open" && !reply) {
 			return auth, corrupt("unsupported authorization %s", id)
@@ -560,7 +580,7 @@ func validatedAuthorization(ctx context.Context, q queryer, id string) (Authoriz
 	} else {
 		switch auth.Reason {
 		case "source_closed":
-			if projection.Status == "open" {
+			if projection.Status == "open" || reply {
 				return auth, corrupt("unsupported closure denial")
 			}
 		case "source_revision_changed":
@@ -568,11 +588,55 @@ func validatedAuthorization(ctx context.Context, q queryer, id string) (Authoriz
 				return auth, corrupt("unsupported revision denial")
 			}
 		case "source_generation_changed", "source_retired":
+			subject, e := loadSubject(ctx, q, intent.Run.Subject)
+			if e != nil {
+				return auth, e
+			}
+			if auth.Reason == "source_generation_changed" && subject.Generation == intent.Run.Generation ||
+				auth.Reason == "source_retired" && (!subject.Retired || reply) {
+				return auth, corrupt("unsupported source authority denial")
+			}
 		default:
 			return auth, corrupt("unknown authorization denial")
 		}
 	}
 	return auth, nil
+}
+
+type transportTarget struct {
+	program         string
+	retired, closed bool
+}
+
+// Read each generation once. A closure caused by retirement yields target_retired
+// at lookup, while ordinary termination or a prior cancellation can yield target_closed.
+func readTransportTargets(ctx context.Context, q queryer, bounds *transportBounds) (map[RunID]transportTarget, error) {
+	rows, err := q.QueryContext(ctx, `SELECT r.subject,r.generation,r.program_id,
+		s.retired AND s.generation=r.generation,
+		t.subject IS NOT NULL AND coalesce(json_extract(CAST(l.descriptor AS TEXT),'$.Operation'),'')!='RetireSubject',
+		coalesce(o.kind,'')='root'
+		FROM runs r JOIN subjects s ON s.id=r.subject
+		LEFT JOIN run_origins o ON o.subject=r.subject AND o.generation=r.generation
+		LEFT JOIN terminal_obligations t ON t.subject=r.subject AND t.generation=r.generation
+		LEFT JOIN lifecycle_results l ON l.id=t.operation_id`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	targets := map[RunID]transportTarget{}
+	for rows.Next() {
+		var id RunID
+		var target transportTarget
+		var provisioned bool
+		if err = rows.Scan(&id.Subject, &id.Generation, &target.program, &target.retired, &target.closed, &provisioned); err != nil {
+			return nil, err
+		}
+		targets[id] = target
+		if provisioned {
+			bounds.generation[id.Subject] = id.Generation
+		}
+	}
+	return targets, rows.Err()
 }
 
 // validateMessaging checks protocol evidence without choosing new work or
@@ -594,10 +658,19 @@ func validateMessaging(ctx context.Context, q queryer, limits Limits) error {
 		}
 		authorizations[auth.IntentID] = auth
 	}
-	ids, err := stringList(ctx, q, "SELECT id FROM admissions ORDER BY id")
+	ids, err := stringList(ctx, q, "SELECT id FROM admissions ORDER BY rowid")
 	if err != nil {
 		return err
 	}
+	bounds := transportBounds{generation: map[string]int64{}, retired: map[string]bool{}, closed: map[RunID]bool{}}
+	targets := map[RunID]transportTarget{}
+	if len(ids) > 0 {
+		targets, err = readTransportTargets(ctx, q, &bounds)
+		if err != nil {
+			return err
+		}
+	}
+	programs := map[RunID]Program{}
 	explained := map[string]bool{}
 	descriptors := map[string]AdmissionDescriptor{}
 	for _, id := range ids {
@@ -605,7 +678,7 @@ func validateMessaging(ctx context.Context, q queryer, limits Limits) error {
 		if e != nil {
 			return e
 		}
-		if d.LogicalID == "" || d.Target == "" || d.Generation < 0 || d.Payload == nil {
+		if !validAdmissionHeader(d) || !validAdmissionPayload(d.Payload) {
 			return corrupt("invalid admission descriptor")
 		}
 		if err = checkSize(d, limits.MaxObservationBytes); err != nil {
@@ -746,8 +819,44 @@ func validateMessaging(ctx context.Context, q queryer, limits Limits) error {
 				}
 			}
 		}
+		settlement := d.Kind == "lifecycle" || d.Kind == "receipt" || d.Kind == "adapter"
+		w := transportWitness{source: authorizations[d.IntentID]}
+		if r.Bound != nil {
+			target, ok := targets[*r.Bound]
+			if !ok {
+				return corrupt("unknown transport target generation")
+			}
+			w.retired, w.closed = target.retired, target.closed
+			w.permitted, e = admissionPermitted(ctx, q, d)
+			if e != nil {
+				return e
+			}
+			if w.permitted {
+				p, ok := programs[*r.Bound]
+				if !ok {
+					p, e = loadProgram(ctx, q, target.program, limits)
+					if e != nil {
+						return e
+					}
+					p, e = boundCompositionProgram(ctx, q, p, *r.Bound, limits)
+					if e != nil {
+						return e
+					}
+					programs[*r.Bound] = p
+				}
+				w.schemaValid = authorAdmissionValid(p, d)
+			}
+		}
+		if settlement {
+			if !r.Accepted || r.Bound == nil || r.Reason != "settled" || !w.permitted || !w.schemaValid {
+				return corrupt("invalid settlement transport")
+			}
+			bounds.generation[d.Target] = max(bounds.generation[d.Target], r.Bound.Generation)
+		} else if !bounds.valid(d, r, w) {
+			return corrupt("impossible %s transport decision %q", d.Kind, r.Reason)
+		}
 		if r.Accepted {
-			if (r.Reason != "accepted" && !((d.Kind == "lifecycle" || d.Kind == "receipt" || d.Kind == "adapter") && r.Reason == "settled")) || r.Bound == nil || r.ObservationID == "" || !observationID.Valid || observationID.String != r.ObservationID {
+			if r.Bound == nil || r.ObservationID == "" || !observationID.Valid || observationID.String != r.ObservationID {
 				return corrupt("accepted admission result")
 			}
 			if d.Generation != 0 && d.Generation != r.Bound.Generation {
@@ -765,38 +874,9 @@ func validateMessaging(ctx context.Context, q queryer, limits Limits) error {
 			if !sameJSON(raw, expected) {
 				return corrupt("admission observation mismatch")
 			}
-			permitted, e := admissionPermitted(ctx, q, d)
-			if e != nil {
-				return e
-			}
-			if !permitted {
-				return corrupt("accepted admission lacks static route")
-			}
-			target, e := loadRun(ctx, q, *r.Bound)
-			if e != nil {
-				return e
-			}
-			program, e := loadProgram(ctx, q, target.ProgramID, limits)
-			if e != nil {
-				return e
-			}
-			program, e = boundCompositionProgram(ctx, q, program, target.ID, limits)
-			if e != nil {
-				return e
-			}
-			if !authorAdmissionValid(program, d) {
-				return corrupt("accepted admission violates author schema")
-			}
 			explained[r.ObservationID] = true
-		} else {
-			if r.ObservationID != "" || observationID.Valid {
-				return corrupt("rejected admission has observation")
-			}
-			switch r.Reason {
-			case "schema_invalid", "target_missing", "target_retired", "target_generation_changed", "target_closed", "route_denied", "source_denied:source_closed", "source_denied:source_retired", "source_denied:source_revision_changed", "source_denied:source_generation_changed":
-			default:
-				return corrupt("unknown admission rejection")
-			}
+		} else if r.ObservationID != "" || observationID.Valid {
+			return corrupt("rejected admission has observation")
 		}
 		descriptors[id] = d
 	}

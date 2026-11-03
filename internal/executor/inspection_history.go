@@ -54,7 +54,7 @@ func (b *inspectionBuilder) buildHistory() error {
 			return corrupt("history sequence %+v", ref)
 		}
 		epoch, revision := inspectInt(row, "epoch"), inspectInt(row, "source_revision")
-		if epoch < 1 || epoch < prior.Epoch || epoch > run.Epoch || revision < 1 || revision < prior.SourceRevision || revision > run.Revision {
+		if epoch < 1 || epoch < prior.Epoch || epoch > run.Epoch || revision != run.Revision {
 			return corrupt("history activation or authority %+v", ref)
 		}
 		pre := run.Initial

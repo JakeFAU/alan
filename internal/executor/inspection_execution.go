@@ -250,17 +250,11 @@ func InspectExecution(ctx context.Context, path string, limits Limits) (snapshot
 		ReceiptReads:    base == reconciliationSchemaVersion,
 		ConflictJournal: hasReceiptConflictSchema(s.StorageVersion),
 	}
-	tables := slices.Clone(inspectionTables)
-	if s.Features.Composition {
-		tables = append(tables, compositionInspectionTables...)
-		if s.Features.ReceiptReads {
-			tables = append(tables, "reconciliation_profile", "receipt_read_ordinals")
-		}
+	tables := protocolTables(s.StorageVersion)
+	if err := checkProtocolTables(ctx, tx, tables); err != nil {
+		return nil, err
 	}
-	if s.Features.ConflictJournal {
-		tables = append(tables, "receipt_conflicts")
-	}
-	if err := checkInspectionSchema(ctx, tx, tables); err != nil {
+	if err := checkForeignKeys(ctx, tx); err != nil {
 		return nil, err
 	}
 	b := inspectionBuilder{
@@ -426,10 +420,25 @@ func (b *inspectionBuilder) buildRuns() error {
 	return nil
 }
 
-// Check auxiliary version anchors and foreign keys using a fixed number of
-// statements. A downgrading metadata edit must not silently hide later evidence.
-func checkInspectionSchema(ctx context.Context, tx *sql.Tx, tables []string) error {
-	rows, err := tx.QueryContext(ctx, "SELECT lower(name), type FROM sqlite_schema WHERE type IN ('table','view')")
+func protocolTables(stored int) []string {
+	tables := slices.Clone(inspectionTables)
+	base := protocolSchemaNumber(stored)
+	if isCompositionSchema(base) {
+		tables = append(tables, compositionInspectionTables...)
+		if base == reconciliationSchemaVersion {
+			tables = append(tables, "reconciliation_profile", "receipt_read_ordinals")
+		}
+	}
+	if hasReceiptConflictSchema(stored) {
+		tables = append(tables, "receipt_conflicts")
+	}
+	return tables
+}
+
+// Check the physical format before selecting validators. Editing both version
+// numbers cannot hide retained membership, expenditure or receipt evidence.
+func checkProtocolTables(ctx context.Context, q queryer, tables []string) error {
+	rows, err := q.QueryContext(ctx, "SELECT lower(name), type FROM sqlite_schema WHERE type IN ('table','view')")
 	if err != nil {
 		return err
 	}
@@ -459,7 +468,11 @@ func checkInspectionSchema(ctx context.Context, tx *sql.Tx, tables []string) err
 			}
 		}
 	}
-	rows, err = tx.QueryContext(ctx, "PRAGMA foreign_key_check")
+	return nil
+}
+
+func checkForeignKeys(ctx context.Context, q queryer) error {
+	rows, err := q.QueryContext(ctx, "PRAGMA foreign_key_check")
 	if err != nil {
 		return err
 	}

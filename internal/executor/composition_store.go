@@ -380,7 +380,10 @@ func validateCompositionStore(ctx context.Context, q queryer, l Limits) (ReplayR
 			return report, fmt.Errorf("unfinished composition protocol in %s: %w", table, ErrVersion)
 		}
 	}
-	return report, validateCompositionFacts(ctx, q)
+	if err = validateCompositionFacts(ctx, q); err == nil {
+		err = validateLifecycleChronology(ctx, q, compositionProfileVersion, nil)
+	}
+	return report, err
 }
 
 func compositionVersion(c compositionProvision) string {

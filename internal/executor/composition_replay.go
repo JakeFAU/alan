@@ -382,6 +382,12 @@ func validateCompositionPrefix(ctx context.Context, q queryer, l Limits, c compo
 			x.scopes[m] = compositionScope{ID: "root:" + r.ID, RootID: r.ID, Members: r.Members}
 		}
 	}
+	dynamic := map[string]bool{}
+	for _, a := range admissions {
+		for _, member := range a.Members {
+			dynamic[member.Subject] = true
+		}
+	}
 	expected := map[string]compositionFact{}
 	runs, err := readRunIDs(ctx, q)
 	if err != nil {
@@ -709,6 +715,12 @@ func validateCompositionPrefix(ctx context.Context, q queryer, l Limits, c compo
 					return corrupt("lifecycle before source")
 				}
 			}
+			// A lookup names a subject, even when the requested generation is
+			// stale. Every dynamic subject first enters this prefix at generation one.
+			target := r.Request.Intent.Target
+			if dynamic[target] && (r.Before != nil) != x.active[RunID{target, 1}] {
+				return corrupt("lifecycle decision outside target membership")
+			}
 			scope, scoped := x.scopes[f.Run]
 			if scoped && r.Before != nil {
 				if !x.active[f.Run] || x.sequences[f.Run] != r.Before.Sequence || !reflect.DeepEqual(x.states[f.Run], r.Before.Projection) || x.retired[f.Run] != r.Before.Retired {
@@ -807,5 +819,5 @@ func validateCompositionPrefix(ctx context.Context, q queryer, l Limits, c compo
 			}
 		}
 	}
-	return nil
+	return validateLifecycleChronology(ctx, q, compositionProtocolVersion, x.public)
 }

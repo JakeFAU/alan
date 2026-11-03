@@ -295,13 +295,11 @@ func (c *causalCut) readAdmissions() error {
 			return err
 		}
 		id := admissionKey(d.Kind, d.TransportID)
-		if row["id"] != id || row["domain"] != d.Kind || row["transport_id"] != d.TransportID || r.TransportID != d.TransportID || d.TransportID == "" || d.LogicalID == "" || d.Target == "" || d.Generation < 0 || d.Payload == nil || (r.Bound != nil && (r.Bound.Subject != d.Target || c.runs[*r.Bound] == nil)) {
+		if row["id"] != id || row["domain"] != d.Kind || row["transport_id"] != d.TransportID || r.TransportID != d.TransportID || !validAdmissionHeader(d) || (r.Bound != nil && (r.Bound.Subject != d.Target || c.runs[*r.Bound] == nil)) {
 			return corrupt("transport admission identity or binding")
 		}
-		for k, v := range d.Payload {
-			if k == "" || !validValue(v) {
-				return corrupt("admission payload")
-			}
+		if !validAdmissionPayload(d.Payload) {
+			return corrupt("admission payload")
 		}
 		view := &AdmissionView{AdmissionResult: r, ID: id, Domain: d.Kind, LogicalID: d.LogicalID, Target: d.Target, RequestedGeneration: d.Generation, Source: d.Source, Obligation: d.Obligation, Correlation: d.Operation, SourceOperationID: d.IntentID}
 		c.snap.Admissions = append(c.snap.Admissions, view)

@@ -123,7 +123,7 @@ func (c *causalCut) checkLifecycleAuthority(ordered []LifecycleResult) error {
 				}
 				proj = closure.projection
 			}
-			if !reflect.DeepEqual(proj, w.Projection) {
+			if !reflect.DeepEqual(proj, w.Projection) || proj.Status != "open" && w.Epoch != c.runs[w.Run].Epoch {
 				return corrupt("lifecycle target projection witness")
 			}
 			if srcOrder != 0 && c.membership[w.Run] != "" {

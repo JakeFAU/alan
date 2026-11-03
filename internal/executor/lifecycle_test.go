@@ -472,8 +472,40 @@ func TestRetryRacesWithCancelAndRetire(t *testing.T) {
 				} else if !second.Accepted {
 					t.Fatal(second)
 				}
+				if err := s.Close(); err != nil {
+					t.Fatal(err)
+				}
+				cut, err := InspectExecution(t.Context(), path, DefaultLimits())
+				if err != nil {
+					t.Fatal(err)
+				}
+				for _, want := range []LifecycleResult{first, second} {
+					got, ok := cut.LifecycleDecision(want.Request.Intent.ID)
+					if !ok || got.Before == nil || !reflect.DeepEqual(got, want) {
+						t.Fatal("lost witnessed lifecycle lookup", want, got)
+					}
+				}
 				if _, err := Replay(t.Context(), path, DefaultLimits()); err != nil {
 					t.Fatal(err)
+				}
+				owner, err := Open(t.Context(), path, DefaultLimits())
+				if err != nil {
+					t.Fatal(err)
+				}
+				if err := owner.Close(); err != nil {
+					t.Fatal(err)
+				}
+				after, err := InspectExecution(t.Context(), path, DefaultLimits())
+				if err != nil {
+					t.Fatal(err)
+				}
+				for _, run := range cut.Runs {
+					if run.Projection.Status == "open" {
+						run.Epoch++
+					}
+				}
+				if !reflect.DeepEqual(cut, after) {
+					t.Fatal("renewal changed a retired or superseded generation or its original lookup")
 				}
 			})
 		}

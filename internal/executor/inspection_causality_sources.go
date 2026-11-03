@@ -48,6 +48,9 @@ func (c *causalCut) checkAuthorizations() error {
 			}
 			proj = c.runs[i.Run].Projection
 		}
+		if proj.Status != "open" && a.Source.Epoch != c.runs[i.Run].Epoch {
+			return corrupt("authorization epoch differs from closed source")
+		}
 		member := c.byID[c.runs[i.Run].OwningInvocationID]
 		reply := member != nil && c.isInvocationReply(member, i.Intent)
 		switch a.Reason {

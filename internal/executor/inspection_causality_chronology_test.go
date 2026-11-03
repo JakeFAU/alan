@@ -93,6 +93,9 @@ func TestInspectDynamicTargetAcrossEventStreams(t *testing.T) {
 			if _, err := s.conn.ExecContext(ctx, "DELETE FROM composition_facts WHERE id=?", fact); err != nil {
 				t.Fatal(err)
 			}
+			if _, err := Replay(ctx, path, DefaultLimits()); !errors.Is(err, ErrCorrupt) {
+				t.Fatalf("replay accepted contradictory creation evidence: %v", err)
+			}
 			if snapshot, err := InspectExecution(ctx, path, DefaultLimits()); snapshot != nil || !errors.Is(err, ErrCorrupt) {
 				t.Fatalf("missing target after earlier %s evidence: %v", witness, err)
 			}
@@ -152,6 +155,9 @@ func TestInspectMissingTransportBindingAcrossCreation(t *testing.T) {
 			visit.Bound, visit.Reason = nil, "target_missing"
 			if _, err := s.conn.ExecContext(ctx, "UPDATE admissions SET result=CAST(? AS BLOB) WHERE id=?", compositionJSON(visit), admissionKey("input", in.TransportID)); err != nil {
 				t.Fatal(err)
+			}
+			if _, err := Replay(ctx, path, DefaultLimits()); !errors.Is(err, ErrCorrupt) {
+				t.Fatalf("replay accepted contradictory creation evidence: %v", err)
 			}
 			if snapshot, err := InspectExecution(ctx, path, DefaultLimits()); snapshot != nil || !errors.Is(err, ErrCorrupt) {
 				t.Fatalf("accepted absent target after observed creation: %v", err)
