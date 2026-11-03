@@ -7,6 +7,7 @@ import (
 
 	"github.com/JakeFAU/alan/adapters/openai"
 	"github.com/JakeFAU/alan/effects"
+	"github.com/JakeFAU/alan/schema"
 )
 
 const invalidInterpretation = "proposal_invalid_interpretation"
@@ -19,18 +20,24 @@ type proposalAdapter struct{ *openai.Adapter }
 
 func (a proposalAdapter) Execute(ctx context.Context, prepared effects.Prepared) effects.Candidate {
 	result := a.Adapter.Execute(ctx, prepared)
-	if result.Disposition != "validated" {
-		return result
+	if result.Disposition == "validated" {
+		// Preserve the sanitized response, typed proposal, usage and identity.
+		result.Disposition = proposalDisposition(result.Payload)
 	}
+	return result
+}
+
+// The same rule applies to a live response and a previously recorded response
+// from an owner that may have used the unwrapped Responses adapter.
+func proposalDisposition(payload map[string]schema.Value) string {
 	hasText := func(s string) bool {
 		return strings.ContainsFunc(s, func(r rune) bool { return unicode.IsLetter(r) || unicode.IsNumber(r) })
 	}
-	if !hasText(result.Payload["interpretation"].Text) {
-		result.Disposition = invalidInterpretation
-	} else if question := result.Payload["unresolved"].Text; question != "" && !hasText(question) {
-		result.Disposition = invalidQuestion
+	if !hasText(payload["interpretation"].Text) {
+		return invalidInterpretation
 	}
-	// Keep the exact sanitized response, parsed proposal, usage and original
-	// identity on failure. ALAN supplies an unsuccessful typed envelope.
-	return result
+	if question := payload["unresolved"].Text; question != "" && !hasText(question) {
+		return invalidQuestion
+	}
+	return "validated"
 }

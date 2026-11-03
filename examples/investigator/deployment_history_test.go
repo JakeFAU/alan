@@ -241,3 +241,81 @@ func TestAlternateParentCannotPublishAnInvestigatorAnswer(t *testing.T) {
 		t.Fatalf("answer accepted foreign parent: %v, %s", err, out.String())
 	}
 }
+
+// The genuine provider adapter validates the schema. A previous public-API
+// owner can use it directly, without the investigator's additional text check.
+func TestPriorProviderMustApplyLocalProposalRules(t *testing.T) {
+	for _, tc := range []struct {
+		name, verdict, interpretation, question string
+		pending                                 bool
+	}{
+		{"completed words missing", "supports", "!!!", "", false},
+		{"pending malformed follow-up", "insufficient", "The record is inconclusive.", "???", true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var posts atomic.Int32
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				posts.Add(1)
+				proposal, err := json.Marshal(map[string]string{
+					"verdict": tc.verdict, "quote": "Alpha votes were counted.",
+					"interpretation": tc.interpretation, "unresolved": tc.question,
+				})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				message := map[string]any{"type": "message", "role": "assistant",
+					"content": []any{map[string]string{"type": "output_text", "text": string(proposal)}}}
+				if err := json.NewEncoder(w).Encode(map[string]any{"status": "completed", "output": []any{message}}); err != nil {
+					t.Error(err)
+				}
+			}))
+			defer server.Close()
+			p, d := priorDeployment(t, server.URL, [2]string{"alpha", "counted"})
+			model, err := d.Provider.adapter(controlledCredential)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var prior effects.Adapter = model
+			if tc.pending {
+				prior = &firstModelOnly{Adapter: model}
+			}
+			path := filepath.Join(t.TempDir(), "prior.sqlite")
+			limits := runtime.DefaultLimits()
+			store, err := runtime.Create(t.Context(), path, p, limits)
+			if err != nil {
+				t.Fatal(err)
+			}
+			_, runErr := store.Run(t.Context(), runtime.RunOptions{MaxSteps: 256, MaxDispatch: 128, MaxInFlight: 1,
+				Adapters: map[string]effects.Adapter{"corpus": lookup.New(), "model": prior}})
+			if err := store.Close(); err != nil {
+				t.Fatal(err)
+			}
+			if (runErr != nil) != tc.pending {
+				t.Fatalf("wrong setup: %v", runErr)
+			}
+			contacts := posts.Load()
+			if (tc.pending && contacts != 1) || (!tc.pending && contacts != 2) {
+				t.Fatalf("wrong original contacts %d", contacts)
+			}
+			before, err := runtime.Inspect(t.Context(), path, limits)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if _, err := runtime.Replay(t.Context(), path, limits); err != nil {
+				t.Fatal("valid ALAN history", err)
+			}
+			for _, action := range []string{"answer", "resume"} {
+				var out bytes.Buffer
+				err := run(t.Context(), []string{action, path}, &out)
+				if err == nil || !strings.Contains(err.Error(), "proposal") || out.Len() != 0 {
+					t.Fatalf("%s accepted or misidentified the prior result: %v (output %d bytes)", action, err, out.Len())
+				}
+			}
+			after, err := runtime.Inspect(t.Context(), path, limits)
+			if err != nil || !reflect.DeepEqual(before, after) || posts.Load() != contacts {
+				t.Fatalf("changed a valid historical result or issued a new request: %v", err)
+			}
+		})
+	}
+}

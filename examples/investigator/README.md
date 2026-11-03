@@ -48,7 +48,7 @@ To use the official provider, select a model available to your account that supp
 "$work/investigator" answer "$work/live.sqlite"
 ```
 
-The model receives the question, worker role, query and one candidate with its document version, byte range and text. It returns a scalar record containing a verdict, proposed quotation, interpretation and optional unresolved question. The Responses adapter owns the HTTPS request, secrets, response parsing and usage evidence. The local application checks proposal text shape. A successful provider response can still yield an unsupported finding.
+The model receives the question, worker role, query and one candidate with its document version, byte range and text. It returns a scalar record containing a verdict, proposed quotation, interpretation and optional unresolved question. The Responses adapter owns the HTTPS request, secrets, response parsing and usage evidence. The local application checks proposal text shape when accepting a response and when verifying a previous owner’s retained result. A successful provider response can still yield an unsupported finding.
 
 ## Read the answer and its costs
 
@@ -92,4 +92,4 @@ go test -count=1 -tags integration -run TestInvestigatorReplayDoesNotExecuteAdap
 go test -count=1 -race -tags integration -timeout=60m ./...
 ```
 
-The six crash histories distinguish an unreserved intent, a reserved attempt before transport, a POST accepted without a retained result, a retained result before settlement, one published worker outcome and both original outcomes before parent selection. The test server keeps its own contact records. The checks compare those records with ALAN's attempts, results, original identities and durable charges. Separate function-coverage processes check that replay never enters the lookup or Responses adapter. The test endpoint exercises the actual HTTP adapter. A live provider run requires separate authorization and a budget.
+The six crash histories distinguish an unreserved intent, a reserved attempt before transport, a POST accepted without a retained result, a retained result before settlement, one published worker outcome and both original outcomes before parent selection. The test server keeps its own contact records. The checks compare those records with ALAN's attempts, results, original identities and durable charges. Separate function-coverage processes check that replay never enters the lookup or Responses adapter. The test endpoint exercises the actual HTTP adapter. In a deployed store, provider metadata relies on the registered adapter and is not independently signed by the provider. A live provider run requires separate authorization and a budget.

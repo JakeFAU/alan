@@ -140,6 +140,18 @@ func (d deployment) checkReservations(snapshot runtime.Inspection) error {
 		if err != nil || expected.Digest != a.Prepared.Digest {
 			return fmt.Errorf("investigator deployment differs from retained model reservation %s", a.Intent.ID)
 		}
+		result, err := cell[runtime.AdapterResult](findRow(snapshot.Tables["adapter_results"], "intent_id", a.Intent.ID), "descriptor")
+		if err != nil {
+			return err
+		}
+		if result != nil {
+			switch disposition := result.Candidate.Disposition; disposition {
+			case "validated", invalidInterpretation, invalidQuestion:
+				if disposition != proposalDisposition(result.Candidate.Payload) {
+					return fmt.Errorf("retained model proposal %s differs from the investigator's validation policy", a.Intent.ID)
+				}
+			}
+		}
 		if a.Allowed {
 			// A missing result cannot refund this reservation.
 			remaining -= int64(expected.MaxOutputTokens)
