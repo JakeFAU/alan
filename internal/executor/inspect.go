@@ -126,6 +126,10 @@ func Inspect(ctx context.Context, path string, limits Limits) (snapshot Inspecti
 	return snapshot, tx.Commit()
 }
 func inspectTable(ctx context.Context, q queryer, table string) ([]map[string]any, error) {
+	return scanInspectionTable(ctx, q, table, false)
+}
+
+func scanInspectionTable(ctx context.Context, q queryer, table string, strict bool) ([]map[string]any, error) {
 	// table comes only from the closed inspectionTables list, never command input.
 	rows, err := q.QueryContext(ctx, "SELECT * FROM "+table+" ORDER BY rowid")
 	if err != nil {
@@ -135,6 +139,13 @@ func inspectTable(ctx context.Context, q queryer, table string) ([]map[string]an
 	columns, err := rows.Columns()
 	if err != nil {
 		return nil, err
+	}
+	var types []*sql.ColumnType
+	if strict {
+		types, err = rows.ColumnTypes()
+		if err != nil {
+			return nil, err
+		}
 	}
 	records := []map[string]any{}
 	for rows.Next() {
@@ -149,6 +160,20 @@ func inspectTable(ctx context.Context, q queryer, table string) ([]map[string]an
 		record := map[string]any{}
 		for i, column := range columns {
 			value := values[i]
+			if strict && value != nil {
+				var ok bool
+				switch types[i].DatabaseTypeName() {
+				case "INTEGER":
+					_, ok = value.(int64)
+				case "TEXT":
+					_, ok = value.(string)
+				case "BLOB":
+					_, ok = value.([]byte)
+				}
+				if !ok {
+					return nil, corrupt("invalid storage type in %s.%s", table, column)
+				}
+			}
 			if blob, ok := value.([]byte); ok {
 				if !json.Valid(blob) {
 					return nil, fmt.Errorf("invalid JSON in %s.%s: %w", table, column, ErrCorrupt)

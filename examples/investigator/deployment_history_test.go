@@ -254,7 +254,7 @@ func TestPriorModelDeploymentMustMatchBeforeResumeAndAnswer(t *testing.T) {
 			}
 			var approvedNamespace string
 			if scenario == "unknown wire" {
-				initial, err := runtime.Inspect(t.Context(), path, limits)
+				initial, err := runtime.InspectExecution(t.Context(), path, limits)
 				if err != nil {
 					t.Fatal(err)
 				}

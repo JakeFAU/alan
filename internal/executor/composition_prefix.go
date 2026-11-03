@@ -111,57 +111,21 @@ func (x *compositionPrefix) validateAdmission(ctx context.Context, q queryer, l 
 	if err != nil {
 		return err
 	}
-	var declaration InvocationDeclaration
-	declared := false
-	if p.Author != nil {
-		declaration, declared = p.Author.Invocations[i.Obligation]
-	}
 	t, templateErr := loadCompositionTemplate(ctx, q, i.Target)
 	if templateErr != nil && !errors.Is(templateErr, sql.ErrNoRows) {
 		return templateErr
 	}
-	reason := "accepted"
-	switch {
-	case !auth.Allowed:
-		reason = "source_denied:" + auth.Reason
-	case x.states[i.Run].Status != "open" || state.Revision != source.revision:
-		reason = "source_closed"
-	case x.closed(i.Run):
-		reason = "scope_closed"
-	case !declared || declaration.TemplateID != i.Target || i.Generation != 1:
-		reason = "declaration_denied"
-	case templateErr != nil:
-		reason = "template_missing"
-	case !slices.Contains(root.Templates, i.Target):
-		reason = "template_denied"
-	case expected.Depth > root.Limits.MaxDepth:
-		reason = "depth_limit"
-	case declaration.Input.Record.Validate(i.Payload) != nil:
-		reason = "schema_invalid"
-	}
-	if reason == "accepted" && hasParent {
-		pt, e := loadCompositionTemplate(ctx, q, parent.TemplateID)
-		if e != nil {
-			return e
-		}
-		if !slices.Contains(pt.Templates, t.ID) {
-			reason = "template_denied"
-		}
-	}
+	reason := admissionEligibility(i, expected.Depth, p, auth, x.states[i.Run].Status != "open" || state.Revision != source.revision, x.closed(i.Run), root, templateErr == nil)
 	if reason == "accepted" {
-		for _, capability := range t.Capabilities {
-			if !slices.Contains(root.Capabilities, capability) {
-				reason = "capability_denied"
+		var parentTemplate *compositionTemplate
+		if hasParent {
+			pt, err := loadCompositionTemplate(ctx, q, parent.TemplateID)
+			if err != nil {
+				return err
 			}
+			parentTemplate = &pt
 		}
-	}
-	if reason == "accepted" {
-		spent := x.charges[root.ID]
-		if spent.Invocations >= root.Limits.MaxInvocations {
-			reason = "invocation_limit"
-		} else if int64(len(t.Members)) > root.Limits.MaxCreatedRuns-spent.CreatedRuns {
-			reason = "created_run_limit"
-		}
+		reason = admissionAllowance(root, t, parentTemplate, x.charges[root.ID])
 	}
 	if a.Reason != reason || a.Accepted != (reason == "accepted") {
 		return corrupt("admission prefix decision")

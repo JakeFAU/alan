@@ -170,13 +170,8 @@ func validateCompositionProtocol(ctx context.Context, q queryer, l Limits, c com
 			if err != nil {
 				return err
 			}
-			for _, port := range program.Author.Ports {
-				if port.SendUsed && port.Peer != i.Caller.Subject {
-					addPermission(Permission{Kind: "message", Source: run.Subject, Target: port.Peer, Operation: "message", Revision: 1, Obligation: port.Obligation})
-				}
-			}
-			for effect, d := range program.Author.Effects {
-				addPermission(Permission{Kind: "adapter", Source: run.Subject, Target: d.Capability, Operation: effect, Revision: 1, Obligation: effect})
+			for _, grant := range memberPermissions(run, i.Caller, program) {
+				addPermission(grant)
 			}
 		}
 		program, err := loadProgram(ctx, q, t.Members[t.EntryMember].ProgramID, l)

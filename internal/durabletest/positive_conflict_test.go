@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/JakeFAU/alan/adapters/receiptquery"
+	"github.com/JakeFAU/alan/runtime"
 )
 
 // A second positive snapshot may be well-formed yet disagree with the first
@@ -82,6 +83,31 @@ func TestIncompatiblePositiveReadKeepsAdoptedOriginal(t *testing.T) {
 	}
 	if original() != before || h.count(h.db, "SELECT count(*) FROM settlements WHERE intent_id=?", h.original) != 1 {
 		t.Fatal("conflicting positive replaced the first adopted result or changed settlement")
+	}
+	cut, err := runtime.InspectExecution(t.Context(), h.db, runtime.DefaultLimits())
+	if err != nil {
+		t.Fatal(err)
+	}
+	e, ok := cut.Effect(h.original)
+	if !ok || e.Settlement == nil || e.AdapterResult == nil || e.AdapterResult.Reconciled == nil ||
+		e.ReceiptEvidenceState != "conflict" || len(e.ReadsOfOriginal) != 2 || e.Dispatch.Minimum != 0 {
+		t.Fatalf("original adopted result or subsequent conflict missing: %+v", e)
+	}
+	adoptions := map[string]int{}
+	for _, id := range e.ReadsOfOriginal {
+		query, ok := cut.Effect(id)
+		if !ok || len(query.ReadOpportunities) != 1 || query.Dispatch.Minimum != 1 {
+			t.Fatalf("missing read opportunity: %+v", query)
+		}
+		read := query.ReadOpportunities[0]
+		if !read.MayAdopt || read.Query.TargetID != e.OperationID || read.Snapshot == nil || read.Snapshot.Status != "found" ||
+			(read.Adoption == "adopted") != (id == e.AdapterResult.Reconciled.QueryID) {
+			t.Fatalf("read and original adoption disagree: %+v", read)
+		}
+		adoptions[read.Adoption]++
+	}
+	if adoptions["adopted"] != 1 || adoptions["conflict"] != 1 {
+		t.Fatal(adoptions)
 	}
 	h.expectWorld(1, 1, 2)
 	h.replay("incompatible positive")

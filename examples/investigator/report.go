@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"unicode/utf8"
@@ -89,15 +88,15 @@ type effectReport struct {
 	ResponseID           string         `json:"provider_response_id,omitempty"`
 	Usage                *reportedUsage `json:"provider_reported_usage"`
 	Diagnostic           string         `json:"diagnostic_response,omitempty"`
-	attempt              *runtime.AdapterAttempt
-	result               *runtime.AdapterResult
+	effect               *runtime.ExecutionEffect
 }
 
-func describeEffect(id string, attempt *runtime.AdapterAttempt, result *runtime.AdapterResult) effectReport {
-	e := effectReport{OperationID: id, State: "not_requested", attempt: attempt, result: result}
-	if id == "" {
-		return e
+func describeEffect(effect *runtime.ExecutionEffect) effectReport {
+	if effect == nil {
+		return effectReport{State: "not_requested"}
 	}
+	e := effectReport{OperationID: effect.OperationID, effect: effect}
+	attempt, result := effect.AdapterAttempt, effect.AdapterResult
 	e.State = "awaiting_reservation"
 	if attempt == nil {
 		return e
@@ -131,7 +130,7 @@ func describeEffect(id string, attempt *runtime.AdapterAttempt, result *runtime.
 	}
 	e.ReturnedModel, e.HTTPStatus = c.ReturnedModel, c.HTTPStatus
 	e.RequestID, e.ResponseID = c.RequestID, c.ResponseID
-	if u := c.Usage; u != nil {
+	if u := effect.Usage; u != nil {
 		e.Usage = &reportedUsage{InputTokens: u.InputTokens, OutputTokens: u.OutputTokens, TotalTokens: u.TotalTokens}
 	}
 	return e
@@ -164,23 +163,22 @@ func (a *accounting) countEffect(e effectReport, executions *bounds) {
 		return
 	}
 	a.EffectRequests++
-	if e.attempt == nil {
-		return
+	if e.effect.AdapterAttempt != nil {
+		a.ReservationDecisions++
 	}
-	a.ReservationDecisions++
-	if e.attempt.Allowed {
-		executions.Maximum++
-		if e.result != nil {
-			executions.Minimum++
-		}
+	executions.Minimum += e.effect.Dispatch.Minimum
+	// The approved investigator deploys ordinary lookup and Responses
+	// adapters, both with a finite execution bound per original operation.
+	if max := e.effect.Dispatch.Maximum; max != nil {
+		executions.Maximum += *max
 	}
 }
 
 func (a *accounting) countModel(e effectReport) {
 	a.countEffect(e, &a.ModelExecutions)
-	if e.attempt != nil && e.attempt.Allowed {
+	if e.effect != nil && e.effect.AdapterAttempt != nil && e.effect.AdapterAttempt.Allowed {
 		a.ProviderContacts.Maximum++
-		a.ReservedOutputTokens += e.attempt.Prepared.MaxOutputTokens
+		a.ReservedOutputTokens += e.effect.AdapterAttempt.Prepared.MaxOutputTokens
 		if e.HTTPStatus > 0 {
 			a.ProviderContacts.Minimum++
 		}
@@ -203,10 +201,10 @@ func verifySpan(asset effects.Asset, c citation) error {
 	return nil
 }
 
-// Inspect validates the ledger and supplies one read-only transaction snapshot.
+// Run, original effect and selection relationships come from one typed cut.
 // An answer must never mix a newer parent selection with an older worker result.
 func readReport(ctx context.Context, path string, limits runtime.Limits) (investigationReport, error) {
-	s, err := runtime.Inspect(ctx, path, limits)
+	s, err := runtime.InspectExecution(ctx, path, limits)
 	if err != nil {
 		return investigationReport{}, err
 	}
@@ -220,7 +218,7 @@ func readReport(ctx context.Context, path string, limits runtime.Limits) (invest
 	}
 	for i := range r.Workers {
 		m := &r.Workers[i].Model
-		if m.result == nil || !m.attempt.Allowed {
+		if m.effect == nil || m.effect.AdapterResult == nil || !m.effect.AdapterAttempt.Allowed {
 			continue
 		}
 		m.ResponseBodyEvidence = "consistent"
@@ -234,17 +232,22 @@ func readReport(ctx context.Context, path string, limits runtime.Limits) (invest
 	return r, nil
 }
 
-func reportSnapshot(s runtime.Inspection) (investigationReport, error) {
+func reportSnapshot(s *runtime.ExecutionSnapshot) (investigationReport, error) {
 	id := runtime.RunID{Subject: "investigator", Generation: 1}
 	if len(s.Roots) != 1 || s.Roots[0].Run != id {
 		return investigationReport{}, errors.New("expected one investigator root")
 	}
 	root := s.Roots[0]
-	parent, err := readProjection(s, id)
-	if err != nil {
-		return investigationReport{}, err
+	parent, ok := s.Run(id)
+	if !ok {
+		return investigationReport{}, errors.New("investigator parent missing from typed snapshot")
 	}
-	data := parent.Data
+	data := parent.Projection.Data
+	for _, input := range []string{"question", "primary_query", "counter_query", "settings"} {
+		if !data[input].Equal(parent.Initial.Data[input]) {
+			return investigationReport{}, fmt.Errorf("investigator input %s differs from its original assignment", input)
+		}
+	}
 	r := investigationReport{
 		Question: data["question"].Text, Status: "pending", ParentStatus: root.LocalStatus,
 		PendingReason: root.Pending, PendingInvocations: root.PendingInvocations, UnresolvedEffects: root.UnresolvedExternal,
@@ -278,183 +281,211 @@ func reportSnapshot(s runtime.Inspection) (investigationReport, error) {
 	return r, nil
 }
 
-func (r *investigationReport) readAnswer(s runtime.Inspection, data map[string]schema.Value) error {
-	switch status := data["completion"].Text; status {
-	case "completed", "disagreement", "partial", "incomplete":
-		r.Status = status
-	default:
-		return errors.New("parent has no recognized completion")
-	}
-	accepted := map[string]workerReport{}
-	for _, w := range r.Workers {
-		if w.SelectedAt == 0 {
-			return fmt.Errorf("parent did not consume %s outcome", w.Role)
-		}
-		if data[w.Role+"_accepted"].Flag {
-			accepted[w.Role] = w
-		}
-	}
-	findings, err := data["findings"].Records()
+func (r *investigationReport) readAnswer(s *runtime.ExecutionSnapshot, data map[string]schema.Value) error {
+	rows, err := data["findings"].Records()
 	if err != nil {
 		return err
 	}
-	for _, row := range findings {
-		role := row["role"].Text
-		w, ok := accepted[role]
-		if !ok {
-			return errors.New("finding lacks a distinct authored worker acceptance")
+	for _, w := range r.Workers {
+		if w.SelectedAt == 0 || w.outcome == nil {
+			return fmt.Errorf("parent did not consume %s outcome", w.Role)
 		}
-		f, err := w.verifyFinding(s, row, r.Question)
+		if err := w.verifyReply(s); err != nil {
+			return fmt.Errorf("%s reply: %w", w.Role, err)
+		}
+		reason, question := w.assessment(r.Question)
+		accepted := reason == "validated"
+		if w.Assessment != reason || !data[w.Role+"_accepted"].Equal(schema.Bool(accepted)) ||
+			!data[w.Role+"_question"].Equal(schema.Text(question)) {
+			return fmt.Errorf("%s assessment differs from the selected outcome", w.Role)
+		}
+		if !accepted {
+			r.Unresolved = append(r.Unresolved, openQuestion{Role: w.Role, Reason: reason, Question: question})
+			continue
+		}
+		i := len(r.Findings)
+		if i >= len(rows) || rows[i]["role"].Text != w.Role {
+			return fmt.Errorf("missing or out-of-order finding for %s", w.Role)
+		}
+		f, err := w.verifyFinding(s, rows[i], r.Question)
 		if err != nil {
 			return fmt.Errorf("%s finding: %w", w.Role, err)
 		}
 		r.Findings = append(r.Findings, f)
-		delete(accepted, role)
+		if w.outcome.Response["unresolved"].Text != "" {
+			r.Unresolved = append(r.Unresolved, openQuestion{Role: w.Role, Reason: "model_question", Question: question})
+		}
 	}
-	if len(accepted) != 0 {
-		return errors.New("an accepted worker is missing from the authored findings")
+	if len(rows) != len(r.Findings) {
+		return errors.New("authored answer contains a finding without an accepted worker")
 	}
-	gaps, err := data["gaps"].Records()
-	if err != nil {
-		return err
+	switch len(r.Findings) {
+	case 0:
+		r.Status = "incomplete"
+	case 1:
+		r.Status = "partial"
+	case 2:
+		r.Status = "completed"
+		if r.Findings[0].Verdict != r.Findings[1].Verdict {
+			r.Status = "disagreement"
+			r.Unresolved = append(r.Unresolved, openQuestion{Role: "both", Reason: "disagreement", Question: r.Question})
+		}
 	}
-	for _, row := range gaps {
-		r.Unresolved = append(r.Unresolved, openQuestion{
-			Role: row["role"].Text, Reason: row["reason"].Text, Question: row["question"].Text,
+	if !data["completion"].Equal(schema.Text(r.Status)) {
+		return fmt.Errorf("authored completion %q differs from %q established by the selected findings", data["completion"].Text, r.Status)
+	}
+	gaps := make([]map[string]schema.Value, 0, len(r.Unresolved))
+	for _, gap := range r.Unresolved {
+		gaps = append(gaps, map[string]schema.Value{
+			"role": schema.Text(gap.Role), "reason": schema.Text(gap.Reason), "question": schema.Text(gap.Question),
 		})
 	}
+	if !data["gaps"].Equal(schema.List(gaps...)) {
+		return errors.New("authored gaps differ from the selected outcomes")
+	}
 	return nil
 }
 
-// Inspection exposes typed JSON descriptors in named table cells. These helpers
-// isolate its storage-facing row representation from the answer format.
-func findRow(rows []map[string]any, key string, value any) map[string]any {
-	for _, row := range rows {
-		if row[key] == value {
-			return row
+// Apply the investigator's published acceptance rules to the original selected
+// reply. A worker that reported a failure can still have supplied a response.
+func (w workerReport) assessment(question string) (string, string) {
+	reply := w.outcome.Response
+	switch {
+	case !w.outcome.ResponsePresent:
+		return "worker_failed", question
+	case !reply["lookup_valid"].Flag:
+		return "lookup_failed", question
+	case reply["model_disposition"].Text == invalidInterpretation:
+		return "invalid_interpretation", question
+	case reply["model_disposition"].Text == invalidQuestion:
+		return "invalid_question", question
+	case !reply["model_valid"].Flag:
+		return "model_failed", question
+	}
+	if followup := reply["unresolved"].Text; followup != "" {
+		question = followup
+	}
+	switch {
+	case w.InvocationStatus != "succeeded":
+		return "worker_failed", question
+	case reply["verdict"].Text == "insufficient":
+		return "insufficient", question
+	case reply["quote"].Text == "" || !reply["quote"].Equal(reply["snippet"]):
+		return "citation_mismatch", question
+	default:
+		return "validated", question
+	}
+}
+
+// The worker copies the selected lookup and model fields into its reply.
+// This also authenticates reported gaps on branches which produce no finding.
+func (w workerReport) verifyReply(s *runtime.ExecutionSnapshot) error {
+	if !w.outcome.ResponsePresent {
+		return nil
+	}
+	reply := w.outcome.Response
+	check := func(name string, e effectReport) error {
+		if e.effect == nil || e.effect.AdapterResult == nil || e.effect.Settlement == nil ||
+			!reply[name+"_id"].Equal(schema.Text(e.OperationID)) {
+			return fmt.Errorf("missing original %s result", name)
+		}
+		obs, ok := s.Observation(e.effect.Settlement.ObservationID)
+		if !ok || obs.SelectedAt == nil || w.Run == nil || obs.SelectedAt.Run != *w.Run {
+			return fmt.Errorf("worker did not select its %s result", name)
+		}
+		for field, value := range e.effect.AdapterResult.Values {
+			target := field
+			if field == "valid" || field == "disposition" {
+				target = name + "_" + field
+			}
+			if !reply[target].Equal(value) {
+				return fmt.Errorf("field %s differs from the original %s result", target, name)
+			}
+		}
+		return nil
+	}
+	if err := check("lookup", w.Lookup); err != nil {
+		return err
+	}
+	if reply["lookup_valid"].Flag {
+		return check("model", w.Model)
+	}
+	if w.Model.effect != nil || !reply["model_id"].Equal(schema.Text("")) ||
+		!reply["model_valid"].Equal(schema.Bool(false)) || !reply["model_disposition"].Equal(schema.Text("not_requested")) {
+		return errors.New("unsuccessful lookup carries unsupported model evidence")
+	}
+	for field, typ := range modelProposal() {
+		if !reply[field].Equal(schema.Default(typ)) {
+			return fmt.Errorf("unsuccessful lookup supplied model field %s", field)
 		}
 	}
 	return nil
 }
 
-func cell[T any](row map[string]any, key string) (*T, error) {
-	if row == nil {
-		return nil, nil
-	}
-	raw, ok := row[key].(string)
-	if !ok {
-		return nil, fmt.Errorf("missing %s JSON in inspection", key)
-	}
-	var v T
-	if err := json.Unmarshal([]byte(raw), &v); err != nil {
-		return nil, err
-	}
-	return &v, nil
-}
-
-func readProjection(s runtime.Inspection, id runtime.RunID) (*runtime.Projection, error) {
-	for _, row := range s.Tables["runs"] {
-		if row["subject"] == id.Subject && row["generation"] == id.Generation {
-			return cell[runtime.Projection](row, "projection")
-		}
-	}
-	return nil, fmt.Errorf("missing retained run %v", id)
-}
-
-func readEffect(s runtime.Inspection, run runtime.RunID, id, capability, effect, protocol string) (effectReport, error) {
+func readEffect(s *runtime.ExecutionSnapshot, run runtime.RunID, id, capability, operation, protocol string) (effectReport, error) {
 	if id == "" {
-		return describeEffect("", nil, nil), nil
+		return describeEffect(nil), nil
 	}
-	attempt, err := cell[runtime.AdapterAttempt](findRow(s.Tables["adapter_attempts"], "intent_id", id), "descriptor")
-	if err != nil {
-		return effectReport{}, err
+	effect, ok := s.Effect(id)
+	if !ok || effect.Source != run || effect.Kind != "adapter" || effect.Capability != capability || effect.Name != operation {
+		return effectReport{}, errors.New("worker's authored handle does not identify its expected effect")
 	}
-	result, err := cell[runtime.AdapterResult](findRow(s.Tables["adapter_results"], "intent_id", id), "descriptor")
-	if err != nil {
-		return effectReport{}, err
+	if a := effect.AdapterAttempt; a != nil && a.Prepared.Protocol != protocol {
+		return effectReport{}, errors.New("worker effect used a different adapter protocol")
 	}
-	if attempt != nil {
-		req := attempt.Prepared.Request
-		if attempt.Intent.Run != run || attempt.Intent.ID != id || req.ID != id ||
-			req.Capability != capability || req.Effect != effect || attempt.Prepared.Protocol != protocol {
-			return effectReport{}, errors.New("original effect is not the expected worker operation")
-		}
-	}
-	if result != nil && (attempt == nil || result.Candidate.ID != id || result.Candidate.Key != attempt.Prepared.Request.Key) {
-		return effectReport{}, errors.New("adapter result does not correspond to the original request")
-	}
-	return describeEffect(id, attempt, result), nil
+	return describeEffect(effect), nil
 }
 
-func readWorker(s runtime.Inspection, root runtime.RootCompletion, data map[string]schema.Value, role string) (workerReport, error) {
+func readWorker(s *runtime.ExecutionSnapshot, root runtime.RootCompletion, data map[string]schema.Value, role string) (workerReport, error) {
 	prefix := role + "_"
 	w := workerReport{
 		Role: role, Query: data[prefix+"query"].Text, OperationID: data[prefix+"call"].Text,
-		Lookup: describeEffect("", nil, nil), Model: describeEffect("", nil, nil),
+		Lookup: describeEffect(nil), Model: describeEffect(nil),
 	}
-	admission, err := cell[runtime.InvocationAdmission](
-		findRow(s.Tables["composition_admission_decisions"], "operation_id", w.OperationID), "descriptor")
-	if err != nil || admission == nil {
-		return w, err
+	if w.OperationID == "" {
+		return w, nil
 	}
-	i := admission.Invocation
-	w.InvocationID, w.Admission = i.ID, admission.Reason
-	if i.OperationID != w.OperationID || i.Caller != root.Run || i.RootID != root.RootID ||
-		i.Inputs["role"].Text != role || i.Inputs["query"].Text != w.Query || !i.Inputs["question"].Equal(data["question"]) {
+	call, ok := s.Invocation(w.OperationID)
+	if !ok || call.Caller != root.Run || call.Inputs["role"].Text != role ||
+		call.Inputs["query"].Text != w.Query || !call.Inputs["question"].Equal(data["question"]) {
 		return w, errors.New("invocation differs from the original research assignment")
 	}
-	if admission.Accepted {
-		if len(admission.Members) != 1 {
-			return w, errors.New("research invocation must have one bound worker")
-		}
-		w.Run = &admission.Members[0]
-		p, err := readProjection(s, *w.Run)
-		if err != nil {
-			return w, err
-		}
-		w.LocalStatus = p.Status
-		w.Lookup, err = readEffect(s, *w.Run, p.Data["lookup_id"].Text, "corpus", "search", "lookup/tokens/v1")
-		if err != nil {
-			return w, err
-		}
-		w.Model, err = readEffect(s, *w.Run, p.Data["model_id"].Text, "model", "reason", "openai/responses/v1")
-		if err != nil {
-			return w, err
+	if admission := call.Admission; admission != nil {
+		w.InvocationID, w.Admission = admission.Invocation.ID, admission.Reason
+		if admission.Accepted {
+			if len(admission.Members) != 1 {
+				return w, errors.New("research invocation must have one bound worker")
+			}
+			member, ok := s.Run(admission.Members[0])
+			if !ok {
+				return w, errors.New("invoked research worker missing from snapshot")
+			}
+			w.Run = &member.ID
+			w.LocalStatus = member.Projection.Status
+			var err error
+			w.Lookup, err = readEffect(s, member.ID, member.Projection.Data["lookup_id"].Text, "corpus", "search", "lookup/tokens/v1")
+			if err != nil {
+				return w, err
+			}
+			w.Model, err = readEffect(s, member.ID, member.Projection.Data["model_id"].Text, "model", "reason", "openai/responses/v1")
+			if err != nil {
+				return w, err
+			}
 		}
 	}
-	outcome, err := cell[runtime.InvocationOutcome](findRow(s.Tables["composition_publications"], "operation_id", w.OperationID), "descriptor")
-	if err != nil || outcome == nil {
-		return w, err
-	}
-	if outcome.InvocationID != i.ID || outcome.OperationID != i.OperationID || outcome.Caller != i.Caller || outcome.TemplateID != i.TemplateID {
-		return w, errors.New("publication belongs to another invocation")
+	outcome := call.Outcome
+	if outcome == nil {
+		return w, nil
 	}
 	w.outcome, w.OutcomeID = outcome, outcome.ID
 	w.InvocationStatus, w.InvocationReason, w.ResponsePresent = outcome.Status, outcome.Reason, &outcome.ResponsePresent
-	delivery := findRow(s.Tables["composition_outcome_deliveries"], "operation_id", w.OperationID)
-	obs := findRow(s.Tables["observations"], "id", delivery["observation_id"])
-	if obs == nil || obs["subject"] != root.Run.Subject || obs["generation"] != root.Run.Generation {
-		return w, errors.New("publication missing its original parent delivery")
-	}
-	// Two observations can belong to the same parent and template. Only the
-	// original operation distinguishes these two calls to the research worker.
-	envelope, err := cell[struct{ Operation, Source, Kind, Provenance string }](obs, "descriptor")
-	if err != nil {
-		return w, err
-	}
-	if envelope.Operation != i.OperationID || envelope.Source != i.TemplateID ||
-		envelope.Kind != "invocation" || envelope.Provenance != "runtime-invocation" {
-		return w, errors.New("delivered observation belongs to another operation")
-	}
-	w.SelectedAt, _ = obs["consumed_sequence"].(int64)
-	if w.SelectedAt != 0 {
-		commit := findRow(s.Tables["history"], "selected_observation", obs["id"])
-		if commit["subject"] != root.Run.Subject || commit["generation"] != root.Run.Generation || commit["sequence"] != w.SelectedAt {
-			return w, errors.New("parent history lacks the matching selection")
-		}
+	if call.SelectedAt != nil {
+		w.SelectedAt = call.SelectedAt.Sequence
+		// Selection is an ALAN fact. These role-prefixed destinations are
+		// the investigator's own authored response bindings.
 		if data[prefix+"status"].Text != outcome.Status || data[prefix+"reason"].Text != outcome.Reason ||
 			data[prefix+"present"] != schema.Bool(outcome.ResponsePresent) {
-			return w, errors.New("parent selected a different outcome envelope")
+			return w, errors.New("parent bound different worker outcome fields")
 		}
 		for name, value := range outcome.Response {
 			if !data[prefix+name].Equal(value) {
@@ -466,7 +497,7 @@ func readWorker(s runtime.Inspection, root runtime.RootCompletion, data map[stri
 	return w, nil
 }
 
-func (w workerReport) verifyFinding(s runtime.Inspection, row map[string]schema.Value, question string) (finding, error) {
+func (w workerReport) verifyFinding(s *runtime.ExecutionSnapshot, row map[string]schema.Value, question string) (finding, error) {
 	if w.Run == nil || w.outcome == nil || w.SelectedAt == 0 || w.InvocationStatus != "succeeded" ||
 		!w.outcome.ResponsePresent || w.Assessment != "validated" || row["invocation_operation_id"].Text != w.OperationID {
 		return finding{}, errors.New("finding lacks its original successful worker outcome")
@@ -479,9 +510,9 @@ func (w workerReport) verifyFinding(s runtime.Inspection, row map[string]schema.
 		!reply["lookup_id"].Equal(row["lookup_id"]) || !reply["model_id"].Equal(row["model_id"]) {
 		return finding{}, errors.New("finding does not name both original validated effect requests")
 	}
-	retrieved := lookup.result.Candidate.Payload
-	prompt, proposal := model.attempt.Prepared.Request.Payload, model.result.Candidate.Payload
-	if lookup.attempt.Prepared.Request.Payload["query"].Text != w.Query || prompt["role"].Text != w.Role ||
+	retrieved := lookup.effect.AdapterResult.Candidate.Payload
+	prompt, proposal := model.effect.AdapterAttempt.Prepared.Request.Payload, model.effect.AdapterResult.Candidate.Payload
+	if lookup.effect.AdapterAttempt.Prepared.Request.Payload["query"].Text != w.Query || prompt["role"].Text != w.Role ||
 		prompt["query"].Text != w.Query || prompt["question"].Text != question {
 		return finding{}, errors.New("provider request differs from assigned investigation")
 	}
@@ -501,11 +532,8 @@ func (w workerReport) verifyFinding(s runtime.Inspection, row map[string]schema.
 	}
 	c := citation{Document: row["document"].Text, Version: row["version"].Text,
 		Start: row["start"].Number, End: row["end"].Number, Quote: row["quote"].Text}
-	asset, err := cell[effects.Asset](findRow(s.Tables["corpus_assets"], "id", c.Document), "descriptor")
-	if err != nil {
-		return finding{}, err
-	}
-	if asset == nil {
+	asset, ok := s.Asset(c.Document)
+	if !ok {
 		return finding{}, fmt.Errorf("cannot read retained document %q", c.Document)
 	}
 	if err := verifySpan(*asset, c); err != nil {
