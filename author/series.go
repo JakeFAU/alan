@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"maps"
+	"math"
 	"strconv"
 
 	"github.com/JakeFAU/alan/internal/executor"
@@ -51,6 +52,10 @@ const seriesResourceVersion = "alan/resource-profile/v1"
 // requests and awaits inside Repeat or ForEach are rejected, including Repeat(1).
 // Every successful control-flow path must consume the sole adapter result.
 // Default runtime encoded-program/profile byte limits apply to construction.
+// For multiple positions, predecessor operation identities must fit the existing
+// continuation input field after JSON escaping. A collection loop before the
+// request conservatively reserves the full int64 sequence width; other prefixes
+// use their instruction-count bound. Single-position series have no such limit.
 func BoundedSeries(d Definition, options SeriesOptions) (Series, error) {
 	fail := func(err error) (Series, error) { return Series{}, fmt.Errorf("bounded series: %w", err) }
 	if options.Count < 1 || options.First != ApproveAtProvision {
@@ -89,6 +94,9 @@ func BoundedSeries(d Definition, options SeriesOptions) (Series, error) {
 	limit := runtime.DefaultLimits().MaxProgramBytes
 	if options.Count > limit/len(rootBytes) {
 		return fail(fmt.Errorf("resource profile: %w", runtime.ErrLimit))
+	}
+	if err := seriesContinuationIdentities(program, options.ID, options.Count); err != nil {
+		return fail(err)
 	}
 	if err := original.Metadata().Inputs.Record.Validate(options.Inputs); err != nil {
 		return fail(fmt.Errorf("inputs: %w", err))
@@ -150,6 +158,58 @@ func BoundedSeries(d Definition, options SeriesOptions) (Series, error) {
 	}
 	provision.Composition = profile
 	return Series{&seriesDeclaration{id: options.ID, count: options.Count, effect: effect, capability: capability, provision: provision}}, nil
+}
+
+// The ordinary reducer encodes an operation as JSON [subject, generation,
+// sequence, ordinal] (executor.Reduce's emit case). Original generation is 1
+// and the single emitted intent's ordinal is 0. Before the sole request, each
+// instruction executes at most once because Compile permits only forward jumps,
+// except for explicit collection loops. Thus request PC+1 bounds its sequence;
+// the protected successor adds exactly one approval receive. A preceding loop
+// reserves the full positive int64 width without simulating potentially huge
+// nested collections at authoring time.
+func seriesContinuationIdentities(program executor.Program, id string, count int) error {
+	if count == 1 {
+		return nil
+	}
+	sequence := int64(0)
+	loop := false
+	for pc, instruction := range program.Code {
+		if instruction.Op == "foreach" {
+			loop = true
+		}
+		if instruction.Op == "emit" {
+			sequence = int64(pc) + 1
+			break
+		}
+	}
+	if loop {
+		sequence = math.MaxInt64
+	}
+	field := ContinuationPort(seriesApproval).Receive["previous_operation_id"]
+	check := func(index int, sequence int64) error {
+		operation, err := json.Marshal([]any{id + "-" + strconv.Itoa(index), int64(1), sequence, 0})
+		if err != nil {
+			return err
+		}
+		if len(operation) > field.MaxBytes {
+			return fmt.Errorf("continuation predecessor identity requires %d bytes (limit %d): %w", len(operation), field.MaxBytes, runtime.ErrLimit)
+		}
+		return nil
+	}
+	if err := check(1, sequence); err != nil {
+		return err
+	}
+	if count > 2 {
+		if sequence < math.MaxInt64 {
+			sequence++
+		}
+		// All successor predecessors share one program and the same name prefix.
+		// Canonical decimal width is monotone, so the last predecessor covers all
+		// earlier positions, including index digit transitions.
+		return check(count-1, sequence)
+	}
+	return nil
 }
 
 func seriesRoot(run runtime.RunID, capability string) runtime.ResourceRoot {

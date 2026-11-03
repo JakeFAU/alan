@@ -7,6 +7,7 @@ import (
 	"math"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/JakeFAU/alan/author"
@@ -615,5 +616,143 @@ func TestBoundedSeriesTerminalFailureBeforeSelection(t *testing.T) {
 				t.Fatal("expected one original adapter contact")
 			}
 		})
+	}
+}
+
+func TestBoundedSeriesContinuationIdentityLimits(t *testing.T) {
+	for _, id := range []string{strings.Repeat("x", 4100), strings.Repeat("\x00", 700), strings.Repeat("x", 4085), strings.Repeat("\x00", 680) + "xxxxx", strings.Repeat("<", 681), strings.Repeat("\u2028", 681)} {
+		o := seriesOptions(2)
+		o.ID = id
+		if _, err := author.BoundedSeries(seriesDefinition(), o); !errors.Is(err, runtime.ErrLimit) {
+			t.Errorf("unapprovable identity: raw bytes=%d want ErrLimit, got %v", len(id), err)
+		}
+		o.Count = 1
+		if _, err := author.BoundedSeries(seriesDefinition(), o); err != nil {
+			t.Errorf("single observation has no continuation identity restriction: %v", err)
+		}
+	}
+	// Position 10 is a predecessor at bound 11, adding one identity byte.
+	o := seriesOptions(11)
+	o.ID = strings.Repeat("x", 4084)
+	if _, err := author.BoundedSeries(seriesDefinition(), o); err == nil {
+		t.Error("ignored predecessor index digit growth")
+	}
+	// The second predecessor adds an approval receive before an already
+	// nine-reduction request prefix, growing the sequence from 9 to 10.
+	d := seriesDefinition()
+	prefix := make([]author.Step, 8)
+	for i := range prefix {
+		prefix[i] = author.Set("local", author.Integer(1))
+	}
+	d.Steps = append(prefix, d.Steps...)
+	o = seriesOptions(3)
+	o.ID = strings.Repeat("x", 4084)
+	if _, err := author.BoundedSeries(d, o); err == nil {
+		t.Error("ignored protected predecessor sequence digit growth")
+	}
+}
+
+func TestBoundedSeriesContinuationIdentityBoundaryExecutes(t *testing.T) {
+	for name, id := range map[string]string{
+		"plain":           strings.Repeat("x", 4084),
+		"escaped":         strings.Repeat("\x00", 680) + "xxxx",
+		"html escaped":    strings.Repeat("<", 680) + "xxxx",
+		"unicode escaped": strings.Repeat("\u2028", 680) + "xxxx",
+	} {
+		t.Run(name, func(t *testing.T) {
+			o := seriesOptions(2)
+			o.ID = id
+			s, err := author.BoundedSeries(seriesDefinition(), o)
+			if err != nil {
+				t.Fatal(err)
+			}
+			p, err := s.Provision()
+			if err != nil {
+				t.Fatal(err)
+			}
+			path := filepath.Join(t.TempDir(), "identity-boundary.db")
+			owner, err := runtime.Create(t.Context(), path, p, runtime.DefaultLimits())
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer owner.Close()
+			meter := new(seriesMeter)
+			run := func() {
+				_, err := owner.Run(t.Context(), runtime.RunOptions{MaxSteps: 16, MaxDispatch: 16, Adapters: map[string]effects.Adapter{"meter": meter}})
+				if err != nil {
+					t.Fatal(err)
+				}
+			}
+			run()
+			cut, err := runtime.InspectExecution(t.Context(), path, runtime.DefaultLimits())
+			if err != nil {
+				t.Fatal(err)
+			}
+			next, _ := s.Run(2)
+			basis, err := cut.ContinuationBasis(next)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(basis.PredecessorID) != 4096 {
+				t.Fatalf("not the field boundary: %d", len(basis.PredecessorID))
+			}
+			approval, err := owner.ApproveContinuation(t.Context(), basis, "observe again")
+			if err != nil || !approval.Accepted {
+				t.Fatalf("boundary approval: %+v %v", approval, err)
+			}
+			run()
+			cut, err = runtime.InspectExecution(t.Context(), path, runtime.DefaultLimits())
+			if err != nil {
+				t.Fatal(err)
+			}
+			view, err := s.Inspect(cut)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if meter.calls != 2 || view.Completed != 2 || view.Spent != 2 {
+				t.Fatalf("calls=%d view=%+v", meter.calls, view)
+			}
+		})
+	}
+}
+
+func TestBoundedSeriesContinuationSequenceWidth(t *testing.T) {
+	// With no collection loop, the first PC bound includes nine pure reductions.
+	d := seriesDefinition()
+	prefix := make([]author.Step, 9)
+	for i := range prefix {
+		prefix[i] = author.Set("local", author.Integer(1))
+	}
+	d.Steps = append(prefix, d.Steps...)
+	o := seriesOptions(2)
+	o.ID = strings.Repeat("x", 4084)
+	if _, err := author.BoundedSeries(d, o); !errors.Is(err, runtime.ErrLimit) {
+		t.Fatalf("first request sequence width: %v", err)
+	}
+	o.ID = strings.Repeat("x", 4083)
+	if _, err := author.BoundedSeries(d, o); err != nil {
+		t.Fatalf("two-digit sequence boundary: %v", err)
+	}
+
+	// A legal pure collection prefix can require many more reductions than its
+	// static code length. Construction reserves int64 width without running it.
+	d = seriesDefinition()
+	d.Collections = map[string]schema.Field{"items": {Kind: "list", MaxItems: 1, MaxBytes: 128, Element: schema.Record{"value": {Kind: "int"}}}}
+	d.Steps = append([]author.Step{author.ForEach(author.Var("items"), nil, author.Set("local", author.Integer(1)))}, d.Steps...)
+	o.ID = strings.Repeat("x", 4067)
+	if _, err := author.BoundedSeries(d, o); !errors.Is(err, runtime.ErrLimit) {
+		t.Fatalf("loop sequence width: %v", err)
+	}
+	o.ID = strings.Repeat("x", 4066)
+	if _, err := author.BoundedSeries(d, o); err != nil {
+		t.Fatalf("full int64-width boundary: %v", err)
+	}
+
+	// The final position is never a predecessor; its extra index digit does not
+	// require additional continuation payload space until capacity reaches 11.
+	o = seriesOptions(10)
+	o.ID = strings.Repeat("x", 4084)
+	if _, err := author.BoundedSeries(seriesDefinition(), o); err != nil {
+		t.Fatalf("last position mistaken for predecessor: %v", err)
 	}
 }
