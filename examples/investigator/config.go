@@ -19,7 +19,10 @@ import (
 )
 
 const officialEndpoint = "https://api.openai.com/v1/responses"
-const maxProviderResponseBytes = 128 << 10 // Fits the default retained observation envelope.
+
+// Reserve room in the 1 MiB result envelope for both JSON-escaped raw
+// response bytes and their parsed usage details, plus the bounded proposal.
+const maxProviderResponseBytes = 64 << 10
 const controlledCredential = "alan-controlled-credential"
 
 type providerConfig struct {

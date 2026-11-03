@@ -22,7 +22,7 @@ func TestInvestigationSpecification(t *testing.T) {
 		{"no second query", strings.Replace(valid, `,"βeta"`, "", 1), false},
 		{"extra query", strings.Replace(valid, `"βeta"]`, `"βeta","third"]`, 1), false},
 		{"overspent allocation", strings.Replace(valid, `"max_total_output_tokens":128`, `"max_total_output_tokens":127`, 1), false},
-		{"response too large for the retained investigator", strings.Replace(valid, "4096", "131073", 1), false},
+		{"response too large for the retained investigator", strings.Replace(valid, "4096", "65537", 1), false},
 		{"foreign endpoint", strings.Replace(valid, "http://127.0.0.1:1234", "https://example.org", 1), false},
 		{"empty document list", strings.Replace(valid, `[{"id":"guide","path":"a.txt"}]`, `[]`, 1), false},
 		{"unknown spending field", strings.Replace(valid, `"max_effects":4`, `"max_effects":4,"estimated_cost":100`, 1), false},
