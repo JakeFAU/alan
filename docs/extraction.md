@@ -37,6 +37,19 @@ go test -count=1 -timeout=60m -race -tags integration ./...
 
 The durable tests acknowledge the targeted execution boundary before killing a child. They reopen its SQLite store in a new process, check the original identities and compare inspection before and after replay. The integration suite exercises a missing non-idempotent receipt, permission to read an original result with adoption denied, competing resolvers, forged bindings and preservation of the first settled outcome. One counterexample holds a grandchild's admitted call after its parent fails. The parent alone can drain while the owning scope must still wait for the grandchild's accounting. Executor tests also cover revoked dispatch, sticky accounting errors, admission and effect ceilings, physical capacity and failure propagation. The [quickstart](../README.md#run-a-computation) exercises the public entry points.
 
+### Compare two CLI binaries
+
+Set `frozen_checkout` to a checkout of the research commit cited above. Build both commands using the same Go and SQLite toolchain. The optional comparison uses Python 3 with its standard SQLite module and a Unix shell.
+
+```sh
+work=$(mktemp -d)
+go -C "$frozen_checkout" build -o "$work/source-alan" ./cmd/alan
+go build -o "$work/candidate-alan" ./cmd/alan
+python3 tools/compare_stores.py "$work/source-alan" "$work/candidate-alan"
+```
+
+Each binary creates and runs a nested computation. After acknowledging either side of a commit, the process is killed. The other binary recovers the database while the original binary recovers an identical stopped copy. The comparison checks both run reports, retained rows and replay output, verifies the database and WAL bytes during read-only operations, and requires both binaries to reject an injected corrupt history row. Each case uses its own temporary directory.
+
 ## SQLite compatibility fixtures
 
 The following files under `internal/storetest/testdata` decompress to the original database bytes. Paths in the table are relative to `docs/foundational` in the frozen research commit. Only tests expand the files, each into its own temporary directory.
