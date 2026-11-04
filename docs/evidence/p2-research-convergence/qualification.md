@@ -9,9 +9,12 @@ No authority × bounded-series feature combination or current performance claim
 is established by these gates.
 
 `run_gate.py PLAN NAME` executes exactly one predeclared command into an exclusive
-fresh directory, recording argv/cwd, complete environment, actual tool identity,
+fresh directory, recording argv/cwd, relevant declared environment,
+toolchain/path/temp metadata and actual tool identity,
 separate stdout/stderr, exit/timeout, terminal test events, and before/after
-tracked source hashes for all declared Git checkouts. The external plan declares
+tracked source hashes for all declared Git checkouts. Other inherited variable
+names are recorded without values; credentials and Codex identity values are
+excluded from public evidence. The external plan declares
 fixed counts before execution; an existing gate directory is an error. Expected
 checker exit 1 is retained separately from exact-expectations exit 0. Apparatus
 exit 2 never counts as a hostile rejection. Final attestation remains external
