@@ -46,7 +46,7 @@ func New(c Config) (*Adapter, error) {
 func (a *Adapter) Prepare(r effects.Request) (effects.Prepared, error) {
 	p := effects.Prepared{Request: effects.Copy(r), Protocol: "openai/responses/v1", Endpoint: a.config.Endpoint, Model: a.config.Model, MaxOutputTokens: a.config.MaxOutputTokens, MaxResponseBytes: a.config.MaxResponseBytes}
 	if r.Input.Record.HasCollections() || r.Output.Record.HasCollections() {
-		return p, errors.New("Responses adapter supports scalar records only")
+		return p, errors.New("responses adapter supports scalar records only")
 	}
 	if e := r.Input.Check(); e != nil {
 		return p, e
@@ -56,7 +56,7 @@ func (a *Adapter) Prepare(r effects.Request) (effects.Prepared, error) {
 	}
 	instructions, ok := r.Payload["instructions"]
 	if !ok || instructions.Kind != "string" || len(r.Payload) < 2 {
-		return p, errors.New("Responses requires instructions string and at least one input field")
+		return p, errors.New("responses adapter requires instructions string and at least one input field")
 	}
 	inputText := ""
 	if input, ok := r.Payload["input"]; ok && len(r.Payload) == 2 && input.Kind == "string" {

@@ -1003,7 +1003,7 @@ func TestPR15Adversarial_DifferentialSeed20261027(t *testing.T) {
 	enumField := schema.Field{Kind: "string", MaxBytes: 8, Enum: []string{"fast", "slow"}}
 	wideField := schema.Field{Kind: "string", MaxBytes: 16}
 
-	var accepted, rejected, falseAcceptances, falseRejections, runtimeCaught int
+	var accepted, rejected, falseRejections, runtimeCaught int
 	for i := 0; i < 100; i++ {
 		pattern := rng.Intn(4)
 		var def author.Definition
@@ -1114,7 +1114,6 @@ func TestPR15Adversarial_DifferentialSeed20261027(t *testing.T) {
 		_ = s.Close()
 		if !expectValidAtRuntime {
 			if runErr == nil {
-				falseAcceptances++
 				t.Fatalf("iter %d: expected runtime rejection for invalid input %q, got nil", i, initVal)
 			}
 			runtimeCaught++
@@ -1123,7 +1122,6 @@ func TestPR15Adversarial_DifferentialSeed20261027(t *testing.T) {
 				t.Fatalf("iter %d Inspect: %v", i, err)
 			}
 			if len(snap.Tables["intents"]) != 0 {
-				falseAcceptances++
 				t.Fatalf("iter %d: invalid intent committed: %+v", i, snap.Tables["intents"])
 			}
 		} else if runErr != nil {
@@ -1141,10 +1139,10 @@ func TestPR15Adversarial_DifferentialSeed20261027(t *testing.T) {
 			t.Fatalf("iter %d unmarshal projection: %v", i, err)
 		}
 	}
-	t.Logf("Differential summary (seed=20261027, N=100): accepted=%d, rejected=%d, falseAcceptances=%d, falseRejections=%d, runtimeCaught=%d",
-		accepted, rejected, falseAcceptances, falseRejections, runtimeCaught)
-	if falseAcceptances != 0 || falseRejections != 0 {
-		t.Fatalf("expected 0 falseAcceptances and 0 falseRejections, got falseAcceptances=%d falseRejections=%d", falseAcceptances, falseRejections)
+	t.Logf("Differential summary (seed=20261027, N=100): accepted=%d, rejected=%d, falseRejections=%d, runtimeCaught=%d",
+		accepted, rejected, falseRejections, runtimeCaught)
+	if falseRejections != 0 {
+		t.Fatalf("expected 0 falseRejections, got falseRejections=%d", falseRejections)
 	}
 }
 
