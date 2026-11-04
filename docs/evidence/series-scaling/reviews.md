@@ -69,3 +69,35 @@ source revision after e32d0e2. Their approvals remain bounded to the single-host
 contract, inspected source, retained histories and executed tests. They do not
 turn finite qualification into a proof of unrestricted recovery, latency, remote
 exactly-once application or general validated-prefix reuse.
+
+## Post-campaign GitHub findings
+
+GitHub review of the initial delivery `e19f31b63f572c56161f11ede5e4d733bb6caeeb`
+found two qualification-tool defects. Both were reproduced, corrected in narrow
+follow-up commits and independently reviewed APPROVE. Production code and the
+original timed binaries remain unchanged.
+
+- Contact proof compared the operation, request key, prepared digest and response
+  identity but omitted direct equality of capability, effect, protocol and
+  endpoint. Four single-field mutants with unchanged digest were accepted by
+  the original proof (RED); the corrected proof rejects them (GREEN).
+- An executable deleted or made unreadable after a sample exited could raise
+  `OSError` before completed-process metadata was saved. Two real subprocess
+  regressions reproduce the missing metadata. The runner now retains exit,
+  wall/CPU/RSS and report hashes, marks validation failed and stops the campaign.
+  This does not promise metadata preservation when output storage itself fails.
+
+The strengthened contact proof was separately applied to disposable copies of
+all 98 original reports/stores, without Run, owner Open or adapter execution.
+It accepted every original and rejected four mutants per report. A separate
+SQLite audit checked all 7,070 contacts against retained Prepared records:
+28,280 new field equalities, with all 392 original report/metadata/main/WAL
+files still matching the sealed evidence index. This is retrospective evidence
+validation, not a timing rerun. The corrected driver tests pass ordinary/race;
+the Python campaign suite now has 17 tests. Full RED/GREEN logs, independent
+reviews and final-head checks are supplied in a separate evidence supplement.
+
+The original driver hash `ee03ad6650027b50d6dae6793d4dd78910b1395175fed09cfc08b0a708fcbe1e`
+and runner hash `b937d59ee3fcd185ef08d81e57669addad5ff419d2e389ea992390ab3ea587c6`
+remain the campaign's provenance. Its eight sealed archives are immutable.
+Neither new tools nor later test runs are relabeled as the original collector.

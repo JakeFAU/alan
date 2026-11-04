@@ -150,3 +150,29 @@ The baseline and candidate filename/content manifests match before and after
 initial qualification. Final delivery qualification will additionally bind the
 complete delivered tree. No timeout, interruption or cache-setup failure is
 relabeled as a passing run.
+
+## Initial delivery qualification and later corrections
+
+The complete initial delivery export `e19f31b63f572c56161f11ede5e4d733bb6caeeb`
+had identical before/after manifests for all 427 files. Its ordinary and
+integration-race suites passed; its first ordinary integration run failed in
+`TestCompetingReadCannotSettleAdopterDebt/original`. One unchanged full repeat
+passed. Preserve the initial integration failure and the unchanged repeat
+separately: the failure is not a passing run.
+
+Focused baseline and delivery experiments reproduced intermittent competing-read
+failures. Observation-only diagnostics retained genuine stores showing the test
+could select the opposite resolver as adopter while maintaining the actual
+adopter's settlement obligation. Concurrent trigger DDL and SQLite busy errors
+can cancel the run and release both paused responses. Installing the same trigger
+before the run, with all assertions retained, passed 100 child cases per source.
+This bounds a pre-existing test-order mechanism; the original uninstrumented
+failure's detailed state is unknown. It does not establish equal failure rates
+or justify changing production semantics or weakening the original assertion.
+The full investigation and original failures are in the initial raw archive.
+
+Two subsequent qualification-tool corrections and their independent reviews are
+recorded in [the review addendum](reviews.md#post-campaign-github-findings).
+The final corrected delivery receives a new immutable export and its own complete
+verification record in the PR evidence supplement. The initial e19 archives,
+timings and verification results retain their original source identities.

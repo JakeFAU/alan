@@ -85,6 +85,15 @@ after each process. Analysis requires all 98 rows, complete expected phases,
 raw report/progress hashes and exact source/configuration identities. It does
 not substitute zero for a missing phase or accept a partial campaign.
 
+The current driver and runner include two [post-campaign corrections](reviews.md#post-campaign-github-findings).
+Use them for a new campaign and freeze its own schedule. To reanalyze the
+published 98-row campaign, use the original four Python tools from
+`e19f31b63f572c56161f11ede5e4d733bb6caeeb` or the sealed evidence archive.
+The strict analyzer intentionally rejects a schedule whose bound tool hashes
+do not match its local tools. Do not edit the old schedule or substitute current
+hashes. The original data have additionally passed the corrected contact proof
+in a separately identified, read-only qualification.
+
 Do not run builds, tests, profilers, compression or competing experiments during
 timing. OS caches, host load and thermal state are not controlled; load and
 wall/CPU/RSS are recorded per process. Every valid sample remains in analysis.
