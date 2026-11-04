@@ -108,7 +108,7 @@ func expectedAuthorityAdmission(ctx context.Context, q queryer, id string, sourc
 			ordinal++
 		}
 	}
-	d := &AuthorityAdmission{Version: RequestAuthorityVersion, Namespace: x.namespace, Ordinal: ordinal, Source: source, AttemptDigest: compositionIdentity("alan/attempt-row/v1", a), Allowed: true, Reason: "authorized"}
+	d := &AuthorityAdmission{Version: x.profile.RequestAuthority, Namespace: x.namespace, Ordinal: ordinal, Source: source, AttemptDigest: compositionIdentity("alan/attempt-row/v1", a), Allowed: true, Reason: "authorized"}
 	switch {
 	case source.Revision != i.revision:
 		d.Allowed = false

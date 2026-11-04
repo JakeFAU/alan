@@ -71,7 +71,7 @@ func (b *inspectionBuilder) buildDeployment() error {
 	if err != nil {
 		return err
 	}
-	if (profile.RequestAuthority != "") != b.snap.Features.RequestAuthority || profile.RequestAuthority != "" && (profile.RequestAuthority != RequestAuthorityVersion || len(profile.Templates) != 0 || len(profile.Continuations) != 0 || profile.RecordDispatchAdmissions) {
+	if profile.RequestAuthority != requestAuthorityVersionForSchema(b.snap.StorageVersion) || profile.RequestAuthority != "" && (!supportedRequestAuthority(profile.RequestAuthority) || len(profile.Templates) != 0 || len(profile.Continuations) != 0 || profile.RecordDispatchAdmissions) {
 		return ErrVersion
 	}
 	if profile.Version != compositionProtocolVersion || profiles[0]["version"] != compositionProtocolVersion || profile.RecordDispatchAdmissions != b.snap.Features.DispatchAdmissions ||
