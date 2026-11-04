@@ -18,6 +18,7 @@ import (
 )
 
 type AdapterAttempt struct {
+	Authority       *EffectAuthority `json:",omitempty"`
 	Intent          Intent
 	AuthorizationID string
 	Prepared        effects.Prepared
@@ -159,7 +160,7 @@ func (s *Store) prepareAdapterWork(ctx context.Context, id string, registry map[
 			return &adapterWork{attempt: old, adapter: reader, event: event, timeout: timeout}, nil
 		}
 		disposition := "source_denied"
-		if old.Reason == "grant_denied" {
+		if old.Reason == "grant_denied" || old.Authority != nil && !old.Authority.Allowed {
 			disposition = "grant_denied"
 		}
 		result, err := s.recordAdapterResult(ctx, old, effects.Candidate{ID: id, Key: old.Prepared.Request.Key, Disposition: disposition})
@@ -240,6 +241,23 @@ func (s *Store) prepareAdapterWork(ctx context.Context, id string, registry map[
 	if auth.Allowed && !grant {
 		a.Reason = "grant_denied"
 	}
+	enabled, e := requestAuthorityEnabled(ctx, tx)
+	if e != nil {
+		s.mu.Unlock()
+		return nil, e
+	}
+	if enabled {
+		a.Authority, e = evaluateEffectAuthority(ctx, tx, intent, authorityCurrentPrefix)
+		if e != nil {
+			s.mu.Unlock()
+			return nil, e
+		}
+		a.Allowed = auth.Allowed && a.Authority.Allowed
+		a.Reason = auth.Reason
+		if auth.Allowed && !a.Authority.Allowed {
+			a.Reason = a.Authority.Reason
+		}
+	}
 	a.Allowed, a.Reason, e = compositionReservationDecision(ctx, tx, intent.Intent, a.Allowed, a.Reason)
 	if e != nil {
 		s.mu.Unlock()
@@ -262,7 +280,7 @@ func (s *Store) prepareAdapterWork(ctx context.Context, id string, registry map[
 	event := boundary.Event{Boundary: "adapter.authorized", Phase: "pre-transport", Subject: intent.Run.Subject, Generation: intent.Run.Generation, Epoch: auth.Source.Epoch, Sequence: intent.Sequence, Intent: id, Attempt: auth.ID}
 	if !a.Allowed {
 		d := "source_denied"
-		if a.Reason == "grant_denied" {
+		if a.Reason == "grant_denied" || a.Authority != nil && !a.Authority.Allowed {
 			d = "grant_denied"
 		}
 		c := effects.Candidate{ID: id, Key: request.Key, Disposition: d}
@@ -379,6 +397,11 @@ func (s *Store) recordAdapterResult(ctx context.Context, a AdapterAttempt, c eff
 	}
 	if c.Disposition == "unknown" || c.Disposition == "" {
 		return r, fmt.Errorf("unknown outcome has no result")
+	}
+	if a.Allowed {
+		if err := requireAuthorityExposure(ctx, tx, a.Intent.ID, authorityCurrentPrefix); err != nil {
+			return AdapterResult{}, err
+		}
 	}
 	if !a.Allowed && c.Disposition != "grant_denied" && c.Disposition != "source_denied" {
 		return r, ErrConflict
@@ -505,6 +528,17 @@ func validateAdapterAttempt(ctx context.Context, q queryer, a AdapterAttempt, na
 	if auth.Allowed && !grant {
 		reason = "grant_denied"
 	}
+	w, e := retainedEffectAuthority(ctx, q, i, a.Authority)
+	if e != nil {
+		return e
+	}
+	if w != nil {
+		grant = w.Allowed
+		reason = auth.Reason
+		if auth.Allowed && !grant {
+			reason = w.Reason
+		}
+	}
 	allowed, reason, e := retainedCompositionReservation(ctx, q, i.Intent, auth.Allowed && grant, reason)
 	if e != nil {
 		return e
@@ -536,7 +570,7 @@ func validateAdapterResult(a AdapterAttempt, r AdapterResult, l Limits) error {
 	}
 	if !a.Allowed {
 		expected := "source_denied"
-		if a.Reason == "grant_denied" {
+		if a.Reason == "grant_denied" || a.Authority != nil && !a.Authority.Allowed {
 			expected = "grant_denied"
 		}
 		// No adapter ran. Only the synthetic denial made by the runtime can

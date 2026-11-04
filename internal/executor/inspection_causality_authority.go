@@ -137,7 +137,13 @@ func (c *causalCut) checkLifecycleAuthority(ordered []LifecycleResult) error {
 		granted := grants[Permission{Source: req.Intent.Run.Subject, Target: req.Intent.Target, Operation: req.Operation, Revision: req.ExpectedRevision}]
 		// The runtime's pure policy checks the supplied witnesses. No Store
 		// operation, reducer, or new decision is invoked during inspection.
-		want, err := decideTarget(req, r.DecisionSequence, w, origin, granted)
+		var want LifecycleResult
+		var err error
+		if authorityOperation(req.Operation) && c.authorityValidated {
+			want = r
+		} else {
+			want, err = decideTarget(req, r.DecisionSequence, w, origin, granted)
+		}
 		if err != nil {
 			return corrupt("invalid retained lifecycle decision: %v", err)
 		}

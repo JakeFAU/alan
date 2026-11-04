@@ -92,6 +92,9 @@ func loadIntent(ctx context.Context, q queryer, id string) (retainedIntent, erro
 	if r.ID != id || !sameJSON(r.raw, r.Intent) {
 		return r, ErrCorrupt
 	}
+	if err := validateRequestAuthorityIntent(ctx, q, r.Intent, r.revision); err != nil {
+		return r, err
+	}
 	return r, nil
 }
 

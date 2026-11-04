@@ -76,3 +76,15 @@ const HandoffPeer = executor.HandoffPeer
 
 type ReconciliationProfile = executor.ReconciliationProfile
 type ReceiptGrant = executor.ReceiptGrant
+
+// RequestAuthorityVersion selects the bounded request-bound authority protocol.
+const RequestAuthorityVersion = executor.RequestAuthorityVersion
+
+type AuthorityRoot = executor.AuthorityRoot
+type DelegationClaim = executor.DelegationClaim
+type RevocationClaim = executor.RevocationClaim
+type AuthorityUse = executor.AuthorityUse
+type AuthorityDecision = executor.AuthorityDecision
+type EffectAuthority = executor.EffectAuthority
+
+type AuthorityAdmission = executor.AuthorityAdmission

@@ -56,6 +56,12 @@ func (c *effectCut) checkEffectOrder() error {
 		id := f.OperationID
 		e := c.effects[id]
 		switch f.Kind {
+		case compositionAuthorityAdmissionFact:
+			if !c.authorityValidated || e == nil || f.AuthorityAdmission == nil {
+				return ErrCorrupt
+			}
+			e.AuthorityAdmissions = append(e.AuthorityAdmissions, *f.AuthorityAdmission)
+
 		case compositionExecutionFact:
 			step := c.steps[ReductionRef{f.Run, f.Sequence}]
 			if seq, active := p.seq[f.Run]; !active || step == nil || seq+1 != f.Sequence || p.closed[f.Run] || p.retired[f.Run] {
@@ -140,7 +146,15 @@ func (c *effectCut) checkEffectOrder() error {
 				return corrupt("reservation before original authorization")
 			}
 			// The immutable permission check already established base refusals.
-			if e.Authorization.Allowed && r.Reason != "grant_denied" {
+			permissionAllowed := true
+			if c.snap.Features.RequestAuthority {
+				if e.AdapterAttempt != nil {
+					permissionAllowed = e.AdapterAttempt.Authority.Allowed
+				} else {
+					permissionAllowed = e.ExternalAttempt.Authority.Allowed
+				}
+			}
+			if e.Authorization.Allowed && r.Reason != "grant_denied" && permissionAllowed {
 				reason := "authorized"
 				switch {
 				case p.scopeClosed(e.Source, f.Order):

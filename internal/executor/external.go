@@ -19,6 +19,7 @@ import (
 )
 
 type ExternalAttempt struct {
+	Authority       *EffectAuthority `json:",omitempty"`
 	Intent          Intent
 	AuthorizationID string
 	Request         resource.Request
@@ -101,6 +102,21 @@ func (s *Store) prepareExternal(ctx context.Context, id string) (ExternalAttempt
 		if count == 0 {
 			a.Allowed = false
 			a.Reason = "grant_denied"
+		}
+	}
+	enabled, e := requestAuthorityEnabled(ctx, tx)
+	if e != nil {
+		return a, false, e
+	}
+	if enabled {
+		a.Authority, err = evaluateEffectAuthority(ctx, tx, retained, authorityCurrentPrefix)
+		if err != nil {
+			return a, false, err
+		}
+		a.Allowed = auth.Allowed && a.Authority.Allowed
+		a.Reason = auth.Reason
+		if auth.Allowed && !a.Authority.Allowed {
+			a.Reason = a.Authority.Reason
 		}
 	}
 	a.Allowed, a.Reason, err = compositionReservationDecision(ctx, tx, retained.Intent, a.Allowed, a.Reason)
@@ -333,6 +349,9 @@ func (s *Store) recordExternalReceipt(ctx context.Context, a ExternalAttempt, r 
 	request.Key = ExternalKey(s.namespace, a.Intent.ID)
 	request.Epoch = auth.Source.Epoch
 	request.Authorization = auth.ID
+	if err = requireAuthorityExposure(ctx, tx, a.Intent.ID, authorityCurrentPrefix); err != nil {
+		return err
+	}
 	if !reflect.DeepEqual(retained, a) || !reflect.DeepEqual(intent.Intent, a.Intent) || !reflect.DeepEqual(request, a.Request) || !auth.Allowed || !a.Allowed || a.AuthorizationID != auth.ID || !validReceipt(a, r) {
 		return corrupt("external completion binding")
 	}
@@ -380,7 +399,7 @@ func externalOutcome(ctx context.Context, q queryer, id string) (ExternalOutcome
 	}
 	o := ExternalOutcome{Attempt: a, Disposition: "source_denied"}
 	if !a.Allowed {
-		if a.Reason == "grant_denied" {
+		if a.Reason == "grant_denied" || a.Authority != nil && !a.Authority.Allowed {
 			o.Disposition = "grant_denied"
 		}
 		return o, nil
@@ -488,7 +507,58 @@ func retainedExternalReservation(ctx context.Context, q queryer, intent retained
 			allowed, reason = false, "grant_denied"
 		}
 	}
+	enabled, e := requestAuthorityEnabled(ctx, q)
+	if e != nil {
+		return false, "", e
+	}
+	if enabled {
+		a, e := loadExternalAttempt(ctx, q, intent.ID)
+		if e != nil {
+			return false, "", e
+		}
+		w, e := retainedEffectAuthority(ctx, q, intent, a.Authority)
+		if e != nil {
+			return false, "", e
+		}
+		allowed = auth.Allowed && w.Allowed
+		reason = auth.Reason
+		if auth.Allowed && !w.Allowed {
+			reason = w.Reason
+		}
+	}
 	return retainedCompositionReservation(ctx, q, intent.Intent, allowed, reason)
+}
+
+// validateExternalAttempt reconstructs the request using the original authorization,
+// including its epoch; a fresh dispatch activation must not rewrite wire identity.
+func validateExternalAttempt(ctx context.Context, q queryer, a ExternalAttempt, namespace string) error {
+	intent, err := loadIntent(ctx, q, a.Intent.ID)
+	if err != nil {
+		return err
+	}
+	request, err := externalRequest(intent.Intent)
+	if err != nil {
+		return err
+	}
+	auth, err := loadAuthorization(ctx, q, a.Intent.ID)
+	if err != nil {
+		return err
+	}
+	request.Key = ExternalKey(namespace, a.Intent.ID)
+	request.Epoch = auth.Source.Epoch
+	request.Authorization = auth.ID
+	allowed, reason, err := retainedExternalReservation(ctx, q, intent, auth)
+	if err != nil {
+		return err
+	}
+	w, e := retainedEffectAuthority(ctx, q, intent, a.Authority)
+	if e != nil {
+		return e
+	}
+	if !reflect.DeepEqual(a, ExternalAttempt{Intent: intent.Intent, AuthorizationID: auth.ID, Request: request, Allowed: allowed, Reason: reason, Authority: w}) {
+		return corrupt("external attempt binding")
+	}
+	return nil
 }
 
 func validateExternal(ctx context.Context, q queryer) error {
@@ -518,34 +588,15 @@ func validateExternal(ctx context.Context, q queryer) error {
 		if err != nil {
 			return err
 		}
-		intent, err := loadIntent(ctx, q, id)
-		if err != nil {
+		if err = validateExternalAttempt(ctx, q, a, namespace); err != nil {
 			return err
-		}
-		request, err := externalRequest(intent.Intent)
-		if err != nil {
-			return err
-		}
-		auth, err := loadAuthorization(ctx, q, id)
-		if err != nil {
-			return err
-		}
-		request.Key = ExternalKey(namespace, id)
-		request.Epoch = auth.Source.Epoch
-		request.Authorization = auth.ID
-		allowed, reason, err := retainedExternalReservation(ctx, q, intent, auth)
-		if err != nil {
-			return err
-		}
-		if !reflect.DeepEqual(a, ExternalAttempt{Intent: intent.Intent, AuthorizationID: auth.ID, Request: request, Allowed: allowed, Reason: reason}) {
-			return corrupt("external attempt binding")
 		}
 		var receiptCount int
 		if err = q.QueryRowContext(ctx, "SELECT count(*) FROM external_receipts WHERE intent_id=?", id).Scan(&receiptCount); err != nil {
 			return err
 		}
 		if receiptCount > 0 {
-			if !allowed {
+			if !a.Allowed {
 				return corrupt("receipt without authorization")
 			}
 			if _, err = externalOutcome(ctx, q, id); err != nil {

@@ -475,7 +475,19 @@ func validateCompositionPrefix(ctx context.Context, q queryer, l Limits, c compo
 			expected[f.ID] = f
 		}
 	}
-	if len(expected) != len(facts) {
+	primary := 0
+	for _, f := range facts {
+		if f.Kind == compositionAuthorityAdmissionFact {
+			primary++
+			if err := validateAuthorityAdmission(ctx, q, f); err != nil {
+				return err
+			}
+		}
+	}
+	if err := validateRequestAuthorityHistory(ctx, q); err != nil {
+		return err
+	}
+	if len(expected)+primary != len(facts) {
 		return corrupt("missing/invented protocol fact")
 	}
 	seen := map[string]bool{}
@@ -484,11 +496,19 @@ func validateCompositionPrefix(ctx context.Context, q queryer, l Limits, c compo
 	expectedFreezes := [][]any{}
 	for index, f := range facts {
 		want, ok := expected[f.ID]
+		if f.Kind == compositionAuthorityAdmissionFact {
+			want = f
+			ok = true
+		}
 		want.Order = f.Order
 		if !ok || f.Order != int64(index+1) || !reflect.DeepEqual(want, f) || seen[f.ID] {
 			return corrupt("protocol fact identity/order/source")
 		}
 		switch f.Kind {
+		case compositionAuthorityAdmissionFact:
+			if err = validateAuthorityAdmission(ctx, q, f); err != nil {
+				return err
+			}
 		case compositionExecutionFact:
 			if !x.active[f.Run] || x.states[f.Run].Status != "open" || x.retired[f.Run] || f.Sequence != x.sequences[f.Run]+1 {
 				return corrupt("execution prefix authority")
@@ -640,6 +660,17 @@ func validateCompositionPrefix(ctx context.Context, q queryer, l Limits, c compo
 			if allowed && !grant {
 				allowed = false
 				reason = "grant_denied"
+			}
+			if c.RequestAuthority != "" {
+				w, e := evaluateEffectAuthority(ctx, q, retained, f.Order)
+				if e != nil {
+					return e
+				}
+				allowed = auth.Allowed && w.Allowed
+				reason = auth.Reason
+				if auth.Allowed && !w.Allowed {
+					reason = w.Reason
+				}
 			}
 			root := x.roots[x.scopes[i.Run].RootID]
 			if allowed {

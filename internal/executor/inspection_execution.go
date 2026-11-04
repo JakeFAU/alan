@@ -50,6 +50,7 @@ type ReceiveWait struct {
 // InspectionFeatures identifies optional protocols actually present in this
 // storage format. A missing older protocol differs from an empty newer journal.
 type InspectionFeatures struct {
+	RequestAuthority                           bool `json:",omitempty"`
 	Composition, ReceiptReads, ConflictJournal bool
 	DispatchAdmissions                         bool `json:",omitempty"`
 }
@@ -200,23 +201,24 @@ func (s *ExecutionSnapshot) History(offset, limit int) (HistoryPage, error) {
 }
 
 type inspectionBuilder struct {
-	continuations  *continuationIndex
-	limits         Limits
-	tables         map[string][]map[string]any
-	snap           *ExecutionSnapshot
-	runs           map[RunID]*ExecutionRun
-	programs       map[string]Program
-	resolved       map[RunID]Program
-	intents        map[string]retainedIntent
-	steps          map[ReductionRef]*ExecutionStep
-	before, after  map[ReductionRef]Projection
-	observations   map[string]*ObservationView
-	invocations    map[string]*InvocationView
-	effects        map[string]*ExecutionEffect
-	membership     map[RunID]string
-	facts          map[string]compositionFact
-	authorizations map[string]Authorization
-	lifecycle      map[string]LifecycleResult
+	authorityValidated bool
+	continuations      *continuationIndex
+	limits             Limits
+	tables             map[string][]map[string]any
+	snap               *ExecutionSnapshot
+	runs               map[RunID]*ExecutionRun
+	programs           map[string]Program
+	resolved           map[RunID]Program
+	intents            map[string]retainedIntent
+	steps              map[ReductionRef]*ExecutionStep
+	before, after      map[ReductionRef]Projection
+	observations       map[string]*ObservationView
+	invocations        map[string]*InvocationView
+	effects            map[string]*ExecutionEffect
+	membership         map[RunID]string
+	facts              map[string]compositionFact
+	authorizations     map[string]Authorization
+	lifecycle          map[string]LifecycleResult
 }
 
 // InspectExecution reads one coherent SQLite cut without acquiring an owner,
@@ -255,6 +257,7 @@ func InspectExecution(ctx context.Context, path string, limits Limits) (snapshot
 		ReceiptReads:       base == reconciliationSchemaVersion,
 		ConflictJournal:    hasReceiptConflictSchema(s.StorageVersion),
 		DispatchAdmissions: hasDispatchAdmissionSchema(s.StorageVersion),
+		RequestAuthority:   hasRequestAuthoritySchema(s.StorageVersion),
 	}
 	tables := protocolTables(s.StorageVersion)
 	if err := checkProtocolTables(ctx, tx, s.StorageVersion); err != nil {
@@ -284,6 +287,12 @@ func InspectExecution(ctx context.Context, path string, limits Limits) (snapshot
 		if b.tables[name], err = scanInspectionTable(ctx, tx, name, true); err != nil {
 			return nil, err
 		}
+	}
+	if s.Features.RequestAuthority {
+		if err = validateRequestAuthorityHistory(ctx, tx); err != nil {
+			return nil, err
+		}
+		b.authorityValidated = true
 	}
 	// Everything used below came from this transaction. Release the read mark
 	// before constructing the in-memory indexes so a writer can checkpoint.
@@ -356,6 +365,9 @@ func (b *inspectionBuilder) buildRuns() error {
 		var p Program
 		if programHash([]byte(raw)) != id || decode([]byte(raw), &p) != nil || p.Semantics != r["semantics"] {
 			return corrupt("invalid retained program %s", id)
+		}
+		if err := validateRequestAuthorityProgram(p, b.snap.Features.RequestAuthority); err != nil {
+			return err
 		}
 		if err := validateProgram(p); err != nil {
 			return err
@@ -471,6 +483,15 @@ func checkProtocolTables(ctx context.Context, q queryer, version int) error {
 		return err
 	}
 	if continuationJournal != hasContinuationSchema(version) {
+		return ErrVersion
+	}
+	var authorityJournal bool
+	if have["composition_facts"] {
+		if err := q.QueryRowContext(ctx, "SELECT instr(lower(sql),?)>0 FROM sqlite_schema WHERE lower(name)='composition_facts'", "'authority_admission'").Scan(&authorityJournal); err != nil {
+			return err
+		}
+	}
+	if authorityJournal != hasRequestAuthoritySchema(version) {
 		return ErrVersion
 	}
 	required := map[string]bool{}

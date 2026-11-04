@@ -74,7 +74,8 @@ type ExecutionEffect struct {
 	Dispatch        EffectDispatch
 	// DispatchAdmission is the witnessed local gate in an opted-in scope.
 	// A paid reservation alone does not establish admission or transmission.
-	DispatchAdmission    *DispatchAdmission `json:",omitempty"`
+	DispatchAdmission    *DispatchAdmission   `json:",omitempty"`
+	AuthorityAdmissions  []AuthorityAdmission `json:",omitempty"`
 	Usage                *effects.Usage
 	ReceiptEvidenceState string
 	AdditionalReceipts   []EffectReceipt
@@ -278,6 +279,28 @@ func (c *effectCut) reservation(x *ExecutionEffect, i Intent, authID string, all
 	baseReason := a.Reason
 	if a.Allowed && !base {
 		baseReason = "grant_denied"
+	}
+	var w *EffectAuthority
+	if x.AdapterAttempt != nil {
+		w = x.AdapterAttempt.Authority
+	}
+	if x.ExternalAttempt != nil {
+		w = x.ExternalAttempt.Authority
+	}
+	if c.snap.Features.RequestAuthority {
+		if !c.authorityValidated {
+			return ErrCorrupt
+		}
+		if w == nil {
+			return ErrCorrupt
+		}
+		base = a.Allowed && w.Allowed
+		baseReason = a.Reason
+		if a.Allowed && !w.Allowed {
+			baseReason = w.Reason
+		}
+	} else if i.Authority != nil || w != nil {
+		return ErrVersion
 	}
 	res, scoped := c.reservations[x.OperationID]
 	if scoped != (c.membership[x.Source] != "") {

@@ -342,6 +342,13 @@ func createStore(ctx context.Context, path string, p Provision, limits Limits, c
 	if composition != nil {
 		version = compositionSchemaVersion
 		ddl := compositionSchema
+		if composition.RequestAuthority != "" {
+			if composition.RequestAuthority != RequestAuthorityVersion || composition.Version != compositionProtocolVersion || composition.RecordDispatchAdmissions || len(composition.Continuations) != 0 || len(composition.Templates) != 0 || p.Reconciliation != nil || len(p.Subjects) != 2 || len(p.Runs) != 2 {
+				return nil, ErrVersion
+			}
+			version = requestAuthoritySchema
+			ddl = compositionSchemaBeforeRead + ",'authority_admission'" + compositionSchemaAfterRead
+		}
 		if len(composition.Continuations) > 0 {
 			if !composition.RecordDispatchAdmissions || composition.Version != compositionProtocolVersion {
 				return nil, ErrVersion
@@ -529,6 +536,13 @@ func insertArtifact(ctx context.Context, tx *sql.Tx, a Artifact, l Limits) error
 	if err := validateProgram(p); err != nil {
 		return err
 	}
+	enabled, e := requestAuthorityEnabled(ctx, tx)
+	if e != nil {
+		return e
+	}
+	if e = validateRequestAuthorityProgram(p, enabled); e != nil {
+		return e
+	}
 	var sem string
 	var existing []byte
 	err := tx.QueryRowContext(ctx, "SELECT semantics,bytes FROM programs WHERE id=?", a.ID).Scan(&sem, &existing)
@@ -565,6 +579,13 @@ func loadProgram(ctx context.Context, q queryer, id string, l Limits) (Program, 
 	}
 	if p.Semantics != a.Semantics {
 		return Program{}, ErrVersion
+	}
+	enabled, e := requestAuthorityEnabled(ctx, q)
+	if e != nil {
+		return p, e
+	}
+	if e = validateRequestAuthorityProgram(p, enabled); e != nil {
+		return p, e
 	}
 	return p, validateProgram(p)
 }
@@ -876,6 +897,9 @@ func (s *Store) Commit(ctx context.Context, a Authority, selected string) (RunSt
 		return RunState{}, err
 	}
 	for _, intent := range reduction.Intents {
+		if err = validateRequestAuthorityIntent(ctx, tx, intent, r.Revision); err != nil {
+			return RunState{}, err
+		}
 		b, e := json.Marshal(intent)
 		if e != nil {
 			return RunState{}, e

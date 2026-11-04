@@ -29,7 +29,7 @@ func hasReceiptConflictSchema(version int) bool {
 	switch version {
 	case SchemaVersion + receiptConflictSchemaOffset,
 		compositionSchemaVersion + receiptConflictSchemaOffset,
-		reconciliationSchemaVersion + receiptConflictSchemaOffset, dispatchAdmissionConflictSchema, continuationConflictSchema:
+		reconciliationSchemaVersion + receiptConflictSchemaOffset, dispatchAdmissionConflictSchema, continuationConflictSchema, requestAuthorityConflictSchema:
 		return true
 	default:
 		return false
@@ -37,6 +37,9 @@ func hasReceiptConflictSchema(version int) bool {
 }
 
 func protocolSchemaNumber(version int) int {
+	if hasRequestAuthoritySchema(version) {
+		return compositionSchemaVersion
+	}
 	if hasDispatchAdmissionSchema(version) {
 		return compositionSchemaVersion
 	}
@@ -73,6 +76,8 @@ func ensureReceiptConflictSchema(ctx context.Context, tx *sql.Tx) error {
 		return err
 	}
 	switch version {
+	case requestAuthoritySchema:
+		version = requestAuthorityConflictSchema
 	case dispatchAdmissionSchema:
 		version = dispatchAdmissionConflictSchema
 	case continuationSchema:

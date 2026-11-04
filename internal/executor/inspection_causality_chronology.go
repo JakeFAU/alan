@@ -162,6 +162,7 @@ func (g *memberOrder) indexTransactions() error {
 	facts := map[string]int{}
 	factOrder := map[int64]int{}
 	readOrder := map[readOrdinalKey]int{}
+	authorityOrder := map[readOrdinalKey]int{}
 	var prev int
 	for _, row := range g.tables["composition_facts"] {
 		f, err := inspectionDecode[compositionFact](row, "descriptor")
@@ -180,6 +181,19 @@ func (g *memberOrder) indexTransactions() error {
 		facts[f.ID] = node
 		factOrder[f.Order] = node
 		switch f.Kind {
+		case compositionAuthorityAdmissionFact:
+			if f.AuthorityAdmission == nil {
+				return ErrCorrupt
+			}
+			key := readOrdinalKey{f.OperationID, f.AuthorityAdmission.Ordinal}
+			if authorityOrder[key] != 0 {
+				return ErrCorrupt
+			}
+			authorityOrder[key] = node
+			if f.AuthorityAdmission.Allowed {
+				g.readWitnesses[node] = f.AuthorityAdmission.Source
+			}
+
 		case compositionExecutionFact:
 			g.reductions[ReductionRef{f.Run, f.Sequence}] = node
 		case compositionReadFact:
@@ -264,6 +278,28 @@ func (g *memberOrder) indexTransactions() error {
 		if result := g.records[protocolRecord{compositionExternalResultFact, id}]; result != 0 {
 			g.before(gate, result)
 			g.dispatchOwner = append(g.dispatchOwner, reopenEquation{from: gate, to: result, delta: 0})
+		}
+	}
+	for _, row := range g.tables["composition_facts"] {
+		f, e := inspectionDecode[compositionFact](row, "descriptor")
+		if e != nil {
+			return e
+		}
+		if f.Kind != compositionAuthorityAdmissionFact {
+			continue
+		}
+		d := f.AuthorityAdmission
+		n := authorityOrder[readOrdinalKey{f.OperationID, d.Ordinal}]
+		g.witness(n, d.Source.Run, d.Source.Sequence)
+		g.before(g.records[protocolRecord{compositionReservationFact, f.OperationID}], n)
+		for _, row := range g.tables["intents"] {
+			i, e := inspectionDecode[Intent](row, "descriptor")
+			if e != nil {
+				return e
+			}
+			if i.ID == f.OperationID && i.Authority != nil && i.Authority.Path == "delegated" {
+				g.before(g.records[protocolRecord{compositionLifecycleFact, i.Authority.GrantID}], n)
+			}
 		}
 	}
 	return g.orderMirroredRows(factOrder, readOrder)

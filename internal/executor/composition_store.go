@@ -51,6 +51,9 @@ func retainCompositionProfile(ctx context.Context, q queryer, namespace string, 
 	if err := validateCompositionEncoding(c); err != nil {
 		return nil, err
 	}
+	if c.RequestAuthority != "" && (c.RequestAuthority != RequestAuthorityVersion || c.Version != compositionProtocolVersion || len(c.Templates) != 0 || len(c.Continuations) != 0 || c.RecordDispatchAdmissions) {
+		return nil, ErrVersion
+	}
 	if c.Version != "" && c.Version != compositionProtocolVersion {
 		return nil, ErrVersion
 	}
@@ -172,6 +175,15 @@ func retainCompositionProfile(ctx context.Context, q queryer, namespace string, 
 		}
 		out.Roots[i] = r
 	}
+	if out.RequestAuthority != "" {
+		var n int
+		if err = q.QueryRowContext(ctx, "SELECT count(*) FROM subjects").Scan(&n); err != nil {
+			return nil, err
+		}
+		if len(members) != 2 || n != 2 {
+			return nil, ErrVersion
+		}
+	}
 	if err = validateHandoff(ctx, q, out, l); err != nil {
 		return nil, err
 	}
@@ -274,6 +286,9 @@ func readCompositionProfile(ctx context.Context, q queryer, l Limits) (*composit
 	var c compositionProvision
 	if err = decode(raw, &c); err != nil {
 		return nil, err
+	}
+	if (c.RequestAuthority != "") != hasRequestAuthoritySchema(stored) {
+		return nil, ErrVersion
 	}
 	if version != compositionVersion(c) || c.RecordDispatchAdmissions != hasDispatchAdmissionSchema(stored) || (len(c.Continuations) > 0) != hasContinuationSchema(stored) {
 		return nil, ErrVersion
