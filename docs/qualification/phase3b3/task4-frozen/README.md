@@ -64,6 +64,17 @@ corresponding extracted directory. To rerun, check out the source freeze and
 use fresh output roots for the exact commands in `commands.json`. Build the old
 reader from `af6943a5805a9a6c0e8fe77f804264f4765d07ec`, as described in the
 parent README, and set `ALAN_PHASE3B3_OLD_READER` to that new binary.
+The original build record is `old-reader-build.json`. In the separate checkout
+of the old source, the command is:
+
+```sh
+go build -buildvcs=false -o /tmp/alan-phase3b3-old-reader-rebuilt ./cmd/alan
+export ALAN_PHASE3B3_OLD_READER=/tmp/alan-phase3b3-old-reader-rebuilt
+```
+
+The original binary hash is recorded in `source.json`; a path-remapped rebuild
+is not claimed to reproduce identical executable bytes. The supplemental build
+record is delivery provenance outside the immutable run archive.
 
 `freeze.py` is the original generating script, with historical absolute paths
 retained. Copy it before remapping its repository, output, cache and old-reader
