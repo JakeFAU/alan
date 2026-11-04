@@ -201,12 +201,17 @@ func validateRequestBindingIndex(ctx context.Context, q queryer, version int) er
 	if count != 1 || unique != 0 || partial != 0 || origin != "c" {
 		return ErrVersion
 	}
-	var columns int
-	var column string
-	if err = q.QueryRowContext(ctx, "SELECT count(*),coalesce(max(name),'') FROM pragma_index_info('admissions_observation_id')").Scan(&columns, &column); err != nil {
+	// The exact observation_id equality uses BINARY collation. index_info
+	// omits collation and would accept a NOCASE replacement that forces a scan.
+	// Require the single ascending BINARY key emitted by Create; SQLite's
+	// auxiliary rowid entry is not an indexed key and is excluded here.
+	var columns, matching int
+	if err = q.QueryRowContext(ctx, `SELECT count(*),coalesce(sum(
+		seqno=0 AND cid>=0 AND name='observation_id' AND coll='BINARY' AND "desc"=0
+		),0) FROM pragma_index_xinfo('admissions_observation_id') WHERE "key"=1`).Scan(&columns, &matching); err != nil {
 		return err
 	}
-	if columns != 1 || column != "observation_id" {
+	if columns != 1 || matching != 1 {
 		return ErrVersion
 	}
 	return nil

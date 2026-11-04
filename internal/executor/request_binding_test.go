@@ -285,6 +285,8 @@ func TestRequestBindingMalformedOpenDoesNotRenew(t *testing.T) {
 	for _, tc := range []struct{ name, sql string }{
 		{"missing_index", "DROP INDEX admissions_observation_id"},
 		{"wrong_index", "DROP INDEX admissions_observation_id; CREATE INDEX admissions_observation_id ON admissions(transport_id)"},
+		{"descending_index", "DROP INDEX admissions_observation_id; CREATE INDEX admissions_observation_id ON admissions(observation_id DESC)"},
+		{"nocase_index", "DROP INDEX admissions_observation_id; CREATE INDEX admissions_observation_id ON admissions(observation_id COLLATE NOCASE)"},
 		{"unique_index", "DROP INDEX admissions_observation_id; CREATE UNIQUE INDEX admissions_observation_id ON admissions(observation_id)"},
 		{"metadata", "UPDATE metadata SET schema_version=13"},
 		{"pragma", "PRAGMA user_version=13"},
