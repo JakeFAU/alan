@@ -1,0 +1,41 @@
+package executor
+
+import (
+	"path/filepath"
+	"testing"
+)
+
+// This is a pre-implementation falsifier of the frozen contract's assertion
+// that literal programs can name exact existing resource-root IDs. The first
+// store supplies a real canonical ID, without guessing the namespace. Reusing
+// that exact provision in a new ordinary Create cannot preserve the root ID.
+// Keep the failed run as evidence before revising the representation contract.
+func TestRequestAuthorityLiteralRootLocator(t *testing.T) {
+	p, c := compositionFixture(t)
+	p.Composition = &c
+	first, err := Create(t.Context(), filepath.Join(t.TempDir(), "first.sqlite"), p, DefaultLimits())
+	if err != nil {
+		t.Fatal(err)
+	}
+	profile, err := first.composition.descriptor()
+	if err != nil {
+		t.Fatal(err)
+	}
+	rootID := profile.Roots[0].ID
+	t.Logf("first namespace=%s canonical root=%s", first.Namespace(), rootID)
+	if err = first.Close(); err != nil {
+		t.Fatal(err)
+	}
+	// A precompiled AuthorityUse.Root.RootID and claim.RecipientRootID
+	// would need this ID before Create; providing it as the existing public
+	// ResourceRoot.ID is the only candidate ordinary provisioning route.
+	c.Roots[0].ID = rootID
+	p.Composition = &c
+	second, err := Create(t.Context(), filepath.Join(t.TempDir(), "second.sqlite"), p, DefaultLimits())
+	if err != nil {
+		t.Fatalf("frozen literal-root construction cannot provision exact root %s: %v", rootID, err)
+	}
+	if err = second.Close(); err != nil {
+		t.Fatal(err)
+	}
+}
