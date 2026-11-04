@@ -1,0 +1,303 @@
+{
+  "source": {
+    "base_commit": "1d0ef3c91589c3df69b5a004cd5362438e8eed46",
+    "tree": "c7266108c1e8913534781a066defe93f4057b8dc",
+    "archive_sha256": "ad09dde7c4725b802fdcd73aa9a2ce46a1837ab65f13e12ea60b7fd04001b1eb",
+    "filename_content_manifest_sha256": "d46f441a3ea10ef67b9e3ef455aa4bc9df1829f869c6b9824ea64a33e1cf5272",
+    "file_count": 302,
+    "archive_bytes": 2816000,
+    "created_utc": "2026-11-03T23:09:41.000931+00:00"
+  },
+  "environment": {
+    "environment_overrides": {
+      "GOCACHE": "/private/tmp/alan-runtime-health.18e1DyxD/cache",
+      "GOMODCACHE": "/private/tmp/alan-runtime-health.18e1DyxD/modcache",
+      "GOPROXY": "off",
+      "GOWORK": "off",
+      "GOTOOLCHAIN": "local",
+      "CGO_ENABLED": "1"
+    },
+    "commands": [
+      {
+        "command": [
+          "go",
+          "version"
+        ],
+        "exit_code": 0,
+        "output": "go version go1.27.3 darwin/arm64\n",
+        "log": "environment-0.log"
+      },
+      {
+        "command": [
+          "go",
+          "env"
+        ],
+        "exit_code": 0,
+        "output": "AR='ar'\nCC='cc'\nCGO_CFLAGS='-O2 -g'\nCGO_CPPFLAGS=''\nCGO_CXXFLAGS='-O2 -g'\nCGO_ENABLED='1'\nCGO_FFLAGS='-O2 -g'\nCGO_LDFLAGS='-O2 -g'\nCXX='c++'\nGCCGO='gccgo'\nGO111MODULE=''\nGOARCH='arm64'\nGOARM64='v8.0'\nGOAUTH='netrc'\nGOBIN='/Users/jacob/go/bin'\nGOCACHE='/private/tmp/alan-runtime-health.18e1DyxD/cache'\nGOCACHEPROG=''\nGODEBUG=''\nGOENV='/Users/jacob/Library/Application Support/go/env'\nGOEXE=''\nGOEXPERIMENT=''\nGOFIPS140='off'\nGOFLAGS=''\nGOGCCFLAGS='-fPIC -arch arm64 -pthread -fno-caret-diagnostics -Qunused-arguments -fmessage-length=0 -ffile-prefix-map=/var/folders/qn/d3_l9fv5585g36qycsc804hh0000gn/T/go-build3825929628=/tmp/go-build -gno-record-gcc-switches -fno-common'\nGOHOSTARCH='arm64'\nGOHOSTOS='darwin'\nGOINSECURE=''\nGOMOD='/private/tmp/alan-bounded-series.m9VryKAu/baseline/source/go.mod'\nGOMODCACHE='/private/tmp/alan-runtime-health.18e1DyxD/modcache'\nGONOPROXY=''\nGONOSUMDB=''\nGOOS='darwin'\nGOPACKAGESDRIVER=''\nGOPATH='/Users/jacob/go'\nGOPRIVATE=''\nGOPROXY='off'\nGOROOT='/opt/homebrew/Cellar/go/1.27.3/libexec'\nGOSUMDB='sum.golang.org'\nGOTELEMETRY='local'\nGOTELEMETRYDIR='/Users/jacob/Library/Application Support/go/telemetry'\nGOTMPDIR=''\nGOTOOLCHAIN='local'\nGOTOOLDIR='/opt/homebrew/Cellar/go/1.27.3/libexec/pkg/tool/darwin_arm64'\nGOVCS=''\nGOVERSION='go1.27.3'\nGOWORK='off'\nPKG_CONFIG='pkg-config'\n",
+        "log": "environment-1.log"
+      },
+      {
+        "command": [
+          "go",
+          "list",
+          "-m",
+          "all"
+        ],
+        "exit_code": 0,
+        "output": "github.com/JakeFAU/alan\ngithub.com/mattn/go-sqlite3 v1.14.52\n",
+        "log": "environment-2.log"
+      },
+      {
+        "command": [
+          "staticcheck",
+          "-version"
+        ],
+        "exit_code": 0,
+        "output": "staticcheck 2026.2.2 (0.8.2)\n",
+        "log": "environment-3.log"
+      },
+      {
+        "command": [
+          "uname",
+          "-a"
+        ],
+        "exit_code": 0,
+        "output": "Darwin Jacobs-Mac-mini.local 27.2.0 Darwin Kernel Version 27.2.0: Wed Oct 14 23:47:07 PDT 2026; root:xnu-13432.41.4~25/RELEASE_ARM64_T8132 arm64\n",
+        "log": "environment-4.log"
+      },
+      {
+        "command": [
+          "xcrun",
+          "clang",
+          "--version"
+        ],
+        "exit_code": 0,
+        "output": "Apple clang version 21.0.0 (clang-2100.4.1.1)\nTarget: arm64-apple-darwin27.2.0\nThread model: posix\nInstalledDir: /Library/Developer/CommandLineTools/usr/bin\n",
+        "log": "environment-5.log"
+      },
+      {
+        "command": [
+          "python3",
+          "--version"
+        ],
+        "exit_code": 0,
+        "output": "Python 3.9.6\n",
+        "log": "environment-6.log"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "ordinary",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "./..."
+      ],
+      "cwd": "/private/tmp/alan-bounded-series.m9VryKAu/baseline/source",
+      "exit_code": 1,
+      "duration_seconds": 5.4638001918792725,
+      "log": "/private/tmp/alan-bounded-series.m9VryKAu/baseline/ordinary.log"
+    },
+    {
+      "name": "staticcheck",
+      "command": [
+        "staticcheck",
+        "./..."
+      ],
+      "cwd": "/private/tmp/alan-bounded-series.m9VryKAu/baseline/source",
+      "exit_code": 1,
+      "duration_seconds": 0.30439090728759766,
+      "log": "/private/tmp/alan-bounded-series.m9VryKAu/baseline/staticcheck.log"
+    },
+    {
+      "name": "staticcheck-integration",
+      "command": [
+        "staticcheck",
+        "-tags=integration",
+        "./..."
+      ],
+      "cwd": "/private/tmp/alan-bounded-series.m9VryKAu/baseline/source",
+      "exit_code": 1,
+      "duration_seconds": 1.4188952445983887,
+      "log": "/private/tmp/alan-bounded-series.m9VryKAu/baseline/staticcheck-integration.log"
+    },
+    {
+      "name": "staticcheck-writable-cache",
+      "command": [
+        "staticcheck",
+        "./..."
+      ],
+      "environment_addition": {
+        "XDG_CACHE_HOME": "/private/tmp/alan-bounded-series.m9VryKAu/baseline/staticcheck-cache"
+      },
+      "cwd": "/private/tmp/alan-bounded-series.m9VryKAu/baseline/source",
+      "exit_code": 1,
+      "duration_seconds": 0.15923404693603516,
+      "log": "/private/tmp/alan-bounded-series.m9VryKAu/baseline/staticcheck-writable-cache.log"
+    },
+    {
+      "name": "staticcheck-integration-writable-cache",
+      "command": [
+        "staticcheck",
+        "-tags=integration",
+        "./..."
+      ],
+      "environment_addition": {
+        "XDG_CACHE_HOME": "/private/tmp/alan-bounded-series.m9VryKAu/baseline/staticcheck-cache"
+      },
+      "cwd": "/private/tmp/alan-bounded-series.m9VryKAu/baseline/source",
+      "exit_code": 1,
+      "duration_seconds": 0.161607027053833,
+      "log": "/private/tmp/alan-bounded-series.m9VryKAu/baseline/staticcheck-integration-writable-cache.log"
+    },
+    {
+      "name": "staticcheck-explicit-cache",
+      "command": [
+        "staticcheck",
+        "./..."
+      ],
+      "environment_addition": {
+        "STATICCHECK_CACHE": "/private/tmp/alan-bounded-series.m9VryKAu/baseline/staticcheck-cache"
+      },
+      "cwd": "/private/tmp/alan-bounded-series.m9VryKAu/baseline/source",
+      "exit_code": 1,
+      "duration_seconds": 2.222745895385742,
+      "log": "/private/tmp/alan-bounded-series.m9VryKAu/baseline/staticcheck-explicit-cache.log"
+    },
+    {
+      "name": "staticcheck-integration-explicit-cache",
+      "command": [
+        "staticcheck",
+        "-tags=integration",
+        "./..."
+      ],
+      "environment_addition": {
+        "STATICCHECK_CACHE": "/private/tmp/alan-bounded-series.m9VryKAu/baseline/staticcheck-cache"
+      },
+      "cwd": "/private/tmp/alan-bounded-series.m9VryKAu/baseline/source",
+      "exit_code": 1,
+      "duration_seconds": 0.7501440048217773,
+      "log": "/private/tmp/alan-bounded-series.m9VryKAu/baseline/staticcheck-integration-explicit-cache.log"
+    },
+    {
+      "name": "ordinary-local-listeners",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "./..."
+      ],
+      "cwd": "/private/tmp/alan-bounded-series.m9VryKAu/baseline/source",
+      "sandbox": "escalated solely for local listeners and processes",
+      "exit_code": 0,
+      "duration_seconds": 25.004234075546265,
+      "log": "/private/tmp/alan-bounded-series.m9VryKAu/baseline/ordinary-local-listeners.log"
+    },
+    {
+      "command": [
+        "go",
+        "test",
+        "-mod=mod",
+        "-count=1",
+        "-run",
+        "^TestBaselineMetrics$",
+        "-v",
+        "."
+      ],
+      "cwd": "/private/tmp/alan-bounded-series.m9VryKAu/baseline/measurement",
+      "exit_code": 0,
+      "duration_seconds": 0.7608439922332764,
+      "log": "/private/tmp/alan-bounded-series.m9VryKAu/baseline/provision-metrics.log"
+    }
+  ],
+  "provisioning": {
+    "continuation_slots": 7,
+    "operation_identities_before_execution": 0,
+    "permissions": {
+      "adapter": 8,
+      "input": 7
+    },
+    "permissions_total": 15,
+    "physical_provider_contacts": 0,
+    "program_artifacts": 2,
+    "resource_roots": 8,
+    "runs": 8,
+    "subjects": 8,
+    "source_ranges": {
+      "configuration_provision_whole": {
+        "path": "examples/weather-agent/program.go",
+        "first_line": 83,
+        "last_line": 121,
+        "physical_lines": 39,
+        "nonblank_noncomment_lines": 37,
+        "definition": "Physical lines include braces and comments; nonblank_noncomment excludes full-line comments only. No eight-fold multiplication."
+      },
+      "expansion_and_provision": {
+        "path": "examples/weather-agent/program.go",
+        "first_line": 97,
+        "last_line": 120,
+        "physical_lines": 24,
+        "nonblank_noncomment_lines": 22,
+        "definition": "Physical lines include braces and comments; nonblank_noncomment excludes full-line comments only. No eight-fold multiplication."
+      },
+      "read_identity": {
+        "path": "examples/weather-agent/program.go",
+        "first_line": 32,
+        "last_line": 34,
+        "physical_lines": 3,
+        "nonblank_noncomment_lines": 3,
+        "definition": "Physical lines include braces and comments; nonblank_noncomment excludes full-line comments only. No eight-fold multiplication."
+      }
+    },
+    "application_permission_literal_constructions": 0,
+    "subject_or_run_identity_derivations": 8,
+    "scope_instances_constructed_by_app": 8,
+    "input_binding_instances": 8,
+    "continuation_slot_instances_constructed_by_app": 7,
+    "public_series_declaration_api": "none in base; app.Provision() follows application-owned per-position expansion",
+    "public_application_provision_calls": 1,
+    "application_owned_storage_queries": 0,
+    "completed_eight_provider_contacts_from_retained_qualification": 8,
+    "completed_eight_retained_operation_identities_from_retained_qualification": 8,
+    "qualification_numbers_boundary": "8 successful contact/operation count follows benchmark assertions and source-bound docs; baseline metrics test itself provisions without execution and makes zero contacts."
+  },
+  "preserved_weather_fixtures": [
+    {
+      "path": "examples/weather-agent/testdata/continuation-process.jsonl",
+      "bytes": 28507,
+      "sha256": "e61dca6b4bedbe50bd1ac1ffea0bcb06a0c66a8a50f637ec833edd5dc49643c1"
+    },
+    {
+      "path": "examples/weather-agent/testdata/controlled-process.jsonl",
+      "bytes": 34715,
+      "sha256": "f0323242ad29e3e30e494531d4f2dce35aa1a99d7928a321a691e10296140494"
+    },
+    {
+      "path": "examples/weather-agent/testdata/live.json",
+      "bytes": 2284,
+      "sha256": "10c2da88e804cebc665bab3ea18129e0c571a298c4f57467b695b7b343c1be66"
+    },
+    {
+      "path": "examples/weather-agent/testdata/live.sqlite.gz",
+      "bytes": 17640,
+      "sha256": "e2c9250c03a4a8bcd5491a45e726230222bfb84be87c569a651dd1b92a0225af"
+    }
+  ],
+  "known_flaky_evidence": "No flaky source/test failure observed in the baseline ordinary rerun; sandbox listener denial and Staticcheck cache denial are environmental failures, not flaky test evidence. Other historical flaky evidence remains unclassified and preserved.",
+  "staticcheck_findings": {
+    "ordinary": [
+      "adapters/openai/openai.go:49 ST1005",
+      "adapters/openai/openai.go:59 ST1005",
+      "author/race_off_test.go:5 U1000"
+    ],
+    "integration": [
+      "adapters/openai/openai.go:49 ST1005",
+      "adapters/openai/openai.go:59 ST1005",
+      "runtime/runtime_test.go:1117 SA4006",
+      "runtime/runtime_test.go:1126 SA4006"
+    ]
+  },
+  "no_live_provider_contacts": true
+}

@@ -22,6 +22,31 @@ db="$work/weather.sqlite"
 
 `run` and `resume` execute the authored program in the existing database. Add `--json` for the structured report. `inspect` returns the original operation and frozen URL, authorization, paid reservation, local dispatch admission, native response, selected observation, pending work and history. `replay` checks the retained reductions offline. The provider supplies no usage or price counter for this request, so the report leaves cost unknown.
 
+## Declare one observation or eight
+
+The application supplies its ordinary request/await/validation program once:
+
+```go
+series, err := author.BoundedSeries(weatherDefinition(), author.SeriesOptions{
+    ID: "weather", Count: 8, Inputs: inputs,
+    First: author.ApproveAtProvision,
+    ApprovalReasons: []string{
+        "new_read_after_undispatched_reservation",
+        "new_read_after_unknown_response",
+        "new_read_after_unavailable_result", "refresh_after_report",
+    },
+})
+if err != nil { return err }
+provision, err := series.Provision()
+if err != nil { return err }
+```
+
+`Count: 1` uses the original single-observation program. `Count: 8` derives eight original identities, eight one-opportunity resource scopes and seven protected approval waits. The author does not construct those records. The first approval is explicit in `ApproveAtProvision`; the count only establishes capacity for later observations. [Public authoring guide](../../docs/bounded-series.md)
+
+For the CLI, start a new database with `--allowance 1` or `--allowance 8`. After the first `run`, positions 2–8 remain unapproved. `refresh --read 2` followed by `resume` authorizes and executes only position 2. Approve later positions individually when another observation is wanted. Position 9 is unavailable. The example CLI keeps its existing 0–8 limit; the public authoring API also qualifies larger bounds.
+
+For a new series, `inspect --json` includes an ordered `series_state` for every position and a `series` summary of selected, completed, failed, pending and unresolved positions. Unknown effects are counted separately from local completion. `bound_exhausted` reports expenditure, not success. Every selected report retains its own provider timestamp; an earlier reading is never refreshed by reopening the Store. Historical deployments continue using their original programs and report fields.
+
 ## Kill and resume
 
 To interrupt a real run, launch it in the background, then signal its PID while it is running. A fast provider may already have answered. The retained cut determines what happens next.

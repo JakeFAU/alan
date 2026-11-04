@@ -17,7 +17,7 @@ func TestWeatherSuccessorWaitsOnlyForProtectedApproval(t *testing.T) {
 		t.Fatal(err)
 	}
 	next, _ := s.Run(readID(2))
-	if next.Wait == nil || next.Wait.Kind != "input" || next.Wait.Obligation != "approve-refresh" {
+	if next.Wait == nil || next.Wait.Kind != "input" || next.Wait.Obligation != declaredWeatherSlot(t, s, 2).Obligation {
 		t.Fatalf("successor first needs %+v", next.Wait)
 	}
 }

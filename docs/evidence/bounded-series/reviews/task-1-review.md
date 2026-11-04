@@ -1,0 +1,47 @@
+# Independent task 1 review
+
+Initial decision: **spec compliance REJECT; code quality REJECT**, pending the concrete failure-classification correction below. This is a bounded task-1 review, not whole-milestone approval.
+
+Reviewed frozen source `/private/tmp/alan-bounded-series.m9VryKAu/task1-review-source`, exact tree `4bd4e8e228d8b67ecc144ca0eb1946a95bc39317`, 307 files, manifest SHA-256 `3235d6935bc3220526b94463964cbc750992f8e0befd5d6b442e56abedcc3448` (manifest digest independently checked). Read frozen `docs/bounded-series.md`, implementation and tests, existing compiler/continuation/typed-inspection owning code, task brief and completed implementer report. Production source was not edited. Independent probes use an external module replacing ALAN with this exact frozen source, and real runtime-created/validated retained stores.
+
+## Blocking finding
+
+**[P2] Count a terminal failed run even when its retained result was never selected** — `author/series_inspect.go:217-229` (`seriesPositionState`; aggregate switch at 181–188).
+
+The constructor intentionally permits failure paths that do not consume the sole result. A valid accepted definition is `Request("op", "read", nil, nil), Failure(), Await("read", "op", nil), Success()`. The await/success are unreachable on the failing path, which is permitted by the successful-path-only grammar rule. Execute this genuine store with a deterministic successful adapter. One contact occurs and the run durably terminates failed, while its available result remains unselected. `Inspect` returns `State=result_unselected`, `Failed=0`, `Pending=3` for bound 3. Reopening cannot execute the skipped await in this terminal run, so this is not merely a transient pending result.
+
+Cause: the `e.AdapterResult != nil` branch returns `SeriesResultUnselected` before inspecting terminal failure, and the aggregate computes Failed solely from the position state. This contradicts the public `Failed` count documentation and the frozen failed/refused-position contract. The original result and its absence of selection must remain exposed, but they must not erase a known failed run. Preserve external uncertainty separately through `Unresolved`/the original effect. Add a retained-store regression for failure after request and before await; also ensure a terminal failed run with an unresolved operation remains failed locally and unresolved externally. A deliberately tighter supported grammar could avoid the case only if documented and consistent with the agreed failure-path contract; correcting classification is the smaller change.
+
+Independent evidence: `/private/tmp/alan-bounded-series.m9VryKAu/review-probes/probe_test.go`, test `TestReviewEdgeDefinitions/failed_after_request`; exact failed run output in `task1-review-probes.log`. This RED finding must remain in the review history if subsequently fixed.
+
+## Reviewed positive evidence and bounds
+
+- Existing targeted task-1 tests independently passed: `go test ./author -run 'BoundedSeries|ExampleBoundedSeries' -count=1`.
+- External-module probes passed for Values initialization, a pure collection loop outside the request, effect named `series-approval`, request handle named `series-approval`, and failure before request. Thus the private name does not collide across the actual separated effect/port/request namespaces. The ordinary successful cases executed only the first observation until explicit continuation approval, then exactly the second.
+- Independent genuinely provisioned, runtime-validated different deployments were all rejected by Series.Inspect: extra adapter grant, changed MaxInFlight, extra capability, third-position predecessor rewired to the first, and different first program artifact. These tests do not depend on manually mutated in-memory snapshots.
+- Code review confirmed exact original deployment subjects/runs/inputs/program IDs/grants and independent root membership/capability/limit comparison; deterministic one-based original identities; explicit first authority; later existing protected continuation authority; no extra effects, invocation templates, assets or reconciliation; no requested production runtime/storage changes.
+- Construction retains an owned provision; inputs are deeply cloned by Application.Provision; artifact bytes retain immutable compiled schema/steps; returned provisions are independent deep copies. Existing nested-mutation tests passed.
+- Ordinary compiler request-handle typing plus single expanded request/await checks and successful-path CFG consumption prevent forged payload/timestamp correlation. Repeated request/await bodies and alternate side effects are rejected. Finite count is bounded by encoded-profile constraints before capacity allocation, not a new fixed-eight policy.
+- Inspection uses indexed run/effect/observation/root access plus binary-search continuation lookup and linear set comparisons. No per-position full-store scan or recompilation found. Scope remains a whole-deployment view, not an invocation template or aggregate root outcome.
+- Available results are not fabricated as selected; selected observations are linked to actual reduction selection and the exact original result payload. Completion requires selected validated outcome, successful settled local run, and root outcome. Bound exhaustion is separate from completion; effect uncertainty and usage remain represented.
+
+Probe command (cwd `review-probes`): `env CGO_ENABLED=1 GOWORK=off GOPROXY=off GOTOOLCHAIN=local GOCACHE=/private/tmp/alan-runtime-health.18e1DyxD/cache GOMODCACHE=/private/tmp/alan-runtime-health.18e1DyxD/modcache go test -mod=mod -v ./...`. Result: one discriminating failing subtest above; all other independent subtests passed. No redundant full-suite execution; implementer's broad ordinary/race results were read as reported evidence, not rebranded as independently executed evidence.
+
+No other blocking findings identified in this frozen task-1 source. This review does not claim arbitrary mutable-memory authenticity, remote finality, complete process-death qualification, or unrestricted composition. Whole-milestone source and qualification remain subject to later review.
+
+Retained failure artifact: `review-probes/failed-after-request.db` (closed genuine store; 401408 bytes). Discriminating reproduction was rerun once with persistent storage after the initial TempDir campaign; `task1-review-failure-retained.log` reproduces the same failure. Source review/probe module remains untouched by implementation correction.
+
+## Fix round 1 independent re-review
+
+Finding status: **ADDRESSED**. Corrected task-1 source: **spec compliance APPROVE; code quality APPROVE**. This approval applies to the task-1 scope only and retains the initial REJECT above as historical evidence.
+
+Reviewed corrected frozen source `/private/tmp/alan-bounded-series.m9VryKAu/task1-fixed-source`, exact tree `4e1bdb0781ea7dc0ad329ea3cfd8501397c3ef8d`, 307 files, manifest SHA-256 `89d766439419741771bead16e59da8014652322c74c60e173288452094f0a6b7` (digest independently checked). Read complete fix-only diff `task-1-fix1.patch` and appended implementation report. The only production change moves existing terminal local failure classification ahead of result availability/unknown-operation classification; underlying effect, observation, charge and consequence evidence remain untouched. Tests add genuine known-result and unknown-result failure cases before and after reopening. No grammar tightening hides the reproducer.
+
+Independent verification:
+
+- Created a separate external module `review-probes-fix1`, preserving original RED probe/module/database/logs. Replaced only its ALAN source target with the corrected frozen source. All original independent edge-definition and coherent-deployment mismatch probes now PASS, including the formerly failing paid-then-failed definition.
+- New independent `TestReviewOriginalRetainedFailureCorrection` directly inspected the exact original retained failing database read-only, then opened and inspected a disposable byte-for-byte copy. Both return `failed`, Failed=1, Pending=2, Selected=0, Spent=1, Completed=0, Unresolved=0. The original operation `["review-1",1,1,0]`, retained AdapterResult and Settlement are preserved, and no Observation is fabricated.
+- New independent genuine-store `TestReviewOpenUnselectedPreserved` limits execution to one reduction, retaining a result while its run remains open. It still reports `result_unselected`, Failed=0, Selected=0, Completed=0, Pending=3, Spent=1 with exactly one contact. The fix does not treat an available open result as a failure or selection.
+- Independently ran corrected tests `TestBoundedSeriesTerminalFailureBeforeSelection`, `TestBoundedSeriesRetainedResultIsNotSelection` and `TestBoundedSeriesInspectionIntermediateEvidence`; PASS. These cover the new unknown-operation failure case and original/reopened evidence, open unselected result, selected-before-terminal state and completion.
+
+Commands: same cached offline environment as initial review; `go test -mod=mod -v ./...` in `review-probes-fix1`, and `go test ./author -run '^TestBoundedSeries(TerminalFailureBeforeSelection|RetainedResultIsNotSelection|InspectionIntermediateEvidence)$' -count=1` in corrected frozen source. Logs: `task1-review-fix1-probes.log`, `task1-review-fix1-targeted.log`. No broad-suite rerun or production edits performed in this re-review. No remaining task-1 blockers identified; later whole-milestone qualification/source confirmation remains required.

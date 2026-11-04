@@ -1,0 +1,48 @@
+=== RUN   TestFreshStorageFormats
+=== RUN   TestFreshStorageFormats/1
+    compatibility_test.go:49: count=1 storage=9; create/inspect/replay/reopen valid; zero adapter contacts (registry never supplied)
+=== RUN   TestFreshStorageFormats/8
+    compatibility_test.go:49: count=8 storage=11; create/inspect/replay/reopen valid; zero adapter contacts (registry never supplied)
+=== RUN   TestFreshStorageFormats/32
+    compatibility_test.go:49: count=32 storage=11; create/inspect/replay/reopen valid; zero adapter contacts (registry never supplied)
+=== RUN   TestFreshStorageFormats/256
+    compatibility_test.go:49: count=256 storage=11; create/inspect/replay/reopen valid; zero adapter contacts (registry never supplied)
+--- PASS: TestFreshStorageFormats (0.78s)
+    --- PASS: TestFreshStorageFormats/1 (0.02s)
+    --- PASS: TestFreshStorageFormats/8 (0.03s)
+    --- PASS: TestFreshStorageFormats/32 (0.08s)
+    --- PASS: TestFreshStorageFormats/256 (0.66s)
+=== RUN   TestHistoricalArchivesRemainReadOnly
+=== RUN   TestHistoricalArchivesRemainReadOnly/format4-provisioned
+    compatibility_test.go:125: format=4 retained_runs=4; InspectExecution/Replay byte-preserving without provider registry
+=== RUN   TestHistoricalArchivesRemainReadOnly/format4-missing
+    compatibility_test.go:125: format=4 retained_runs=6; InspectExecution/Replay byte-preserving without provider registry
+=== RUN   TestHistoricalArchivesRemainReadOnly/format4-present
+    compatibility_test.go:125: format=4 retained_runs=6; InspectExecution/Replay byte-preserving without provider registry
+=== RUN   TestHistoricalArchivesRemainReadOnly/archived-weather
+    compatibility_test.go:125: format=9 retained_runs=1; InspectExecution/Replay byte-preserving without provider registry
+--- PASS: TestHistoricalArchivesRemainReadOnly (0.05s)
+    --- PASS: TestHistoricalArchivesRemainReadOnly/format4-provisioned (0.00s)
+    --- PASS: TestHistoricalArchivesRemainReadOnly/format4-missing (0.01s)
+    --- PASS: TestHistoricalArchivesRemainReadOnly/format4-present (0.01s)
+    --- PASS: TestHistoricalArchivesRemainReadOnly/archived-weather (0.03s)
+=== RUN   TestCanonicalLoweringEquality
+=== RUN   TestCanonicalLoweringEquality/1
+    series_api_bench_test.go:257: bound1 complete public Provision JSON byte-equal to independently authored canonical manual expansion
+=== RUN   TestCanonicalLoweringEquality/8
+    series_api_bench_test.go:257: bound8 complete public Provision JSON byte-equal to independently authored canonical manual expansion
+=== RUN   TestCanonicalLoweringEquality/32
+    series_api_bench_test.go:257: bound32 complete public Provision JSON byte-equal to independently authored canonical manual expansion
+=== RUN   TestCanonicalLoweringEquality/256
+    series_api_bench_test.go:257: bound256 complete public Provision JSON byte-equal to independently authored canonical manual expansion
+--- PASS: TestCanonicalLoweringEquality (0.03s)
+    --- PASS: TestCanonicalLoweringEquality/1 (0.00s)
+    --- PASS: TestCanonicalLoweringEquality/8 (0.00s)
+    --- PASS: TestCanonicalLoweringEquality/32 (0.00s)
+    --- PASS: TestCanonicalLoweringEquality/256 (0.02s)
+=== RUN   TestRetainedSeriesFormats
+    series_api_bench_test.go:286: format11 selected=8 completed=8 spent=8 pending=0 unresolved=0
+    series_api_bench_test.go:286: format12 selected=8 completed=8 spent=8 pending=0 unresolved=1
+--- PASS: TestRetainedSeriesFormats (0.01s)
+PASS
+ok  	example.org/independent-series-performance	1.042s

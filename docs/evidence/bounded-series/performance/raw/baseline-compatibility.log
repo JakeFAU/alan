@@ -1,0 +1,30 @@
+=== RUN   TestFreshStorageFormats
+=== RUN   TestFreshStorageFormats/1
+    compatibility_test.go:21: count=1 storage=9; create/inspect/replay/reopen valid; zero adapter contacts (registry never supplied)
+=== RUN   TestFreshStorageFormats/8
+    compatibility_test.go:21: count=8 storage=11; create/inspect/replay/reopen valid; zero adapter contacts (registry never supplied)
+=== RUN   TestFreshStorageFormats/32
+    compatibility_test.go:21: count=32 storage=11; create/inspect/replay/reopen valid; zero adapter contacts (registry never supplied)
+=== RUN   TestFreshStorageFormats/256
+    compatibility_test.go:21: count=256 storage=11; create/inspect/replay/reopen valid; zero adapter contacts (registry never supplied)
+--- PASS: TestFreshStorageFormats (0.73s)
+    --- PASS: TestFreshStorageFormats/1 (0.01s)
+    --- PASS: TestFreshStorageFormats/8 (0.03s)
+    --- PASS: TestFreshStorageFormats/32 (0.08s)
+    --- PASS: TestFreshStorageFormats/256 (0.61s)
+=== RUN   TestHistoricalArchivesRemainReadOnly
+=== RUN   TestHistoricalArchivesRemainReadOnly/format4-provisioned
+    compatibility_test.go:39: format=4 retained_runs=4; InspectExecution/Replay byte-preserving without provider registry
+=== RUN   TestHistoricalArchivesRemainReadOnly/format4-missing
+    compatibility_test.go:39: format=4 retained_runs=6; InspectExecution/Replay byte-preserving without provider registry
+=== RUN   TestHistoricalArchivesRemainReadOnly/format4-present
+    compatibility_test.go:39: format=4 retained_runs=6; InspectExecution/Replay byte-preserving without provider registry
+=== RUN   TestHistoricalArchivesRemainReadOnly/archived-weather
+    compatibility_test.go:39: format=9 retained_runs=1; InspectExecution/Replay byte-preserving without provider registry
+--- PASS: TestHistoricalArchivesRemainReadOnly (0.03s)
+    --- PASS: TestHistoricalArchivesRemainReadOnly/format4-provisioned (0.00s)
+    --- PASS: TestHistoricalArchivesRemainReadOnly/format4-missing (0.01s)
+    --- PASS: TestHistoricalArchivesRemainReadOnly/format4-present (0.01s)
+    --- PASS: TestHistoricalArchivesRemainReadOnly/archived-weather (0.01s)
+PASS
+ok  	example.org/independent-series-performance	0.895s
