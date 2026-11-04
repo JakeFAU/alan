@@ -14,7 +14,13 @@ S1 consumes two authentic original results; missing/claim/Cartesian authority at
 
 The reviewed primitive is frozen at `4f6f5f2500a48b2ca01ee7b09a823fa63656b7ab`.
 `primitive-freeze.json` binds its contract, source manifest and scoped approvals.
-Full reciprocal-result and process-cut qualification is a separate experiment.
+Full reciprocal-result and process-cut qualification is a separate experiment,
+now frozen at `759df6e3d2505f27e1287b2cfeb07bc4290afc0a` and indexed in
+[`task4-frozen/README.md`](task4-frozen/README.md). Both ordinary and race runs
+retain 48 cases; the eight final commands passed. Independent raw-history
+correspondence and its explicit model-domain limits are recorded separately in
+the research repository. Passing runtime controls do not erase the retained
+immediate-selection model/runtime mismatch.
 
 | Location | Evidence and interpretation |
 | --- | --- |
@@ -22,6 +28,9 @@ Full reciprocal-result and process-cut qualification is a separate experiment.
 | `task2-completion` | Initial scoped verification, four-case legacy compatibility RED/old-source GREEN, closed legacy Store, and original debit RED/green logs. The debit source reconstruction is explicitly not the original failed source or an executed reconstruction. |
 | `round1` | Corrected source evidence, all sixteen original-request mutation REDs, final scoped ordinary/integration/race checks and independent APPROVE re-reviews. The misleadingly named `authority-green.log` is a preserved failed fixture assumption. |
 | `legacy-matrix` | Ten old-created formats 3–12 fixtures; 80 primary reader calls and 60 byte-identical paired exports; complete ordinary module suite. Four rebuildable test binaries are omitted, with hashes/build commands retained. |
+| `task4-development` | Complete failed-controller and candidate qualification history, including the original immediate-selection narrowing witness. |
+| `task4-reviews` | Independent binding/custody and recovery/admission APPROVE reports and raw-evidence checks. |
+| `task4-frozen` | Immutable-source final runtime qualification: eight commands, ordinary/race reciprocal corpora, ten cut labels with two distinct unknown subcases. |
 
 ## Extracting and rerunning historical checks
 
