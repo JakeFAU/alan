@@ -40,9 +40,16 @@ def main():
     env.update(plan['environment'])
     env.update(command.get('environment', {}))
     tool = pathlib.Path(shutil.which(command['argv'][0], path=env.get('PATH'))).resolve()
+    visible_keys = set(plan['environment']) | set(command.get('environment', {})) | {
+        'PATH', 'TMPDIR', 'TMP', 'TEMP', 'HOME', 'SHELL', 'LANG', 'LC_ALL',
+        'LC_CTYPE', 'TZ', 'SDKROOT', 'DEVELOPER_DIR', 'CC', 'CXX',
+    }
+    recorded_env = {key: env[key] for key in sorted(visible_keys) if key in env}
+    omitted_keys = sorted(set(env) - visible_keys)
     record = dict(command, plan=str(plan_path), plan_sha256=digest(plan_path),
                   runner_sha256=digest(pathlib.Path(__file__)),
-                  environment=env, executable=str(tool), executable_sha256=digest(tool),
+                  environment=recorded_env, omitted_environment_variable_names=omitted_keys,
+                  executable=str(tool), executable_sha256=digest(tool),
                   started_utc=time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()))
     write(out / 'command.json', record)
     start = time.monotonic()
