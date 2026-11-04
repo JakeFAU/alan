@@ -1,0 +1,45 @@
+{
+  "Name": "reciprocal-race-corrected",
+  "Command": [
+    "go",
+    "test",
+    "-json",
+    "-count=1",
+    "-race",
+    "-tags=integration",
+    "./internal/durabletest",
+    "-run",
+    "^TestPhase3B3(Reciprocal|CartesianOperations|GenericUnknown|ActualResultLaundering|SerialSerial|AppliedUnknownRevoked|RetainedMutations)"
+  ],
+  "Cwd": "/tmp/alan-phase3b3-prospective/source",
+  "Environment": {
+    "GOTOOLCHAIN": "local",
+    "GOPROXY": "off",
+    "GOSUMDB": "off",
+    "GOCACHE": "/tmp/alan-phase3b3-prospective-build",
+    "STATICCHECK_CACHE": "/tmp/alan-phase3b3-staticcheck",
+    "ALAN_PHASE3B3_OLD_READER": "/tmp/alan-phase3b3-old-reader/alan"
+  },
+  "AdditionalEnvironment": {
+    "ALAN_PHASE3B3_EVIDENCE": "/tmp/alan-phase3b3-prospective/evidence/reciprocal-race-corrected"
+  },
+  "StartedUTC": "2026-11-04T19:41:39.589995+00:00",
+  "Seconds": 120.674791042,
+  "Exit": 0,
+  "Log": "reciprocal-race-corrected.log",
+  "SHA256": "e88568bdec828d51ce9fd51d7f6ad28bd663a5134c0caf0ebed05a68e4cf0cfe",
+  "PassEvents": 53,
+  "Failures": [],
+  "Skips": [],
+  "ScratchSource": {
+    "ScratchCommit": "f29e41b7532eaa0cbfd2b1f99f5171986a8d9a90",
+    "Tree": "bdbbae5f89f0c76d48618b3d8891dc40199ca4ed",
+    "Purpose": "Disposable source identity only; no original branch merged or modified.",
+    "ParentInputs": [
+      "76031c34c1d0eeff325e1a8e9ca4b6e2fa2b6315",
+      "c7fe6d87cdd49878558d676a301bec2d217ae3a6"
+    ],
+    "SourceFilesEqualOriginalProspectiveArchive": true
+  },
+  "RunnerSHA256": "7665c15232351575e8e446a577f98fd6bcecdafe7c7ee7f0ed0e27da356e9554"
+}
