@@ -1,0 +1,38 @@
+package sqlite3
+
+import (
+ "context"
+ "database/sql"
+ "testing"
+)
+
+func TestMeasurementNormalize(t *testing.T) {
+ for _,tc:=range []struct{name,input,want string}{
+  {"numeric", "SELECT 123, 45.67 FROM items WHERE ordinal=999", "SELECT ?, ? FROM items WHERE ordinal=?"},
+  {"numeric-equivalent", "SELECT 1, 2.3 FROM items WHERE ordinal=4", "SELECT ?, ? FROM items WHERE ordinal=?"},
+  {"block-comment", "SELECT /* a multiline\n comment */ 12 FROM items", "SELECT ? FROM items"},
+  {"line-comment", "SELECT 12 -- ignored 99\n FROM items", "SELECT ? FROM items"},
+  {"quoted-comment-markers", "SELECT '--literal 123', '/*literal*/', 'it''s 45' FROM items", "SELECT ?, ?, ? FROM items"},
+  {"blob", "SELECT x'1234abcd', X'00FF' FROM items", "SELECT ?, ? FROM items"},
+  {"identifier", "SELECT field23 FROM table45 WHERE id=?", "SELECT field23 FROM table45 WHERE id=?"},
+  {"quoted-identifier", "SELECT \"field23\" FROM \"table45\" WHERE id=?", "SELECT \"field23\" FROM \"table45\" WHERE id=?"},
+  {"placeholders", "SELECT * FROM items WHERE a=? AND b=:name AND c=@other", "SELECT * FROM items WHERE a=? AND b=:name AND c=@other"},
+ } {t.Run(tc.name,func(t *testing.T){if got:=probeNormalize(tc.input);got!=tc.want {t.Fatalf("normalize(%q)=%q; want %q",tc.input,got,tc.want)}})}
+ if probeNormalize("SELECT value FROM table1") == probeNormalize("SELECT value FROM table2") {t.Fatal("different identifiers merged")}
+}
+func measurementReset() {probeSQL.Lock();defer probeSQL.Unlock();probeSQL.counts=make(map[string]map[string]uint64)}
+func TestMeasurementSQLStepAccounting(t *testing.T) {
+ db,err:=sql.Open("sqlite3",":memory:?_stmt_cache_size=8");if err!=nil{t.Fatal(err)};defer db.Close();db.SetMaxOpenConns(1)
+ if err=db.Ping();err!=nil{t.Fatal(err)}
+ measurementReset()
+ query:="SELECT ? UNION ALL SELECT ? UNION ALL SELECT ?"
+ for i:=0;i<2;i++ {rows,e:=db.QueryContext(context.Background(),query,10,20,30);if e!=nil{t.Fatal(e)};n:=0;for rows.Next(){var v int;if e=rows.Scan(&v);e!=nil{t.Fatal(e)};n++};if e=rows.Err();e!=nil{t.Fatal(e)};if e=rows.Close();e!=nil{t.Fatal(e)};if n!=3{t.Fatalf("rows=%d",n)}}
+ m:=MeasurementSnapshot();key:="sql.template."+probeNormalize(query)+"."
+ for metric,want:=range map[string]uint64{"completed_prepares":1,"executions":2,"step_calls":8,"sqlite_row_returns":6,"fullscan_steps":0} {if got:=m[key+metric];got!=want {t.Fatalf("%s=%d want %d; %v",metric,got,want,m)}}
+ if m[key+"vm_steps"]==0 {t.Fatal("missing VM steps")}
+ rows,e:=db.QueryContext(context.Background(),query,100,200,300);if e!=nil{t.Fatal(e)};if e=rows.Close();e!=nil{t.Fatal(e)}
+ next:=MeasurementSnapshot();if next[key+"executions"]-m[key+"executions"]!=1||next[key+"sqlite_row_returns"]-m[key+"sqlite_row_returns"]!=1||next[key+"step_calls"]-m[key+"step_calls"]!=1 {t.Fatalf("eager unconsumed accounting: before=%v after=%v",m,next)}
+ measurementReset();if _,e=db.ExecContext(context.Background(),"CREATE TABLE probe_count (id INTEGER)");e!=nil{t.Fatal(e)}
+ m=MeasurementSnapshot();for metric,want:=range map[string]uint64{"completed_prepares":1,"executions":1,"step_calls":1,"sqlite_row_returns":0} {if got:=m["sql.total."+metric];got!=want{t.Fatalf("noargs %s=%d want%d",metric,got,want)}}
+ if m["sql.total.vm_steps"]==0 {t.Fatal("missing noargs VM steps")}
+}
