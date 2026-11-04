@@ -60,10 +60,10 @@ def main():
                       user_cpu_seconds=usage.ru_utime, system_cpu_seconds=usage.ru_stime,
                       process_peak_rss=usage.ru_maxrss,
                       process_peak_rss_unit="bytes" if sys.platform == "darwin" else "KiB",
-                      load_after=os.getloadavg(), report_sha256=sha(report), progress_sha256=sha(progress),
-                      binary_sha256_after=sha(binary))
+                      load_after=os.getloadavg(), report_sha256=sha(report), progress_sha256=sha(progress))
         result, good, windows = {}, False, []
         try:
+            record["binary_sha256_after"] = sha(binary)
             result = json.loads(report.read_text())
             if paired:
                 require(record["binary_sha256_after"] == row["expected_binary_sha256"],
@@ -84,7 +84,7 @@ def main():
                 good = good and len(result["contacts"]) == row["bound"] and len(result["evidence"]) == row["bound"]
                 good = good and result["instrumented"] == row.get("instrumented", False)
                 good = good and result["profiled"] == row.get("profiled", False)
-        except (ValueError, KeyError, TypeError) as error:
+        except (OSError, ValueError, KeyError, TypeError) as error:
             record["validation_error"] = str(error)
         with meta.open("x") as out:
             out.write(json.dumps(record, indent=2) + "\n")

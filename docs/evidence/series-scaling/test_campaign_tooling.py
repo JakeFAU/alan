@@ -154,6 +154,38 @@ class CampaignProof(unittest.TestCase):
         self.assertEqual(meta["binary_sha256"], self.rows[0]["expected_binary_sha256"])
         self.assertNotEqual(meta["binary_sha256_after"], meta["binary_sha256"])
 
+    def assert_postrun_binary_read_failure_retained(self, action, error_text):
+        binary = self.binaries[0]
+        binary.write_text("#!/usr/bin/env python3\nimport pathlib\np=pathlib.Path(__file__)\n" + action + "\nprint('{}')\n")
+        binary.chmod(0o755)
+        self.rows = build_schedule(*self.binaries, "baseline-source", "candidate-source", runtime=RUNTIME)
+        self.schedule.write_text(json.dumps(self.rows))
+        result = subprocess.run([sys.executable, str(HERE / "run_schedule.py"),
+                                 str(self.schedule), str(self.samples)], capture_output=True, text=True)
+        self.assertNotEqual(result.returncode, 0)
+        name = self.rows[0]["name"]
+        path = self.samples / (name + ".meta.json")
+        self.assertTrue(path.exists(), "post-run executable read failure discarded completed process metadata")
+        meta = json.loads(path.read_text())
+        self.assertEqual(meta["exit"], 0)
+        self.assertIn(error_text, meta["validation_error"])
+        self.assertEqual(meta["binary_sha256"], self.rows[0]["expected_binary_sha256"])
+        self.assertNotIn("binary_sha256_after", meta)
+        for field in ("seconds", "user_cpu_seconds", "system_cpu_seconds", "process_peak_rss"):
+            self.assertGreaterEqual(meta[field], 0)
+        self.assertEqual(meta["report_sha256"], sha(self.samples / (name + ".json")))
+        self.assertEqual(meta["progress_sha256"], sha(self.samples / (name + ".progress")))
+        self.assertEqual(json.loads((self.samples / (name + ".json")).read_text()), {})
+        self.assertIn('"invariants_ok": false', result.stdout)
+        self.assertFalse((self.samples / (self.rows[1]["name"] + ".json")).exists())
+
+    def test_binary_deleted_during_sample_retains_invalid_process_metadata(self):
+        self.assert_postrun_binary_read_failure_retained("p.unlink()", "No such file")
+
+    @unittest.skipIf(os.geteuid() == 0, "root can read mode-000 files")
+    def test_binary_unreadable_after_sample_retains_invalid_process_metadata(self):
+        self.assert_postrun_binary_read_failure_retained("p.chmod(0)", "Permission denied")
+
     def test_changed_progress_artifact_rejected(self):
         self.write_all()
         (self.samples / (self.measured()["name"]+".progress")).write_text("changed after metadata")
