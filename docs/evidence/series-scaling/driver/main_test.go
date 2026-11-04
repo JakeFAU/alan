@@ -51,6 +51,26 @@ func TestProofRejectsChangedProvenance(t *testing.T) {
 			m.contacts[0].Key = "wrong"
 			return func() { m.contacts[0].Key = old }
 		}},
+		{"wrong contact capability", func() func() {
+			old := m.contacts[0].Capability
+			m.contacts[0].Capability = "wrong"
+			return func() { m.contacts[0].Capability = old }
+		}},
+		{"wrong contact effect", func() func() {
+			old := m.contacts[0].Effect
+			m.contacts[0].Effect = "wrong"
+			return func() { m.contacts[0].Effect = old }
+		}},
+		{"wrong contact protocol", func() func() {
+			old := m.contacts[0].Protocol
+			m.contacts[0].Protocol = "wrong"
+			return func() { m.contacts[0].Protocol = old }
+		}},
+		{"wrong contact endpoint", func() func() {
+			old := m.contacts[0].Endpoint
+			m.contacts[0].Endpoint = "wrong"
+			return func() { m.contacts[0].Endpoint = old }
+		}},
 		{"duplicate original operation", func() func() {
 			p := view.Positions[1].Effect
 			old := p.OperationID
