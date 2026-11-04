@@ -33,7 +33,8 @@ prepared request retains provider configuration and response limits.
 observation. Creation itself makes no contact. There is no implicit approval of
 the other seven. An empty `ApprovalReasons` list accepts any reason allowed by the
 existing bounded approval schema; a nonempty list restricts it to those strings.
-The owner authenticates the operator and the application decides whether to spend.
+The application authenticates the operator and decides whether to spend. The owning
+Store enforces the scoped retained authorization.
 
 After reviewing the original evidence, explicitly authorize a particular next
 position. Use the same ordinary Store APIs as a separately authored continuation:
@@ -59,7 +60,12 @@ original uncertainty. A new owner never approves the next position.
 
 ## Inspect the whole declaration
 
+Take a new snapshot after later operations have committed. Detached snapshots do
+not change when subsequent work is committed.
+
 ```go
+cut, err = runtime.InspectExecution(ctx, path, runtime.DefaultLimits())
+if err != nil { return err }
 view, err := series.Inspect(cut)
 if err != nil { return err }
 for _, position := range view.Positions {
