@@ -31,6 +31,8 @@ immediate-selection model/runtime mismatch.
 | `task4-development` | Complete failed-controller and candidate qualification history, including the original immediate-selection narrowing witness. |
 | `task4-reviews` | Independent binding/custody and recovery/admission APPROVE reports and raw-evidence checks. |
 | `task4-frozen` | Immutable-source final runtime qualification: eight commands, ordinary/race reciprocal corpora, ten cut labels with two distinct unknown subcases. |
+| `current-main` | Clean prospective integration with main `76031c34`, including the initial Git-provenance export failure and corrected same-tree qualification; neither branch was merged. |
+| [whole-change-review.md](whole-change-review.md) | Independent specification, quality and overall APPROVE for the bounded Phase 3B.3 slice; explicit unsupported domains and deferred research mutation-CLI diagnostic. |
 
 ## Extracting and rerunning historical checks
 
