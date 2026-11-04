@@ -33,30 +33,18 @@ func readID(n int) runtime.RunID {
 	return runtime.RunID{Subject: fmt.Sprintf("weather-%d", n), Generation: 1}
 }
 
-// Each new read selects its own protected approval before issuing a request.
-func readProgram(n, count int, legacy bool) (author.Artifact, error) {
+// weatherDefinition describes one original observation.
+func weatherDefinition() author.Definition {
 	request := openmeteo.InputSchema()
 	output := openmeteo.OutputSchema()
 	inputs := maps.Clone(request)
 	inputs["endpoint"] = schema.Field{Kind: "string", MaxBytes: 2048}
 	inputs["allowance"] = schema.Field{Kind: "int"}
-	ports := map[string]author.Port{}
 	var steps []author.Step
-	if legacy {
-		steps = legacyReadPrefix(n, ports)
-	} else if n > 1 {
-		ports["approval"] = author.ContinuationPort(approval, afterReservation, afterUnknown, afterUnavailable, afterReport)
-		steps = append(steps, author.Receive("approval", map[string]string{
-			"previous_operation_id": "previous_operation_id", "purpose": "approval_reason",
-		}))
-	}
 	steps = append(steps, author.Request("operation_id", effectName, map[string]author.Expr{
 		openmeteo.Latitude: author.Var(openmeteo.Latitude), openmeteo.Longitude: author.Var(openmeteo.Longitude),
 		openmeteo.Units: author.Var(openmeteo.Units),
 	}, nil))
-	if legacy && n < count {
-		steps = append(steps, legacySendHandle(n, ports))
-	}
 	bindings := map[string]string{schema.ResultValid: "valid", schema.ResultDisposition: "disposition"}
 	for field := range output {
 		bindings[field] = field
@@ -73,10 +61,24 @@ func readProgram(n, count int, legacy bool) (author.Artifact, error) {
 	}
 	report := maps.Clone(output)
 	maps.Copy(report, request)
-	return author.Compile(author.Definition{
-		Name: "weather-read", Inputs: inputs, Outputs: report, Ports: ports,
+	return author.Definition{
+		Name: "weather-read", Inputs: inputs, Outputs: report,
 		Effects: map[string]author.Effect{effectName: {Capability: capability, Input: request, Output: output}},
 		Steps:   append(steps, author.Success()),
+	}
+}
+
+func (c configuration) series() (author.Series, error) {
+	if err := openmeteo.ValidateLocation(c.Latitude, c.Longitude, c.Units); err != nil {
+		return author.Series{}, err
+	}
+	if _, err := openmeteo.New(c.Endpoint); err != nil {
+		return author.Series{}, err
+	}
+	return author.BoundedSeries(weatherDefinition(), author.SeriesOptions{
+		ID: "weather", Count: c.Allowance, First: author.ApproveAtProvision,
+		Inputs:          map[string]schema.Value{openmeteo.Latitude: schema.Text(c.Latitude), openmeteo.Longitude: schema.Text(c.Longitude), openmeteo.Units: schema.Text(c.Units), "endpoint": schema.Text(c.Endpoint), "allowance": schema.Int(int64(c.Allowance))},
+		ApprovalReasons: []string{afterReservation, afterUnknown, afterUnavailable, afterReport},
 	})
 }
 
@@ -84,38 +86,12 @@ func (c configuration) provision(legacy bool) (runtime.Provision, error) {
 	if c.Allowance < 0 || c.Allowance > maxReads {
 		return runtime.Provision{}, fmt.Errorf("allowance must be between 0 and %d", maxReads)
 	}
-	if err := openmeteo.ValidateLocation(c.Latitude, c.Longitude, c.Units); err != nil {
+	if legacy || c.Allowance == 0 {
+		return c.legacyProvision(legacy)
+	}
+	series, err := c.series()
+	if err != nil {
 		return runtime.Provision{}, err
 	}
-	if _, err := openmeteo.New(c.Endpoint); err != nil {
-		return runtime.Provision{}, err
-	}
-	input := map[string]schema.Value{
-		openmeteo.Latitude: schema.Text(c.Latitude), openmeteo.Longitude: schema.Text(c.Longitude), openmeteo.Units: schema.Text(c.Units),
-		"endpoint": schema.Text(c.Endpoint), "allowance": schema.Int(int64(c.Allowance)),
-	}
-	app := author.Application{}
-	profile := &runtime.CompositionProvision{RecordDispatchAdmissions: true}
-	for n := 1; n <= max(1, c.Allowance); n++ {
-		id := readID(n)
-		program, err := readProgram(n, max(1, c.Allowance), legacy)
-		if err != nil {
-			return runtime.Provision{}, err
-		}
-		app[id.Subject] = author.Instance{Artifact: program, Inputs: input}
-		if !legacy && n > 1 {
-			profile.Continuations = append(profile.Continuations, runtime.ContinuationSlot{
-				Predecessor: readID(n - 1), Target: id, Effect: effectName, Obligation: approval, ApprovalID: approvalID(n),
-			})
-		}
-		// One independent resource scope per read keeps an earlier closed root
-		// from closing admission to a separately approved later observation.
-		profile.Roots = append(profile.Roots, runtime.ResourceRoot{
-			Run: id, Members: []runtime.RunID{id}, Capabilities: []string{capability},
-			Limits: runtime.ResourceLimits{MaxEffects: int64(min(c.Allowance, 1)), MaxInFlight: 1},
-		})
-	}
-	p, err := app.Provision()
-	p.Composition = profile
-	return p, err
+	return series.Provision()
 }

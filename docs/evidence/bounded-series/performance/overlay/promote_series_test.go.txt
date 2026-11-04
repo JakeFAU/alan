@@ -1,0 +1,63 @@
+package executor
+
+import (
+	"errors"
+	"github.com/JakeFAU/alan/effects"
+	"os"
+	"testing"
+)
+
+// Driver-only test overlay: no source export or database version is edited.
+// Reuse the real retained-result writer to offer an alternate valid receipt.
+func TestIndependentPromoteSeries(t *testing.T) {
+	path := os.Getenv("SERIES_PROMOTE_PATH")
+	if path == "" {
+		t.Fatal("SERIES_PROMOTE_PATH required")
+	}
+	ctx := t.Context()
+	cut, e := InspectExecution(ctx, path, DefaultLimits())
+	if e != nil {
+		t.Fatal(e)
+	}
+	if cut.StorageVersion != 11 {
+		t.Fatalf("initial format=%d", cut.StorageVersion)
+	}
+	var original *ExecutionEffect
+	for _, effect := range cut.Effects {
+		if effect.Source.Subject == "series-1" {
+			original = effect
+			break
+		}
+	}
+	if original == nil || original.AdapterResult == nil {
+		t.Fatal("missing original settled result")
+	}
+	s, e := Open(ctx, path, DefaultLimits())
+	if e != nil {
+		t.Fatal(e)
+	}
+	defer s.Close()
+	attempt, e := loadAdapterAttempt(ctx, s.conn, original.OperationID)
+	if e != nil {
+		t.Fatal(e)
+	}
+	loser := effects.Candidate{ID: original.OperationID, Key: attempt.Prepared.Request.Key, Disposition: "validated", Payload: map[string]Value{"sample": Text("alternate")}}
+	if _, e = s.recordAdapterResult(ctx, attempt, loser); !errors.Is(e, ErrConflict) {
+		t.Fatalf("alternate offer=%v want ErrConflict", e)
+	}
+	if e = s.Close(); e != nil {
+		t.Fatal(e)
+	}
+	after, e := InspectExecution(ctx, path, DefaultLimits())
+	if e != nil {
+		t.Fatal(e)
+	}
+	effect, ok := after.Effect(original.OperationID)
+	if !ok || after.StorageVersion != 12 || len(effect.AdditionalReceipts) != 1 || effect.AdapterResult.Digest != original.AdapterResult.Digest {
+		t.Fatalf("losing offer or original changed: %+v", effect)
+	}
+	if _, e = Replay(ctx, path, DefaultLimits()); e != nil {
+		t.Fatal(e)
+	}
+	t.Logf("actual retained-result writer promoted 11->12; original=%s original_digest=%s additional_receipts=%d", original.OperationID, original.AdapterResult.Digest, len(effect.AdditionalReceipts))
+}

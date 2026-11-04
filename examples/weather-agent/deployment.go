@@ -24,7 +24,17 @@ func retainedConfiguration(s *runtime.ExecutionSnapshot) (configuration, error) 
 		Latitude: data[openmeteo.Latitude].Text, Longitude: data[openmeteo.Longitude].Text, Units: data[openmeteo.Units].Text,
 		Endpoint: data["endpoint"].Text, Allowance: int(data["allowance"].Number),
 	}
-	want, err := c.provision(len(s.Composition.Continuations) == 0)
+	// Only the exact new declaration or an exact historical producer may own
+	// this store. A damaged series never falls back to a heuristic recognizer.
+	if c.Allowance > 0 {
+		series, err := c.series()
+		if err == nil {
+			if _, err = series.Inspect(s); err == nil {
+				return c, nil
+			}
+		}
+	}
+	want, err := c.legacyProvision(len(s.Composition.Continuations) == 0)
 	if err != nil {
 		return c, fmt.Errorf("retained weather configuration: %w", err)
 	}

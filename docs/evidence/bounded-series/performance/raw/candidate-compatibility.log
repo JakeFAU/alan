@@ -1,0 +1,33 @@
+=== RUN   TestFreshStorageFormats
+=== RUN   TestFreshStorageFormats/1
+    compatibility_test.go:21: count=1 storage=9; create/inspect/replay/reopen valid; zero adapter contacts (registry never supplied)
+=== RUN   TestFreshStorageFormats/8
+    compatibility_test.go:21: count=8 storage=11; create/inspect/replay/reopen valid; zero adapter contacts (registry never supplied)
+=== RUN   TestFreshStorageFormats/32
+    compatibility_test.go:21: count=32 storage=11; create/inspect/replay/reopen valid; zero adapter contacts (registry never supplied)
+=== RUN   TestFreshStorageFormats/256
+    compatibility_test.go:21: count=256 storage=11; create/inspect/replay/reopen valid; zero adapter contacts (registry never supplied)
+--- PASS: TestFreshStorageFormats (0.77s)
+    --- PASS: TestFreshStorageFormats/1 (0.02s)
+    --- PASS: TestFreshStorageFormats/8 (0.03s)
+    --- PASS: TestFreshStorageFormats/32 (0.08s)
+    --- PASS: TestFreshStorageFormats/256 (0.65s)
+=== RUN   TestHistoricalArchivesRemainReadOnly
+=== RUN   TestHistoricalArchivesRemainReadOnly/format4-provisioned
+    compatibility_test.go:39: format=4 retained_runs=4; InspectExecution/Replay byte-preserving without provider registry
+=== RUN   TestHistoricalArchivesRemainReadOnly/format4-missing
+    compatibility_test.go:39: format=4 retained_runs=6; InspectExecution/Replay byte-preserving without provider registry
+=== RUN   TestHistoricalArchivesRemainReadOnly/format4-present
+    compatibility_test.go:39: format=4 retained_runs=6; InspectExecution/Replay byte-preserving without provider registry
+=== RUN   TestHistoricalArchivesRemainReadOnly/archived-weather
+    compatibility_test.go:39: format=9 retained_runs=1; InspectExecution/Replay byte-preserving without provider registry
+--- PASS: TestHistoricalArchivesRemainReadOnly (0.03s)
+    --- PASS: TestHistoricalArchivesRemainReadOnly/format4-provisioned (0.00s)
+    --- PASS: TestHistoricalArchivesRemainReadOnly/format4-missing (0.01s)
+    --- PASS: TestHistoricalArchivesRemainReadOnly/format4-present (0.01s)
+    --- PASS: TestHistoricalArchivesRemainReadOnly/archived-weather (0.01s)
+=== RUN   TestNewSeriesFixture
+    series_api_bench_test.go:38: new helper produces genuine format11; 8 distinct effects/selected/completed/spent and 8 controlled adapter entries; namespace=af7e0411329812ed51b386d34ade1c8f5a4097538d983d2aa9e9c4b5225bf2e2
+--- PASS: TestNewSeriesFixture (0.11s)
+PASS
+ok  	example.org/independent-series-performance	1.082s
