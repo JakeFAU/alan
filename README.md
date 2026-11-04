@@ -24,6 +24,8 @@ Declare a finite sequence with `author.BoundedSeries(observation, author.SeriesO
 
 [Execution scaling](docs/series-scaling.md) records a later optimization of repeated profile decoding: the controlled 256-operation median falls from 347.99s to 105.52s, with unchanged authorization and recovery checks. The report includes raw-evidence provenance, allocation and memory results, and the limits of the measurement.
 
+[Marginal execution cost](docs/evidence/performance-p2/results.md) measures a separate paired campaign: reusing membership lookups within each root report reduces the 256-operation median from 104.63s to 57.75s and SQL statements from 11.77 million to 3.38 million. Cumulative allocation falls while peak process memory rises slightly. The report preserves the exact evidence, recovery checks and limits of this single-host result.
+
 ## Run a computation
 
 Use Go 1.27.3, CGO, a C compiler and a local Unix filesystem. In your application module, run `go get github.com/JakeFAU/alan/runtime`. Import `github.com/JakeFAU/alan/author` to define a program and `github.com/JakeFAU/alan/runtime` to run it. From a checkout, run the [quickstart](examples/quickstart/main.go).
