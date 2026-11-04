@@ -1,0 +1,195 @@
+// Generated measurement-only addition; never part of the delivered dependency.
+package sqlite3
+
+import (
+	"context"
+	"regexp"
+	"strings"
+	"sync"
+)
+
+// Exactly one scalar is extracted per invocation. Never retain a ctx on Stmt.
+type measurementScopeKey struct{}
+
+var probeScopeNames = [...]string{"unknown", "invalid", "createStore", "openStore", "Replay", "Inspect", "InspectExecution", "Run", "finishRun", "selectReady", "settleRoots", "Commit", "AuthorizeIntent", "ApproveContinuation", "PrepareRoot", "SettleRoot", "prepareAdapterWork", "accountAdapter", "recordAdapterResult", "settleAdapterLocked", "recordDispatchAdmission", "AdmitInput", "AdmitInvocation", "prepareExternal", "recordExternalReceipt", "settleExternalLocked"}
+
+// MeasurementScope is available only in the disposable instrumented driver.
+func MeasurementScope(ctx context.Context, id uint8) context.Context {
+	if int(id) >= len(probeScopeNames) {
+		id = 1
+	}
+	return context.WithValue(ctx, measurementScopeKey{}, id)
+}
+func MeasurementScopeID(ctx context.Context) uint8 { return probeScope(ctx) }
+func probeScope(ctx context.Context) uint8 {
+	id, ok := ctx.Value(measurementScopeKey{}).(uint8)
+	if !ok {
+		return 0
+	}
+	if int(id) >= len(probeScopeNames) {
+		return 1
+	}
+	return id
+}
+
+const (
+	probePrepares = iota
+	probeAttempts
+	probeSteps
+	probeRuns
+	probeRows
+	probeFullscan
+	probeVM
+	probeStepErrors
+	probeBindErrors
+	probeMetricCount
+)
+
+var probeMetricNames = [probeMetricCount]string{"completed_prepares", "invocation_attempts", "step_calls", "executions", "sqlite_row_returns", "fullscan_steps", "vm_steps", "step_errors", "bind_errors"}
+
+type probeMetrics [probeMetricCount]uint64
+type probeCell struct {
+	family             string
+	scope, class, post uint8
+}
+
+const probeTemplateCap = 1024
+const probeCellCap = 16384
+const probeTemplateBytes = 4096
+const probeOverflowFamily = "<template-cap-or-size-overflow>"
+
+// Limits are fields so proof tests can deliberately use tiny caps before use.
+var probeSQL = struct {
+	sync.Mutex
+	families                                     map[string]*probeMetrics
+	cells                                        map[probeCell]*probeMetrics
+	cellOverflow                                 probeMetrics
+	driver                                       map[string]uint64
+	familyCap, cellCap, templateBytes            int
+	familyOverflow, cellOverflows, invalidScopes uint64
+}{families: make(map[string]*probeMetrics), cells: make(map[probeCell]*probeMetrics), driver: make(map[string]uint64), familyCap: probeTemplateCap, cellCap: probeCellCap, templateBytes: probeTemplateBytes}
+
+// Preserve the previous lexical normalizer; this is not a SQL parser.
+var probeSQLTokens = regexp.MustCompile(`(?s)/\*.*?\*/|--[^\n]*|[xX]'(?:''|[^'])*'|'(?:''|[^'])*'|\b[0-9]+(?:\.[0-9]+)?\b`)
+
+func probeNormalize(sql string) string {
+	sql = probeSQLTokens.ReplaceAllStringFunc(sql, func(s string) string {
+		if strings.HasPrefix(s, "--") || strings.HasPrefix(s, "/*") {
+			return " "
+		}
+		return "?"
+	})
+	return strings.Join(strings.Fields(sql), " ")
+}
+func probeFamilyLocked(key string) string {
+	if _, ok := probeSQL.families[key]; ok {
+		return key
+	}
+	retained := len(probeSQL.families)
+	if _, ok := probeSQL.families[probeOverflowFamily]; ok {
+		retained--
+	}
+	if len(key) > probeSQL.templateBytes || retained >= probeSQL.familyCap {
+		probeSQL.familyOverflow++
+		key = probeOverflowFamily
+	}
+	if _, ok := probeSQL.families[key]; !ok {
+		probeSQL.families[key] = new(probeMetrics)
+	}
+	return key
+}
+func probeFamily(key string) string {
+	probeSQL.Lock()
+	defer probeSQL.Unlock()
+	return probeFamilyLocked(key)
+}
+func probeAdd(key string, scope, class, post uint8, metric int, n uint64) {
+	probeSQL.Lock()
+	defer probeSQL.Unlock()
+	key = probeFamilyLocked(key)
+	probeSQL.families[key][metric] += n
+	if int(scope) >= len(probeScopeNames) {
+		scope = 1
+	}
+	if scope == 1 {
+		probeSQL.invalidScopes++
+	}
+	cell := probeCell{key, scope, class, post}
+	m, ok := probeSQL.cells[cell]
+	if !ok {
+		if len(probeSQL.cells) >= probeSQL.cellCap {
+			probeSQL.cellOverflows++
+			probeSQL.cellOverflow[metric] += n
+			return
+		}
+		m = new(probeMetrics)
+		probeSQL.cells[cell] = m
+	}
+	m[metric] += n
+}
+func probeRecord(key string, scope, class, post uint8, runs, fullscan, vm int, row, failed bool) {
+	// One mutex acquisition per counter is intentionally simple diagnostic work.
+	probeAdd(key, scope, class, post, probeSteps, 1)
+	probeAdd(key, scope, class, post, probeRuns, uint64(runs))
+	probeAdd(key, scope, class, post, probeFullscan, uint64(fullscan))
+	probeAdd(key, scope, class, post, probeVM, uint64(vm))
+	if row {
+		probeAdd(key, scope, class, post, probeRows, 1)
+	}
+	if failed {
+		probeAdd(key, scope, class, post, probeStepErrors, 1)
+	}
+}
+
+// All callers use literal keys; this map has a finite source-defined key set.
+func probeDriver(key string, n uint64) { probeSQL.Lock(); probeSQL.driver[key] += n; probeSQL.Unlock() }
+func probeOutcome(key string, err error) {
+	if err == nil {
+		probeDriver(key+".success", 1)
+	} else {
+		probeDriver(key+".errors", 1)
+	}
+}
+func probeContext(kind string, ctx context.Context) {
+	probeDriver(kind+".calls", 1)
+	if ctx.Done() != nil {
+		probeDriver(kind+".cancellable", 1)
+	}
+}
+
+var probePostNames = [...]string{"unknown", "off", "on"}
+var probeClassNames = [...]string{"unknown", "read_write_capable", "read_only_configured"}
+
+// MeasurementSnapshot is cumulative and never resets SQLite or Go counters.
+func MeasurementSnapshot() map[string]uint64 {
+	probeSQL.Lock()
+	defer probeSQL.Unlock()
+	out := make(map[string]uint64)
+	for family, m := range probeSQL.families {
+		for i, n := range m {
+			out["sql.template."+family+"."+probeMetricNames[i]] = n
+			out["sql.total."+probeMetricNames[i]] += n
+		}
+	}
+	for cell, m := range probeSQL.cells {
+		prefix := "sql.scope." + probeScopeNames[cell.scope] + ".class." + probeClassNames[cell.class] + ".post_autocommit." + probePostNames[cell.post] + ".template." + cell.family + "."
+		for i, n := range m {
+			if n != 0 {
+				out[prefix+probeMetricNames[i]] = n
+			}
+		}
+	}
+	for i, n := range probeSQL.cellOverflow {
+		out["sql.scope_overflow."+probeMetricNames[i]] = n
+	}
+	for key, n := range probeSQL.driver {
+		out["sql.driver."+key] = n
+	}
+	out["sql.attribution.family_overflow_events"] = probeSQL.familyOverflow
+	out["sql.attribution.cell_overflow_events"] = probeSQL.cellOverflows
+	out["sql.attribution.invalid_scope_events"] = probeSQL.invalidScopes
+	out["sql.attribution.family_count"] = uint64(len(probeSQL.families))
+	out["sql.attribution.cell_count"] = uint64(len(probeSQL.cells))
+	out["sql.attribution.incomplete_events"] = probeSQL.familyOverflow + probeSQL.cellOverflows + probeSQL.invalidScopes
+	return out
+}
