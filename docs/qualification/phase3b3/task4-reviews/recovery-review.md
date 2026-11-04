@@ -1,0 +1,49 @@
+# Task 4 independent recovery/admission review
+
+**Spec: APPROVE within the assigned recovery, revocation and physical-admission scope.**
+
+**Quality: APPROVE within that scope.** No blocking defect was found in the reviewed candidate or the inspected witnesses. These verdicts do not approve whole-phase model correspondence, the independent authority checker, manuscript reconciliation, profile-14 process qualification, or final frozen delivery.
+
+Reviewed candidate: runtime base `347094a7b18d351c6ad18df526ef6133777bca44` plus the eight fixture/test sources recorded in `task-4-review.diff` and `task-4-source.json`. Requirements were read before implementation claims: Task 4 brief, research brief §§7–14, frozen contract v3, and the source-based recovery interface. I inspected the changed source, relevant existing process/endpoint/gate helpers, and actual ordinary/race case indexes and witnesses. The parent-provided verification of all 1,761 digests per corpus and 304 source inputs is attributed to the parent; I did not rerun that hash audit or the passed Go suites.
+
+## Independently checked evidence
+
+I ran a separate JSON-only witness check over **34 scoped cases**: eleven process-cut cases and six temporal/unknown cases in each of the ordinary and race corpora. Command:
+
+```sh
+python3 /tmp/phase3b3-recovery-review.py > /tmp/phase3b3-recovery-review-checks.txt
+```
+
+Result: `PASS: 34 scoped cases; JSON-only independent witness checks, no SQLite opens and no suite reruns`. The first script attempt exposed the checker's incorrect assumption that an empty `AuthorityAdmissions` field is present; it stopped with `KeyError`, was corrected to respect `omitempty`, and the complete check then passed. This was a reviewer-script error, not a runtime failure. Both corpus indexes contain 48 cases. I also inspected the existing command logs: ordinary ends PASS/21.063s, race ends PASS/129.224s; neither has a selected-test skip or race warning. Those suite results are prior executed evidence, not new executions by this reviewer.
+
+The check compares raw immutable source/provision tables across initial/stopped/reopened/final captures, verifies retained attempt/grant/reservation/charge/fact prefixes, checks serving-root charge attribution, joins gate ordinals/current epochs to passive boundary records, joins endpoint ingress/committed journals to contact/application snapshots and exact immutable wires, and checks revocation ordering using the raw composition fact sequence. It also checks the honest unresolved effect and RunReport state for both unknown obstructions. It is a targeted evidence cross-check, not the Task 3 authority checker or a proof of all reachable histories.
+
+Evidence roots:
+
+- `/tmp/alan-phase3b3-runtime-development/qualified-ordinary/case-index.json`
+- `/tmp/alan-phase3b3-runtime-development/qualified-race/case-index.json`
+- Reviewer check source/output: `/tmp/phase3b3-recovery-review.py`, `/tmp/phase3b3-recovery-review-checks.txt`.
+
+## Findings supporting approval
+
+1. **Real acknowledged SIGKILL and original-Store reopen.** `phase3b3_cuts_test.go:86–204` uses a stopped owner, the same `db` path for a new owner, and a distinct process PID. `phase3b3_runtime_test.go:349–365` checks acknowledgment identity against the child PID, token, Store and selected boundary; existing `crash_test.go:158–172` refuses unacknowledged cuts and verifies `WaitStatus.Signal()==SIGKILL`. The archived acknowledgment/kill/open/exit records agree in both corpora. The stopped grant cut retains B1 rather than staged B2; the retained-grant cut has the accepted grant without B3 selection; the pre-authorization cut has A4 but no source authorization/attempt. These are committed-prefix claims, not interpretation of the staged hook alone.
+
+2. **All ten labels and both unknown subcases are supported.** The two requested labels 04/05 deliberately share `dispatch.consider/pre-admission`; their case interpretations disclose that coincidence. The stopped 06a snapshot has a retained allowed gate with zero endpoint contact. Cases 06b and 09 have independent endpoint `resource.applied/post-commit` acknowledgment, one application/contact, and no runtime receipt/settlement. Their stopped runs are A sequence/PC4 waiting for receipt and B sequence/PC5 waiting for the BA reply. Cut10 has both original payments selected while A is terminal and B awaits its terminal observation. This does not convert transport waiting into the separate serial/serial deadlock or assert that one original service is still unpaid in cut10.
+
+3. **Recovery preserves original identity and expenditure.** In every cut, initial immutable program, principal, permission, static-root and origin tables agree with final tables; stopped attempt/grant/reservation/charge/fact rows remain in reopened/final prefixes. Each allowed original has exactly one Effects=1 charge to the actual serving root. Every open run's epoch increments exactly once at fresh Open; terminal A in cut10 remains epoch2 while B becomes epoch3. Existing A4 attempt/wire/key/Request.Epoch remain unchanged. For cases04–09, Request.Epoch is2 and a new gate, where needed, uses epoch3. The early cuts create their first original attempt in epoch3. One grant and two original service charges remain in each completed process case.
+
+4. **Gates, contacts and applications remain distinct.** All allowed A4 gate records in the process corpus join to `authority.admission/allowed` boundary events with the same ordinal and actual epoch. Endpoint ingress bodies equal the original request; committed receipts equal the independently retained application receipt. For each corpus, final A4 gate/contact/application counts are 2/1/1 in06a, 2/2/1 in06b and09, and 1/1/1 in every other process case. Known-result cuts07/08 add neither gate nor contact. For example, ordinary `cut-06b-applied-no-receipt-3591508367` contains the independently acknowledged applied prefix and two final ingress/commit pairs yielding one application. These are trusted endpoint observations; a local allowed gate alone proves no contact.
+
+5. **Revocation timings are real and correctly scoped.** `phase3b3_temporal_test.go:70–159` advances a fixed program-produced B7 revoke via existing public retained APIs and labels the schedule `controlled-retained-protocol`. The `authority.admission` callback is after `registerDispatchRecord` returns and releases its lock (`dispatch.go:58–81`), so the callback can legally run the B suffix before worker release. In both corpora the raw facts establish revoke-before-gate → refused gate/zero contacts; gate-before-revoke-before-result → one allowed application; result-before-revoke → original result consumption without reissue. In the two completing variants the separate B/ab-service tuple remains allowed through its own decision and gate and produces its own endpoint result. No automatic-scheduler reachability claim is inferred from this controlled suffix.
+
+6. **Unknown and refusal obstructions are preserved.** `phase3b3_temporal_test.go:256–317` retains the actually applied/no-local-result original, then revokes before the fresh epoch3 gate: gate1 allowed, gate2 refused, one old contact/application, no receipt/settlement, and A4 remains unresolved in `UnknownExternal`. `phase3b3_adapter_test.go:216–288` preserves an applied generic adapter original across fresh Open with one gate/contact/application, no result/settlement and zero fresh dispatches; `UnknownAdapters` names that same A3. The late-grant control (`phase3b3_temporal_test.go:164–254`) starts with no lifecycle decision, retains the first refused original, then accepts a genuine program-issued grant after reopen without repairing the original, adding a gate, or contacting either endpoint.
+
+7. **Snapshot handling is coherent and protects archive custody.** `phase3b3_runtime_test.go:89–132` copies all existing DB/WAL/SHM files from a stopped/closed source, inspects only a disposable copy, and archives the original stopped bytes separately. `reciprocalBackup` at411–455 uses SQLite online backup for post-Open/pre-Run live-owner capture, checks `Step(-1)` completion and `Finish`, then captures that closed backup. Endpoints are stopped and wait status verified before their database bytes are copied. Hostile-history exports use separate disposable copies per public reader and preserve raw tables independently of runtime validation. I opened no archived SQLite database, including read-only opens.
+
+## Boundaries that must survive delivery
+
+This is development-source qualification of profile13, two logical principals, one Store, one host, exact singleton authority tuples, A-servicing/B-serial ordinary positives, and separately identified controlled adverse schedules. Profile14 process coverage is not established here. Repeated immutable requests do not transmit gate ordinal, so Store-only unique returning-exposure attribution and hostile-host exposure completeness remain unproved. One application depends on the trusted stable-key idempotent endpoint; two contacts are explicitly present in the applied/unknown recovery witnesses. Generic unknown and revoked unknown block completion honestly.
+
+The separate grant/ready chronology is a LateGrant subset, the service edges use distinct action tuples, and immediate request-selection adjacency narrows the unchanged model. No model refinement, arbitrary-state progress, independent-owner recovery, exactly-once contact, or manuscript consistency is approved by this review. Final source commit/freeze, re-export, Task3 classifications/checker work and manuscript reconciliation remain parent/later-task obligations.
+
+Only this review report and temporary reviewer-analysis files were written. No runtime source, evidence index, archived witness, branch or commit was changed by this reviewer.

@@ -1,0 +1,328 @@
+[
+  {
+    "Name": "ordinary-module",
+    "Command": [
+      "go",
+      "test",
+      "-json",
+      "-count=1",
+      "./..."
+    ],
+    "Cwd": "/private/tmp/alan-phase3b3-runtime",
+    "SourceCommit": "759df6e3d2505f27e1287b2cfeb07bc4290afc0a",
+    "Environment": {
+      "GOTOOLCHAIN": "local",
+      "GOCACHE": "/tmp/alan-phase3a-go-build",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "STATICCHECK_CACHE": "/tmp/alan-phase3b3-staticcheck",
+      "ALAN_PHASE3B3_OLD_READER": "/tmp/alan-phase3b3-old-reader/alan"
+    },
+    "AdditionalEnvironment": {},
+    "StartedUTC": "2026-11-04T18:30:38.139982+00:00",
+    "Seconds": 55.25571474999015,
+    "Exit": 0,
+    "Log": "ordinary-module.log",
+    "SHA256": "b6318f4f24380d3f802aacde69b8bb6fdb08500ad262342bbd72670b7cc34b4a",
+    "Tests": {
+      "PassEvents": 1265,
+      "PackagePasses": [
+        "github.com/JakeFAU/alan/adapters/openai",
+        "github.com/JakeFAU/alan/adapters/lookup",
+        "github.com/JakeFAU/alan/adapters/receiptquery",
+        "github.com/JakeFAU/alan/adapters/openmeteo",
+        "github.com/JakeFAU/alan/cmd/alan",
+        "github.com/JakeFAU/alan/effects",
+        "github.com/JakeFAU/alan/examples/delegation",
+        "github.com/JakeFAU/alan/internal/boundary",
+        "github.com/JakeFAU/alan/internal/fixture",
+        "github.com/JakeFAU/alan/schema",
+        "github.com/JakeFAU/alan/internal/testcmd/alan-resource",
+        "github.com/JakeFAU/alan/compose",
+        "github.com/JakeFAU/alan/runtime",
+        "github.com/JakeFAU/alan/author",
+        "github.com/JakeFAU/alan/internal/durabletest",
+        "github.com/JakeFAU/alan/internal/executor",
+        "github.com/JakeFAU/alan/examples/investigator",
+        "github.com/JakeFAU/alan/examples/weather-agent"
+      ],
+      "Failures": [],
+      "Skips": [
+        {
+          "Time": "2026-11-04T13:30:39.69844-05:00",
+          "Action": "skip",
+          "Package": "github.com/JakeFAU/alan/examples/inspect-execution",
+          "Elapsed": 0
+        },
+        {
+          "Time": "2026-11-04T13:30:39.770148-05:00",
+          "Action": "skip",
+          "Package": "github.com/JakeFAU/alan/examples/quickstart",
+          "Elapsed": 0
+        },
+        {
+          "Time": "2026-11-04T13:30:39.981879-05:00",
+          "Action": "skip",
+          "Package": "github.com/JakeFAU/alan/internal/storetest",
+          "Elapsed": 0
+        }
+      ]
+    }
+  },
+  {
+    "Name": "integration-core",
+    "Command": [
+      "go",
+      "test",
+      "-json",
+      "-tags=integration",
+      "-count=1",
+      "./internal/executor",
+      "./runtime",
+      "./author",
+      "./examples/delegation"
+    ],
+    "Cwd": "/private/tmp/alan-phase3b3-runtime",
+    "SourceCommit": "759df6e3d2505f27e1287b2cfeb07bc4290afc0a",
+    "Environment": {
+      "GOTOOLCHAIN": "local",
+      "GOCACHE": "/tmp/alan-phase3a-go-build",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "STATICCHECK_CACHE": "/tmp/alan-phase3b3-staticcheck",
+      "ALAN_PHASE3B3_OLD_READER": "/tmp/alan-phase3b3-old-reader/alan"
+    },
+    "AdditionalEnvironment": {},
+    "StartedUTC": "2026-11-04T18:30:38.140179+00:00",
+    "Seconds": 36.69144429199514,
+    "Exit": 0,
+    "Log": "integration-core.log",
+    "SHA256": "3d2df2e9189df8198ef1678070328343db0772ec51d357d85527d7987e526e25",
+    "Tests": {
+      "PassEvents": 1597,
+      "PackagePasses": [
+        "github.com/JakeFAU/alan/examples/delegation",
+        "github.com/JakeFAU/alan/runtime",
+        "github.com/JakeFAU/alan/author",
+        "github.com/JakeFAU/alan/internal/executor"
+      ],
+      "Failures": [],
+      "Skips": []
+    }
+  },
+  {
+    "Name": "reciprocal-normal",
+    "Command": [
+      "go",
+      "test",
+      "-json",
+      "-tags=integration",
+      "-count=1",
+      "./internal/durabletest",
+      "-run",
+      "^TestPhase3B3(Reciprocal|CartesianOperations|GenericUnknown|ActualResultLaundering|SerialSerial|AppliedUnknownRevoked|RetainedMutations)"
+    ],
+    "Cwd": "/private/tmp/alan-phase3b3-runtime",
+    "SourceCommit": "759df6e3d2505f27e1287b2cfeb07bc4290afc0a",
+    "Environment": {
+      "GOTOOLCHAIN": "local",
+      "GOCACHE": "/tmp/alan-phase3a-go-build",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "STATICCHECK_CACHE": "/tmp/alan-phase3b3-staticcheck",
+      "ALAN_PHASE3B3_OLD_READER": "/tmp/alan-phase3b3-old-reader/alan"
+    },
+    "AdditionalEnvironment": {
+      "ALAN_PHASE3B3_EVIDENCE": "/tmp/alan-phase3b3-runtime-frozen/normal"
+    },
+    "StartedUTC": "2026-11-04T18:30:38.140228+00:00",
+    "Seconds": 23.252496875007637,
+    "Exit": 0,
+    "Log": "reciprocal-normal.log",
+    "SHA256": "3baa3bc108d31f0914e769773b639bdc8daa4be87e6b2034f21b87cba3abf5ed",
+    "Tests": {
+      "PassEvents": 53,
+      "PackagePasses": [
+        "github.com/JakeFAU/alan/internal/durabletest"
+      ],
+      "Failures": [],
+      "Skips": []
+    }
+  },
+  {
+    "Name": "reciprocal-race",
+    "Command": [
+      "go",
+      "test",
+      "-json",
+      "-race",
+      "-tags=integration",
+      "-count=1",
+      "./internal/durabletest",
+      "-run",
+      "^TestPhase3B3(Reciprocal|CartesianOperations|GenericUnknown|ActualResultLaundering|SerialSerial|AppliedUnknownRevoked|RetainedMutations)"
+    ],
+    "Cwd": "/private/tmp/alan-phase3b3-runtime",
+    "SourceCommit": "759df6e3d2505f27e1287b2cfeb07bc4290afc0a",
+    "Environment": {
+      "GOTOOLCHAIN": "local",
+      "GOCACHE": "/tmp/alan-phase3a-go-build",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "STATICCHECK_CACHE": "/tmp/alan-phase3b3-staticcheck",
+      "ALAN_PHASE3B3_OLD_READER": "/tmp/alan-phase3b3-old-reader/alan"
+    },
+    "AdditionalEnvironment": {
+      "ALAN_PHASE3B3_EVIDENCE": "/tmp/alan-phase3b3-runtime-frozen/race"
+    },
+    "StartedUTC": "2026-11-04T18:31:01.393664+00:00",
+    "Seconds": 133.16900024999632,
+    "Exit": 0,
+    "Log": "reciprocal-race.log",
+    "SHA256": "5ad3f94f82ed4170f2ec6a225f8126067841c4ba95652a131176770841975eeb",
+    "Tests": {
+      "PassEvents": 53,
+      "PackagePasses": [
+        "github.com/JakeFAU/alan/internal/durabletest"
+      ],
+      "Failures": [],
+      "Skips": []
+    }
+  },
+  {
+    "Name": "authority-race",
+    "Command": [
+      "go",
+      "test",
+      "-json",
+      "-race",
+      "-tags=integration",
+      "-count=1",
+      "./internal/executor",
+      "./runtime",
+      "./author",
+      "-run",
+      "^TestRequestAuthority"
+    ],
+    "Cwd": "/private/tmp/alan-phase3b3-runtime",
+    "SourceCommit": "759df6e3d2505f27e1287b2cfeb07bc4290afc0a",
+    "Environment": {
+      "GOTOOLCHAIN": "local",
+      "GOCACHE": "/tmp/alan-phase3a-go-build",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "STATICCHECK_CACHE": "/tmp/alan-phase3b3-staticcheck",
+      "ALAN_PHASE3B3_OLD_READER": "/tmp/alan-phase3b3-old-reader/alan"
+    },
+    "AdditionalEnvironment": {},
+    "StartedUTC": "2026-11-04T18:31:14.842595+00:00",
+    "Seconds": 13.483039583006757,
+    "Exit": 0,
+    "Log": "authority-race.log",
+    "SHA256": "05e1701948b8a93db0908a5c5d6510ea790404b925ce549a66e71e2ee84857ad",
+    "Tests": {
+      "PassEvents": 105,
+      "PackagePasses": [
+        "github.com/JakeFAU/alan/author",
+        "github.com/JakeFAU/alan/runtime",
+        "github.com/JakeFAU/alan/internal/executor"
+      ],
+      "Failures": [],
+      "Skips": []
+    }
+  },
+  {
+    "Name": "baseline-current",
+    "Command": [
+      "go",
+      "test",
+      "-json",
+      "-tags=integration",
+      "-count=1",
+      "./internal/durabletest",
+      "-run",
+      "^TestPhase3B3Baseline"
+    ],
+    "Cwd": "/private/tmp/alan-phase3b3-runtime",
+    "SourceCommit": "759df6e3d2505f27e1287b2cfeb07bc4290afc0a",
+    "Environment": {
+      "GOTOOLCHAIN": "local",
+      "GOCACHE": "/tmp/alan-phase3a-go-build",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "STATICCHECK_CACHE": "/tmp/alan-phase3b3-staticcheck",
+      "ALAN_PHASE3B3_OLD_READER": "/tmp/alan-phase3b3-old-reader/alan"
+    },
+    "AdditionalEnvironment": {
+      "ALAN_PHASE3B3_EVIDENCE": "/tmp/alan-phase3b3-runtime-frozen/baseline-current"
+    },
+    "StartedUTC": "2026-11-04T18:31:28.326808+00:00",
+    "Seconds": 2.892176125009428,
+    "Exit": 0,
+    "Log": "baseline-current.log",
+    "SHA256": "6adadf2b708d55e9bd4c1f88afc1e97d674e060abe919848e2fed41d888b4b4c",
+    "Tests": {
+      "PassEvents": 7,
+      "PackagePasses": [
+        "github.com/JakeFAU/alan/internal/durabletest"
+      ],
+      "Failures": [],
+      "Skips": [
+        {
+          "Time": "2026-11-04T13:31:31.151558-05:00",
+          "Action": "skip",
+          "Package": "github.com/JakeFAU/alan/internal/durabletest",
+          "Test": "TestPhase3B3BaselineS2CompletionExpectedFailure",
+          "Elapsed": 0
+        }
+      ]
+    }
+  },
+  {
+    "Name": "staticcheck",
+    "Command": [
+      "staticcheck",
+      "./..."
+    ],
+    "Cwd": "/private/tmp/alan-phase3b3-runtime",
+    "SourceCommit": "759df6e3d2505f27e1287b2cfeb07bc4290afc0a",
+    "Environment": {
+      "GOTOOLCHAIN": "local",
+      "GOCACHE": "/tmp/alan-phase3a-go-build",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "STATICCHECK_CACHE": "/tmp/alan-phase3b3-staticcheck",
+      "ALAN_PHASE3B3_OLD_READER": "/tmp/alan-phase3b3-old-reader/alan"
+    },
+    "AdditionalEnvironment": {},
+    "StartedUTC": "2026-11-04T18:31:31.219458+00:00",
+    "Seconds": 1.1556477090052795,
+    "Exit": 0,
+    "Log": "staticcheck.log",
+    "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "Name": "staticcheck-integration",
+    "Command": [
+      "staticcheck",
+      "-tags=integration",
+      "./..."
+    ],
+    "Cwd": "/private/tmp/alan-phase3b3-runtime",
+    "SourceCommit": "759df6e3d2505f27e1287b2cfeb07bc4290afc0a",
+    "Environment": {
+      "GOTOOLCHAIN": "local",
+      "GOCACHE": "/tmp/alan-phase3a-go-build",
+      "GOPROXY": "off",
+      "GOSUMDB": "off",
+      "STATICCHECK_CACHE": "/tmp/alan-phase3b3-staticcheck",
+      "ALAN_PHASE3B3_OLD_READER": "/tmp/alan-phase3b3-old-reader/alan"
+    },
+    "AdditionalEnvironment": {},
+    "StartedUTC": "2026-11-04T18:31:32.378639+00:00",
+    "Seconds": 1.0494485839881236,
+    "Exit": 0,
+    "Log": "staticcheck-integration.log",
+    "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+]
