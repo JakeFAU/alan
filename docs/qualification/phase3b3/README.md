@@ -9,3 +9,67 @@ S1 consumes two authentic original results; missing/claim/Cartesian authority at
 `baseline-manifest.json` binds every member of all three archives. `baseline-freeze-command.py` preserves the exact generating script and its original clean-source assertion; its original absolute output paths are provenance, not a portable runner. To reproduce, check out the pinned source in a clean worktree and run the commands in `baseline-frozen/commands.json`, choosing a new output directory for `ALAN_PHASE3B3_EVIDENCE`. The expected-S2 command must exit 1 at the identified missing-authority assertion; ordinary normal/race runs must exit 0.
 
 `rejected-literal-root` preserves the first implementation probe's original failing test and log. It falsifies the precompiled hashed-root construction in contract v1; contract v2 uses exact logical root locators. No general delegation impossibility or positive runtime realization follows from that probe.
+
+## Primitive evidence index
+
+The reviewed primitive is frozen at `4f6f5f2500a48b2ca01ee7b09a823fa63656b7ab`.
+`primitive-freeze.json` binds its contract, source manifest and scoped approvals.
+Full reciprocal-result and process-cut qualification is a separate experiment.
+
+| Location | Evidence and interpretation |
+| --- | --- |
+| `rejected-candidate-v2` | Exact rejected source, independent REJECT reports and retained malformed-history probes. Restore its source-only snapshot over `6eca5f81faf41165e7fa77819537e49fafcd0249` to supply unchanged embedded fixtures. |
+| `task2-completion` | Initial scoped verification, four-case legacy compatibility RED/old-source GREEN, closed legacy Store, and original debit RED/green logs. The debit source reconstruction is explicitly not the original failed source or an executed reconstruction. |
+| `round1` | Corrected source evidence, all sixteen original-request mutation REDs, final scoped ordinary/integration/race checks and independent APPROVE re-reviews. The misleadingly named `authority-green.log` is a preserved failed fixture assumption. |
+| `legacy-matrix` | Ten old-created formats 3–12 fixtures; 80 primary reader calls and 60 byte-identical paired exports; complete ordinary module suite. Four rebuildable test binaries are omitted, with hashes/build commands retained. |
+
+## Extracting and rerunning historical checks
+
+Work in a new scratch directory. Extract archives there, preserving their
+top-level directories (`baseline-frozen`, `candidate-source`, `binding-review`,
+`semantics-review`, `round1`, or `legacy-matrix`). Verify archive members against
+the corresponding wrapper manifest before running anything. For example, from
+this runtime repository:
+
+```sh
+phase3b3_scratch=$(mktemp -d /tmp/alan-phase3b3-reproduce.XXXXXX)
+tar -xzf docs/qualification/phase3b3/legacy-matrix/evidence.tar.gz -C "$phase3b3_scratch"
+python3 "$phase3b3_scratch/legacy-matrix/compare.py"
+```
+
+That comparator reads the extracted JSON exports and hashes file bytes; it does
+not open SQLite. It rewrites the derived comparison JSON deterministically; the
+recorded extraction check confirms that all 419 extracted member hashes remain
+unchanged. It checks the retained comparisons, not a new execution of the
+old/current readers. Do not run a fixture generator against the extracted
+historical originals. New executions need a separate fresh evidence directory.
+
+Use a separate checkout or `git archive` extraction for each pinned source.
+The old source is `af6943a5805a9a6c0e8fe77f804264f4765d07ec`; the corrected
+source is the primitive freeze above. For the rejected candidate, first extract
+its base commit, then overlay `candidate-source/source.tar.gz`. Its
+`source.json` binds the source-only overlay. Do not substitute the current
+production files when reproducing the fully rejected candidate.
+
+Historical command records and overlay JSONs deliberately retain their original
+absolute paths. Keep them unchanged. Make working copies, remap each overlay's
+`Replace` keys to the corresponding new checkout paths and its values to the
+extracted test or source files, and change command cwd/output paths to fresh
+directories. For the legacy matrix, both overlays must use exactly the same
+`legacy_matrix_test.go.txt` bytes. Rebuild the omitted binaries with the recorded
+Go version and flags; run only the old binary in create mode, then both readers
+on new independent copies. `ALAN_LEGACY_MATRIX_ROOT` must name that new output
+root. Place a working copy of `compare.py` beside the newly generated exports
+for their comparison. The original binary hashes identify the original
+execution; path-remapped rebuilds are not claimed to be byte-identical binaries.
+
+For round1's expanded RED, overlay only the preserved pre-fix admission source
+onto the corrected source, using the corrected expanded test files. This is
+the documented partial-source falsifier, not the fully rejected candidate.
+Preserve expected exit 1 for semantic RED separately from compilation, sandbox
+or fixture setup failures. Use cached dependencies and the recorded environment;
+loopback/subprocess tests require the corresponding local permissions.
+
+Before any SQLite reader or owner Open, copy the complete database/WAL/SHM set
+to a fresh disposable directory. A read-only SQLite open can change SHM bytes.
+Keep the extracted originals and historical manifests unchanged.
