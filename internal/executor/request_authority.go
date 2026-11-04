@@ -575,7 +575,9 @@ func validateRequestAuthorityProgram(p Program, version string) error {
 			continue
 		}
 		e := in.Effect
-		if version != "" && e.Kind == "lifecycle" && e.Payload["operation"].Literal != nil && authorityOperation(e.Payload["operation"].Literal.Text) && e.Payload["claim"].Literal != nil {
+		// V1 treats claim payload text as dormant until its authority operation
+		// is emitted. Only v2 adds literal-claim preflight at program loading.
+		if version == RequestAuthorityBindingVersion && e.Kind == "lifecycle" && e.Payload["operation"].Literal != nil && authorityOperation(e.Payload["operation"].Literal.Text) && e.Payload["claim"].Literal != nil {
 			var tag struct{ Version string }
 			if json.Unmarshal([]byte(e.Payload["claim"].Literal.Text), &tag) != nil || tag.Version != version {
 				return ErrVersion
