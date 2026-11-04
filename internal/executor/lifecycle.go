@@ -28,6 +28,7 @@ type TargetState struct {
 	Projection                Projection
 }
 type LifecycleResult struct {
+	Authority        *AuthorityDecision `json:",omitempty"`
 	Request          LifecycleRequest
 	DecisionSequence int64
 	Accepted         bool
@@ -67,6 +68,14 @@ func loadLifecycleRequest(ctx context.Context, q queryer, id string) (LifecycleR
 		return LifecycleRequest{}, fmt.Errorf("missing lifecycle operation")
 	}
 	switch operation.Text {
+	case "DelegateAuthority", "RevokeAuthority":
+		enabled, err := requestAuthorityEnabled(ctx, q)
+		if err != nil {
+			return LifecycleRequest{}, err
+		}
+		if !enabled {
+			return LifecycleRequest{}, fmt.Errorf("unknown lifecycle operation")
+		}
 	case "Retry", "CancelRun", "AbandonRun", "RetireSubject":
 	default:
 		return LifecycleRequest{}, fmt.Errorf("unknown lifecycle operation")
@@ -75,7 +84,13 @@ func loadLifecycleRequest(ctx context.Context, q queryer, id string) (LifecycleR
 	if !ok || revision.Kind != "int" || revision.Number <= 0 {
 		return LifecycleRequest{}, fmt.Errorf("invalid expected target revision")
 	}
-	return LifecycleRequest{Intent: intent, SourceRevision: retained.revision, Operation: operation.Text, ExpectedRevision: revision.Number}, nil
+	r := LifecycleRequest{Intent: intent, SourceRevision: retained.revision, Operation: operation.Text, ExpectedRevision: revision.Number}
+	if authorityOperation(r.Operation) {
+		if _, _, err := parseAuthorityClaim(r); err != nil {
+			return r, err
+		}
+	}
+	return r, nil
 }
 func (s *Store) LoadLifecycleRequest(ctx context.Context, id string) (LifecycleRequest, error) {
 	s.mu.Lock()
@@ -282,11 +297,16 @@ func (s *Store) DecideLifecycle(ctx context.Context, request LifecycleRequest) (
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return LifecycleResult{}, err
 	}
-	granted, err := lifecycleGrant(ctx, tx, request)
-	if err != nil {
-		return LifecycleResult{}, err
+	var result LifecycleResult
+	if authorityOperation(request.Operation) {
+		result, err = decideRequestAuthority(ctx, tx, request, order, before, authorityCurrentPrefix)
+	} else {
+		var granted bool
+		granted, err = lifecycleGrant(ctx, tx, request)
+		if err == nil {
+			result, err = decideTarget(request, order, before, root, granted)
+		}
 	}
-	result, err := decideTarget(request, order, before, root, granted)
 	if err == nil && s.invocationEnabled() && before != nil && request.Operation == "Retry" {
 		rootID, e := compositionMembershipRoot(ctx, tx, before.Run)
 		if e != nil {

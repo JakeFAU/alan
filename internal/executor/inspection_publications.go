@@ -20,6 +20,11 @@ func (b *inspectionBuilder) checkPublicationPrefixes(roots map[string]*RootCompl
 		op := f.OperationID
 		key := compositionIdentity("alan/fact/"+string(f.Kind)+"/v1", op)
 		switch f.Kind {
+		case compositionAuthorityAdmissionFact:
+			if !b.authorityValidated || f.AuthorityAdmission == nil {
+				return ErrCorrupt
+			}
+			key = compositionIdentity("alan/fact/authority-admission/v1", []any{b.snap.Namespace, op, f.AuthorityAdmission.Ordinal})
 		case compositionExecutionFact:
 			key = compositionIdentity("alan/fact/execution/v1", []any{f.Run, f.Sequence})
 			step := b.steps[ReductionRef{f.Run, f.Sequence}]

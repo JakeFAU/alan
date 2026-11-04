@@ -101,7 +101,7 @@ func (c *causalCut) readLifecycleSources() error {
 		rec := LifecycleRequest{Intent: i.Intent, SourceRevision: i.revision, Operation: i.Payload["operation"].Text, ExpectedRevision: i.Payload["revision"].Number}
 		if !ok || i.Kind != "lifecycle" || !c.auth[i.ID].Allowed || row["id"] != i.ID || row["decision_sequence"] != r.DecisionSequence || r.DecisionSequence <= 0 || r.DecisionSequence > int64(len(ordered)) ||
 			!reflect.DeepEqual(rec, r.Request) || row["descriptor"] != compositionJSON(rec) || rec.ExpectedRevision <= 0 ||
-			!slices.Contains([]string{"CancelRun", "AbandonRun", "RetireSubject", "Retry"}, rec.Operation) {
+			!(slices.Contains([]string{"CancelRun", "AbandonRun", "RetireSubject", "Retry"}, rec.Operation) || c.authorityValidated && authorityOperation(rec.Operation)) {
 			return corrupt("lifecycle decision lacks its original authorized request")
 		}
 		target := RunID{i.Target, i.Generation}

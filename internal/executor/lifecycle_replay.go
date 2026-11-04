@@ -179,7 +179,10 @@ func validateLifecycle(ctx context.Context, q queryer) error {
 		if e != nil {
 			return e
 		}
-		expected, e := decideTarget(request, result.DecisionSequence, result.Before, roots[request.Intent.Target], grant)
+		var expected LifecycleResult
+		if !authorityOperation(request.Operation) {
+			expected, e = decideTarget(request, result.DecisionSequence, result.Before, roots[request.Intent.Target], grant)
+		}
 		if e != nil {
 			return e
 		}
@@ -199,6 +202,18 @@ func validateLifecycle(ctx context.Context, q queryer) error {
 				expected.Reason = "invocation_retry_unsupported"
 				expected.After = &after
 			}
+		}
+		if authorityOperation(request.Operation) {
+			prefix, e := authorityFactOrder(ctx, q, compositionLifecycleFact, id)
+			if e != nil {
+				return e
+			}
+			expected, e = decideRequestAuthority(ctx, q, request, result.DecisionSequence, result.Before, prefix)
+			if e != nil {
+				return e
+			}
+		} else if result.Authority != nil {
+			return ErrVersion
 		}
 		if !reflect.DeepEqual(expected, result) {
 			return corrupt("lifecycle decision mismatch")

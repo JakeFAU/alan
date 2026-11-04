@@ -54,9 +54,10 @@ type compositionTemplate struct {
 	Templates, Capabilities            []string
 }
 type compositionProvision struct {
-	Version   string `json:",omitempty"`
-	Roots     []compositionRoot
-	Templates []compositionTemplate
+	RequestAuthority string `json:",omitempty"`
+	Version          string `json:",omitempty"`
+	Roots            []compositionRoot
+	Templates        []compositionTemplate
 	// RecordDispatchAdmissions retains admission to the local call gate for
 	// scoped ordinary adapters, separately from their paid reservations.
 	RecordDispatchAdmissions bool `json:",omitempty"`

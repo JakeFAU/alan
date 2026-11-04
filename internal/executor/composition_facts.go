@@ -29,6 +29,7 @@ const (
 // A fact orders a durable row, not a callback. Digest covers its complete source
 // row evidence. RootIDs includes both sides of a cross-root lifecycle decision.
 type compositionFact struct {
+	AuthorityAdmission        *AuthorityAdmission `json:",omitempty"`
 	Version, ID               string
 	Kind                      compositionFactKind
 	Order                     int64
@@ -237,6 +238,9 @@ func readCompositionFacts(ctx context.Context, q queryer) ([]compositionFact, er
 		}
 		if err = decode(raw, &f); err != nil {
 			return nil, err
+		}
+		if f.Kind != compositionAuthorityAdmissionFact && f.AuthorityAdmission != nil {
+			return nil, ErrVersion
 		}
 		if f.Order != order || f.ID != id || f.Kind != kind || f.Version != compositionFactVersion || !sameJSON(raw, f) {
 			return nil, corrupt("composition fact row mismatch")

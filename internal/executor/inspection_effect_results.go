@@ -64,7 +64,7 @@ func (c *effectCut) readResults() error {
 	for _, x := range c.effects {
 		if x.ExternalAttempt != nil && !x.ExternalAttempt.Allowed {
 			x.ResultDisposition = "source_denied"
-			if x.ExternalAttempt.Reason == "grant_denied" {
+			if x.ExternalAttempt.Reason == "grant_denied" || x.ExternalAttempt.Authority != nil && !x.ExternalAttempt.Authority.Allowed {
 				x.ResultDisposition = "grant_denied"
 			}
 		}

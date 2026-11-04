@@ -186,6 +186,11 @@ func (s *Store) Run(ctx context.Context, options RunOptions) (report RunReport, 
 				if work != nil {
 					event = work.event
 					transport = func(op *dispatchOpportunity) externalCompletion {
+						if op.authority != nil {
+							work.event.AuthorityAdmissionOrdinal = op.authority.Ordinal
+							work.event.Epoch = op.authority.Source.Epoch
+							work.event.Sequence = op.authority.Source.Sequence
+						}
 						work.read, work.refusal = op.read, op.readRefusal
 						if op.read != nil {
 							work.event.Epoch = op.read.Resolver.Epoch
@@ -201,7 +206,14 @@ func (s *Store) Run(ctx context.Context, options RunOptions) (report RunReport, 
 				}
 				if work != nil {
 					event = work.event
-					transport = func(*dispatchOpportunity) externalCompletion { return transportExternal(ctx, *work) }
+					transport = func(op *dispatchOpportunity) externalCompletion {
+						if op.authority != nil {
+							work.event.AuthorityAdmissionOrdinal = op.authority.Ordinal
+							work.event.Epoch = op.authority.Source.Epoch
+							work.event.Sequence = op.authority.Source.Sequence
+						}
+						return transportExternal(ctx, *work)
+					}
 				}
 			}
 			if transport != nil {

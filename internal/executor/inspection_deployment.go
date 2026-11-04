@@ -71,6 +71,9 @@ func (b *inspectionBuilder) buildDeployment() error {
 	if err != nil {
 		return err
 	}
+	if (profile.RequestAuthority != "") != b.snap.Features.RequestAuthority || profile.RequestAuthority != "" && (profile.RequestAuthority != RequestAuthorityVersion || len(profile.Templates) != 0 || len(profile.Continuations) != 0 || profile.RecordDispatchAdmissions) {
+		return ErrVersion
+	}
 	if profile.Version != compositionProtocolVersion || profiles[0]["version"] != compositionProtocolVersion || profile.RecordDispatchAdmissions != b.snap.Features.DispatchAdmissions ||
 		(len(profile.Continuations) != 0) != hasContinuationSchema(b.snap.StorageVersion) {
 		return ErrVersion
@@ -318,6 +321,12 @@ func (b *inspectionBuilder) buildDeployment() error {
 			if roots[id].ID == "" {
 				return corrupt("fact references missing root")
 			}
+		}
+		if f.Kind != compositionAuthorityAdmissionFact && f.AuthorityAdmission != nil {
+			return ErrVersion
+		}
+		if f.Kind == compositionAuthorityAdmissionFact && !b.authorityValidated {
+			return ErrVersion
 		}
 		b.facts[f.ID] = f
 	}

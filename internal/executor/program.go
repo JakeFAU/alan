@@ -59,6 +59,7 @@ type Match struct {
 	Source, Generation, Obligation, Operation Operand
 }
 type Effect struct {
+	Authority                      *AuthorityUse `json:",omitempty"`
 	Kind                           string
 	Target, Generation, Obligation Operand
 	Payload                        map[string]Operand
@@ -78,6 +79,7 @@ type Observation struct {
 	Payload                  map[string]Value
 }
 type Intent struct {
+	Authority    *AuthorityUse `json:",omitempty"`
 	ID           string
 	Run          RunID
 	Sequence     int64
@@ -138,6 +140,11 @@ func validateProgram(p Program) error {
 		return fmt.Errorf("empty program")
 	}
 	for i, in := range p.Code {
+		if in.Effect != nil {
+			if err := validateAuthorityUse(in.Effect.Authority); err != nil {
+				return err
+			}
+		}
 		invocationEffect := in.Effect != nil && in.Effect.Kind == "invocation"
 		invocationReceive := in.Match != nil && in.Match.Kind == "invocation"
 		if invocationEffect || invocationReceive {
@@ -435,7 +442,11 @@ func Reduce(p Program, s Projection, o *Observation, id RunID, seq int64, l Limi
 			return Reduction{}, err
 		}
 		key, _ := json.Marshal([]any{id.Subject, id.Generation, seq, 0})
-		intent := Intent{ID: string(key), Run: id, Sequence: seq, Ordinal: 0, Kind: e.Kind, Target: target, Generation: gen, Obligation: ob, Payload: map[string]Value{}}
+		intent := Intent{ID: string(key), Run: id, Sequence: seq, Ordinal: 0, Kind: e.Kind, Target: target, Generation: gen, Obligation: ob, Payload: map[string]Value{}, Authority: e.Authority}
+		if e.Authority != nil {
+			u := *e.Authority
+			intent.Authority = &u
+		}
 		for k, v := range e.Payload {
 			x, err := eval(v, s.Data)
 			if err != nil {

@@ -19,6 +19,7 @@ type DispatchAuthority struct {
 var ErrDispatchAuthorityOpen = errors.New("dispatch authority is still open")
 
 type dispatchOpportunity struct {
+	authority   *AuthorityAdmission
 	intent      string
 	source      RunID
 	read        *receiptReadOrdinal
@@ -58,7 +59,24 @@ func (s *Store) admitDispatch(ctx context.Context, event boundary.Event) (*dispa
 	if err := dispatchEvent(ctx, event, "dispatch.consider", "pre-admission"); err != nil {
 		return nil, err
 	}
-	op, reason, err := s.registerDispatch(ctx, event.Intent)
+	var gate *AuthorityAdmission
+	op, reason, err := s.registerDispatchRecord(ctx, event.Intent, &gate)
+	if gate != nil {
+		event.AuthorityAdmissionOrdinal = gate.Ordinal
+		event.Epoch = gate.Source.Epoch
+		event.Sequence = gate.Source.Sequence
+	}
+	if err == nil && gate != nil {
+		phase := "allowed"
+		if !gate.Allowed {
+			phase = "refused"
+		}
+		err = dispatchEvent(ctx, event, "authority.admission", phase)
+		if err != nil && op != nil {
+			s.finishDispatch(op, err)
+			op = nil
+		}
+	}
 	if err == nil && reason != "" {
 		err = dispatchEvent(ctx, event, "dispatch.refused", reason)
 	}
@@ -66,6 +84,10 @@ func (s *Store) admitDispatch(ctx context.Context, event boundary.Event) (*dispa
 }
 
 func (s *Store) registerDispatch(ctx context.Context, id string) (*dispatchOpportunity, string, error) {
+	return s.registerDispatchRecord(ctx, id, nil)
+}
+
+func (s *Store) registerDispatchRecord(ctx context.Context, id string, captured **AuthorityAdmission) (*dispatchOpportunity, string, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.closed || !s.dispatchOwnerOpen() {
@@ -75,9 +97,15 @@ func (s *Store) registerDispatch(ctx context.Context, id string) (*dispatchOppor
 	if err != nil {
 		return nil, "", err
 	}
-	reason, err := s.dispatchSourceReason(ctx, intent.Run, intent.revision)
-	if err != nil || reason != "" {
-		return nil, reason, err
+	enabled, err := requestAuthorityEnabled(ctx, s.conn)
+	if err != nil {
+		return nil, "", err
+	}
+	if !enabled {
+		reason, e := s.dispatchSourceReason(ctx, intent.Run, intent.revision)
+		if e != nil || reason != "" {
+			return nil, reason, e
+		}
 	}
 	// Keep Close and durable R outside the final check-and-register interval.
 	s.ownerMu.Lock()
@@ -89,6 +117,18 @@ func (s *Store) registerDispatch(ctx context.Context, id string) (*dispatchOppor
 		return nil, "", err
 	}
 	op := &dispatchOpportunity{intent: id, source: intent.Run, done: make(chan struct{})}
+	if enabled {
+		op.authority, err = s.recordAuthorityAdmission(ctx, id)
+		if err != nil {
+			return nil, "", err
+		}
+		if captured != nil {
+			*captured = op.authority
+		}
+		if !op.authority.Allowed {
+			return nil, op.authority.Reason, nil
+		}
+	}
 	if s.dispatchAdmissions && intent.Kind == "adapter" {
 		if err := s.recordDispatchAdmission(ctx, intent.Intent); err != nil {
 			return nil, "", err

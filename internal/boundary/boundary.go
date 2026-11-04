@@ -15,6 +15,7 @@ import (
 )
 
 type Event struct {
+	AuthorityAdmissionOrdinal                        int64 `json:",omitempty"`
 	Scenario, Token, Store, Boundary, Phase, Subject string
 	PID                                              int
 	Generation, Epoch, Sequence                      int64
@@ -142,7 +143,7 @@ func FromEnvironment(ctx context.Context, store string) (context.Context, error)
 
 // Zero numeric and empty string filter fields are wildcards; specified fields match exactly.
 func matches(filter, event Event) bool {
-	return !(event.Boundary != filter.Boundary || (filter.Subject != "" && event.Subject != filter.Subject) || (filter.Sequence != 0 && event.Sequence != filter.Sequence) || (filter.Generation != 0 && event.Generation != filter.Generation) || (filter.Epoch != 0 && event.Epoch != filter.Epoch) || (filter.Attempt != "" && event.Attempt != filter.Attempt) || (filter.Phase != "" && event.Phase != filter.Phase) || (filter.Intent != "" && event.Intent != filter.Intent) || (filter.Root != "" && event.Root != filter.Root))
+	return !((filter.AuthorityAdmissionOrdinal != 0 && event.AuthorityAdmissionOrdinal != filter.AuthorityAdmissionOrdinal) || event.Boundary != filter.Boundary || (filter.Subject != "" && event.Subject != filter.Subject) || (filter.Sequence != 0 && event.Sequence != filter.Sequence) || (filter.Generation != 0 && event.Generation != filter.Generation) || (filter.Epoch != 0 && event.Epoch != filter.Epoch) || (filter.Attempt != "" && event.Attempt != filter.Attempt) || (filter.Phase != "" && event.Phase != filter.Phase) || (filter.Intent != "" && event.Intent != filter.Intent) || (filter.Root != "" && event.Root != filter.Root))
 }
 
 // Inherit preserves a process observer while using the request cancellation lifetime.
