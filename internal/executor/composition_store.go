@@ -217,7 +217,7 @@ func retainCompositionProfile(ctx context.Context, q queryer, namespace string, 
 	if len(raw) > l.MaxProgramBytes {
 		return nil, ErrLimit
 	}
-	profile := &compositionProfile{raw: string(raw)}
+	profile := &compositionProfile{raw: string(raw), invocationProtocol: out.Version == compositionProtocolVersion}
 	if len(out.Continuations) != 0 {
 		if err = loadContinuationSlots(ctx, q, out, l); err != nil {
 			return nil, err
@@ -425,9 +425,5 @@ func createInvocationStore(ctx context.Context, path string, p Provision, c comp
 	return createStore(ctx, path, p, l, &c)
 }
 func (s *Store) invocationEnabled() bool {
-	if s.composition == nil {
-		return false
-	}
-	c, err := s.composition.descriptor()
-	return err == nil && c.Version == compositionProtocolVersion
+	return s.composition != nil && s.composition.invocationProtocol
 }

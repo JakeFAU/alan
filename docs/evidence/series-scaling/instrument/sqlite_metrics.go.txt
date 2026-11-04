@@ -1,0 +1,34 @@
+// Generated measurement-only addition; never part of the delivered dependency.
+package sqlite3
+
+import (
+ "regexp"
+ "strings"
+ "sync"
+)
+
+// The template map is capped; overflow never retains a template or bind value.
+const probeTemplateCap = 256
+var probeSQL = struct {sync.Mutex; counts map[string]map[string]uint64}{counts:make(map[string]map[string]uint64)}
+var probeSQLTokens = regexp.MustCompile(`(?s)/\*.*?\*/|--[^\n]*|[xX]'(?:''|[^'])*'|'(?:''|[^'])*'|\b[0-9]+(?:\.[0-9]+)?\b`)
+func probeNormalize(sql string) string {
+ sql=probeSQLTokens.ReplaceAllStringFunc(sql,func(s string)string {if strings.HasPrefix(s,"--") || strings.HasPrefix(s,"/*") {return " "}; return "?"})
+ return strings.Join(strings.Fields(sql)," ")
+}
+func probeKeyLocked(key string) map[string]uint64 {
+ if m,ok:=probeSQL.counts[key];ok {return m}
+ if len(probeSQL.counts)>=probeTemplateCap {key="<template-cap-overflow>";if m,ok:=probeSQL.counts[key];ok{return m}}
+ m:=make(map[string]uint64);probeSQL.counts[key]=m;return m
+}
+func probeAdd(key,metric string,n uint64) {probeSQL.Lock();defer probeSQL.Unlock();probeKeyLocked(key)[metric]+=n}
+func probeRecord(key string,runs,fullscan,vm int,row bool) {
+ probeSQL.Lock();defer probeSQL.Unlock();m:=probeKeyLocked(key)
+ m["executions"]+=uint64(runs);m["fullscan_steps"]+=uint64(fullscan);m["vm_steps"]+=uint64(vm);m["step_calls"]++
+ if row {m["sqlite_row_returns"]++}
+}
+// MeasurementSnapshot returns cumulative values, independently sampled by phase.
+func MeasurementSnapshot() map[string]uint64 {
+ probeSQL.Lock();defer probeSQL.Unlock();out:=map[string]uint64{}
+ for key,m:=range probeSQL.counts {for metric,n:=range m {out["sql.template."+key+"."+metric]=n;out["sql.total."+metric]+=n}}
+ return out
+}

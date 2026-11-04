@@ -71,6 +71,8 @@ type compositionProfile struct {
 	raw         string
 	slots       map[RunID]ContinuationSlot
 	approvalIDs map[string]bool
+	// The validated protocol version is immutable for this profile's lifetime.
+	invocationProtocol bool
 }
 
 func (p *compositionProfile) descriptor() (compositionProvision, error) {
