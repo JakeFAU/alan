@@ -1,0 +1,28 @@
+# Phase 3B.3 primitive evidence provenance preflight
+
+2026-11-04. **Bounded approval: archive bytes, tracked-path completeness, source identities and retained RED provenance pass. No blocking packaging defect found.** This is a read-only provenance preflight, not a policy re-review or whole-phase approval.
+
+Inspected runtime HEAD `6352969` (evidence commits `e48602a`, `6352969`) and primitive source commit `4f6f5f2500a48b2ca01ee7b09a823fa63656b7ab`. The untracked Task 4 `examples/delegation/reciprocal_test.go` was explicitly excluded; no current-source cleanliness or Task 4 qualification claim is made.
+
+## Byte and tracking checks actually performed
+
+- All 52 runtime paths under `docs/qualification/phase3b3` are tracked; no untracked or ignored qualification member was discovered. The formerly missing closed legacy compatibility `.sqlite` witness is tracked, present and matches the task2-completion manifest.
+- Verified all nine tar archives by reading archive/file bytes only. Manifest coverage equals the complete file-member sets: baseline archives 900 entries, rejected candidate archives 29 entries, round1 archive 35 entries, legacy matrix archive 419 entries. No missing/extra member, duplicate archive filename, size or SHA256 mismatch was found.
+- Verified all 22 direct task2-completion manifest entries, including the closed legacy Store and pre-compatibility source archive. The latter contains all 291 source/module entries named by its manifest, with matching hashes.
+- Verified all 292 nested rejected-candidate source/module entries against its original source manifest. The embedded fixtures omitted from this source-only archive are explicitly documented as supplied by restoring over base `6eca5f81`; the reviewer fixture-copy hashes remain retained.
+- Verified the approved primitive source manifest's 294 source/module entries against **Git bytes at commit 4f6f5f2**, not the live worktree. Every size/hash matches. The approved-source manifest digest matches the legacy matrix wrapper, and all primitive-freeze approval/source-manifest references resolve to tracked paths.
+- Verified the frozen baseline's 283 source/module inputs against commit `8319a9067c16aaf5e3ecccb3d0c62f5c536e6140` and all 320 referenced frozen artifact digests. All match. The historical development-sidecar custody incident remains plainly disclosed; no reconstruction was silently promoted to an untouched original.
+- Verified original binding-review inner manifest references (17), round1 inner manifest references (33), and legacy matrix inner hashes (422). The matrix's only unavailable hash targets are exactly its four explicitly declared rebuildable `.test` binaries, each with matching retained digest metadata; this is documented omission, not ignored evidence loss.
+- Scanned tracked Markdown for literal relative Markdown links: no broken target was found. Archive member paths and primitive-freeze references were also checked independently.
+
+Supporting compact check output is `/tmp/alan-phase3b3-evidence-preflight-checks.json`. Additional nested-manifest checks described above were executed as read-only Python/tar/hash and `git show` operations. No SQLite library, CLI, connection or database open was used.
+
+## RED/source and reproduction assessment
+
+The package retains the literal-root RED source/log; exact rejected candidate source and both original independent REJECT reports; original external/adapter substitution test source, commands, logs and closed disposable Stores; round1 exact pre-fix admission source, original/corrected expanded-RED fixture versions, partial-source overlay, all 16 substantive field-mutation REDs, and final corrected source/logs. The missing original production bytes for the earlier debit RED are accurately disclosed; the supplied removed-check source is labeled a reconstruction and is not claimed to have run. Original REJECTs and fixture/setup failures remain distinct from later passing results.
+
+The historical command recipes have the required source and overlay ingredients. Baseline instructions pin the source, require fresh evidence output, and distinguish expected exit 1 from ordinary exit 0. Candidate reconstruction over the pinned base supplies omitted embedded fixtures. Legacy matrix build commands, identical harness source, old/current source identities, command exits and declared binary omissions are retained. Round1 overlay points to the saved exact pre-fix admission source, as described; it is a partial-source experiment, not a claimed full pre-fix checkout. These descriptions are consistent with the packaged bytes.
+
+**Nonblocking documentation improvement:** several archived commands/overlay JSONs retain original `/tmp` and `/private/tmp` paths, while `compare.py` is relative to its extracted directory. A short top-level recipe/index explaining archive extraction, choosing fresh scratch directories, remapping overlay keys/values and cwd/output paths, restoring candidate source over its base, and rebuilding omitted binaries would make reproduction easier. Do not edit the historical command records themselves or run scripts against archived SQLite originals. The present records are provenance plus a reconstructible recipe, not drop-in portable runners.
+
+No tests, policy checks, model runs or build suites were repeated. No archive original was opened with SQLite. No source edits, subagents or commits occurred; only this temporary report and compact check-output file were written. Research contract/baseline files and Task 4 work were untouched. Full phase review awaits actual Tasks 3/4 evidence.
