@@ -204,6 +204,9 @@ func verify(cut *aruntime.ExecutionSnapshot, v author.SeriesView, m *meter, n in
 		if a.Prepared.Request.ID != e.OperationID || a.Prepared.Request.Key == "" || keys[a.Prepared.Request.Key] || res.Candidate.ID != e.OperationID || res.Candidate.Key != a.Prepared.Request.Key || res.Digest == "" || results[res.Digest] || c.Ordinal != j+1 || c.OperationID != e.OperationID || c.Key != a.Prepared.Request.Key || c.PreparedDigest != a.Prepared.Digest || c.ResponseID != res.Candidate.ResponseID {
 			return fail("position %d adapter contact provenance mismatch", j+1)
 		}
+		if c.Capability != a.Prepared.Request.Capability || c.Effect != a.Prepared.Request.Effect || c.Protocol != a.Prepared.Protocol || c.Endpoint != a.Prepared.Endpoint {
+			return fail("position %d adapter contact request mismatch", j+1)
+		}
 		if o == nil || o.ID == "" || observations[o.ID] || o.SourceOperationID != e.OperationID || o.SelectedAt == nil || o.SelectedAt.Run != want || e.Settlement.ObservationID != o.ID {
 			return fail("position %d selection provenance mismatch", j+1)
 		}
