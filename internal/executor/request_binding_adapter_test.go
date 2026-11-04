@@ -27,6 +27,12 @@ func TestRequestBindingAuthoredConflictFormats(t *testing.T) {
 				c.Version = version
 				raw, _ := json.Marshal(c)
 				p.Code[1].Effect.Payload["claim"] = Lit(Text(string(raw)))
+				revoke, err := json.Marshal(RevocationClaim{Version: version, Root: c.Root})
+				if err != nil {
+					t.Fatal(err)
+				}
+				p.Code = append(p.Code[:2], Instruction{Op: "emit", Dst: "pending", Effect: &Effect{Kind: "lifecycle", Target: Lit(Text("B")), Generation: Lit(Int(1)), Obligation: Lit(Text("revoke")), Payload: map[string]Operand{"operation": Lit(Text("RevokeAuthority")), "revision": Lit(Int(1)), "claim": Lit(Text(string(revoke)))}}}, p.Code[2])
+
 			})
 			authorityReplaceProgram(t, &p, "A", func(p *Program) {
 				p.Code[1].Effect.Authority.Version = version
@@ -113,6 +119,11 @@ func TestRequestBindingAuthoredConflictFormats(t *testing.T) {
 				}
 			}
 			defer s.Close()
+			// A retained known result remains selectable after a genuine revoke.
+			// This is not another physical opportunity: the adapter ran once.
+			if revoked := authorizedDecision(t, s, committedRequest(t, s, "B")); !revoked.Accepted || revoked.Reason != "revoked" {
+				t.Fatal(revoked)
+			}
 			observation := observationFor(adapterDescriptor(attempt, first), attempt.Intent.Run)
 			if _, err = s.Commit(t.Context(), current(t, s, "A").Authority(), observation.ID); err != nil {
 				t.Fatal(err)
