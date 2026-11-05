@@ -5,7 +5,9 @@ package durabletest
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/JakeFAU/alan/internal/boundary"
@@ -29,11 +31,42 @@ func TestCompetingReadCannotSettleAdopterDebt(t *testing.T) {
 			startRead(t, s, "twin", map[string]rt.Value{"target": schema.Text(h.original)})
 			returned := make(chan boundary.Event, 2)
 			release := make(chan struct{})
+			adopterIntent := make(chan string, 1)
+			received := make(chan boundary.Event, 1)
+			account := make(chan struct{})
+			releaseTransport := sync.OnceFunc(func() { close(release) })
+			releaseAccounting := sync.OnceFunc(func() { close(account) })
 			done := runReaders(t, s, ready, 2, func(ctx context.Context, e boundary.Event) error {
+				if e.Boundary == "runner.received" && e.Phase == "pre-account" &&
+					e.Subject == resolver2c.Subject && e.Generation == resolver2c.Generation {
+					var expected string
+					select {
+					case expected = <-adopterIntent:
+					case <-ctx.Done():
+						return ctx.Err()
+					}
+					if e.Intent != expected {
+						return fmt.Errorf("wrong adopter at pre-account: got %q, want %q", e.Intent, expected)
+					}
+					select {
+					case received <- e:
+					case <-ctx.Done():
+						return ctx.Err()
+					}
+					select {
+					case <-account:
+					case <-ctx.Done():
+					}
+					return nil
+				}
 				if e.Boundary != "adapter.response" {
 					return nil
 				}
-				returned <- e
+				select {
+				case returned <- e:
+				case <-ctx.Done():
+					return ctx.Err()
+				}
 				if e.Subject == resolver2c.Subject {
 					select {
 					case <-release:
@@ -44,6 +77,9 @@ func TestCompetingReadCannotSettleAdopterDebt(t *testing.T) {
 				}
 				return nil
 			})
+			// Release both adopter pauses before runReaders cancels and joins Run.
+			t.Cleanup(releaseAccounting)
+			t.Cleanup(releaseTransport)
 			reads := map[string]string{}
 			for range 2 {
 				e := recvReadBoundary(t, returned, done)
@@ -62,6 +98,15 @@ func TestCompetingReadCannotSettleAdopterDebt(t *testing.T) {
 			if fault == "adopter query" {
 				blocked, originalSettlements = adopter, 1
 			}
+			adopterIntent <- adopter
+			releaseTransport()
+			// Park the exact adopter on the coordinator before its detached cleanup
+			// budget starts. The duplicate remains at its genuine response boundary.
+			cut := recvReadBoundary(t, received, done)
+			if cut.Intent != adopter || cut.Subject != resolver2c.Subject || cut.Generation != resolver2c.Generation ||
+				cut.Boundary != "runner.received" || cut.Phase != "pre-account" {
+				t.Fatal("wrong adopter accounting acknowledgment", cut)
+			}
 			db, err := sql.Open("sqlite3", h.db+"?_busy_timeout=5000")
 			if err != nil {
 				t.Fatal(err)
@@ -71,7 +116,7 @@ func TestCompetingReadCannotSettleAdopterDebt(t *testing.T) {
 			if _, err = db.ExecContext(t.Context(), "CREATE TRIGGER abort_adopter BEFORE INSERT ON settlements WHEN NEW.intent_id="+quoted+" BEGIN SELECT RAISE(ABORT,'adopter settlement aborted'); END"); err != nil {
 				t.Fatal(err)
 			}
-			close(release)
+			releaseAccounting()
 			if err = <-done; err == nil || !strings.Contains(err.Error(), "adopter settlement aborted") {
 				t.Fatalf("Run did not report the accounting failure: %v", err)
 			}

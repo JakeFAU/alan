@@ -36,6 +36,9 @@ func readRootCompletions(ctx context.Context, q queryer) ([]RootCompletion, erro
 	if err != nil {
 		return nil, err
 	}
+	// Callers provide a stable ownership/transaction cut. Reuse membership,
+	// including successful absence, only within this call.
+	var membershipRoots map[RunID]string
 	out := []RootCompletion{}
 	for _, id := range roots {
 		var raw []byte
@@ -66,9 +69,17 @@ func readRootCompletions(ctx context.Context, q queryer) ([]RootCompletion, erro
 		}
 		for _, operation := range sortedKeys(intents) {
 			i := intents[operation]
-			memberRoot, e := compositionMembershipRoot(ctx, q, i.Run)
-			if e != nil {
-				return nil, e
+			memberRoot, cached := membershipRoots[i.Run]
+			var e error
+			if !cached {
+				memberRoot, e = compositionMembershipRoot(ctx, q, i.Run)
+				if e != nil {
+					return nil, e
+				}
+				if membershipRoots == nil {
+					membershipRoots = make(map[RunID]string)
+				}
+				membershipRoots[i.Run] = memberRoot
 			}
 			if memberRoot != id {
 				continue

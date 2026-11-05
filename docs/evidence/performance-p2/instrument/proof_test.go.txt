@@ -1,0 +1,644 @@
+package sqlite3
+
+import (
+	"context"
+	"database/sql"
+	"database/sql/driver"
+	"io"
+	"path/filepath"
+	"strings"
+	"sync"
+	"testing"
+)
+
+func TestMeasurementNormalize(t *testing.T) {
+	for _, tc := range []struct{ name, input, want string }{
+		{"numeric", "SELECT 123, 45.67 FROM items WHERE ordinal=999", "SELECT ?, ? FROM items WHERE ordinal=?"},
+		{"numeric-equivalent", "SELECT 1, 2.3 FROM items WHERE ordinal=4", "SELECT ?, ? FROM items WHERE ordinal=?"},
+		{"block-comment", "SELECT /* a multiline\n comment */ 12 FROM items", "SELECT ? FROM items"},
+		{"line-comment", "SELECT 12 -- ignored 99\n FROM items", "SELECT ? FROM items"},
+		{"quoted-comment-markers", "SELECT '--literal 123', '/*literal*/', 'it''s 45' FROM items", "SELECT ?, ?, ? FROM items"},
+		{"blob", "SELECT x'1234abcd', X'00FF' FROM items", "SELECT ?, ? FROM items"},
+		{"identifier", "SELECT field23 FROM table45 WHERE id=?", "SELECT field23 FROM table45 WHERE id=?"},
+		{"quoted-identifier", "SELECT \"field23\" FROM \"table45\" WHERE id=?", "SELECT \"field23\" FROM \"table45\" WHERE id=?"},
+		{"placeholders", "SELECT * FROM items WHERE a=? AND b=:name AND c=@other", "SELECT * FROM items WHERE a=? AND b=:name AND c=@other"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := probeNormalize(tc.input); got != tc.want {
+				t.Fatalf("normalize(%q)=%q; want %q", tc.input, got, tc.want)
+			}
+		})
+	}
+	if probeNormalize("SELECT value FROM table1") == probeNormalize("SELECT value FROM table2") {
+		t.Fatal("different identifiers merged")
+	}
+}
+func measurementReset() {
+	probeSQL.Lock()
+	defer probeSQL.Unlock()
+	probeSQL.families = make(map[string]*probeMetrics)
+	probeSQL.cells = make(map[probeCell]*probeMetrics)
+	probeSQL.cellOverflow = probeMetrics{}
+	probeSQL.driver = make(map[string]uint64)
+	probeSQL.familyOverflow = 0
+	probeSQL.cellOverflows = 0
+	probeSQL.invalidScopes = 0
+	probeSQL.familyCap = probeTemplateCap
+	probeSQL.cellCap = probeCellCap
+	probeSQL.templateBytes = probeTemplateBytes
+}
+func TestMeasurementSQLStepAccounting(t *testing.T) {
+	db, err := sql.Open("sqlite3", ":memory:?_stmt_cache_size=8")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	db.SetMaxOpenConns(1)
+	if err = db.Ping(); err != nil {
+		t.Fatal(err)
+	}
+	measurementReset()
+	query := "SELECT ? UNION ALL SELECT ? UNION ALL SELECT ?"
+	for i := 0; i < 2; i++ {
+		rows, e := db.QueryContext(context.Background(), query, 10, 20, 30)
+		if e != nil {
+			t.Fatal(e)
+		}
+		n := 0
+		for rows.Next() {
+			var v int
+			if e = rows.Scan(&v); e != nil {
+				t.Fatal(e)
+			}
+			n++
+		}
+		if e = rows.Err(); e != nil {
+			t.Fatal(e)
+		}
+		if e = rows.Close(); e != nil {
+			t.Fatal(e)
+		}
+		if n != 3 {
+			t.Fatalf("rows=%d", n)
+		}
+	}
+	m := MeasurementSnapshot()
+	key := "sql.template." + probeNormalize(query) + "."
+	for metric, want := range map[string]uint64{"completed_prepares": 1, "executions": 2, "step_calls": 8, "sqlite_row_returns": 6, "fullscan_steps": 0} {
+		if got := m[key+metric]; got != want {
+			t.Fatalf("%s=%d want %d; %v", metric, got, want, m)
+		}
+	}
+	if m[key+"vm_steps"] == 0 {
+		t.Fatal("missing VM steps")
+	}
+	rows, e := db.QueryContext(context.Background(), query, 100, 200, 300)
+	if e != nil {
+		t.Fatal(e)
+	}
+	if e = rows.Close(); e != nil {
+		t.Fatal(e)
+	}
+	next := MeasurementSnapshot()
+	if next[key+"executions"]-m[key+"executions"] != 1 || next[key+"sqlite_row_returns"]-m[key+"sqlite_row_returns"] != 1 || next[key+"step_calls"]-m[key+"step_calls"] != 1 {
+		t.Fatalf("eager unconsumed accounting: before=%v after=%v", m, next)
+	}
+	measurementReset()
+	if _, e = db.ExecContext(context.Background(), "CREATE TABLE probe_count (id INTEGER)"); e != nil {
+		t.Fatal(e)
+	}
+	m = MeasurementSnapshot()
+	for metric, want := range map[string]uint64{"completed_prepares": 1, "executions": 1, "step_calls": 1, "sqlite_row_returns": 0} {
+		if got := m["sql.total."+metric]; got != want {
+			t.Fatalf("noargs %s=%d want%d", metric, got, want)
+		}
+	}
+	if m["sql.total.vm_steps"] == 0 {
+		t.Fatal("missing noargs VM steps")
+	}
+}
+
+func measurementConn(t *testing.T, dsn string) *SQLiteConn {
+	t.Helper()
+	c, e := (&SQLiteDriver{}).Open(dsn)
+	if e != nil {
+		t.Fatal(e)
+	}
+	conn := c.(*SQLiteConn)
+	t.Cleanup(func() {
+		if e := conn.Close(); e != nil {
+			t.Error(e)
+		}
+	})
+	return conn
+}
+func measurementStmt(t *testing.T, c *SQLiteConn, q string) *SQLiteStmt {
+	t.Helper()
+	s, e := c.prepare(context.Background(), q)
+	if e != nil {
+		t.Fatal(e)
+	}
+	st := s.(*SQLiteStmt)
+	t.Cleanup(func() { st.Close() })
+	return st
+}
+func measurementConsume(t *testing.T, r driver.Rows) int {
+	t.Helper()
+	defer r.Close()
+	n := 0
+	for {
+		e := r.Next(make([]driver.Value, len(r.Columns())))
+		if e == io.EOF {
+			return n
+		}
+		if e != nil {
+			t.Fatal(e)
+		}
+		n++
+	}
+}
+func measurementScopeSum(m map[string]uint64, id uint8, q, metric string) uint64 {
+	var n uint64
+	prefix := "sql.scope." + probeScopeNames[id] + "."
+	suffix := ".template." + probeNormalize(q) + "." + metric
+	for k, v := range m {
+		if strings.HasPrefix(k, prefix) && strings.HasSuffix(k, suffix) {
+			n += v
+		}
+	}
+	return n
+}
+func measurementWant(t *testing.T, m map[string]uint64, id uint8, q, metric string, want uint64) {
+	t.Helper()
+	if got := measurementScopeSum(m, id, q, metric); got != want {
+		t.Fatalf("scope=%s family=%s %s=%d want%d; %v", probeScopeNames[id], q, metric, got, want, m)
+	}
+}
+func measurementReconcile(t *testing.T, m map[string]uint64) {
+	t.Helper()
+	for _, metric := range probeMetricNames {
+		var scoped uint64
+		for k, n := range m {
+			if strings.HasPrefix(k, "sql.scope.") && strings.HasSuffix(k, "."+metric) {
+				scoped += n
+			}
+		}
+		scoped += m["sql.scope_overflow."+metric]
+		if scoped != m["sql.total."+metric] {
+			t.Fatalf("unreconciled %s: scoped+overflow=%d total=%d", metric, scoped, m["sql.total."+metric])
+		}
+	}
+}
+func TestMeasurementScopeContextIsolation(t *testing.T) {
+	base := context.Background()
+	a := MeasurementScope(base, 8)
+	b := MeasurementScope(base, 9)
+	nested := MeasurementScope(a, 10)
+	cancelled, cancel := context.WithCancel(a)
+	cancel()
+	for _, tc := range []struct {
+		ctx  context.Context
+		want uint8
+	}{{base, 0}, {a, 8}, {b, 9}, {nested, 10}, {cancelled, 8}, {context.WithoutCancel(cancelled), 8}, {MeasurementScope(base, 255), 1}} {
+		if got := probeScope(tc.ctx); got != tc.want {
+			t.Fatalf("scope=%d want%d", got, tc.want)
+		}
+	}
+	if context.WithoutCancel(cancelled).Done() != nil {
+		t.Fatal("WithoutCancel changed")
+	}
+}
+func TestMeasurementScopePreparedAndCachedReuse(t *testing.T) {
+	c := measurementConn(t, ":memory:?_stmt_cache_size=8")
+	q := "SELECT ? UNION ALL SELECT ?"
+	s := measurementStmt(t, c, q)
+	measurementReset()
+	for _, scope := range []uint8{8, 9} {
+		r, e := s.query(MeasurementScope(context.Background(), scope), []driver.NamedValue{{Ordinal: 1, Value: int64(1)}, {Ordinal: 2, Value: int64(2)}})
+		if e != nil {
+			t.Fatal(e)
+		}
+		if n := measurementConsume(t, r); n != 2 {
+			t.Fatal(n)
+		}
+	}
+	m := MeasurementSnapshot()
+	for _, scope := range []uint8{8, 9} {
+		measurementWant(t, m, scope, q, "executions", 1)
+		measurementWant(t, m, scope, q, "step_calls", 3)
+	}
+	measurementReconcile(t, m)
+	q = "SELECT ? AS cached_value"
+	measurementReset()
+	for _, scope := range []uint8{8, 9} {
+		r, e := c.query(MeasurementScope(context.Background(), scope), q, []driver.NamedValue{{Ordinal: 1, Value: int64(1)}})
+		if e != nil {
+			t.Fatal(e)
+		}
+		measurementConsume(t, r)
+	}
+	m = MeasurementSnapshot()
+	for _, scope := range []uint8{8, 9} {
+		measurementWant(t, m, scope, q, "executions", 1)
+		measurementWant(t, m, scope, q, "step_calls", 2)
+	}
+	if m["sql.template."+q+".completed_prepares"] != 1 {
+		t.Fatal("cached prepare was counted twice")
+	}
+	measurementReconcile(t, m)
+}
+func TestMeasurementScopeDeferredRowsAndEarlyClose(t *testing.T) {
+	for _, cache := range []string{"0", "8"} {
+		t.Run(cache, func(t *testing.T) {
+			c := measurementConn(t, ":memory:?_stmt_cache_size="+cache)
+			q := "SELECT ? UNION ALL SELECT ?"
+			a := MeasurementScope(context.Background(), 8)
+			measurementReset()
+			r, e := c.query(a, q, []driver.NamedValue{{Ordinal: 1, Value: int64(1)}, {Ordinal: 2, Value: int64(2)}})
+			if e != nil {
+				t.Fatal(e)
+			}
+			// Starting a sibling scope must never change the origin of returned Rows.
+			b := MeasurementScope(context.Background(), 9)
+			if _, e = c.exec(b, "SELECT 77", nil); e != nil {
+				t.Fatal(e)
+			}
+			before := MeasurementSnapshot()
+			if cache == "0" {
+				measurementWant(t, before, 8, q, "step_calls", 0)
+			} else {
+				measurementWant(t, before, 8, q, "step_calls", 1)
+			}
+			measurementConsume(t, r)
+			m := MeasurementSnapshot()
+			measurementWant(t, m, 8, q, "step_calls", 3)
+			measurementWant(t, m, 9, q, "step_calls", 0)
+			r, e = c.query(a, q, []driver.NamedValue{{Ordinal: 1, Value: int64(3)}, {Ordinal: 2, Value: int64(4)}})
+			if e != nil {
+				t.Fatal(e)
+			}
+			r.Close()
+			next := MeasurementSnapshot()
+			want := uint64(3)
+			if cache == "8" {
+				want++
+			}
+			measurementWant(t, next, 8, q, "step_calls", want)
+			empty := "SELECT ? WHERE 0"
+			r, e = c.query(a, empty, []driver.NamedValue{{Ordinal: 1, Value: int64(1)}})
+			if e != nil {
+				t.Fatal(e)
+			}
+			if n := measurementConsume(t, r); n != 0 {
+				t.Fatal(n)
+			}
+			measurementWant(t, MeasurementSnapshot(), 8, empty, "step_calls", 1)
+			// An error after an actual C step remains an error under its original scope.
+			bad := "SELECT abs(?)"
+			r, e = c.query(a, bad, []driver.NamedValue{{Ordinal: 1, Value: int64(-9223372036854775808)}})
+			if e == nil {
+				e = r.Next(make([]driver.Value, 1))
+				r.Close()
+			}
+			if e == nil {
+				t.Fatal("expected integer-overflow SQL error")
+			}
+			measurementWant(t, MeasurementSnapshot(), 8, bad, "step_errors", 1)
+			measurementReconcile(t, MeasurementSnapshot())
+		})
+	}
+}
+func TestMeasurementScopeCancellableExecAndBindError(t *testing.T) {
+	c := measurementConn(t, ":memory:")
+	s := measurementStmt(t, c, "SELECT ?")
+	ctx, cancel := context.WithCancel(MeasurementScope(context.Background(), 8))
+	defer cancel()
+	measurementReset()
+	if _, e := s.exec(ctx, []driver.NamedValue{{Ordinal: 1, Value: int64(1)}}); e != nil {
+		t.Fatal(e)
+	}
+	m := MeasurementSnapshot()
+	measurementWant(t, m, 8, "SELECT ?", "step_calls", 1)
+	if m["sql.driver.stmt_exec.cancellable"] != 1 {
+		t.Fatal(m)
+	}
+	if _, e := s.exec(MeasurementScope(context.Background(), 9), []driver.NamedValue{{Ordinal: 1, Value: struct{}{}}}); e == nil {
+		t.Fatal("expected bind error")
+	}
+	m = MeasurementSnapshot()
+	measurementWant(t, m, 9, "SELECT ?", "invocation_attempts", 1)
+	measurementWant(t, m, 9, "SELECT ?", "bind_errors", 1)
+	measurementWant(t, m, 9, "SELECT ?", "step_calls", 0)
+	// Cached eager queries check a cancelled context before C stepping.
+	cached := measurementConn(t, ":memory:?_stmt_cache_size=8")
+	ctx2, cancel2 := context.WithCancel(MeasurementScope(context.Background(), 10))
+	cancel2()
+	_, e := cached.query(ctx2, "SELECT ? AS cancelled", []driver.NamedValue{{Ordinal: 1, Value: int64(1)}})
+	if e != context.Canceled {
+		t.Fatalf("cancelled query: %v", e)
+	}
+	measurementWant(t, MeasurementSnapshot(), 10, "SELECT ? AS cancelled", "step_calls", 0)
+	measurementReconcile(t, MeasurementSnapshot())
+}
+func TestMeasurementScopeNoArgsAndUnknown(t *testing.T) {
+	c := measurementConn(t, ":memory:")
+	measurementReset()
+	ctx := MeasurementScope(context.Background(), 8)
+	if _, e := c.exec(ctx, "BEGIN; SELECT 1; COMMIT", nil); e != nil {
+		t.Fatal(e)
+	}
+	m := MeasurementSnapshot()
+	for _, q := range []string{"BEGIN;", "SELECT 1;", "COMMIT"} {
+		measurementWant(t, m, 8, q, "step_calls", 1)
+	}
+	if _, e := c.exec(ctx, " -- comment only\n ", nil); e != nil {
+		t.Fatal(e)
+	}
+	before := MeasurementSnapshot()
+	if _, e := c.exec(ctx, "BAD SYNTAX", nil); e == nil {
+		t.Fatal("expected prepare error")
+	}
+	after := MeasurementSnapshot()
+	if after["sql.total.executions"] != before["sql.total.executions"] || after["sql.total.step_calls"] != before["sql.total.step_calls"] {
+		t.Fatal("prepare error invented execution")
+	}
+	if after["sql.driver.noargs.prepare_errors"] != 1 || after["sql.driver.noargs.no_statement"] != 1 {
+		t.Fatal(after)
+	}
+	if _, e := c.Exec("SELECT 999", nil); e != nil {
+		t.Fatal(e)
+	}
+	measurementWant(t, MeasurementSnapshot(), 0, "SELECT 999", "executions", 1)
+	measurementReconcile(t, MeasurementSnapshot())
+}
+func TestMeasurementTransactionOutcomesAndPostState(t *testing.T) {
+	c := measurementConn(t, ":memory:")
+	ctx := MeasurementScope(context.Background(), 8)
+	for _, q := range []string{"PRAGMA foreign_keys=ON", "CREATE TABLE parent(id INTEGER PRIMARY KEY)", "CREATE TABLE child(id INTEGER REFERENCES parent(id) DEFERRABLE INITIALLY DEFERRED)"} {
+		if _, e := c.exec(ctx, q, nil); e != nil {
+			t.Fatal(e)
+		}
+	}
+	measurementReset()
+	tx, e := c.BeginTx(ctx, driver.TxOptions{ReadOnly: true})
+	if e != nil {
+		t.Fatal(e)
+	}
+	if _, e = c.exec(ctx, "SELECT 1", nil); e != nil {
+		t.Fatal(e)
+	}
+	if e = tx.Commit(); e != nil {
+		t.Fatal(e)
+	}
+	tx, e = c.BeginTx(ctx, driver.TxOptions{})
+	if e != nil {
+		t.Fatal(e)
+	}
+	if e = tx.Rollback(); e != nil {
+		t.Fatal(e)
+	}
+	tx, e = c.BeginTx(ctx, driver.TxOptions{})
+	if e != nil {
+		t.Fatal(e)
+	}
+	if _, e = c.exec(ctx, "INSERT INTO child VALUES (1)", nil); e != nil {
+		t.Fatal(e)
+	}
+	if e = tx.Commit(); e == nil {
+		t.Fatal("expected deferred constraint Commit failure")
+	}
+	m := MeasurementSnapshot()
+	for key, want := range map[string]uint64{"begin.calls": 3, "begin.success": 3, "begin_tx.calls": 3, "begin_tx.request_read_only": 1, "commit.calls": 2, "commit.success": 1, "commit.errors": 1, "rollback.calls": 1, "rollback.success": 1} {
+		if m["sql.driver."+key] != want {
+			t.Fatalf("%s: %v", key, m)
+		}
+	}
+	for key, want := range map[string]uint64{
+		"sql.scope.finishRun.class.read_write_capable.post_autocommit.off.template.BEGIN.step_calls": 3,
+		"sql.scope.unknown.class.read_write_capable.post_autocommit.on.template.COMMIT.step_calls":   1,
+		"sql.scope.unknown.class.read_write_capable.post_autocommit.off.template.COMMIT.step_errors": 1,
+		"sql.scope.unknown.class.read_write_capable.post_autocommit.on.template.ROLLBACK.step_calls": 2,
+	} {
+		if m[key] != want {
+			t.Fatalf("%s=%d want%d", key, m[key], want)
+		}
+	}
+	measurementWant(t, m, 8, "COMMIT", "step_calls", 0)
+	measurementReconcile(t, m)
+	// Failed explicit transaction control is still an actual failed C step.
+	if _, e = c.exec(ctx, "ROLLBACK", nil); e == nil {
+		t.Fatal("expected rollback error")
+	}
+	measurementWant(t, MeasurementSnapshot(), 8, "ROLLBACK", "step_errors", 1)
+}
+func TestMeasurementConnectionsAndConcurrentScopes(t *testing.T) {
+	c1 := measurementConn(t, ":memory:")
+	c2 := measurementConn(t, ":memory:")
+	measurementReset()
+	var wg sync.WaitGroup
+	errs := make(chan error, 2)
+	for i, c := range []*SQLiteConn{c1, c2} {
+		wg.Add(1)
+		go func(c *SQLiteConn, id uint8) {
+			defer wg.Done()
+			for j := 0; j < 10; j++ {
+				_, e := c.exec(MeasurementScope(context.Background(), id), "SELECT 1", nil)
+				if e != nil {
+					errs <- e
+					return
+				}
+			}
+		}(c, uint8(8+i))
+	}
+	wg.Wait()
+	close(errs)
+	for e := range errs {
+		t.Fatal(e)
+	}
+	m := MeasurementSnapshot()
+	for _, id := range []uint8{8, 9} {
+		measurementWant(t, m, id, "SELECT 1", "executions", 10)
+	}
+	measurementReconcile(t, m)
+	measurementReset()
+	conn, e := (&SQLiteDriver{}).Open(":memory:")
+	if e != nil {
+		t.Fatal(e)
+	}
+	if e = conn.Close(); e != nil {
+		t.Fatal(e)
+	}
+	if e = conn.Close(); e != nil {
+		t.Fatal(e)
+	}
+	if _, e = (&SQLiteDriver{}).Open(":memory:?_stmt_cache_size=-1"); e == nil {
+		t.Fatal("expected Open error")
+	}
+	m = MeasurementSnapshot()
+	for k, w := range map[string]uint64{"open.calls": 2, "open.success": 1, "open.errors": 1, "connection_constructed": 1, "close.calls": 2, "close.success": 2, "physical_close.success": 1} {
+		if m["sql.driver."+k] != w {
+			t.Fatalf("%s: %v", k, m)
+		}
+	}
+	if m["sql.driver.connection_setup.calls"] == 0 || m["sql.driver.connection_setup.calls"] != m["sql.driver.connection_setup.success"] {
+		t.Fatal("missing setup exclusion counters")
+	}
+}
+func TestMeasurementOverflowAndMonotonicSnapshots(t *testing.T) {
+	measurementReset()
+	defer measurementReset()
+	probeSQL.Lock()
+	probeSQL.familyCap = 1
+	probeSQL.cellCap = 1
+	probeSQL.templateBytes = 12
+	probeSQL.Unlock()
+	probeAdd("SELECT ?", 8, 1, 0, probeAttempts, 1)
+	probeRecord("SELECT ?", 8, 1, 2, 1, 0, 2, true, false)
+	probeRecord("SELECT long_column FROM another_table", 9, 1, 2, 1, 0, 3, false, true)
+	a := MeasurementSnapshot()
+	b := MeasurementSnapshot()
+	for k, v := range a {
+		if b[k] != v {
+			t.Fatal("snapshot reset state")
+		}
+	}
+	if a["sql.attribution.incomplete_events"] == 0 || a["sql.attribution.family_overflow_events"] == 0 || a["sql.attribution.cell_overflow_events"] == 0 {
+		t.Fatal(a)
+	}
+	if a["sql.attribution.family_count"] > 2 || a["sql.attribution.cell_count"] > 1 {
+		t.Fatal("unbounded dictionary")
+	}
+	if a["sql.total.executions"] != 2 || a["sql.total.step_calls"] != 2 || a["sql.total.step_errors"] != 1 {
+		t.Fatal("overflow changed exact totals")
+	}
+	measurementReconcile(t, a)
+}
+
+func TestMeasurementReadOnlyConnectionClass(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "proof.sqlite")
+	writer := measurementConn(t, "file:"+path)
+	if _, e := writer.exec(context.Background(), "CREATE TABLE proof_class(id INTEGER)", nil); e != nil {
+		t.Fatal(e)
+	}
+	reader := measurementConn(t, "file:"+path+"?mode=ro&_query_only=1")
+	measurementReset()
+	for i, c := range []*SQLiteConn{writer, reader} {
+		if _, e := c.exec(MeasurementScope(context.Background(), uint8(8+i)), "SELECT id FROM proof_class", nil); e != nil {
+			t.Fatal(e)
+		}
+	}
+	m := MeasurementSnapshot()
+	for k, want := range map[string]uint64{
+		"sql.scope.finishRun.class.read_write_capable.post_autocommit.on.template.SELECT id FROM proof_class.executions":     1,
+		"sql.scope.selectReady.class.read_only_configured.post_autocommit.on.template.SELECT id FROM proof_class.executions": 1,
+	} {
+		if m[k] != want {
+			t.Fatalf("%s=%d want%d", k, m[k], want)
+		}
+	}
+	if _, e := reader.exec(MeasurementScope(context.Background(), 9), "INSERT INTO proof_class VALUES (1)", nil); e == nil {
+		t.Fatal("read-only insert unexpectedly succeeded")
+	}
+	measurementWant(t, MeasurementSnapshot(), 9, "INSERT INTO proof_class VALUES (1)", "step_errors", 1)
+	measurementReconcile(t, MeasurementSnapshot())
+}
+
+func TestMeasurementPartialRowsAndDeferredCancellation(t *testing.T) {
+	for _, cache := range []string{"0", "8"} {
+		t.Run(cache, func(t *testing.T) {
+			c := measurementConn(t, ":memory:?_stmt_cache_size="+cache)
+			ctx := MeasurementScope(context.Background(), 8)
+			q := "SELECT ? UNION ALL SELECT ?"
+			measurementReset()
+			r, e := c.query(ctx, q, []driver.NamedValue{{Ordinal: 1, Value: int64(1)}, {Ordinal: 2, Value: int64(2)}})
+			if e != nil {
+				t.Fatal(e)
+			}
+			if e = r.Next(make([]driver.Value, 1)); e != nil {
+				t.Fatal(e)
+			}
+			if e = r.Close(); e != nil {
+				t.Fatal(e)
+			}
+			m := MeasurementSnapshot()
+			measurementWant(t, m, 8, q, "step_calls", 1)
+			measurementWant(t, m, 8, q, "sqlite_row_returns", 1)
+			measurementReconcile(t, m)
+		})
+	}
+	c := measurementConn(t, ":memory:")
+	ctx, cancel := context.WithCancel(MeasurementScope(context.Background(), 9))
+	q := "SELECT ? AS cancelled_later"
+	measurementReset()
+	r, e := c.query(ctx, q, []driver.NamedValue{{Ordinal: 1, Value: int64(1)}})
+	if e != nil {
+		t.Fatal(e)
+	}
+	cancel()
+	if e = r.Next(make([]driver.Value, 1)); e != context.Canceled {
+		t.Fatalf("Next cancellation: %v", e)
+	}
+	r.Close()
+	m := MeasurementSnapshot()
+	measurementWant(t, m, 9, q, "invocation_attempts", 1)
+	measurementWant(t, m, 9, q, "step_calls", 0)
+	measurementReconcile(t, m)
+}
+
+// Trailing whitespace after the last statement must not enlarge an earlier
+// statement's measured family. Execution trims tails; attribution must instead
+// use the untrimmed SQLite tail's exact byte extent.
+func TestMeasurementNoArgsTrailingWhitespaceFamilies(t *testing.T) {
+	for _, tc := range []struct{ name, sql string }{
+		{"spaces", "BEGIN; SELECT 1; COMMIT   "},
+		{"newline-tab", "BEGIN;\n\tSELECT 1;\n\tCOMMIT \n\t"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := measurementConn(t, ":memory:")
+			measurementReset()
+			ctx := MeasurementScope(context.Background(), 8)
+			if _, err := c.exec(ctx, tc.sql, nil); err != nil {
+				t.Fatal(err)
+			}
+			m := MeasurementSnapshot()
+			expected := map[string]uint64{"BEGIN;": 0, "SELECT ?;": 1, "COMMIT": 0}
+			for family, rowReturns := range expected {
+				for metric, want := range map[string]uint64{
+					"completed_prepares": 1, "invocation_attempts": 1, "step_calls": 1,
+					"executions": 1, "sqlite_row_returns": rowReturns, "fullscan_steps": 0,
+					"step_errors": 0, "bind_errors": 0,
+				} {
+					if got := m["sql.template."+family+"."+metric]; got != want {
+						t.Fatalf("exact family %q %s=%d want%d; %v", family, metric, got, want, m)
+					}
+					measurementWant(t, m, 8, family, metric, want)
+				}
+				if m["sql.template."+family+".vm_steps"] == 0 {
+					t.Fatalf("family %q missing VM work", family)
+				}
+			}
+			// Aggregate equality alone would miss contamination of family labels.
+			for key := range m {
+				if strings.HasPrefix(key, "sql.template.") && strings.HasSuffix(key, ".step_calls") {
+					family := strings.TrimSuffix(strings.TrimPrefix(key, "sql.template."), ".step_calls")
+					if _, ok := expected[family]; !ok {
+						t.Fatalf("unexpected consumed-statement family %q; %v", family, m)
+					}
+				}
+			}
+			for metric, want := range map[string]uint64{"completed_prepares": 3, "invocation_attempts": 3, "step_calls": 3, "executions": 3, "sqlite_row_returns": 1, "step_errors": 0, "bind_errors": 0} {
+				if got := m["sql.total."+metric]; got != want {
+					t.Fatalf("total %s=%d want%d", metric, got, want)
+				}
+				var scoped uint64
+				for family := range expected {
+					scoped += measurementScopeSum(m, 8, family, metric)
+				}
+				if scoped != want {
+					t.Fatalf("scope finishRun exact-family sum %s=%d want%d", metric, scoped, want)
+				}
+			}
+			measurementReconcile(t, m)
+		})
+	}
+}
