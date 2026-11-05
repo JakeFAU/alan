@@ -52,6 +52,7 @@ def main():
         path.write_text(after)
         patches.extend(difflib.unified_diff(before.splitlines(True), after.splitlines(True), fromfile=rel, tofile=rel+'.probe'))
     for rel, anchor, count in [
+        ('internal/executor/store.go', 'func loadRun(ctx context.Context, q queryer, id RunID) (RunState, error) {', 'visits'),
         ('internal/executor/store.go', 'func loadProgram(ctx context.Context, q queryer, id string, l Limits) (Program, error) {', 'loads'),
         ('internal/executor/invocation.go', 'func boundCompositionProgram(ctx context.Context, q queryer, p Program, run RunID, l Limits) (Program, error) {', 'bindings'),
         ('internal/executor/program.go', 'func Reduce(p Program, s Projection, o *Observation, id RunID, seq int64, l Limits) (Reduction, error) {', 'reductions'),
@@ -77,11 +78,11 @@ func p3ProbeAdd(kind string) {
  p3ProbeMu.Lock();defer p3ProbeMu.Unlock()
  if p3ProbeActive {p3ProbeCounts[kind]++}
 }
-func p3ProbeSelect(t *testing.T,s *Store,reference bool)(*readyRun,map[string]int){
+func p3ProbeSelect(t *testing.T,s *Store,reference bool,last *RunID)(*readyRun,map[string]int){
  t.Helper()
  p3ProbeMu.Lock();p3ProbeActive=true;p3ProbeCounts=map[string]int{};p3ProbeMu.Unlock()
  var r *readyRun;var err error
- if reference{r,err=s.p3BaselineSelectReady(t.Context(),nil)}else{r,err=s.selectReady(t.Context(),nil)}
+ if reference{r,err=s.p3BaselineSelectReady(t.Context(),last)}else{r,err=s.selectReady(t.Context(),last)}
  p3ProbeMu.Lock();p3ProbeActive=false;counts:=p3ProbeCounts;p3ProbeMu.Unlock()
  if err!=nil{t.Fatal(err)}
  return r,counts
@@ -93,8 +94,8 @@ func TestP3ProbeRemainingWork(t *testing.T){
   t.Run(tc.name,func(t *testing.T){
    s,_:=messageStore(t,p3WaitingProvision(t,32,tc.programs))
    if tc.ready{p3Admit(t,s,"r31","late",9)}
-   want,baseline:=p3ProbeSelect(t,s,true)
-   got,candidate:=p3ProbeSelect(t,s,false)
+   want,baseline:=p3ProbeSelect(t,s,true,nil)
+   got,candidate:=p3ProbeSelect(t,s,false,nil)
    if !reflect.DeepEqual(want,got){t.Fatalf("selection differs: %+v %+v",want,got)}
    for _,counts:=range []map[string]int{baseline,candidate}{
     if counts["bindings"]!=tc.bindings || counts["reductions"]!=tc.reductions {t.Fatalf("remaining work changed: %v",counts)}
@@ -105,6 +106,16 @@ func TestP3ProbeRemainingWork(t *testing.T){
    if candidate["loads"]!=32 && candidate["loads"]!=tc.programs{t.Fatalf("unexplained loads: %v",candidate)}
    t.Logf("baseline=%v candidate=%v",baseline,candidate)
   })
+ }
+}
+func TestP3ProbeSameCallBindings(t *testing.T){
+ s,last,want:=p3SameCallBindingCut(t)
+ for _,reference:=range []bool{true,false}{
+  got,counts:=p3ProbeSelect(t,s,reference,&last)
+  if !reflect.DeepEqual(got,want){t.Fatalf("same-call selection: %+v want %+v",got,want)}
+  if counts["visits"]!=2 || counts["bindings"]!=2 || counts["reductions"]!=1{t.Fatalf("same-call remaining work: %v",counts)}
+  if reference && counts["loads"]!=2 || !reference && counts["loads"]!=1 && counts["loads"]!=2{t.Fatalf("same-call loads: %v",counts)}
+  t.Logf("reference=%t counts=%v",reference,counts)
  }
 }
 '''
