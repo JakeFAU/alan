@@ -17,7 +17,7 @@ import (
 // The authorizer observes preparation of the actual program-row SELECT on the
 // Store's pinned connection. database/sql does not cache these QueryRow calls.
 // The callback always permits the query; no production hook or driver is added.
-func p3CountLoads(t *testing.T, s *Store, selectFn func() (*readyRun, error)) (*readyRun, error, int) {
+func p3CountLoads(t *testing.T, s *Store, selectFn func() (*readyRun, error)) (*readyRun, int, error) {
 	t.Helper()
 	loads := 0
 	err := s.conn.Raw(func(driver any) error {
@@ -38,7 +38,7 @@ func p3CountLoads(t *testing.T, s *Store, selectFn func() (*readyRun, error)) (*
 		}
 	}()
 	r, err := selectFn()
-	return r, err, loads
+	return r, loads, err
 }
 
 // All artifacts are genuinely encoded and retained by Create. Different suffix
@@ -80,11 +80,11 @@ func TestP3ReadinessLoadReuse(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			s, _ := messageStore(t, p3WaitingProvision(t, tc.runs, tc.programs))
-			baseline, err, baselineLoads := p3CountLoads(t, s, func() (*readyRun, error) { return s.p3BaselineSelectReady(t.Context(), nil) })
+			baseline, baselineLoads, err := p3CountLoads(t, s, func() (*readyRun, error) { return s.p3BaselineSelectReady(t.Context(), nil) })
 			if err != nil || baseline != nil || baselineLoads != tc.runs {
 				t.Fatalf("baseline calibration: ready=%+v error=%v loads=%d want=%d", baseline, err, baselineLoads, tc.runs)
 			}
-			got, err, loads := p3CountLoads(t, s, func() (*readyRun, error) { return s.selectReady(t.Context(), nil) })
+			got, loads, err := p3CountLoads(t, s, func() (*readyRun, error) { return s.selectReady(t.Context(), nil) })
 			if err != nil || got != nil {
 				t.Fatalf("quiescence changed: %+v %v", got, err)
 			}
@@ -387,7 +387,7 @@ func TestP3ReadinessClosedRunsNeverLoaded(t *testing.T) {
 	if _, err := s.conn.ExecContext(t.Context(), "UPDATE programs SET bytes=?", []byte("{}")); err != nil {
 		t.Fatal(err)
 	}
-	r, err, loads := p3CountLoads(t, s, func() (*readyRun, error) { return s.selectReady(t.Context(), nil) })
+	r, loads, err := p3CountLoads(t, s, func() (*readyRun, error) { return s.selectReady(t.Context(), nil) })
 	if err != nil || r != nil || loads != 0 {
 		t.Fatalf("ineligible load: %+v %v loads=%d", r, err, loads)
 	}
@@ -403,7 +403,7 @@ func TestP3ReadinessDisposableRetiredOpenRun(t *testing.T) {
 	if _, err := s.conn.ExecContext(t.Context(), "UPDATE subjects SET retired=1"); err != nil {
 		t.Fatal(err)
 	}
-	r, err, loads := p3CountLoads(t, s, func() (*readyRun, error) { return s.selectReady(t.Context(), nil) })
+	r, loads, err := p3CountLoads(t, s, func() (*readyRun, error) { return s.selectReady(t.Context(), nil) })
 	if err != nil || r != nil || loads != 0 {
 		t.Fatalf("retired-open visit: %+v %v loads=%d", r, err, loads)
 	}
@@ -420,7 +420,7 @@ func TestP3ReadinessSameCallSecondBindingCorruption(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, reference := range []bool{true, false} {
-		r, err, counts := p3CountCompositionVisits(t, s, func() (*readyRun, error) {
+		r, counts, err := p3CountCompositionVisits(t, s, func() (*readyRun, error) {
 			if reference {
 				return s.p3BaselineSelectReady(t.Context(), &last)
 			}

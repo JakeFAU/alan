@@ -334,7 +334,7 @@ func TestP3ReadinessHandoffExcludedBeforeBinding(t *testing.T) {
 	if other.Author.Ports["handoff"].Peer != HandoffPeer {
 		t.Fatal("another caller inherited handoff binding")
 	}
-	r, err, loads := p3CountLoads(t, s, func() (*readyRun, error) { return s.selectReady(t.Context(), nil) })
+	r, loads, err := p3CountLoads(t, s, func() (*readyRun, error) { return s.selectReady(t.Context(), nil) })
 	if err != nil || r != nil || loads != 2 {
 		t.Fatalf("handoff exclusion must precede binding: ready=%+v error=%v loads=%d want=2", r, err, loads)
 	}
@@ -521,7 +521,7 @@ type p3CompositionVisits struct{ runs, loads, bindings int }
 // Counts actual queries in these composition fixtures: projection reads are
 // per-run visits, programs.bytes reads are loads, and the membership join's
 // member column is read exactly once by each per-run binding lookup.
-func p3CountCompositionVisits(t *testing.T, s *Store, fn func() (*readyRun, error)) (*readyRun, error, p3CompositionVisits) {
+func p3CountCompositionVisits(t *testing.T, s *Store, fn func() (*readyRun, error)) (*readyRun, p3CompositionVisits, error) {
 	t.Helper()
 	var counts p3CompositionVisits
 	if err := s.conn.Raw(func(driver any) error {
@@ -548,16 +548,16 @@ func p3CountCompositionVisits(t *testing.T, s *Store, fn func() (*readyRun, erro
 		}
 	}()
 	r, err := fn()
-	return r, err, counts
+	return r, counts, err
 }
 
 func TestP3ReadinessSameCallBoundPrograms(t *testing.T) {
 	s, last, want := p3SameCallBindingCut(t)
-	baseline, err, bc := p3CountCompositionVisits(t, s, func() (*readyRun, error) { return s.p3BaselineSelectReady(t.Context(), &last) })
+	baseline, bc, err := p3CountCompositionVisits(t, s, func() (*readyRun, error) { return s.p3BaselineSelectReady(t.Context(), &last) })
 	if err != nil || !reflect.DeepEqual(baseline, want) || bc != (p3CompositionVisits{2, 2, 2}) {
 		t.Fatalf("baseline same-call cut: ready=%+v want=%+v counts=%+v error=%v", baseline, want, bc, err)
 	}
-	got, err, counts := p3CountCompositionVisits(t, s, func() (*readyRun, error) { return s.selectReady(t.Context(), &last) })
+	got, counts, err := p3CountCompositionVisits(t, s, func() (*readyRun, error) { return s.selectReady(t.Context(), &last) })
 	if err != nil || !reflect.DeepEqual(got, want) {
 		t.Fatalf("same-call bound-program reuse: ready=%+v want=%+v error=%v", got, want, err)
 	}
