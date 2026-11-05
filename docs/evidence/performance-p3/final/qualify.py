@@ -9,6 +9,7 @@ import sys
 import tarfile
 
 from recorder import Recorder, environment, inventory, sha, write
+from external_inputs import ExternalInputs
 
 BASE = '926a899b651fccc48be52a054612a92afcf1ddfd'
 OLD = 'af6943a5805a9a6c0e8fe77f804264f4765d07ec'
@@ -128,6 +129,37 @@ def check_formats(root):
         raise ValueError('actual historical-reader coverage missing: ' + repr(failures))
 
 
+def external_routes(r):
+    # Reuse Task4 unchanged, while recording its actual bound module copies.
+    route_file = r.root / 'candidate/docs/evidence/performance-p3/qualification/run.py'
+    spec = importlib.util.spec_from_file_location('p3_qualified_routes', route_file)
+    routes = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(routes)
+    routes.external(ExternalInputs(r))
+    return routes
+
+
+def external(root):
+    """Requalify only the reviewed external-input recording correction."""
+    r = make_recorder(root)
+    final = root / 'candidate/docs/evidence/performance-p3/final'
+    r.run('recorder-input-tests', [sys.executable, '-B', '-m', 'unittest', '-v',
+          'test_recorder', 'test_external_inputs'], final)
+    external_routes(r)
+    make_recorder(root)  # Recheck all immutable roots/tools against the initial freeze.
+    write(root / 'external-source-tool-hashes.json', r.snapshot())
+    write(root / 'external-attestation.json', {
+        'scope': 'affected external consumer/reader route and recorder/input tests only',
+        'tested_commit': r.plan['sources']['candidate'],
+        'freeze_sha256': sha(root / 'freeze.json'),
+        'source_tool_hashes_sha256': sha(root / 'external-source-tool-hashes.json'),
+        'outcomes': {g.name: json.loads((g / 'outcome.json').read_text()) for g in sorted(r.gates.iterdir())},
+        'terminal_events': {g.name: json.loads((g / 'after.json').read_text())['events'] for g in sorted(r.gates.iterdir())},
+        'root_suite_scope': 'not run by this phase; consult the explicit delivery byte bridge'})
+    write(root / 'raw-index.json', inventory(root))
+    print('EXTERNAL COMPLETE ' + r.plan['sources']['candidate'], flush=True)
+
+
 def execute(root):
     r = make_recorder(root)
     src = root / 'candidate'
@@ -147,7 +179,7 @@ def execute(root):
     r.run('build-candidate-cli', ['go', 'build', '-buildvcs=false', '-o', root / 'candidate-alan', './cmd/alan'], src)
     r.tools.extend([root / 'old-alan', root / 'candidate-alan'])
     final = src / 'docs/evidence/performance-p3/final'
-    r.run('recorder-tests', [sys.executable, '-B', '-m', 'unittest', '-v', 'test_recorder'], final)
+    r.run('recorder-tests', [sys.executable, '-B', '-m', 'unittest', '-v', 'test_recorder', 'test_external_inputs'], final)
     p3 = src / 'docs/evidence/performance-p3'
     r.run('p3-tool-tests', [sys.executable, '-B', '-m', 'unittest', '-v', 'test_tooling', 'test_task5_diagnostics'], p3,
           {'P3_TASK5_RESULTS': str(p3 / 'results-data.json')})
@@ -161,12 +193,7 @@ def execute(root):
     r.run('authority-protocol', ['go', 'test', '-json', '-race', '-tags=integration', '-count=1',
           '-timeout=10m', '-run=^TestRequestAuthority', './internal/executor', './runtime', './author'], src, env)
     check_formats(root)
-    # Reuse the qualified complete-sidecar public/old-reader route unchanged.
-    route_file = p3 / 'qualification/run.py'
-    spec = importlib.util.spec_from_file_location('p3_qualified_routes', route_file)
-    routes = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(routes)
-    routes.external(r)
+    routes = external_routes(r)
     for index, rel in enumerate(MODULES):
         module = root / 'modules' / str(index)
         shutil.copytree(src / rel, module)
@@ -227,11 +254,13 @@ def execute(root):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('phase', choices=('freeze', 'execute'))
+    parser.add_argument('phase', choices=('freeze', 'execute', 'external'))
     parser.add_argument('root', type=Path)
     parser.add_argument('--repo', type=Path, default=Path.cwd())
     args = parser.parse_args()
     if args.phase == 'freeze':
         freeze(args.root.resolve(), args.repo.resolve())
+    elif args.phase == 'external':
+        external(args.root.resolve())
     else:
         execute(args.root.resolve())

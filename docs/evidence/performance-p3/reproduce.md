@@ -91,12 +91,17 @@ these benchmark/diagnostic executions.
 
 The [decision and review index](decision.md) answers the eight governing
 questions and preserves rejected findings. Final gates use a new external root
-`/private/tmp/alan-p3-j216kxoz/task6`; no primary, counter or control row is rerun.
-Commit the final source first, with a clean working tree, then run:
+`/private/tmp/alan-p3-j216kxoz/task6/fix2` for the complete source run at
+`4184c5129b9d7b9e62f155c41b86763f7a103417`; no primary, counter or control row
+is rerun. The later external-input correction prompted by review is qualified separately
+as described below.
+The complete 4184c51 run used the following routes from its clean committed
+source. Existing directories now refuse overwrite; independent reproductions
+must choose a fresh root and identify their checked-out commit:
 
 ```sh
-PYTHONDONTWRITEBYTECODE=1 /opt/homebrew/bin/python3.14 docs/evidence/performance-p3/final/qualify.py freeze /private/tmp/alan-p3-j216kxoz/task6
-PYTHONDONTWRITEBYTECODE=1 /opt/homebrew/bin/python3.14 /private/tmp/alan-p3-j216kxoz/task6/candidate/docs/evidence/performance-p3/final/qualify.py execute /private/tmp/alan-p3-j216kxoz/task6
+PYTHONDONTWRITEBYTECODE=1 /opt/homebrew/bin/python3.14 -B docs/evidence/performance-p3/final/qualify.py freeze /private/tmp/alan-p3-j216kxoz/task6/fix2
+PYTHONDONTWRITEBYTECODE=1 /opt/homebrew/bin/python3.14 -B /private/tmp/alan-p3-j216kxoz/task6/fix2/candidate/docs/evidence/performance-p3/final/qualify.py execute /private/tmp/alan-p3-j216kxoz/task6/fix2
 ```
 
 A new reproduction uses a new root; existing gate directories refuse overwrite.
@@ -130,9 +135,13 @@ packages are listed separately and are not execution campaigns. The one opt-in
 historical S2 falsifier remains separately identified if skipped; old-reader
 opt-in skips are closed by supplying the actual binary.
 
-Canonical final records are `task6/attestation.json`,
-`task6/final-source-tool-hashes.json` and `task6/raw-index.json`. The associated
-new draft PR links the verified evidence bootstrap/index and checksummed archive
+The complete 4184c51 run records are `task6/fix2/attestation.json`,
+`task6/fix2/final-source-tool-hashes.json` and `task6/fix2/raw-index.json`.
+The external-input correction records are
+`task6/review-fix1/external-attestation.json` and its raw index.
+`task6/delivery-attestation.json` links those actual source-specific outcomes
+and the checked Go/module byte bridge; it does not relabel the 4184c51 run.
+The associated new draft PR links the verified evidence bootstrap/index and checksummed archive
 attachments, plus final independent review and exact tested/delivery SHA. Raw
 large logs, stores, binaries and failed attempts stay external. Do not infer a
 published URL or final outcome from this prequalification protocol; consult the
@@ -151,8 +160,9 @@ The corrected freeze retains a standalone shallow local Git metadata copy outsid
 the source export, verifies its HEAD equals the frozen source, and binds its full
 inventory. Only candidate test gates receive explicit `GIT_DIR`/`GIT_WORK_TREE`
 pointing at those identities. No production/test assertion changes. Corrected
-qualification uses the new root `task6/fix1`, preserving the original attempt and
-its executable-input byte bridge; all current-source gates run there afresh.
+qualification initially used `task6/fix1`, preserving the original attempt and
+its executable-input byte bridge. That attempt later stopped at the build-output
+incident below; the complete run is `task6/fix2`.
 
 A second preserved apparatus stop occurs in `task6/fix1/gates/module-1-build`:
 `go build ./...` exits0 but places the standalone driver's binary inside its
@@ -161,3 +171,34 @@ file; no source file changed. The corrected controller explicitly directs nested
 build outputs into `module-builds/INDEX/`, outside every source inventory. The
 original binary, successful child outcome and failed custody check remain; they
 are not a runtime or test failure. Each gate keeps its actual source identity.
+
+
+## Reviewed actual external-module custody correction
+
+The preserved [Task 6 REJECT](reviews/task-6-review.md) identifies that the
+external candidate and baseline-reader module copies were absent from the
+recorder's source mapping. Their original successful test exits remain real,
+but those records lack the required before/after actual-build-input custody.
+The unchanged Task 4 route is now called through `final/external_inputs.py`.
+It verifies each copy against the frozen original before intentional binding,
+checks that exactly the declared go.mod replacement is added, persists both
+inventories and the byte bridge, and registers the actual bound module before
+compilation. Every subsequent gate now hashes those actual module inputs.
+
+The focused tests reject changed non-module bytes, a wrong replace target and
+an actual child changing an input after registration. The later source is
+frozen separately at `task6/review-fix1`. Its six recorder/input tests and the
+complete affected external route run afresh: ordinary/race public consumers,
+genuine 11→12 promotion, baseline readers and retained formats, with complete
+main/WAL/SHM copy custody. All 330 Go/module input files are checked byte-equal
+to the full 4184c51 run. Root Go tests, build/vet/module/format and Staticcheck
+remain qualified at 4184c51; they are not relabeled as runs at the correction
+commit. The delivery attestation names both source trees and gate sets.
+
+To reproduce the affected route from the correction's immutable export, run
+`python3.14 final/qualify.py external NEW_FROZEN_ROOT` (the full script path is
+`docs/evidence/performance-p3/final/qualify.py` inside that export). First run
+its `freeze` phase against the clean committed source as above. The exact
+retained launcher, argv/cwd/whitelist, source inventories and outcomes are in
+`task6/review-fix1/`; fresh reproductions must choose a new root. Neither an
+existing failed gate nor a source-specific successful result is overwritten.
