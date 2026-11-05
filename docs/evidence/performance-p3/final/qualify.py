@@ -184,8 +184,10 @@ def execute(root):
                                fixtures / ('series' + str(version) + '.sqlite'),
                                root / ('nested-fixture' + str(version) + '-copy.json'))
             extra['SERIES_FIXTURE_DIR'] = str(fixtures)
+        build_output = root / 'module-builds' / str(index)
+        build_output.mkdir(parents=True)
         for label, argv in [('test', ['go', 'test', '-json', *flags, '-count=1', '-timeout=10m', './...']),
-                            ('build', ['go', 'build', *flags, './...']),
+                            ('build', ['go', 'build', *flags, '-o', str(build_output) + '/', './...']),
                             ('verify', ['go', 'mod', 'verify']), ('tidy', ['go', 'mod', 'tidy', '-diff'])]:
             r.run('module-' + str(index) + '-' + label, argv, module, extra)
     for name, argv, extra in [

@@ -153,3 +153,11 @@ inventory. Only candidate test gates receive explicit `GIT_DIR`/`GIT_WORK_TREE`
 pointing at those identities. No production/test assertion changes. Corrected
 qualification uses the new root `task6/fix1`, preserving the original attempt and
 its executable-input byte bridge; all current-source gates run there afresh.
+
+A second preserved apparatus stop occurs in `task6/fix1/gates/module-1-build`:
+`go build ./...` exits0 but places the standalone driver's binary inside its
+copied source module. The source-inventory guard correctly rejects that added
+file; no source file changed. The corrected controller explicitly directs nested
+build outputs into `module-builds/INDEX/`, outside every source inventory. The
+original binary, successful child outcome and failed custody check remain; they
+are not a runtime or test failure. Each gate keeps its actual source identity.
