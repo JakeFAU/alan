@@ -345,6 +345,10 @@ func (s *Store) selectReady(ctx context.Context, last *RunID) (*readyRun, error)
 		observationIDs = append(observationIDs, id)
 	}
 	sort.Strings(observationIDs)
+	// Retained programs and validation context are fixed under the supported
+	// Store ownership model during this call. Keep only unbound programs here;
+	// handoff binding mutates nested program data and must retain its own load.
+	var programs map[string]Program
 	for i := 0; i < len(ids); i++ {
 		id := ids[(start+i)%len(ids)]
 		run, err := loadRun(ctx, s.conn, id)
@@ -359,9 +363,18 @@ func (s *Store) selectReady(ctx context.Context, last *RunID) (*readyRun, error)
 		if run.Projection.Status != "open" || retired || generation != id.Generation {
 			continue
 		}
-		p, err := loadProgram(ctx, s.conn, run.ProgramID, s.limits)
-		if err != nil {
-			return nil, err
+		p, ok := programs[run.ProgramID]
+		if !ok {
+			p, err = loadProgram(ctx, s.conn, run.ProgramID, s.limits)
+			if err != nil {
+				return nil, err
+			}
+			if !hasHandoffPeerPort(p) {
+				if programs == nil {
+					programs = make(map[string]Program)
+				}
+				programs[run.ProgramID] = p
+			}
 		}
 		p, err = boundCompositionProgram(ctx, s.conn, p, id, s.limits)
 		if err != nil {
@@ -389,6 +402,17 @@ func (s *Store) selectReady(ctx context.Context, last *RunID) (*readyRun, error)
 		}
 	}
 	return nil, nil
+}
+
+func hasHandoffPeerPort(p Program) bool {
+	if p.Author != nil {
+		for _, port := range p.Author.Ports {
+			if port.Peer == HandoffPeer {
+				return true
+			}
+		}
+	}
+	return false
 }
 func (s *Store) pendingDeliveries(ctx context.Context) ([]pendingDelivery, error) {
 	s.mu.Lock()

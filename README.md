@@ -26,6 +26,8 @@ Declare a finite sequence with `author.BoundedSeries(observation, author.SeriesO
 
 [Marginal execution cost](docs/evidence/performance-p2/results.md) measures a separate paired campaign: reusing membership lookups within each root report reduces the 256-operation median from 104.63s to 57.75s and SQL statements from 11.77 million to 3.38 million. Cumulative allocation falls while peak process memory rises slightly. The report preserves the exact evidence, recovery checks and limits of this single-host result.
 
+[Readiness program reuse](docs/evidence/performance-p3/decision.md) records a separate integrated-baseline comparison: the 256-operation median falls from 60.56s to 47.19s by reusing validated unbound programs within one readiness call. Per-run binding, authorization and observation checks remain. The report distinguishes allocation savings, slightly higher peak memory, exact source qualification and scope limits.
+
 ## Run a computation
 
 Use Go 1.27.3, CGO, a C compiler and a local Unix filesystem. In your application module, run `go get github.com/JakeFAU/alan/runtime`. Import `github.com/JakeFAU/alan/author` to define a program and `github.com/JakeFAU/alan/runtime` to run it. From a checkout, run the [quickstart](examples/quickstart/main.go).
