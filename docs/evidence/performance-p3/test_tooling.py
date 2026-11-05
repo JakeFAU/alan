@@ -22,6 +22,22 @@ class ToolingTests(unittest.TestCase):
         for s in ('ac', 'abbc'):
             with self.assertRaises(ValueError): replace(s, 'b', 'x')
 
+    def test_readiness_visit_boundary_supports_baseline_and_candidate(self):
+        anchor = module('instrument').readiness_visit_anchor
+        root = HERE.parents[2]
+        baseline = (root/'internal/executor/readiness_reference_test.go').read_text()
+        candidate = (root/'internal/executor/runner.go').read_text()
+        baseline_anchor = anchor(baseline)
+        candidate_anchor = anchor(candidate)
+        self.assertIn('p, err := loadProgram(', baseline_anchor)
+        self.assertIn('p, ok := programs[run.ProgramID]', candidate_anchor)
+        self.assertLess(candidate.index(candidate_anchor), candidate.index('\t\tif !ok {'))
+        self.assertLess(candidate.index(candidate_anchor), candidate.index('p, err = loadProgram('))
+        # Mixed, duplicated or unknown source must not silently count misses.
+        for bad in ('', baseline + candidate, candidate + candidate_anchor,
+                    candidate.replace(candidate_anchor, 'unknown lookup')):
+            with self.assertRaises(ValueError): anchor(bad)
+
     def test_distribution_reconciles_early_and_empty_returns(self):
         c = {'p3.distribution.waiting.visits_0.distinct_0': 1,
              'p3.distribution.selected.visits_3.distinct_1': 2,

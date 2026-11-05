@@ -14,6 +14,17 @@ def replace(source, old, new):
     return source.replace(old, new)
 
 
+def readiness_visit_anchor(source):
+    # Baseline visits load directly; candidate visits look up before a miss can
+    # load. Count both at the same eligible boundary, including candidate hits.
+    anchors = ('\t\tp, err := loadProgram(ctx, s.conn, run.ProgramID, s.limits)',
+               '\t\tp, ok := programs[run.ProgramID]')
+    matches = [anchor for anchor in anchors if source.count(anchor)]
+    if len(matches) != 1 or source.count(matches[0]) != 1:
+        raise ValueError('expected one supported readiness visit anchor')
+    return matches[0]
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     for name in ('alan', 'sqlite', 'driver', 'out'):
@@ -30,8 +41,9 @@ def main():
     def runner(s):
         s = replace(s, 'func (s *Store) selectReady(ctx context.Context, last *RunID) (*readyRun, error) {',
                     'func (s *Store) selectReady(ctx context.Context, last *RunID) (selected *readyRun, selectedError error) {\n p3visits := 0\n p3ids := map[string]bool{}\n defer func() { scalingprobe.Readiness(p3visits, len(p3ids), selected != nil, selectedError != nil) }()')
-        s = replace(s, '\t\tp, err := loadProgram(ctx, s.conn, run.ProgramID, s.limits)',
-                    '\t\tp3visits++\n p3ids[run.ProgramID] = true\n scalingprobe.Add("p3.program_id."+run.ProgramID+".visits",1)\n p, err := loadProgram(ctx, s.conn, run.ProgramID, s.limits)')
+        anchor = readiness_visit_anchor(s)
+        s = replace(s, anchor,
+                    '\t\tp3visits++\n p3ids[run.ProgramID] = true\n scalingprobe.Add("p3.program_id."+run.ProgramID+".visits",1)\n' + anchor)
         s = replace(s, '\t\tp, err = boundCompositionProgram(ctx, s.conn, p, id, s.limits)',
                     '\t\tscalingprobe.Add("p3.binding.calls",1)\n p, err = boundCompositionProgram(ctx, s.conn, p, id, s.limits)')
         s = replace(s, '\t\t\t_, err = Reduce(p, run.Projection, &observation.Observation, id, run.Sequence+1, s.limits)',
