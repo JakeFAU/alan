@@ -28,3 +28,5 @@ go test -count=1 -tags integration ./internal/executor ./internal/durabletest -r
 ```
 
 The automatic example tests exercise adjacent/nonadjacent receive order, 1/3 local steps and both branch outcomes with two actual endpoint applications and retained-result consumption. These bounded tests and shared runtime Replay checks are not an independent policy proof, a general dynamic-locator construction, or a whole-Store crash qualification. The independent campaign, adverse cut corpus and cost measurements belong to the research qualification.
+
+[Current independent qualification](../../docs/qualification/phase3b4/README.md) records the exact executable pair, automatic reciprocal completion, owner-loss evidence, adversarial checks and remaining correspondence boundaries. The historical v1 and preliminary fixture results above retain their original scope.
