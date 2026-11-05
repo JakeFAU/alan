@@ -242,6 +242,13 @@ def validate_transport_proof(report, n):
             approval = item.get("approval", {})
             protected = approval.get("Approval", {})
             prev = evidence[index-2]
+            # The driver proves the predecessor's completed root before calling
+            # public approval, then runs the successor. All three orders name
+            # retained composition facts; do not infer them from reduction counts.
+            orders = (prev.get("root_outcome", {}).get("DecisionOrder"),
+                      approval.get("DecisionOrder"), item.get("root_outcome", {}).get("DecisionOrder"))
+            require(all(type(order) is int and order > 0 for order in orders) and
+                    orders[0] < orders[1] < orders[2], "approval decision chronology mismatch")
             scoped = dict(prev["prepared"], Digest="", Request=dict(prev["prepared"]["Request"], ID="", Key=""))
             scope_digest = hashlib.sha256(go_json(scoped).encode()).hexdigest()
             require(protected.get("Namespace") == report.get("namespace") and protected.get("TargetRevision") == 1 and protected.get("Target") == item.get("run") and protected.get("PredecessorID") == prev["operation_id"] and

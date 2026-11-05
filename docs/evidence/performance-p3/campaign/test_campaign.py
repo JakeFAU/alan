@@ -6,7 +6,7 @@ from pathlib import Path
 import tempfile
 import unittest
 from unittest.mock import patch
-from analyze import analyze, compare, guard, improvement_above_five_percent
+from analyze import analyze, compare, guard, improvement_above_five_percent, doubled_median
 from custody import bound_row, expected_custody, fingerprint, sha, validate_plan
 from run import run_one, validate_meta, validate_records
 from validation import validate_report
@@ -129,11 +129,51 @@ class DirectProofTests(unittest.TestCase):
             self.assertEqual(outcome['exit'],23);self.assertEqual(meta['exit'],23)
             self.assertIn('postexit source disappeared',meta['validation_error'])
 
+    def test_exact_guard_boundaries(self):
+        # Units are original ns, or bytes for RSS. Equal thresholds do not fail.
+        for before, boundary, absolute in ((1_000_000_000,1_100_000_000,1_000_000),
+                                           (9_000_000,10_000_000,1_000_000),
+                                           (10_000_000,11_000_000,1_000_000),
+                                           (64*1024*1024,72*1024*1024,8*1024*1024),
+                                           (100_000_000,110_000_000,8*1024*1024)):
+            for offset in (-1,0,1):
+                with self.subTest(before=before,offset=offset):
+                    self.assertEqual(guard([before]*6,[boundary+offset]*6,absolute),offset>0)
+        # Half-integer candidate median at the exact 10% boundary (ns).
+        before = [20_000_005]*6
+        for after,expected in (([22_000_005]*6,False),
+                               ([22_000_005]*3+[22_000_006]*3,False),
+                               ([22_000_006]*6,True)):
+            self.assertEqual(guard(before,after,1_000_000),expected)
+        # Both medians have a half unit at the exact absolute boundary.
+        for base,absolute in ((9_000_000,1_000_000),(64*1024*1024,8*1024*1024)):
+            before = [base]*3+[base+1]*3
+            edge = base+absolute
+            for after,expected in (([edge]*6,False),([edge]*3+[edge+1]*3,False),([edge+1]*6,True)):
+                self.assertEqual(guard(before,after,absolute),expected)
+        # No precision loss when integer units exceed float's exact range.
+        self.assertEqual(doubled_median([2**60,2**60+1]),2**61+1)
+        self.assertFalse(guard([10*2**60]*6,[11*2**60]*6,1_000_000))
+        self.assertTrue(guard([10*2**60]*6,[11*2**60+1]*6,1_000_000))
+
+    def test_approval_decision_chronology(self):
+        for index in range(1,len(self.fixture['evidence'])):
+            prior=self.fixture['evidence'][index-1]['root_outcome']['DecisionOrder']
+            current=self.fixture['evidence'][index]['root_outcome']['DecisionOrder']
+            for value in (None,False,True,'9',9.0,-1,0,prior-1,prior,current,current+1):
+                with self.subTest(index=index,order=value):
+                    bad=copy.deepcopy(self.fixture)
+                    bad['evidence'][index]['approval']['DecisionOrder']=value
+                    with self.assertRaisesRegex(ValueError,'approval decision chronology'):
+                        validate_report(bad,self.row)
+            bad=copy.deepcopy(self.fixture)
+            del bad['evidence'][index]['approval']['DecisionOrder']
+            with self.assertRaisesRegex(ValueError,'approval decision chronology'):
+                validate_report(bad,self.row)
+
     def test_guard_boundaries_and_median_interpretation(self):
         self.assertFalse(improvement_above_five_percent([100]*6,[95]*6))
         self.assertTrue(improvement_above_five_percent([100]*6,[94]*6))
-        self.assertFalse(guard(.001,.002,.001));self.assertTrue(guard(.001,.00201,.001))
-        self.assertFalse(guard(1,1.099,.001));self.assertTrue(guard(1,1.101,.001))
         result=compare([1,2,3,40,50,60],[.5,1,2,30,31,32])
         self.assertEqual(result['median_reduction'],1-16/21.5)
         self.assertNotEqual(result['median_reduction'],1-result['paired_candidate_over_baseline']['median'])
