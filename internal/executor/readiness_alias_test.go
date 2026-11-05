@@ -395,3 +395,176 @@ func TestP3ReadinessCloseJoinsSelector(t *testing.T) {
 		}
 	}
 }
+
+// p3SameCallBindingCut creates two admitted instances of one retained two-receive
+// child. The lexically first member consumes its only request and waits at its
+// second receive; the later member retains its initial request. No SQL mutation
+// is used to construct this positive cut.
+func p3SameCallBindingCut(t *testing.T) (*Store, RunID, *readyRun) {
+	t.Helper()
+	provision, c := invocationFixture(t, "succeeded", 1)
+	var child, parent Program
+	if err := decode(provision.Programs[0].Bytes, &child); err != nil {
+		t.Fatal(err)
+	}
+	child.Code = append([]Instruction{child.Code[0]}, child.Code...)
+	child.Author.Positions = make([]string, len(child.Code))
+	child.Author.Receives[1] = child.Author.Receives[0]
+	raw, id, err := EncodeProgram(child)
+	if err != nil {
+		t.Fatal(err)
+	}
+	childArtifact := Artifact{ID: id, Semantics: child.Semantics, Bytes: raw}
+	template := c.Templates[0]
+	template.ID = ""
+	delete(template.Members, "helper")
+	member := template.Members["entry"]
+	member.ProgramID = id
+	template.Members["entry"] = member
+	template, err = RetainTemplate(template, []Artifact{childArtifact})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = decode(provision.Programs[len(provision.Programs)-1].Bytes, &parent); err != nil {
+		t.Fatal(err)
+	}
+	for i := 0; i < 2; i++ {
+		parent.Code[i].Effect.Target = Lit(Text(template.ID))
+	}
+	declaration := parent.Author.Invocations["child"]
+	declaration.TemplateID = template.ID
+	parent.Author.Invocations["child"] = declaration
+	raw, id, err = EncodeProgram(parent)
+	if err != nil {
+		t.Fatal(err)
+	}
+	provision.Programs = []Artifact{childArtifact, {ID: id, Semantics: parent.Semantics, Bytes: raw}}
+	provision.Runs[0].ProgramID = id
+	c.Templates = []compositionTemplate{template}
+	c.Roots[0].Templates = []string{template.ID}
+	c.Roots[0].Limits.MaxInFlight = 4
+	s, err := createInvocationStore(t.Context(), t.TempDir()+"/same-call.sqlite", provision, c, DefaultLimits())
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { s.Close() })
+	for range 2 {
+		admission := invokeOnce(t, s)
+		if !admission.Accepted || len(admission.Members) != 1 {
+			t.Fatalf("admission: %+v", admission)
+		}
+	}
+	ids, err := readRunIDs(t.Context(), s.conn)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var members []RunID
+	for _, run := range ids {
+		if run != (RunID{"root", 1}) {
+			members = append(members, run)
+		}
+	}
+	if len(members) != 2 {
+		t.Fatalf("members: %+v", members)
+	}
+	states := make([]RunState, 2)
+	observations, err := readObservations(t.Context(), s.conn, s.limits)
+	if err != nil {
+		t.Fatal(err)
+	}
+	selected := make([]string, 2)
+	operations := make([]string, 2)
+	for i, run := range members {
+		states[i], err = s.Snapshot(t.Context(), run)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for oid, o := range observations {
+			if o.Run == run && !o.consumed.Valid {
+				if selected[i] != "" {
+					t.Fatal("multiple initial requests")
+				}
+				selected[i] = oid
+				operations[i] = o.Operation
+			}
+		}
+		if selected[i] == "" {
+			t.Fatal("missing initial request")
+		}
+	}
+	if states[0].ProgramID != states[1].ProgramID || operations[0] == operations[1] {
+		t.Fatal("fixture lacks shared ID and distinct invocation selectors")
+	}
+	waiting, err := s.Commit(t.Context(), states[0].Authority(), selected[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if waiting.Projection.PC != 1 || waiting.Sequence != 1 {
+		t.Fatalf("first member failed to enter second receive: %+v", waiting)
+	}
+	// Choose the actual predecessor, so the first visited run is the waiting
+	// member. Verify the ready member follows directly before any root traversal.
+	var last RunID
+	for i, run := range ids {
+		if run == members[0] {
+			last = ids[(i+len(ids)-1)%len(ids)]
+			if ids[(i+1)%len(ids)] != members[1] {
+				t.Fatal("members not adjacent in traversal")
+			}
+		}
+	}
+	return s, last, &readyRun{authority: states[1].Authority(), observation: selected[1]}
+}
+
+type p3CompositionVisits struct{ runs, loads, bindings int }
+
+// Counts actual queries in these composition fixtures: projection reads are
+// per-run visits, programs.bytes reads are loads, and the membership join's
+// member column is read exactly once by each per-run binding lookup.
+func p3CountCompositionVisits(t *testing.T, s *Store, fn func() (*readyRun, error)) (*readyRun, error, p3CompositionVisits) {
+	t.Helper()
+	var counts p3CompositionVisits
+	if err := s.conn.Raw(func(driver any) error {
+		driver.(*sqlite3.SQLiteConn).RegisterAuthorizer(func(op int, table, column, db string) int {
+			if op == sqlite3.SQLITE_READ {
+				switch {
+				case table == "runs" && column == "projection":
+					counts.runs++
+				case table == "programs" && column == "bytes":
+					counts.loads++
+				case table == "composition_members" && column == "member":
+					counts.bindings++
+				}
+			}
+			return sqlite3.SQLITE_OK
+		})
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		if err := s.conn.Raw(func(driver any) error { driver.(*sqlite3.SQLiteConn).RegisterAuthorizer(nil); return nil }); err != nil {
+			t.Error(err)
+		}
+	}()
+	r, err := fn()
+	return r, err, counts
+}
+
+func TestP3ReadinessSameCallBoundPrograms(t *testing.T) {
+	s, last, want := p3SameCallBindingCut(t)
+	baseline, err, bc := p3CountCompositionVisits(t, s, func() (*readyRun, error) { return s.p3BaselineSelectReady(t.Context(), &last) })
+	if err != nil || !reflect.DeepEqual(baseline, want) || bc != (p3CompositionVisits{2, 2, 2}) {
+		t.Fatalf("baseline same-call cut: ready=%+v want=%+v counts=%+v error=%v", baseline, want, bc, err)
+	}
+	got, err, counts := p3CountCompositionVisits(t, s, func() (*readyRun, error) { return s.selectReady(t.Context(), &last) })
+	if err != nil || !reflect.DeepEqual(got, want) {
+		t.Fatalf("same-call bound-program reuse: ready=%+v want=%+v error=%v", got, want, err)
+	}
+	// This semantic control runs before and after optimization. The existing RED
+	// owns required load reduction; both versions must actually bind both runs.
+	if counts.runs != 2 || counts.bindings != 2 || (counts.loads != 1 && counts.loads != 2) {
+		t.Fatalf("same-call work: %+v", counts)
+	}
+	t.Logf("baseline=%+v current=%+v", bc, counts)
+}

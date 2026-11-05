@@ -411,3 +411,30 @@ func TestP3ReadinessDisposableRetiredOpenRun(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestP3ReadinessSameCallSecondBindingCorruption(t *testing.T) {
+	s, last, want := p3SameCallBindingCut(t)
+	// Genuine first waiting member remains valid. Only the second member's
+	// binding is malformed before selection in this explicitly disposable cut.
+	if _, err := s.conn.ExecContext(t.Context(), "UPDATE composition_bindings SET descriptor=? WHERE invocation_id=(SELECT invocation_id FROM composition_members WHERE subject=? AND generation=?)", []byte(`{}`), want.authority.Run.Subject, want.authority.Run.Generation); err != nil {
+		t.Fatal(err)
+	}
+	for _, reference := range []bool{true, false} {
+		r, err, counts := p3CountCompositionVisits(t, s, func() (*readyRun, error) {
+			if reference {
+				return s.p3BaselineSelectReady(t.Context(), &last)
+			}
+			return s.selectReady(t.Context(), &last)
+		})
+		if r != nil || !errors.Is(err, ErrCorrupt) {
+			t.Fatalf("second binding reference=%t: ready=%+v error=%v", reference, r, err)
+		}
+		if counts.runs != 2 || counts.bindings != 2 || (reference && counts.loads != 2) || (!reference && counts.loads != 1 && counts.loads != 2) {
+			t.Fatalf("second binding work reference=%t: %+v", reference, counts)
+		}
+		t.Logf("reference=%t counts=%+v error=%v", reference, counts, err)
+	}
+	if _, err := p3Compare(t, t.Context(), s, &last); !errors.Is(err, ErrCorrupt) {
+		t.Fatalf("second binding differential: %v", err)
+	}
+}

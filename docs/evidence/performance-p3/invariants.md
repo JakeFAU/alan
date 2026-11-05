@@ -117,7 +117,7 @@ files under `internal/executor`.
 
 | Required distinction | Executable control |
 | --- | --- |
-| Shared ID, distinct inputs/ports | `SharedInputsAndPorts`: two genuinely admitted same-program members retain distinct invocation-operation selectors; a shared receive program evaluates distinct per-run input peers. |
+| Shared ID, distinct inputs/ports | `SameCallBoundPrograms`: genuine two-receive members share an ID; the first consumes its request and waits, then the second is selected with its own full authority/observation in the **same call**. Actual projection/load/membership-read counters prove both visits and bindings. `SharedInputsAndPorts` additionally probes bound copies and distinct per-run input peers. |
 | Same spelling, generations | `GenerationAndReopen`: genuine lifecycle Retry creates worker generation 2; old completed generation is skipped; reopening changes epoch, preserving sequence/RunID. A later disposable stale-open projection isolates the generation check. |
 | Shared/few and distinct IDs | `LoadReuse`: 32 eligible waiting runs, four genuine IDs versus 32; exact counts, separate no-visit control. |
 | Independent Store/context/lifetime | `IndependentStoresAndCancellation`, `FreshValidationEveryCallAndStore`: same artifacts with independent readiness, later validation-limit and byte-corruption checks. |
@@ -125,7 +125,7 @@ files under `internal/executor`.
 | Multiple observations/rotation | `OrderingAndLaterCalls`: two genuine accepted inputs for one run, sorted ID choice, later run on rotation, real Commit and changed sequence. |
 | Waiting before ready/quiescence | `OrderingAndLaterCalls`, `LoadReuse`, and `SharedInputsAndPorts` ineligible-peer observation. |
 | First-use invalid/missing program | `EarlyReturnAndDisposableCorruption`: missing row, wrong bytes, unsupported semantics and limit; early ready run prevents eager failure, rotation reaches exact failure. Repair follows failed load. |
-| Per-run binding errors | `BindingCorruption`: genuine admitted members then explicitly malformed stored binding; handoff control similarly checks later descriptor failure. |
+| Per-run binding errors | `SameCallSecondBindingCorruption`: the same genuine waiting-first cut with only the second member binding corrupted; two actual visits/bindings precede the expected error. Original `BindingCorruption` and handoff descriptor controls remain. |
 | Between-call changes | Real admission/Commit/Retry/reopen plus explicitly disposable later limits/bytes/context mutations. |
 | Cancellation/closing | `IndependentStoresAndCancellation`, `CancellationAtRunBoundary`, `CloseJoinsSelector`. |
 | Ineligible/no visits | Empty Store in `LoadReuse`; genuinely completed run with unreachable corrupt artifact in `ClosedRunsNeverLoaded`; `DisposableRetiredOpenRun` separately isolates the retirement check. |
@@ -153,6 +153,11 @@ its generated test activates collection around either selector. It retains
 input hashes, exact patches and generator identity; production workspace files
 remain unchanged. For 32 waiting runs, bindings stay **32**, reductions **0**;
 with a sole late eligible observation, bindings stay **32**, reductions **1**.
+The same-call composition probe separately requires **2** visits, **2** bindings
+and **1** reduction, with baseline loads **2**. These semantic controls permit
+pre-optimization loads 2 or candidate loads 1; the original RED independently
+requires the optimization. The first bound result must never become the retained
+source passed into the later member binding.
 The probe independently reports load entries; ordinary RED owns the required
 load reduction. Probe counts are not timings. Candidate reuse must still be
 qualified by exact successful load/decode/validation counts in the Task 1-style
