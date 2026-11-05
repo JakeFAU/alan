@@ -1,0 +1,524 @@
+{
+  "identity": {
+    "main": "926a899b651fccc48be52a054612a92afcf1ddfd",
+    "phase3b4_head": "9dbcf3b9ee3047ab280ac150b05a184d44832007",
+    "prospective_tree": "44af03133ac7ba75fb6f6f8dc36629ed4cf52d98",
+    "synthetic_detached_commit": "5b4662fd682a220ca3065b15e86672b7e56567e7",
+    "worktree": "/private/tmp/alan-phase3b4-prospective-runtime",
+    "input_files": 351,
+    "source_manifest_sha256": "d0c75f7f5cf46eb6d491b2991a13f3febe6a56770f31231e6eb56a68d72df4d3",
+    "scope": "Unreferenced synthetic commit/detached qualification only; neither source branch nor main changed",
+    "created_unix": 1793844678.350236
+  },
+  "research_executable": "0c303c3d43d6582fed0a9caac24f50e71d844a19",
+  "records": [
+    {
+      "name": "runtime-ordinary",
+      "argv": [
+        "go",
+        "test",
+        "-json",
+        "-count=1",
+        "-timeout=60m",
+        "./..."
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck",
+        "ALAN_PHASE3B3_OLD_READER": "/tmp/alan-phase3b4-pre-v1-reader/alan",
+        "ALAN_PHASE3B4_OLD_READER": "/tmp/alan-phase3b4-task1/compatibility/old-reader.test"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 43.98025298118591,
+      "package_passes": 18,
+      "test_pass_events": 1365,
+      "named_skips": [],
+      "record_sha256": "7d0ab735188b3ed3ebe82c2a6ad4cb7f8f17a6553e4170de3930ee1e0b3388e2",
+      "log_sha256": "b2b2181b23a2af38c976d08cd7db5c56f0671c9288e12082ea8539420b06fbf4"
+    },
+    {
+      "name": "runtime-integration",
+      "argv": [
+        "go",
+        "test",
+        "-json",
+        "-count=1",
+        "-timeout=60m",
+        "-tags=integration",
+        "./..."
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck",
+        "ALAN_PHASE3B3_OLD_READER": "/tmp/alan-phase3b4-pre-v1-reader/alan",
+        "ALAN_PHASE3B4_OLD_READER": "/tmp/alan-phase3b4-task1/compatibility/old-reader.test",
+        "ALAN_PHASE3B4_EVIDENCE": "/tmp/alan-phase3b4-prospective-normal",
+        "ALAN_PHASE3B3_EVIDENCE": "/tmp/alan-phase3b4-prospective-v1-normal"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 55.86499261856079,
+      "package_passes": 18,
+      "test_pass_events": 2512,
+      "named_skips": [
+        {
+          "Package": "github.com/JakeFAU/alan/internal/executor",
+          "Test": "TestPhase3B4PromotedPublicParents",
+          "Elapsed": 0
+        },
+        {
+          "Package": "github.com/JakeFAU/alan/internal/durabletest",
+          "Test": "TestPhase3B3BaselineS2CompletionExpectedFailure",
+          "Elapsed": 0
+        }
+      ],
+      "record_sha256": "0434405b71c17db021c959c71e81e56e15ff17182e5683798b5c25541d454447",
+      "log_sha256": "5ade4afbca1281ff1746a2e55d01d609f589e95401d1290a1c40aded048c5189"
+    },
+    {
+      "name": "runtime-integration-race",
+      "argv": [
+        "go",
+        "test",
+        "-json",
+        "-count=1",
+        "-timeout=60m",
+        "-race",
+        "-tags=integration",
+        "./..."
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck",
+        "ALAN_PHASE3B3_OLD_READER": "/tmp/alan-phase3b4-pre-v1-reader/alan",
+        "ALAN_PHASE3B4_OLD_READER": "/tmp/alan-phase3b4-task1/compatibility/old-reader.test",
+        "ALAN_PHASE3B4_EVIDENCE": "/tmp/alan-phase3b4-prospective-race",
+        "ALAN_PHASE3B3_EVIDENCE": "/tmp/alan-phase3b4-prospective-v1-race"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 571.800657749176,
+      "package_passes": 18,
+      "test_pass_events": 2512,
+      "named_skips": [
+        {
+          "Package": "github.com/JakeFAU/alan/internal/executor",
+          "Test": "TestPhase3B4PromotedPublicParents",
+          "Elapsed": 0
+        },
+        {
+          "Package": "github.com/JakeFAU/alan/internal/durabletest",
+          "Test": "TestPhase3B3BaselineS2CompletionExpectedFailure",
+          "Elapsed": 0
+        }
+      ],
+      "record_sha256": "7ec33d73cf0f7aa6abb65a65ea5757740c466369054cb427482fbcce619c8526",
+      "log_sha256": "2e0159198d77dad45bf2120745f13c679528a31389fecd4a20065a32ce6df7c4"
+    },
+    {
+      "name": "runtime-mod-verify",
+      "argv": [
+        "go",
+        "mod",
+        "verify"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck",
+        "ALAN_PHASE3B3_OLD_READER": "/tmp/alan-phase3b4-pre-v1-reader/alan",
+        "ALAN_PHASE3B4_OLD_READER": "/tmp/alan-phase3b4-task1/compatibility/old-reader.test"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 0.09462594985961914,
+      "package_passes": 0,
+      "test_pass_events": 0,
+      "named_skips": [],
+      "record_sha256": "65371c2b4d888a9532d3c997fc9a9799536fe08c4597bb6619190f190d98e57a",
+      "log_sha256": "b4537ed75f533f993f371954de47e42a793b8e5b0587577de7e27fb3e50696bd"
+    },
+    {
+      "name": "runtime-mod-tidy",
+      "argv": [
+        "go",
+        "mod",
+        "tidy",
+        "-diff"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck",
+        "ALAN_PHASE3B3_OLD_READER": "/tmp/alan-phase3b4-pre-v1-reader/alan",
+        "ALAN_PHASE3B4_OLD_READER": "/tmp/alan-phase3b4-task1/compatibility/old-reader.test"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 0.06549572944641113,
+      "package_passes": 0,
+      "test_pass_events": 0,
+      "named_skips": [],
+      "record_sha256": "80a89540da4389418f41a13cb54c26e357f71b7ef74086aeae19a12c59089c0f",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "runtime-build",
+      "argv": [
+        "go",
+        "build",
+        "./..."
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck",
+        "ALAN_PHASE3B3_OLD_READER": "/tmp/alan-phase3b4-pre-v1-reader/alan",
+        "ALAN_PHASE3B4_OLD_READER": "/tmp/alan-phase3b4-task1/compatibility/old-reader.test"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 1.9482569694519043,
+      "package_passes": 0,
+      "test_pass_events": 0,
+      "named_skips": [],
+      "record_sha256": "f34088fa048ff68cbed42ecc21d6c911ac4e54a22ed3a47fbf7646fe68a75034",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "runtime-vet",
+      "argv": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck",
+        "ALAN_PHASE3B3_OLD_READER": "/tmp/alan-phase3b4-pre-v1-reader/alan",
+        "ALAN_PHASE3B4_OLD_READER": "/tmp/alan-phase3b4-task1/compatibility/old-reader.test"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 0.46448421478271484,
+      "package_passes": 0,
+      "test_pass_events": 0,
+      "named_skips": [],
+      "record_sha256": "45278f6854b58e439cfc3247957c71d3c2f2c388905be6001ebb21f8452d9943",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "runtime-vet-integration",
+      "argv": [
+        "go",
+        "vet",
+        "-tags=integration",
+        "./..."
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck",
+        "ALAN_PHASE3B3_OLD_READER": "/tmp/alan-phase3b4-pre-v1-reader/alan",
+        "ALAN_PHASE3B4_OLD_READER": "/tmp/alan-phase3b4-task1/compatibility/old-reader.test"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 0.4657919406890869,
+      "package_passes": 0,
+      "test_pass_events": 0,
+      "named_skips": [],
+      "record_sha256": "ddbf00e35c06a447677f7bb6c110bb503a30d92994233c7a70556e42bcf4244b",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "runtime-staticcheck",
+      "argv": [
+        "staticcheck",
+        "./..."
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck",
+        "ALAN_PHASE3B3_OLD_READER": "/tmp/alan-phase3b4-pre-v1-reader/alan",
+        "ALAN_PHASE3B4_OLD_READER": "/tmp/alan-phase3b4-task1/compatibility/old-reader.test"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 1.011396884918213,
+      "package_passes": 0,
+      "test_pass_events": 0,
+      "named_skips": [],
+      "record_sha256": "e36256d0afe7aa2d8af7cd7f588031b44cb78755ad3828a4d05db153793b5f8e",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "runtime-staticcheck-integration",
+      "argv": [
+        "staticcheck",
+        "-tags=integration",
+        "./..."
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck",
+        "ALAN_PHASE3B3_OLD_READER": "/tmp/alan-phase3b4-pre-v1-reader/alan",
+        "ALAN_PHASE3B4_OLD_READER": "/tmp/alan-phase3b4-task1/compatibility/old-reader.test"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 0.8701038360595703,
+      "package_passes": 0,
+      "test_pass_events": 0,
+      "named_skips": [],
+      "record_sha256": "004c9d7924dee0591580f7915338316af5391dabeb91b5da6402e2798356e53c",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "runtime-format",
+      "argv": [
+        "gofmt",
+        "-l",
+        "adapters",
+        "author",
+        "cmd",
+        "compose",
+        "effects",
+        "examples",
+        "internal",
+        "runtime",
+        "schema"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck",
+        "ALAN_PHASE3B3_OLD_READER": "/tmp/alan-phase3b4-pre-v1-reader/alan",
+        "ALAN_PHASE3B4_OLD_READER": "/tmp/alan-phase3b4-task1/compatibility/old-reader.test"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 0.07799601554870605,
+      "package_passes": 0,
+      "test_pass_events": 0,
+      "named_skips": [],
+      "record_sha256": "1d7b82d007191c019bf08c498cdb6df32a75151faa91871cdfb71941a454f342",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "runtime-promoted-normal",
+      "argv": [
+        "go",
+        "test",
+        "-json",
+        "-count=1",
+        "-timeout=10m",
+        "-tags=integration",
+        "./internal/executor",
+        "-run",
+        "^TestPhase3B4PromotedPublicParents$"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck",
+        "ALAN_PHASE3B3_OLD_READER": "/tmp/alan-phase3b4-pre-v1-reader/alan",
+        "ALAN_PHASE3B4_OLD_READER": "/tmp/alan-phase3b4-task1/compatibility/old-reader.test",
+        "ALAN_PHASE3B4_PUBLIC_PARENTS": "/tmp/alan-phase3b4-prospective-normal",
+        "ALAN_PHASE3B4_PROMOTED_OUTPUT": "/tmp/alan-phase3b4-prospective-promoted-normal"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 0.9821398258209229,
+      "package_passes": 1,
+      "test_pass_events": 3,
+      "named_skips": [],
+      "record_sha256": "1735f5a4850a547586281deed1be6547a21bff16992c8cbcf770a707ca84a55a",
+      "log_sha256": "b1894cff385de23446a6a98435e9d9b0af22ebf921b64f738c922c43baf14569"
+    },
+    {
+      "name": "runtime-promoted-race",
+      "argv": [
+        "go",
+        "test",
+        "-json",
+        "-count=1",
+        "-timeout=10m",
+        "-tags=integration",
+        "-race",
+        "./internal/executor",
+        "-run",
+        "^TestPhase3B4PromotedPublicParents$"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck",
+        "ALAN_PHASE3B3_OLD_READER": "/tmp/alan-phase3b4-pre-v1-reader/alan",
+        "ALAN_PHASE3B4_OLD_READER": "/tmp/alan-phase3b4-task1/compatibility/old-reader.test",
+        "ALAN_PHASE3B4_PUBLIC_PARENTS": "/tmp/alan-phase3b4-prospective-race",
+        "ALAN_PHASE3B4_PROMOTED_OUTPUT": "/tmp/alan-phase3b4-prospective-promoted-race"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 6.162737131118774,
+      "package_passes": 1,
+      "test_pass_events": 3,
+      "named_skips": [],
+      "record_sha256": "a9b798ffe14969cb1686f1bda27e3d7c5946a6649ceabd6ecfdd3370c4c2f105",
+      "log_sha256": "7618c6f63aa7d0728c53acc6911bedd90c26e67b36bce64430248f0460854f69"
+    },
+    {
+      "name": "research-oracle-normal",
+      "argv": [
+        "go",
+        "test",
+        "-json",
+        "-count=1",
+        "-timeout=5m",
+        "./research/delegationcorrespondence",
+        "-run",
+        "^TestBinding"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck",
+        "ALAN_PHASE3B4_CHECK_ROOT": "/tmp/alan-phase3b4-prospective-normal",
+        "ALAN_PHASE3B4_PROMOTED_CHECK_ROOT": "/tmp/alan-phase3b4-prospective-promoted-normal",
+        "ALAN_PHASE3B4_CHECK_OUTPUT": "/tmp/alan-phase3b4-prospective-verdicts-normal",
+        "ALAN_PHASE3B4_ATTACK_OUTPUT": "/tmp/alan-phase3b4-prospective-attacks-normal"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 5.650108814239502,
+      "package_passes": 1,
+      "test_pass_events": 144,
+      "named_skips": [],
+      "record_sha256": "ef401f23127f4bcc1b665e758e7b239040c5745fb42b2641be6cf77e8b74834a",
+      "log_sha256": "4ba3905f2fc766f8e0863b89b25c82f51328c673a665fa6948ac3cbbeeb2451f"
+    },
+    {
+      "name": "research-oracle-race",
+      "argv": [
+        "go",
+        "test",
+        "-json",
+        "-count=1",
+        "-timeout=5m",
+        "-race",
+        "./research/delegationcorrespondence",
+        "-run",
+        "^TestBinding"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck",
+        "ALAN_PHASE3B4_CHECK_ROOT": "/tmp/alan-phase3b4-prospective-race",
+        "ALAN_PHASE3B4_PROMOTED_CHECK_ROOT": "/tmp/alan-phase3b4-prospective-promoted-race",
+        "ALAN_PHASE3B4_CHECK_OUTPUT": "/tmp/alan-phase3b4-prospective-verdicts-race",
+        "ALAN_PHASE3B4_ATTACK_OUTPUT": "/tmp/alan-phase3b4-prospective-attacks-race"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 72.08465909957886,
+      "package_passes": 1,
+      "test_pass_events": 144,
+      "named_skips": [],
+      "record_sha256": "e09504b3dcbebb849d757b9d1a855f18e2585ce2fa40db00ee9d424b1d91f825",
+      "log_sha256": "7a6f666dbdbf7b79de2346bc103f10068a8e7947143171ca125f31a4a867bc7f"
+    }
+  ],
+  "corpora": {
+    "normal": {
+      "cases": 81,
+      "stores": 80,
+      "captures": 163,
+      "principal_complete": 40,
+      "supported_C": 33,
+      "contacts": 89,
+      "applications": 89,
+      "acknowledged_losses": 11
+    },
+    "race": {
+      "cases": 81,
+      "stores": 80,
+      "captures": 163,
+      "principal_complete": 40,
+      "supported_C": 33,
+      "contacts": 89,
+      "applications": 89,
+      "acknowledged_losses": 11
+    }
+  },
+  "all_15_gates_passed": true,
+  "limitations": "Separate prospective integration qualification; original frozen scientific pair remains unchanged. No new performance/theorem claim. No repeated full research suite/model exports. Initial sandbox listener failure is retained separately, not counted as a semantic RED."
+}
