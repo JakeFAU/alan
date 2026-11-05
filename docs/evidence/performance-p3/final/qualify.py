@@ -48,6 +48,15 @@ def freeze(root, repo):
         write(root / (label + '-source.json'), {
             'commit': revision, 'tree': query(['git', 'rev-parse', revision + '^{tree}'], repo, env),
             'archive_sha256': sha(archive), 'files': inventory(dest)})
+    # Existing reciprocal tests obtain their real source HEAD through Git.
+    # Keep a standalone shallow metadata copy outside the immutable source tree.
+    metadata = root / 'provenance.git'
+    setup.run('clone-provenance', ['git', 'clone', '--bare', '--no-local', '--depth=1',
+              '--single-branch', '--no-tags', str(repo), str(metadata)], repo)
+    metadata_head = query(['git', '--git-dir=' + str(metadata), 'rev-parse', 'HEAD'], repo, env)
+    if metadata_head != commit:
+        raise ValueError('provenance metadata does not identify frozen source')
+    plan['git_provenance'] = str(metadata)
     candidate = root / 'candidate'
     found = sorted(str(p.relative_to(candidate)) for p in candidate.rglob('go.mod'))
     if found != sorted(['go.mod'] + [p + '/go.mod' for p in MODULES]):
@@ -75,6 +84,7 @@ def freeze(root, repo):
     write(root / 'execution-plan.json', plan)
     write(root / 'freeze.json', {'candidate_commit': commit,
           'candidate_tree': query(['git', 'rev-parse', commit + '^{tree}'], repo, env),
+          'git_provenance_files': inventory(metadata),
           'tool_hashes': {str(p): sha(p) for p in tools},
           'dependency_files': inventory(dependency), 'module_paths': found,
           'task4_source': '49df59f1f767dd63fec5e238bf565d023261a75b',
@@ -90,6 +100,7 @@ def freeze(root, repo):
 def make_recorder(root):
     plan = json.loads((root / 'execution-plan.json').read_text())
     sources = {name: root / name for name in plan['sources']}
+    sources['git-provenance'] = Path(plan['git_provenance'])
     sources['sqlite-dependency'] = Path(plan['dependency'])
     r = Recorder(root, sources=sources, tools=[Path(p) for p in plan['tools']], env=plan['environment'])
     r.plan = plan
@@ -98,6 +109,8 @@ def make_recorder(root):
     for name in plan['sources']:
         if actual['sources'][name] != json.loads((root / (name + '-source.json')).read_text())['files']:
             raise ValueError('source changed before execution: ' + name)
+    if actual['sources']['git-provenance'] != frozen['git_provenance_files']:
+        raise ValueError('Git provenance changed before execution')
     if actual['tools'] != frozen['tool_hashes'] or actual['sources']['sqlite-dependency'] != frozen['dependency_files']:
         raise ValueError('tool/dependency changed before execution')
     return r
@@ -118,7 +131,8 @@ def check_formats(root):
 def execute(root):
     r = make_recorder(root)
     src = root / 'candidate'
-    env = {'ALAN_PHASE3B3_OLD_READER': str(root / 'old-alan')}
+    env = {'ALAN_PHASE3B3_OLD_READER': str(root / 'old-alan'),
+           'GIT_DIR': r.plan['git_provenance'], 'GIT_WORK_TREE': str(src)}
     r.run('go-version', ['go', 'version'], src)
     r.run('go-settings', ['go', 'env', '-json', 'GOVERSION', 'GOOS', 'GOARCH', 'CGO_ENABLED',
                          'CC', 'GOROOT', 'GOTOOLDIR', 'GOMODCACHE', 'GOCACHE', 'GOTOOLCHAIN'], src)

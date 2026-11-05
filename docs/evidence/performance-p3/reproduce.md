@@ -138,3 +138,18 @@ large logs, stores, binaries and failed attempts stay external. Do not infer a
 published URL or final outcome from this prequalification protocol; consult the
 actual attestation and delivery PR. Earlier Task4/5 evidence keeps its original
 source identities and retained limitations.
+
+The first final-source attempt at `8d2bdd5276e97814a76e5e014da5b6b331c4357f`
+passed ordinary tests, then integration failed while unchanged reciprocal tests
+recorded their source HEAD (`phase3b3_runtime_test.go:462`). A plain Git archive
+has no metadata; the direct `git rev-parse HEAD` reproduction exits128. The
+original integration exit1, 48 failing provenance events, 2,298 passing events
+and one historical S2 skip remain in `task6/`. This is an apparatus failure,
+not a passing integration run or a diagnosed runtime regression.
+
+The corrected freeze retains a standalone shallow local Git metadata copy outside
+the source export, verifies its HEAD equals the frozen source, and binds its full
+inventory. Only candidate test gates receive explicit `GIT_DIR`/`GIT_WORK_TREE`
+pointing at those identities. No production/test assertion changes. Corrected
+qualification uses the new root `task6/fix1`, preserving the original attempt and
+its executable-input byte bridge; all current-source gates run there afresh.
