@@ -14,13 +14,24 @@ def summary(values):
     return {'values':values, 'median':statistics.median(values), 'min':min(values), 'max':max(values)}
 
 
+def doubled_median(values):
+    """Exact median times two, preserving half units and arbitrarily large ints."""
+    require(bool(values) and all(type(v) is int and v >= 0 for v in values),
+            'nonnegative integer measurements required')
+    ordered = sorted(values)
+    return ordered[(len(ordered)-1)//2] + ordered[len(ordered)//2]
+
+
 def guard(before, after, absolute):
-    return after - before > max(.1 * before, absolute)
+    """Compare raw ns/bytes samples against both strict thresholds, exactly."""
+    require(type(absolute) is int and absolute >= 0, 'integer absolute threshold required')
+    before2, after2 = doubled_median(before), doubled_median(after)
+    increase2 = after2 - before2
+    return 10 * increase2 > before2 and increase2 > 2 * absolute
 
 
 def improvement_above_five_percent(baseline_ns, candidate_ns):
-    # Integer nanosecond medians (possibly half-integers); avoid 0.95 rounding.
-    return 20 * statistics.median(candidate_ns) < 19 * statistics.median(baseline_ns)
+    return 20 * doubled_median(candidate_ns) < 19 * doubled_median(baseline_ns)
 
 
 def compare(before, after):
@@ -74,12 +85,13 @@ def analyze(plan, binding_hash):
         metrics['runtime_metrics'] = {key:{v:summary([next(s for s in r['stages'] if s['name']=='execute_window')['runtime_metric_deltas'][key] for r,m in group[v]]) for v in ('A','B')} for key in group['A'][0][0]['runtime_metric_names']}
         phases = {}
         for name in BODY_PHASES:
-            b,c = [summary([phase(r,name)/1e9 for r,m in group[v]]) for v in ('A','B')]
-            phases[name] = {'baseline':b,'candidate':c,'guard_exceeded':guard(b['median'],c['median'],.001)}
+            before_ns,after_ns = [[phase(r,name) for r,m in group[v]] for v in ('A','B')]
+            b,c = [summary([value/1e9 for value in values]) for values in (before_ns,after_ns)]
+            phases[name] = {'baseline':b,'candidate':c,'guard_exceeded':guard(before_ns,after_ns,1_000_000)}
         rss = metrics['process_peak_rss_bytes']
         bounds.append({'bound':n,'execute_seconds':execute,'metrics':metrics,'phases_seconds':phases,
-                       'small_execute_guard_exceeded':n in (1,8,16,32) and guard(execute['baseline']['median'],execute['candidate']['median'],.001),
-                       'rss_requires_resolution':guard(rss['A']['median'],rss['B']['median'],8*1024*1024),
+                       'small_execute_guard_exceeded':n in (1,8,16,32) and guard(metrics['wall_ns']['A']['values'],metrics['wall_ns']['B']['values'],1_000_000),
+                       'rss_requires_resolution':guard(rss['A']['values'],rss['B']['values'],8*1024*1024),
                        'prefixes':{v:[r['prefixes'] for r,m in group[v]] for v in ('A','B')},
                        'prefix_residuals':{v:[r['prefix_residual'] for r,m in group[v]] for v in ('A','B')}})
     primary=bounds[-1]
