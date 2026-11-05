@@ -66,10 +66,9 @@ this is not a merge, release, unrestricted composition or arbitrary-writer claim
 
 [reviews/index.json](reviews/index.json) hashes byte-identical copies of each
 original independent report, including the Task 2 and Task 5a REJECT findings and
-subsequent explicit APPROVEs. No original report was rewritten. Task 4's first
-`R` shorthand has a path typo: the actual artifacts are
-`task4/qualification/review-task4/` (66 copies and `sqlite-review.json`), not
-`task4/review-task4/`. This correction changes only the navigation pointer.
+subsequent explicit APPROVEs. No original report was rewritten. Task 4's
+reviewer artifacts are under `task4/review-task4/` (66 copies and
+`sqlite-review.json`), as recorded by the original report's `R` shorthand.
 Task 5 review raw checks also live at
 `/private/tmp/alan-p3-performance-review-6934e41/`; Task 5a original/re-review
 raw checks are `/private/tmp/alan-p3-tooling-review-59bc43a/` and
