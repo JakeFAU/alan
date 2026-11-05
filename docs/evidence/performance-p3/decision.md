@@ -75,12 +75,15 @@ Task 5 review raw checks also live at
 raw checks are `/private/tmp/alan-p3-tooling-review-59bc43a/` and
 `/private/tmp/alan-p3-tooling-rereview-b2b9cc9/`.
 
-The final production/test/tool/document source is committed **before** full
-qualification. `task6/freeze.json`, `candidate-source.json`,
-`final-source-tool-hashes.json` and `attestation.json` carry the exact tested
-commit/tree and complete SHA256 inventories outside that tree, avoiding a
-self-reference. The delivery PR supplies that tested SHA, final independent
-review, actual verified attachment URLs and target-main/integration disposition.
+The source for the complete qualification was committed **before** that run. `task6/fix2/attestation.json` and its source/tool inventories
+identify the complete run at `4184c5129b9d7b9e62f155c41b86763f7a103417`.
+The later external-input custody correction has its own
+`task6/review-fix1/external-attestation.json`;
+`task6/delivery-attestation.json` links both exact source trees, gate sets and
+the 330-file Go/module byte bridge. These external records avoid self-reference
+and do not relabel the earlier complete run as the later correction commit.
+The delivery PR supplies both tested identities, the delivery SHA, final
+independent review, actual verified attachment URLs and target-main/integration disposition.
 The evidence bootstrap/index names and reproduction route are in
 [reproduce.md](reproduce.md). Earlier gate identities are never relabeled as the
 final commit; any later source change requires affected requalification or an
