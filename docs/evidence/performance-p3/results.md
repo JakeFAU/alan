@@ -6,8 +6,9 @@ predeclared performance and memory guards. B256 median Execute fell from
 median cumulative Go allocation fell 20.41%. No primary row failed or was
 replaced. This is performance evidence for the fixed direct-adapter workload,
 not general composition, hostile-writer, distributed-owner or universal latency
-qualification. Independent Task 5 review and later full-source qualification
-remain required; this record is not merge approval.
+qualification. Independent Task 5 review approved this evidence. The final-source
+gate protocol and decision are in [decision.md](decision.md); its external attestation
+records actual completion. This record is not merge approval.
 
 Baseline: `926a899b651fccc48be52a054612a92afcf1ddfd`;
 candidate executable source: `4f5fe2cc83316900a2f387180dd9f856db5303a0`.
@@ -175,8 +176,8 @@ REJECT, correction and binding remain untouched. Task 5b has no failed workload,
 build or diagnostic process and no skipped rows. The only intentionally failing
 child remains the earlier tooling exit 23 negative test.
 
-The frozen experiment supports retaining this single optimization for subsequent
-independent review and full qualification. It establishes neither unrestricted
-correctness nor merge/release readiness. No production withdrawal is triggered
-by these performance results; final controller-owned gates remain outstanding.
+The independently reviewed experiment supports retaining this single optimization
+subject to the final qualification and whole-change review recorded with delivery.
+It establishes neither unrestricted correctness nor merge/release readiness. No production withdrawal is triggered
+by these performance results; this timing report does not claim later gates ran.
 See [reproduce.md](reproduce.md) for exact routes and source identities.
