@@ -86,3 +86,55 @@ No production Go, public API, schema, scheduler, authority, durability, pinned
 module or original P2 source changed during Task 5. Full current-tree repository
 and adversarial qualification are later controller-owned gates, not implied by
 these benchmark/diagnostic executions.
+
+## Final source and repository qualification
+
+The [decision and review index](decision.md) answers the eight governing
+questions and preserves rejected findings. Final gates use a new external root
+`/private/tmp/alan-p3-j216kxoz/task6`; no primary, counter or control row is rerun.
+Commit the final source first, with a clean working tree, then run:
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 /opt/homebrew/bin/python3.14 docs/evidence/performance-p3/final/qualify.py freeze /private/tmp/alan-p3-j216kxoz/task6
+PYTHONDONTWRITEBYTECODE=1 /opt/homebrew/bin/python3.14 /private/tmp/alan-p3-j216kxoz/task6/candidate/docs/evidence/performance-p3/final/qualify.py execute /private/tmp/alan-p3-j216kxoz/task6
+```
+
+A new reproduction uses a new root; existing gate directories refuse overwrite.
+`freeze.json` binds the clean final Git export, historical exports, tool hashes,
+SQLite source and the unchanged timed Go/module byte bridge. `execution-plan.json`
+records the whitelist and module inventory. The executor runs from the export.
+Each gate retains exact argv/cwd, whitelist, executable and source/tool hashes
+before/after, stdout/stderr, actual exit, timeout and parsed terminal events.
+The actual outcome is fsynced before post-exit metadata; failed children,
+unreadable executables and timeouts remain failures. Meaningful recorder tests
+exercise real exit23/deleted executable, actual timeout and synthetic credential
+exclusion. No inherited environment capture is used.
+
+The default external deadline is 2400s, following the previous full-qualification
+budget; full Go suites use `-timeout=30m`, focused suites `10m`. A timeout kills
+and reaps the child's process group and is never accepted. Go1.27.3,
+SQLite1.14.52 and the installed Staticcheck2026.2.2 stay fixed. Staticcheck runs
+ordinary/integration and actual compiler race/integration-race with
+`GOFLAGS=-race`; previous tags-only race checks are not relabeled as these gates.
+
+Routes include focused P3 ordinary/race, full ordinary/integration/integration-
+race, authority/protocol and both actual frozen-old-reader subtests in each
+appropriate full gate, CLI/root build, ordinary/integration vet, module verify/
+tidy-diff, gofmt and committed-diff whitespace. The fresh old CLI is built from
+`af6943a5805a9a6c0e8fe77f804264f4765d07ec`. The unchanged qualified public route
+runs ordinary/race consumers, genuine conflict promotion11→12, baseline generic
+readers and retained-format checks on complete main/WAL/SHM copies. All five
+nested Go modules are copied and explicitly bound to the tested export for test,
+build, verify and tidy-diff; this is six modules including the root. No-test
+packages are listed separately and are not execution campaigns. The one opt-in
+historical S2 falsifier remains separately identified if skipped; old-reader
+opt-in skips are closed by supplying the actual binary.
+
+Canonical final records are `task6/attestation.json`,
+`task6/final-source-tool-hashes.json` and `task6/raw-index.json`. The associated
+new draft PR links the verified evidence bootstrap/index and checksummed archive
+attachments, plus final independent review and exact tested/delivery SHA. Raw
+large logs, stores, binaries and failed attempts stay external. Do not infer a
+published URL or final outcome from this prequalification protocol; consult the
+actual attestation and delivery PR. Earlier Task4/5 evidence keeps its original
+source identities and retained limitations.
