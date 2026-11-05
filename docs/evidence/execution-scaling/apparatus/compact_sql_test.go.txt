@@ -1,0 +1,29 @@
+package sqlite3
+
+import (
+ "reflect"
+ "strings"
+ "testing"
+)
+
+func TestScalingCompactSnapshot(t *testing.T) {
+ probeAdd("SELECT ?", 9, 1, 1, probeRuns, 3)
+ probeAdd("SELECT ?", 9, 1, 1, probeRows, 7)
+ probeAdd("SELECT ?", 8, 1, 2, probeRuns, 2)
+ full, compact := MeasurementSnapshot(), MeasurementCompactSnapshot()
+ if len(compact) > 300 { t.Fatalf("unbounded compact vocabulary: %d",len(compact)) }
+ for key := range compact {
+  if strings.HasPrefix(key,"sql.template.") || strings.Contains(key,".template.") { t.Fatalf("family key escaped: %s", key) }
+ }
+ for _, metric := range probeMetricNames {
+  if full["sql.total."+metric] != compact["sql.total."+metric] { t.Fatalf("total mismatch %s", metric) }
+  for _, scope := range probeScopeNames {
+   var sum uint64
+   for key,n := range full {
+    if strings.HasPrefix(key,"sql.scope."+scope+".class.") && strings.HasSuffix(key,"."+metric) { sum += n }
+   }
+   if sum != compact["sql.scope_total."+scope+"."+metric] { t.Fatalf("scope mismatch %s %s",scope,metric) }
+  }
+ }
+ if !reflect.DeepEqual(compact,MeasurementCompactSnapshot()) || !reflect.DeepEqual(full,MeasurementSnapshot()) { t.Fatal("snapshot reset or mutated counters") }
+}
