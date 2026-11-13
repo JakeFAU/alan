@@ -637,3 +637,240 @@ func TestStaticExecutionConcurrentDiscoveryAndResult(t *testing.T) {
 	}
 	staticAssertActive(t, s)
 }
+
+// Fail SQLite statement preparation before the first publication DML. This
+// leaves total_changes unchanged, so an anomaly guard cannot supply the retry.
+func staticDenyRootPublication(t *testing.T, s *Store, denied func()) func() {
+	t.Helper()
+	s.mu.Lock()
+	err := s.conn.Raw(func(d any) error {
+		d.(*sqlite3.SQLiteConn).RegisterAuthorizer(func(op int, table, col, db string) int {
+			if op == sqlite3.SQLITE_INSERT && table == "composition_root_publications" {
+				if denied != nil {
+					denied()
+				}
+				return sqlite3.SQLITE_DENY
+			}
+			return sqlite3.SQLITE_OK
+		})
+		return nil
+	})
+	s.mu.Unlock()
+	if err != nil {
+		t.Fatal(err)
+	}
+	return func() {
+		s.mu.Lock()
+		err := s.conn.Raw(func(d any) error { d.(*sqlite3.SQLiteConn).RegisterAuthorizer(nil); return nil })
+		s.mu.Unlock()
+		if err != nil {
+			t.Error(err)
+		}
+	}
+}
+
+func TestStaticExecutionRootPublicationRetry(t *testing.T) {
+	for _, via := range []string{"root_discovery", "ordinary_Run"} {
+		t.Run(via, func(t *testing.T) {
+			s, _ := staticAdapterStore(t, 1, false)
+			run, err := s.Commit(t.Context(), current(t, s, "r00").Authority(), "")
+			if err != nil {
+				t.Fatal(err)
+			}
+			w := staticPrepare(t, s, run.Projection.Data["pending"].Text)
+			contacts := 0
+			adapter := callbackAdapter{execute: func(ctx context.Context, p effects.Prepared) effects.Candidate {
+				contacts++
+				return callbackAdapter{}.Execute(ctx, p)
+			}}
+			result, err := s.recordAdapterResult(t.Context(), w.attempt, adapter.Execute(t.Context(), w.attempt.Prepared))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err = s.settleAdapter(t.Context(), w.attempt, result); err != nil {
+				t.Fatal(err)
+			}
+			if _, err = s.Commit(t.Context(), run.Authority(), ""); err != nil {
+				t.Fatal(err)
+			}
+			var priorOrder int64
+			if err = s.conn.QueryRowContext(t.Context(), "SELECT max(decision_order) FROM composition_facts").Scan(&priorOrder); err != nil {
+				t.Fatal(err)
+			}
+			before, err := readExecutionStamp(t.Context(), s.conn)
+			if err != nil {
+				t.Fatal(err)
+			}
+			removeFault := staticDenyRootPublication(t, s, nil)
+			var progress bool
+			var firstErr error
+			if via == "ordinary_Run" {
+				var failed RunReport
+				failed, firstErr = s.Run(t.Context(), RunOptions{MaxSteps: 10, MaxDispatch: 10, Adapters: map[string]effects.Adapter{"model": adapter}})
+				if failed.Quiescent || failed.Steps != 0 || failed.Dispatches != 0 {
+					removeFault()
+					t.Fatalf("failed public Run changed progress: %+v", failed)
+				}
+			} else {
+				progress, firstErr = s.settleRoots(t.Context())
+			}
+			removeFault()
+			var sqliteErr sqlite3.Error
+			if progress || !errors.As(firstErr, &sqliteErr) || sqliteErr.Code != sqlite3.ErrAuth {
+				t.Fatalf("publication error changed: progress=%v error=%v", progress, firstErr)
+			}
+			after, err := readExecutionStamp(t.Context(), s.conn)
+			if err != nil || after != before {
+				t.Fatalf("pre-DML failure changed stamp: before=%+v after=%+v error=%v", before, after, err)
+			}
+			if count(t, s, "composition_root_publications") != 0 {
+				t.Fatal("failed publication became durable")
+			}
+			staticAssertActive(t, s)
+			t.Logf("first publication: error=%v; unchanged stamp=%+v; publications=0", firstErr, after)
+			if via == "root_discovery" {
+				progress, err = s.settleRoots(t.Context())
+				if err != nil || !progress {
+					t.Fatalf("ordinary root discovery lost retry: progress=%v error=%v", progress, err)
+				}
+			} else {
+				report, e := s.Run(t.Context(), RunOptions{MaxSteps: 10, MaxDispatch: 10, Adapters: map[string]effects.Adapter{"model": adapter}})
+				if e != nil || !report.Quiescent || report.Steps != 0 || report.Dispatches != 0 {
+					t.Fatalf("ordinary Run retry: report=%+v error=%v", report, e)
+				}
+			}
+			if count(t, s, "composition_root_publications") != 1 {
+				t.Fatal("ordinary retry did not publish the ready root")
+			}
+			if contacts != 1 || count(t, s, "composition_charges") != 1 || count(t, s, "adapter_dispatch_admissions") != 1 || count(t, s, "settlements") != 1 || current(t, s, "r00").Sequence != 2 {
+				t.Fatal("retry changed contacts, charge, admission, settlement or local execution")
+			}
+			rootID := s.execution.rootOf[run.ID]
+			published, e := s.PrepareRoot(t.Context(), rootID)
+			if e != nil || !published.Ready || published.Outcome.ID == "" || published.Outcome.Status != "succeeded" || published.Outcome.DecisionOrder != priorOrder+1 {
+				t.Fatalf("wrong publication/order: %+v %v", published, e)
+			}
+			if progress, err = s.staticBaselineSettleRoots(t.Context()); err != nil || progress {
+				t.Fatalf("baseline found omitted publication: progress=%v error=%v", progress, err)
+			}
+			staticAssertActive(t, s)
+		})
+	}
+}
+
+func TestStaticExecutionRootPublicationFailurePreservesNewerInvalidations(t *testing.T) {
+	s, _ := staticAdapterStore(t, 2, true)
+	works := make([]*adapterWork, 2)
+	for i := range works {
+		run, err := s.Commit(t.Context(), current(t, s, fmt.Sprintf("r%02d", i)).Authority(), "")
+		if err != nil {
+			t.Fatal(err)
+		}
+		works[i] = staticPrepare(t, s, run.Projection.Data["pending"].Text)
+	}
+	// Consume the initial dirty roots while both are blocked. Complete only r00.
+	if _, err := s.settleRoots(t.Context()); err != nil {
+		t.Fatal(err)
+	}
+	result := staticResult(t, s, works[0])
+	if err := s.settleAdapter(t.Context(), works[0].attempt, result); err != nil {
+		t.Fatal(err)
+	}
+	for range 2 {
+		ready, err := s.selectReady(t.Context(), nil)
+		if err != nil || ready == nil || ready.authority.Run.Subject != "r00" {
+			t.Fatalf("r00 ready %+v %v", ready, err)
+		}
+		if _, err = s.Commit(t.Context(), ready.authority, ready.observation); err != nil {
+			t.Fatal(err)
+		}
+	}
+	ctx, cancel := context.WithTimeout(t.Context(), 5*time.Second)
+	defer cancel()
+	fault := make(chan struct{}, 1)
+	removeFault := staticDenyRootPublication(t, s, func() {
+		select {
+		case fault <- struct{}{}:
+		default:
+		}
+	})
+	done := make(chan error, 1)
+	go func() {
+		select {
+		case <-fault:
+		case <-ctx.Done():
+			done <- ctx.Err()
+			return
+		}
+		// The denied INSERT occurs after the r00 dirty bit was consumed. These
+		// supported operations therefore invalidate newer work, on both roots.
+		if _, err := s.AuthorizeIntent(ctx, works[0].attempt.Intent.ID); err != nil {
+			done <- err
+			return
+		}
+		candidate := callbackAdapter{}.Execute(ctx, works[1].attempt.Prepared)
+		_, err := s.recordAdapterResult(ctx, works[1].attempt, candidate)
+		done <- err
+	}()
+	progress, err := s.settleRoots(ctx)
+	removeFault()
+	var sqliteErr sqlite3.Error
+	if progress || !errors.As(err, &sqliteErr) || sqliteErr.Code != sqlite3.ErrAuth {
+		t.Fatalf("first publication %v %v", progress, err)
+	}
+	if err = <-done; err != nil {
+		t.Fatal(err)
+	}
+	staticAssertActive(t, s)
+	for _, w := range works {
+		root := s.execution.rootOf[w.attempt.Intent.Run]
+		if !s.execution.dirtyRoots[root] {
+			t.Fatalf("newer invalidation lost for %s", w.attempt.Intent.Run.Subject)
+		}
+	}
+	if count(t, s, "composition_root_publications") != 0 {
+		t.Fatal("failed publication retained")
+	}
+	report, err := s.Run(t.Context(), RunOptions{MaxSteps: 10, MaxDispatch: 10})
+	if err != nil || !report.Quiescent || count(t, s, "composition_root_publications") != 2 || count(t, s, "composition_charges") != 2 || count(t, s, "adapter_dispatch_admissions") != 2 {
+		t.Fatalf("concurrent invalidations not completed: %+v %v", report, err)
+	}
+	staticAssertActive(t, s)
+}
+
+func TestStaticExecutionRootPublicationCommitFailureDoesNotReviveIndex(t *testing.T) {
+	s, _ := staticAdapterStore(t, 1, false)
+	run, err := s.Commit(t.Context(), current(t, s, "r00").Authority(), "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	w := staticPrepare(t, s, run.Projection.Data["pending"].Text)
+	result := staticResult(t, s, w)
+	if err = s.settleAdapter(t.Context(), w.attempt, result); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = s.Commit(t.Context(), run.Authority(), ""); err != nil {
+		t.Fatal(err)
+	}
+	if err = s.conn.Raw(func(d any) error { d.(*sqlite3.SQLiteConn).RegisterCommitHook(func() int { return 1 }); return nil }); err != nil {
+		t.Fatal(err)
+	}
+	progress, commitErr := s.settleRoots(t.Context())
+	if err = s.conn.Raw(func(d any) error { d.(*sqlite3.SQLiteConn).RegisterCommitHook(nil); return nil }); err != nil {
+		t.Fatal(err)
+	}
+	var sqliteErr sqlite3.Error
+	if progress || !errors.As(commitErr, &sqliteErr) || sqliteErr.ExtendedCode != sqlite3.ErrConstraintCommitHook {
+		t.Fatalf("commit failure %v %v", progress, commitErr)
+	}
+	if s.execution != nil || s.executionFallbacks != 1 || count(t, s, "composition_root_publications") != 0 {
+		t.Fatal("requeue revived an invalidated index or retained a failed publication")
+	}
+	report, err := s.Run(t.Context(), RunOptions{MaxSteps: 10, MaxDispatch: 10})
+	if err != nil || !report.Quiescent || report.Steps != 0 || report.Dispatches != 0 || count(t, s, "composition_root_publications") != 1 {
+		t.Fatalf("fallback retry %+v %v", report, err)
+	}
+	if s.execution != nil {
+		t.Fatal("fallback retry revived index")
+	}
+}

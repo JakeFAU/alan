@@ -450,6 +450,14 @@ func (s *Store) settleExecutionRoots(ctx context.Context) (bool, error) {
 		}
 		if before.Ready && before.Outcome.ID == "" {
 			if _, err = s.SettleRoot(ctx, id); err != nil {
+				// A pre-write failure has no committed delta or counter change
+				// to restore this obligation. Requeue without replacing newer
+				// dirty work or reviving an index disabled by another failure.
+				s.mu.Lock()
+				if s.execution == x {
+					x.dirtyRoot(id)
+				}
+				s.mu.Unlock()
 				return false, err
 			}
 			progressed = true
