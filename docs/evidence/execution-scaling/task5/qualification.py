@@ -1,5 +1,6 @@
 """Frozen semantic qualification and supported/unsupported format controls."""
 import json
+
 from pathlib import Path
 import shutil
 import sys
@@ -85,6 +86,42 @@ def integration_env(rec, plan, side):
             'GIT_DIR': str(rec.sources['git-' + side]), 'GIT_WORK_TREE': str(rec.sources[side])}
 
 
+def verify_k01_owner(known, opened, run):
+    # The authored K01 route consumes a's service result. b remains open
+    # at its original receive, so Open renews b's epoch only.
+    expected_cuts = {'a': (6, 'succeeded'), 'b': (5, 'open')}
+    subjects = {row['id']: row for row in known['Tables']['subjects']}
+    rows = known['Tables']['runs']
+    if (len(rows) != len(expected_cuts) or {row['subject'] for row in rows} != expected_cuts.keys()
+            or subjects.keys() != expected_cuts.keys()):
+        raise ValueError('independent K01 inspection has unexpected original runs')
+    expected = {}
+    for row in rows:
+        name = row['subject']
+        projection = json.loads(row['projection'])
+        status = projection['Status']
+        if (row['generation'] != 1 or subjects[name]['generation'] != 1
+                or (row['sequence'], status) != expected_cuts[name]):
+            raise ValueError('independent K01 inspection has an unexpected retained cut')
+        expected[name] = {
+            'ID': {'Subject': name, 'Generation': 1},
+            'ProgramID': row['program_id'],
+            'Epoch': row['epoch'] + (status == 'open'),
+            'Sequence': row['sequence'],
+            'Revision': subjects[name]['revision'],
+            'Projection': projection,
+        }
+    if (opened['Error'] != '<nil>' or opened['Namespace'] != known['Namespace']
+            or opened['Runs'] != expected):
+        raise ValueError('historical owner did not Open the original K01 run states')
+    report = run['Report']
+    if (run['Error'] != '<nil>' or report['Quiescent'] is not True
+            or type(report['Steps']) is not int or report['Steps'] != 0
+            or type(report['Dispatches']) is not int or report['Dispatches'] != 0
+            or report['OpenRuns'] != [expected['b']['ID']] or report['Roots'] != known['Roots']):
+        raise ValueError('historical owner did not preserve the quiescent K01 cut')
+
+
 def old_controls(rec, plan, *, excluded=False):
     root = rec.root
     source = rec.sources['candidate']
@@ -127,10 +164,7 @@ def old_controls(rec, plan, *, excluded=False):
                   {'ALAN_PHASE3B3_CHILD': '1', 'ALAN_PHASE2_DB': str(clone), 'ALAN_PHASE3B3_OUTPUT': str(owner_out)})
     expect_tests(run, ['TestPhase3B3Owner'])
     op, rr = read(owner_out / 'open.json'), read(owner_out / 'run.json')
-    if (op['Error'] != '<nil>' or op['Namespace'] != known['Namespace'] or set(op['Runs']) != {'a', 'b'} or
-            any(state['ID'] != {'Subject': name, 'Generation': 1} for name, state in op['Runs'].items()) or
-            rr['Error'] != '<nil>' or not rr['Report']['Quiescent'] or rr['Report']['Dispatches'] != 0 or rr['Report']['OpenRuns']):
-        raise ValueError('historical owner did not actually Open and complete a known format')
+    verify_k01_owner(known, op, rr)
     if excluded:
         negatives = go_tests(rec, 'excluded-four-historical-rejections', source, packages=('./internal/executor',),
                              extras=extras, pattern='^Test(RequestAuthorityFormatsConflictPromotionAndOldReader|RequestBindingConflictAndOldReader)$')
