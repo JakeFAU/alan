@@ -1,6 +1,7 @@
 """Controls for the frozen P5 schedule, evidence reread and full-report cuts."""
 import copy
 from pathlib import Path
+import signal
 import sys
 from tempfile import TemporaryDirectory
 import unittest
@@ -66,6 +67,34 @@ class EvidenceTest(unittest.TestCase):
             campaign.execute_rows(rec, 'smoke', rows)
         with self.assertRaises(ValueError):
             campaign.read_rows(rec, 'smoke', rows)
+
+    def test_usage_with_driver_progress_and_duplicate_or_missing_marker(self):
+        rec = campaign.TaskRecorder(self.root, env={'PATH': '/usr/bin:/bin'})
+        wrapper = [sys.executable, '-B', str(campaign.HERE / 'sample_usage.py'), sys.executable, '-B', '-c']
+        rec.run('rss', [*wrapper, "import sys; print('sample=b1 stage=run done', file=sys.stderr)"])
+        stderr = rec.gates / 'rss/stderr.log'
+        text = stderr.read_text()
+        self.assertGreater(campaign.process_peak(stderr, 1), 1)
+        for mutant in (text + text.splitlines()[-1] + '\n', text.splitlines()[0] + '\n',
+                       text + 'unexpected tail\n'):
+            stderr.write_text(mutant)
+            with self.assertRaises(ValueError):
+                campaign.process_peak(stderr, 1)
+        stderr.write_text(text)
+        with self.assertRaises(ValueError):
+            campaign.process_peak(stderr, 10**15)
+
+    def test_usage_wrapper_preserves_signal_and_timeout(self):
+        rec = campaign.TaskRecorder(self.root, env={'PATH': '/usr/bin:/bin'})
+        wrapper = [sys.executable, '-B', str(campaign.HERE / 'sample_usage.py'), sys.executable, '-B', '-c']
+        with self.assertRaises(RuntimeError):
+            rec.run('signal', [*wrapper, 'import os, signal; os.kill(os.getpid(), signal.SIGTERM)'])
+        with self.assertRaises(RuntimeError):
+            rec.run('timeout', [*wrapper, 'import time; time.sleep(30)'], timeout=0.1)
+        terminated = campaign.read(rec.gates / 'signal/outcome.json')
+        timeout = campaign.read(rec.gates / 'timeout/outcome.json')
+        self.assertEqual((terminated['exit'], terminated['timeout']), (-signal.SIGTERM, False))
+        self.assertEqual((timeout['exit'], timeout['timeout']), (-signal.SIGKILL, True))
 
     def test_direct_report_checks_every_field_at_every_cut(self):
         rr = dict.fromkeys(('Steps', 'Dispatches', 'Quiescent', 'OpenRuns',

@@ -7,7 +7,6 @@ import shutil
 from measure import HERE, build_driver
 from measurement import command, row, validate_report
 
-SIDES = ('baseline', 'candidate')
 from custody import expect_tests, extract_source, inventory, read, require_copy, sha, write
 from external_inputs import ExternalInputs
 from overlays import build_module, direct_overlay, patch
@@ -15,6 +14,7 @@ from qualification import (COMPLETE, READERS, compare, go_tests, integration_env
                            old_controls, run_external, verify_direct_reports, verify_reciprocal)
 from recovery import build_weather, cross_build, verify_weather_stops, weather_expected
 
+SIDES = ('baseline', 'candidate')
 PROMOTIONS = ('TestPhase3B4PromotedPublicParents/K01', 'TestPhase3B4PromotedPublicParents/K02')
 ORDINARY = ('TestAsyncRunReportRejectsMalformedRetainedReceipt',
             'TestAsyncCancelAccountsReceivedCandidateAndPreservesUnknown',
@@ -161,7 +161,7 @@ def gates(rec, plan):
             name = key + '-staticcheck'
             attempt(name, lambda: lint(name, module, ('-tags=series',) if key == 'nested-0' else ()))
     write(root / 'qualification-results.json', {'failures': failures, 'staticcheck': static,
-                                                'inputs_after': rec.snapshot()})
+          'inputs_after': rec.snapshot(), 'gate_outputs': inventory(rec.gates)})
     if failures:
         raise ValueError('qualification gates failed; see qualification-results.json')
 
@@ -199,7 +199,12 @@ def differential(rec, plan, excluded):
                               '-bound', '8', '-db', db, '-source-label', plan['sources'][side]['commit'],
                               '-scenario', scenario, '-reopen-every', str(reopen), '-approval-mode', 'targeted'],
                               db.parent)
-                verify_direct_reports(read(log), reopen)
+                report = read(log)
+                identity = {'source_label': plan['sources'][side]['commit'], 'store': str(db),
+                            'bound': 8, 'mode': 'execute-existing', 'scenario': scenario, 'reopen_every': reopen}
+                if any(report.get(k) != v for k, v in identity.items()):
+                    raise ValueError('same-seed report identity differs from its command')
+                verify_direct_reports(report, reopen)
                 reports.append(log)
             compare(rec, root, route, name + '-exact', reports, dbs)
             if (scenario, reopen) == ('refusal3', 1):
@@ -259,11 +264,12 @@ def weather(rec, plan, excluded):
                 if len(repeated['contacts']) != 1 or repeated['charged'] != 1 or len(repeated['killed']) != 3:
                     raise ValueError('missing original single-contact recovery proof')
             binaries = list(consumers.rglob('weather-agent'))
-            if not binaries:
+            if len(binaries) != 1:
                 raise ValueError('weather test did not retain its actual public consumer')
             for binary in binaries:
                 if not binary.is_file() or any(not (binary.parent / path).is_file() for path in ('go.mod', 'go.sum', 'main.go')):
                     raise ValueError('weather consumer source/module evidence is incomplete')
+                rec.bind(side + '-' + section + '-weather-public-module', binary.parent)
                 rec.bind_tool(binary)
                 rec.run(side + '-' + section + '-weather-public-build-info', ['go', 'version', '-m', binary])
             sealed = inventory(archives)

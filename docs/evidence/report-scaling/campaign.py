@@ -2,6 +2,7 @@
 """Freeze, execute and reread the P5 full-report comparison on its original host."""
 import argparse
 import fcntl
+import json
 import os
 from pathlib import Path
 import platform
@@ -13,6 +14,7 @@ from controller import OLD_CLI, OLD_OWNER, bind_toolchain, environment
 from custody import TaskRecorder, extract_source, inventory, members, read, restore_inputs, separate_inputs, sha, write
 from measurement import BOUNDS, command, resources, row, summary, validate_report
 from overlays import scopes
+from sample_usage import USAGE_PREFIX
 
 SIDES = ('baseline', 'candidate')
 PINS = {'baseline': (BASE, BASE_TREE),
@@ -43,11 +45,16 @@ def designs(component):
     return rows
 
 
-def freeze(root, revision, gopath, excluded):
+def freeze(root, revision, gopath, excluded, smoke_gocache=None):
     root.mkdir()
     for name in ('tmp', 'sources', 'archives', 'git', 'builds', 'samples'):
         (root / name).mkdir()
-    rec = TaskRecorder(root, env=environment(root, gopath))
+    env = environment(root, gopath)
+    if smoke_gocache:
+        if not excluded:
+            raise ValueError('shared build cache is available only for excluded smoke')
+        env['GOCACHE'] = str(smoke_gocache.resolve())
+    rec = TaskRecorder(root, env=env)
     rec.bind_tool(Path(__file__))
     rec.bind_tool(HERE / 'sample_usage.py')
     head = rec.run('checkout-head', ['git', 'rev-parse', 'HEAD'], REPO).read_text().strip()
@@ -94,13 +101,15 @@ def freeze(root, revision, gopath, excluded):
     for name in ('git', 'clang', 'ld'):
         log = rec.run('selected-' + name, ['xcrun', '--find', name])
         rec.bind_tool(log.read_text().strip())
-    for side in SIDES:
+    for side in identities:
         rec.run(side + '-module-resolution', ['go', 'list', '-mod=readonly', '-m', 'all'], rec.sources[side])
     artifacts = [root / 'archives' / (side + '.tar') for side in identities]
+    artifacts.extend(path for gate in sorted(rec.gates.iterdir()) for path in sorted(gate.iterdir()))
     separate_inputs(rec, 'source', artifacts)
     lock = root / 'source-freeze.json'
     write(lock, {'format': 'alan/p5-source-v1', 'sources': identities, 'excluded': excluded,
                  'environment': rec.env, 'toolchain': toolchain,
+                 'smoke_gocache': str(smoke_gocache.resolve()) if smoke_gocache else None,
                  'inputs_sha256': sha(root / 'source-inputs.json')})
     print('SOURCE FREEZE ' + sha(lock), flush=True)
 
@@ -112,6 +121,8 @@ def open_freeze(root, digest):
     plan = read(lock)
     env = environment(root, Path(plan['environment']['GOPATH']))
     env.update(CC=plan['toolchain']['clang'], SDKROOT=plan['toolchain']['sdk'])
+    if plan['smoke_gocache'] and plan['excluded']:
+        env['GOCACHE'] = plan['smoke_gocache']
     if plan['format'] != 'alan/p5-source-v1' or env != plan['environment']:
         raise ValueError('source format or environment differs')
     rec = TaskRecorder(root, env=env)
@@ -144,7 +155,11 @@ def require_rows(root, plan, component, binaries, rows):
 
 
 def seal_build(rec, component, source_digest, extra=None):
-    separate_inputs(rec, component, [])
+    paths = [path for path in (rec.root / 'builds' / component).rglob('*') if path.is_file()]
+    if component == 'qualification':
+        paths.extend(path for gate in rec.gates.iterdir() for path in gate.iterdir()
+                     if gate.name.startswith(('qualify-', 'weather-', 'baseline-direct-', 'candidate-direct-')))
+    separate_inputs(rec, component, paths)
     lock = rec.root / (component + '-freeze.json')
     write(lock, {'component': component, 'source_sha256': source_digest,
                  'inputs_sha256': sha(rec.root / (component + '-inputs.json')), **(extra or {})})
@@ -185,6 +200,19 @@ def build_measurement(rec, plan, component, digest):
               'rows': row_records(rec.root, plan, component, binaries)})
 
 
+def process_peak(stderr, sampled):
+    lines = stderr.read_text().splitlines()
+    usage_lines = [line for line in lines if line.startswith(USAGE_PREFIX)]
+    if len(usage_lines) != 1 or usage_lines[0] != lines[-1]:
+        raise ValueError('expected one final child usage record')
+    usage = json.loads(usage_lines[0].removeprefix(USAGE_PREFIX))
+    maximum = usage.get('process_maxrss_bytes') if isinstance(usage, dict) else None
+    if (not isinstance(usage, dict) or set(usage) != {'child_exit', 'process_maxrss_bytes'} or type(usage['child_exit']) is not int
+            or usage['child_exit'] != 0 or type(maximum) is not int or maximum < sampled or maximum <= 0):
+        raise ValueError('missing or inconsistent post-exit process RSS')
+    return maximum
+
+
 def checked_report(rec, record):
     design = record['design']
     sample = rec.root / 'samples' / design['name']
@@ -209,13 +237,8 @@ def checked_report(rec, record):
     validate_report(report, validation, record['revision'], store, scopes())
     if design['kind'] == 'counters':
         attribution(report, design['bound'])
-    usage = read(gate / 'stderr.log')
-    maximum = usage.get('process_maxrss_bytes')
     sampled = max(stage['process_maxrss_cumulative'] for stage in report['stages'])
-    if (type(usage.get('child_exit')) is not int or usage['child_exit'] != 0 or
-            type(maximum) is not int or maximum < sampled or maximum <= 0):
-        raise ValueError('missing or inconsistent post-exit process RSS')
-    report['process_high_water_bytes'] = maximum
+    report['process_high_water_bytes'] = process_peak(gate / 'stderr.log', sampled)
     store_members = members(store)
     if '' not in store_members:
         raise ValueError('sample missing Store')
@@ -303,6 +326,7 @@ def main():
     parser.add_argument('--root', required=True, type=Path)
     parser.add_argument('--candidate')
     parser.add_argument('--gopath', type=Path, default=Path.home() / 'go')
+    parser.add_argument('--smoke-gocache', type=Path, help='reuse a local cache for excluded smoke only')
     parser.add_argument('--source-digest')
     parser.add_argument('--build-digest')
     parser.add_argument('--outside', type=Path)
@@ -321,11 +345,13 @@ def main():
             parser.error('freeze needs an exact --candidate SHA')
     elif not args.source_digest:
         parser.error('phase needs the recorded --source-digest')
+    elif not args.phase.startswith('build-') and args.phase != 'outside-rebuild' and not args.build_digest:
+        parser.error('phase needs the recorded --build-digest')
     lock = Path('/private/tmp') / ('alan-p5-campaign-' + str(os.getuid()) + '.lock')
     with lock.open('a') as host:
         fcntl.flock(host, fcntl.LOCK_EX | fcntl.LOCK_NB)
         if args.phase == 'freeze':
-            freeze(root, args.candidate, args.gopath.resolve(), args.excluded)
+            freeze(root, args.candidate, args.gopath.resolve(), args.excluded, args.smoke_gocache)
             return
         rec, plan = open_freeze(root, args.source_digest)
         excluded_phase = args.phase.endswith('-smoke')
