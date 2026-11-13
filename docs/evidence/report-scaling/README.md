@@ -2,7 +2,9 @@
 
 The [contract](contract.md) and [implementation plan](plan.md) govern the work.
 [Baseline results](baseline.md) describe the production source before report
-batching.
+batching. The [paired results](results.md) and [qualification and reproduction](qualification.md)
+cover the frozen full-report comparison, compatibility and recovery. The
+[compact-result decision](compact-result-decision.md) records the deferred API.
 
 ## Reproduce the excluded baseline
 
