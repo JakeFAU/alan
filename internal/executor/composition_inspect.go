@@ -26,6 +26,12 @@ type RootCompletion struct {
 var compositionInspectionTables = []string{"composition_profile", "composition_roots", "composition_static_members", "composition_templates", "composition_facts", "composition_invocations", "composition_bindings", "composition_members", "composition_results", "composition_charges", "composition_deployment", "composition_permissions", "composition_closures", "composition_admission_decisions", "composition_requests", "composition_replies", "composition_freezes", "composition_reservations", "composition_publications", "composition_outcome_deliveries", "composition_root_publications"}
 
 func readRootCompletions(ctx context.Context, q queryer) ([]RootCompletion, error) {
+	reader := reportReader{q: q}
+	return readRootCompletionsWithReader(ctx, &reader)
+}
+
+func readRootCompletionsWithReader(ctx context.Context, reader *reportReader) ([]RootCompletion, error) {
+	q := reader.q
 	enabled, err := compositionProtocol(ctx, q)
 	if err != nil || !enabled {
 		return nil, err
@@ -43,15 +49,11 @@ func readRootCompletions(ctx context.Context, q queryer) ([]RootCompletion, erro
 	operationsByRoot := make(map[string][]string)
 	out := []RootCompletion{}
 	for index, id := range roots {
-		var raw []byte
-		var root ResourceRoot
-		if err = q.QueryRowContext(ctx, "SELECT descriptor FROM composition_roots WHERE id=?", id).Scan(&raw); err != nil {
+		root, err := reader.root(ctx, id)
+		if err != nil {
 			return nil, err
 		}
-		if err = decode(raw, &root); err != nil {
-			return nil, err
-		}
-		state, err := loadRun(ctx, q, root.Run)
+		state, err := reader.run(ctx, root.Run)
 		if err != nil {
 			return nil, err
 		}
@@ -71,7 +73,7 @@ func readRootCompletions(ctx context.Context, q queryer) ([]RootCompletion, erro
 				return nil, err
 			}
 		}
-		prepared, err := prepareRoot(ctx, q, id)
+		prepared, err := reader.prepareRoot(ctx, id)
 		if err != nil {
 			return nil, err
 		}

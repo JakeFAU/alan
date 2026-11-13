@@ -539,7 +539,8 @@ func (s *Store) finishRun(ctx context.Context, report RunReport, quiescent bool,
 	if s.closed {
 		return report, errors.Join(runErr, sql.ErrConnDone)
 	}
-	roots, err := readRootCompletions(ctx, s.conn)
+	reader := reportReader{q: s.conn}
+	roots, err := readRootCompletionsWithReader(ctx, &reader)
 	if err != nil {
 		return report, errors.Join(runErr, err)
 	}
@@ -549,7 +550,7 @@ func (s *Store) finishRun(ctx context.Context, report RunReport, quiescent bool,
 		return report, errors.Join(runErr, err)
 	}
 	for _, id := range ids {
-		run, err := loadRun(ctx, s.conn, id)
+		run, err := reader.run(ctx, id)
 		if err != nil {
 			return report, errors.Join(runErr, err)
 		}

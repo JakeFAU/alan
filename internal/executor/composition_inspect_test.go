@@ -595,7 +595,10 @@ func TestRootCompletionsSyntheticAbsentThenPresentNextCall(t *testing.T) {
 }
 
 func TestRootCompletionsErrorsAtRetainedBoundaries(t *testing.T) {
-	for _, name := range []string{"entry_cancellation", "first_membership_cancellation", "first_membership_sql", "next_root_sql", "first_descriptor_decode"} {
+	for _, name := range []string{
+		"entry_cancellation", "first_membership_cancellation", "first_membership_sql",
+		"next_root_sql", "first_descriptor_decode", "first_descriptor_batch_decode", "next_descriptor_batch_decode",
+	} {
 		t.Run(name, func(t *testing.T) {
 			s, _, roots := rootReportStore(t)
 			rootReportCommit(t, s, "a")
@@ -609,6 +612,29 @@ func TestRootCompletionsErrorsAtRetainedBoundaries(t *testing.T) {
 			ids := []string{roots["a"].ID, roots["b"].ID}
 			slices.Sort(ids)
 			injected := false
+			q.rows = func(callCtx context.Context, query string, args ...any) (*sql.Rows, error) {
+				if callCtx != ctx {
+					t.Error("report replaced caller context")
+				}
+				if query == reportRootsSQL {
+					switch name {
+					case "next_root_sql", "first_descriptor_decode":
+						// A failed bulk query must leave the retained scalar fault
+						// at its original point in the traversal.
+						return s.conn.QueryContext(callCtx, "SELECT * FROM alan_missing_root_report_test_table")
+					case "first_descriptor_batch_decode", "next_descriptor_batch_decode":
+						injected = true
+						id := ids[0]
+						if name == "next_descriptor_batch_decode" {
+							id = ids[1]
+						}
+						return s.conn.QueryContext(callCtx, `SELECT id,
+							CASE WHEN id=? THEN '{' ELSE descriptor END,
+							NULL,NULL,0,0 FROM composition_roots`, id)
+					}
+				}
+				return s.conn.QueryContext(callCtx, query, args...)
+			}
 			q.row = func(callCtx context.Context, query string, args ...any) *sql.Row {
 				if callCtx != ctx {
 					t.Error("report replaced caller context")
@@ -641,8 +667,13 @@ func TestRootCompletionsErrorsAtRetainedBoundaries(t *testing.T) {
 				if !errors.Is(err, context.Canceled) {
 					t.Fatalf("context error changed: %v", err)
 				}
-			} else if name == "first_descriptor_decode" {
-				if len(q.lookups) != 0 {
+			} else if strings.Contains(name, "descriptor") {
+				var ignored ResourceRoot
+				original := decode([]byte("{"), &ignored)
+				if err.Error() != original.Error() {
+					t.Fatalf("descriptor error changed: got %v, original %v", err, original)
+				}
+				if strings.HasPrefix(name, "first_") && len(q.lookups) != 0 {
 					t.Fatal("membership prefetched before descriptor decode")
 				}
 			} else {
@@ -662,7 +693,7 @@ func TestRootCompletionsErrorsAtRetainedBoundaries(t *testing.T) {
 			if (name == "first_membership_sql" || name == "first_membership_cancellation") && len(q.lookups) != 1 {
 				t.Fatalf("first membership failure continued traversal: %v", q.lookups)
 			}
-			if name == "next_root_sql" && len(q.lookups) == 0 {
+			if (name == "next_root_sql" || name == "next_descriptor_batch_decode") && len(q.lookups) == 0 {
 				t.Fatal("later retained SQL did not follow a membership lookup")
 			}
 			if after := rootReportTables(t, s); !reflect.DeepEqual(before, after) {
