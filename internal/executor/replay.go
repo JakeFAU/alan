@@ -298,7 +298,13 @@ func readObservations(ctx context.Context, q queryer, l Limits) (map[string]reta
 	if err != nil {
 		return nil, err
 	}
+	return readObservationRows(rows, l)
+}
+
+// Full and primary-key readers share exactly the same retained-row checks.
+func readObservationRows(rows *sql.Rows, l Limits) (map[string]retainedObservation, error) {
 	defer rows.Close()
+	var err error
 	out := map[string]retainedObservation{}
 	for rows.Next() {
 		var o retainedObservation

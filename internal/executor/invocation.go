@@ -230,7 +230,7 @@ func (s *Store) AdmitInvocation(ctx context.Context, operation string) (composit
 	if s.closed {
 		return compositionAdmission{}, sql.ErrConnDone
 	}
-	tx, err := beginOwnedTx(ctx, s.conn)
+	tx, err := s.beginOwnedTx(ctx)
 	if err != nil {
 		return compositionAdmission{}, err
 	}

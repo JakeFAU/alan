@@ -109,7 +109,7 @@ func (s *Store) recordReadResult(ctx context.Context, a AdapterAttempt, ordinal 
 	if s.closed {
 		return r, sql.ErrConnDone
 	}
-	tx, err := beginOwnedTx(ctx, s.conn)
+	tx, err := s.beginOwnedTx(ctx)
 	if err != nil {
 		return r, err
 	}

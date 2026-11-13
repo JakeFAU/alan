@@ -55,7 +55,7 @@ func (s *Store) SettleRoot(ctx context.Context, rootID string) (InvocationPrepar
 	if !s.invocationEnabled() {
 		return InvocationPreparation{}, ErrVersion
 	}
-	tx, err := beginOwnedTx(ctx, s.conn)
+	tx, err := s.beginOwnedTx(ctx)
 	if err != nil {
 		return InvocationPreparation{}, err
 	}
@@ -82,9 +82,18 @@ func (s *Store) SettleRoot(ctx context.Context, rootID string) (InvocationPrepar
 	if _, err = appendCompositionFact(ctx, tx, fact); err != nil {
 		return p, err
 	}
-	return p, s.commitOwnedTx(ctx, tx)
+	return p, s.commitOwnedTx(ctx, tx, executionDelta{root: rootID})
 }
 func (s *Store) settleRoots(ctx context.Context) (bool, error) {
+	s.mu.Lock()
+	active := s.guardExecution(ctx)
+	s.mu.Unlock()
+	if active {
+		return s.settleExecutionRoots(ctx)
+	}
+	return s.settleRootsBaseline(ctx)
+}
+func (s *Store) settleRootsBaseline(ctx context.Context) (bool, error) {
 	if !s.invocationEnabled() {
 		return false, nil
 	}

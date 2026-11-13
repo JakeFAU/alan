@@ -190,7 +190,7 @@ func readOrdinal(ctx context.Context, q queryer, id string, n int) (receiptReadO
 // Called by the gate under both owner exclusions. No endpoint operation occurs
 // here. The short transaction is committed without reacquiring ownerMu.
 func (s *Store) reserveReadLocked(ctx context.Context, id string) (*receiptReadOrdinal, string, error) {
-	tx, err := beginOwnedTx(ctx, s.conn)
+	tx, err := s.beginOwnedTx(ctx)
 	if err != nil {
 		return nil, "", err
 	}
@@ -224,7 +224,7 @@ func (s *Store) reserveReadLocked(ctx context.Context, id string) (*receiptReadO
 			err = ctx.Err()
 		}
 		if err == nil {
-			err = tx.Commit()
+			err = s.commitExecutionTx(ctx, tx, nil)
 		}
 		if err != nil && !errors.Is(err, ctx.Err()) {
 			s.rememberDispatchFailure(a.Intent.Run, err)
@@ -297,7 +297,7 @@ AND NOT EXISTS(SELECT 1 FROM settlements st WHERE st.intent_id=i.id) ORDER BY i.
 		err = ctx.Err()
 	}
 	if err == nil {
-		err = tx.Commit()
+		err = s.commitExecutionTx(ctx, tx, nil)
 	}
 	return &r, "", err
 }

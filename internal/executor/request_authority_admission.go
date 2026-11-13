@@ -190,7 +190,7 @@ func validateAuthorityAdmission(ctx context.Context, q queryer, f compositionFac
 // Caller holds both Store locks. This is the sole primary-fact writer; it derives
 // the decision itself and commits before a volatile opportunity is released.
 func (s *Store) recordAuthorityAdmission(ctx context.Context, id string) (*AuthorityAdmission, error) {
-	tx, err := beginOwnedTx(ctx, s.conn)
+	tx, err := s.beginOwnedTx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -254,7 +254,7 @@ func (s *Store) recordAuthorityAdmission(ctx context.Context, id string) (*Autho
 		return nil, err
 	}
 	// ownerMu is already held: commitOwnedTx would recursively acquire it.
-	if err = tx.Commit(); err != nil {
+	if err = s.commitExecutionTx(ctx, tx, nil); err != nil {
 		return nil, err
 	}
 	return f.AuthorityAdmission, nil

@@ -24,7 +24,7 @@ func (s *Store) recordDispatchAdmission(ctx context.Context, intent Intent) erro
 	if err != nil || root == "" {
 		return err
 	}
-	tx, err := beginOwnedTx(ctx, s.conn)
+	tx, err := s.beginOwnedTx(ctx)
 	if err != nil {
 		return err
 	}
@@ -55,7 +55,7 @@ func (s *Store) recordDispatchAdmission(ctx context.Context, intent Intent) erro
 		return err
 	}
 	// commitOwnedTx also takes ownerMu, which guards this entire interval.
-	return tx.Commit()
+	return s.commitExecutionTx(ctx, tx, &executionDelta{run: intent.Run})
 }
 
 // Several admissions may observe the same prefix. Their own insertion order

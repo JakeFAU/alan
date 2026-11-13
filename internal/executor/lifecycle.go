@@ -245,7 +245,7 @@ func (s *Store) DecideLifecycle(ctx context.Context, request LifecycleRequest) (
 	if s.closed {
 		return LifecycleResult{}, sql.ErrConnDone
 	}
-	tx, err := beginOwnedTx(ctx, s.conn)
+	tx, err := s.beginOwnedTx(ctx)
 	if err != nil {
 		return LifecycleResult{}, err
 	}
@@ -414,7 +414,7 @@ func (s *Store) SettleLifecycle(ctx context.Context, id, transport string) (Admi
 	if s.closed {
 		return AdmissionResult{}, sql.ErrConnDone
 	}
-	tx, err := beginOwnedTx(ctx, s.conn)
+	tx, err := s.beginOwnedTx(ctx)
 	if err != nil {
 		return AdmissionResult{}, err
 	}

@@ -323,6 +323,12 @@ func (s *Store) selectReady(ctx context.Context, last *RunID) (*readyRun, error)
 	if s.closed {
 		return nil, sql.ErrConnDone
 	}
+	if s.guardExecution(ctx) {
+		return s.selectExecutionReady(ctx, last)
+	}
+	return s.selectReadyBaselineLocked(ctx, last)
+}
+func (s *Store) selectReadyBaselineLocked(ctx context.Context, last *RunID) (*readyRun, error) {
 	ids, err := readRunIDs(ctx, s.conn)
 	if err != nil {
 		return nil, err
@@ -419,6 +425,9 @@ func (s *Store) pendingDeliveries(ctx context.Context) ([]pendingDelivery, error
 	defer s.mu.Unlock()
 	if s.closed {
 		return nil, sql.ErrConnDone
+	}
+	if s.guardExecution(ctx) {
+		return s.pendingExecutionDeliveries(), nil
 	}
 	return pendingDeliveries(ctx, s.conn)
 }

@@ -465,7 +465,7 @@ func (s *Store) SettleInvocation(ctx context.Context, operation string) (Admissi
 	if !s.invocationEnabled() {
 		return AdmissionResult{}, ErrVersion
 	}
-	tx, err := beginOwnedTx(ctx, s.conn)
+	tx, err := s.beginOwnedTx(ctx)
 	if err != nil {
 		return AdmissionResult{}, err
 	}
