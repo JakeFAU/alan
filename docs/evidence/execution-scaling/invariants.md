@@ -1,5 +1,9 @@
 # Frozen invariants and edit boundaries
 
+These historical notes preserve the original call-local design. The
+[structural correction contract](structural-contract.md) governs the resumed
+implementation, including guarded reuse within one Store owner.
+
 Implementation source is `d59eaf2976849e450635d252c7bca62eeccbef2e`.
 These are requirements for subsequent implementation, not claims that an
 optimization has passed. The [contract](contract.md) governs any conflict.
