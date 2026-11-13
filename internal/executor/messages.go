@@ -63,7 +63,7 @@ func (s *Store) AdmitInput(ctx context.Context, input Input) (AdmissionResult, e
 	if s.closed {
 		return AdmissionResult{}, sql.ErrConnDone
 	}
-	tx, err := beginOwnedTx(ctx, s.conn)
+	tx, err := s.beginOwnedTx(ctx)
 	if err != nil {
 		return AdmissionResult{}, err
 	}
@@ -106,7 +106,7 @@ func (s *Store) AuthorizeIntent(ctx context.Context, id string) (Authorization, 
 	if s.closed {
 		return Authorization{}, sql.ErrConnDone
 	}
-	tx, err := beginOwnedTx(ctx, s.conn)
+	tx, err := s.beginOwnedTx(ctx)
 	if err != nil {
 		return Authorization{}, err
 	}
@@ -199,7 +199,7 @@ func (s *Store) DeliverMessage(ctx context.Context, intentID, transportID string
 	if s.closed {
 		return AdmissionResult{}, sql.ErrConnDone
 	}
-	tx, err := beginOwnedTx(ctx, s.conn)
+	tx, err := s.beginOwnedTx(ctx)
 	if err != nil {
 		return AdmissionResult{}, err
 	}
@@ -245,7 +245,7 @@ func (s *Store) AcknowledgeMessage(ctx context.Context, intentID, transportID st
 	if s.closed {
 		return sql.ErrConnDone
 	}
-	tx, err := beginOwnedTx(ctx, s.conn)
+	tx, err := s.beginOwnedTx(ctx)
 	if err != nil {
 		return err
 	}
@@ -302,7 +302,7 @@ func (s *Store) DeliverTerminal(ctx context.Context, source RunID, destination T
 	if s.closed {
 		return AdmissionResult{}, sql.ErrConnDone
 	}
-	tx, err := beginOwnedTx(ctx, s.conn)
+	tx, err := s.beginOwnedTx(ctx)
 	if err != nil {
 		return AdmissionResult{}, err
 	}
@@ -323,7 +323,7 @@ func (s *Store) AcknowledgeTerminal(ctx context.Context, source RunID, destinati
 	if s.closed {
 		return sql.ErrConnDone
 	}
-	tx, err := beginOwnedTx(ctx, s.conn)
+	tx, err := s.beginOwnedTx(ctx)
 	if err != nil {
 		return err
 	}
@@ -972,7 +972,7 @@ func (s *Store) authorizationBoundary(ctx context.Context, tx *sql.Tx, auth Auth
 	if err != nil {
 		return err
 	}
-	if err = s.commitOwnedTx(ctx, tx); err != nil {
+	if err = s.commitOwnedTx(ctx, tx, executionDelta{run: auth.Source.Run}); err != nil {
 		return err
 	}
 	return boundary.Reached(ctx, boundary.Event{Boundary: "intent.authorized", Phase: auth.Reason, Subject: source.ID.Subject, Generation: source.ID.Generation, Epoch: source.Epoch, Sequence: source.Sequence, Intent: auth.IntentID, Attempt: auth.ID})

@@ -11,6 +11,8 @@ import (
 	"slices"
 	"strings"
 	"testing"
+
+	"github.com/mattn/go-sqlite3"
 )
 
 const rootReportMembershipSQL = "SELECT root_id FROM composition_static_members WHERE subject=? AND generation=? UNION ALL SELECT root_id FROM composition_members WHERE subject=? AND generation=?"
@@ -20,12 +22,14 @@ const rootReportMembershipSQL = "SELECT root_id FROM composition_static_members 
 // histories or evidence for supported writes during a report.
 type rootReportQueryer struct {
 	queryer
-	lookups []RunID
-	row     func(context.Context, string, ...any) *sql.Row
-	rows    func(context.Context, string, ...any) (*sql.Rows, error)
+	lookups     []RunID
+	chargeReads []string
+	row         func(context.Context, string, ...any) *sql.Row
+	rows        func(context.Context, string, ...any) (*sql.Rows, error)
 }
 
 func (q *rootReportQueryer) QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row {
+	q.countChargeRead(query)
 	if query == rootReportMembershipSQL {
 		q.lookups = append(q.lookups, RunID{args[0].(string), args[1].(int64)})
 	}
@@ -36,10 +40,17 @@ func (q *rootReportQueryer) QueryRowContext(ctx context.Context, query string, a
 }
 
 func (q *rootReportQueryer) QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error) {
+	q.countChargeRead(query)
 	if q.rows != nil {
 		return q.rows(ctx, query, args...)
 	}
 	return q.queryer.QueryContext(ctx, query, args...)
+}
+
+func (q *rootReportQueryer) countChargeRead(query string) {
+	if strings.Contains(query, "FROM composition_charges") && strings.Contains(strings.ToLower(query), "sum(") {
+		q.chargeReads = append(q.chargeReads, query)
+	}
 }
 
 // Both roots and the unscoped source are genuinely provisioned. Only ordinary
@@ -125,7 +136,287 @@ func rootReportRead(t *testing.T, s *Store, q queryer) []RootCompletion {
 	if err != nil {
 		t.Fatal(err)
 	}
+	original := q
+	if wrapped, ok := q.(*rootReportQueryer); ok {
+		original = &rootReportQueryer{queryer: wrapped.queryer, row: wrapped.row, rows: wrapped.rows}
+	}
+	assertRootReportOriginal(t, original, reports, nil)
 	return reports
+}
+
+func assertRootReportOriginal(t *testing.T, q queryer, got []RootCompletion, gotErr error) {
+	t.Helper()
+	want, wantErr := readRootCompletionsOriginal(t.Context(), q)
+	if !reflect.DeepEqual(got, want) || (gotErr == nil) != (wantErr == nil) ||
+		(gotErr != nil && gotErr.Error() != wantErr.Error()) {
+		t.Fatalf("candidate: %#v, %v\n original: %#v, %v", got, gotErr, want, wantErr)
+	}
+}
+
+func TestRootCompletionsChargeAggregationOncePerReport(t *testing.T) {
+	s, _, roots := rootReportStore(t)
+	for _, name := range []string{"a", "b", "a", "unscoped"} {
+		op := rootReportCommit(t, s, name)
+		if name == "unscoped" {
+			continue
+		}
+		attempt, fresh, err := s.prepareExternal(t.Context(), op)
+		if err != nil || !fresh || !attempt.Allowed {
+			t.Fatal(attempt, fresh, err)
+		}
+	}
+	q := &rootReportQueryer{queryer: s.conn}
+	got := rootReportRead(t, s, q)
+	want := rootReportWant(roots,
+		map[string][]string{"a": {identity("a", 1, 1, 0), identity("a", 1, 2, 0)}, "b": {identity("b", 1, 1, 0)}},
+		map[string][]string{"a": {identity("a", 1, 1, 0), identity("a", 1, 2, 0)}, "b": {identity("b", 1, 1, 0)}},
+		map[string]int64{"a": 2, "b": 1},
+	)
+	if !reflect.DeepEqual(got, want) {
+		t.Fatal(got, want)
+	}
+	t.Logf("charge aggregation statements=%d, roots=%d, retained intents=4", len(q.chargeReads), len(roots))
+	if len(q.chargeReads) != 1 {
+		t.Fatalf("charge aggregation executed %d times for %d roots, want 1", len(q.chargeReads), len(roots))
+	}
+	plan, err := s.conn.QueryContext(t.Context(), "EXPLAIN QUERY PLAN "+q.chargeReads[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer plan.Close()
+	for plan.Next() {
+		var id, parent, unused int
+		var detail string
+		if err := plan.Scan(&id, &parent, &unused, &detail); err != nil {
+			t.Fatal(err)
+		}
+		t.Log(detail)
+	}
+	if err := plan.Err(); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestRootCompletionsScopeTransitions(t *testing.T) {
+	for _, status := range []string{"succeeded", "failed"} {
+		t.Run(status, func(t *testing.T) {
+			s := invocationStore(t, status, 1, nil)
+			initial := rootReportRead(t, s, s.conn)
+			if len(initial) != 1 || initial[0].Pending != "members" || initial[0].Outcome != nil {
+				t.Fatal(initial)
+			}
+			child := invokeOnce(t, s)
+			for range 2 {
+				retirementStep(t, s, RunID{"root", 1}, "")
+			}
+			pending := rootReportRead(t, s, s.conn)
+			if pending[0].Pending != "descendant_outcome" || pending[0].Outcome != nil ||
+				!slices.Contains(pending[0].PendingInvocations, child.Invocation.OperationID) {
+				t.Fatal(pending)
+			}
+			if status == "failed" {
+				entry := compositionMemberID(child.Invocation.ID, "entry")
+				retirementStep(t, s, entry, compositionIdentity("alan/invocation-request/v1", child.Invocation.ID))
+				retirementStep(t, s, entry, "")
+				retirementStep(t, s, entry, "")
+				early := rootReportRead(t, s, s.conn)
+				p, err := s.PrepareInvocation(t.Context(), child.Invocation.OperationID)
+				if err != nil || p.Freeze.Status != "failed" || early[0].Outcome != nil {
+					t.Fatal(early, p, err)
+				}
+			}
+			run, err := s.Run(t.Context(), RunOptions{MaxSteps: 100, MaxDispatch: 100, MaxInFlight: 1})
+			if err != nil {
+				t.Fatal(err)
+			}
+			complete := rootReportRead(t, s, s.conn)
+			if !reflect.DeepEqual(run.Roots, complete) || complete[0].Outcome == nil ||
+				complete[0].Outcome.Status != "succeeded" || len(complete[0].PendingInvocations) != 0 {
+				t.Fatal(run.Roots, complete)
+			}
+		})
+	}
+}
+
+func TestRootCompletionsRetiredScope(t *testing.T) {
+	s := invocationStore(t, "succeeded", 1, func(p *Provision, _ *compositionProvision) {
+		addRetirementController(t, p, []string{"RetireSubject"})
+		p.Permissions = append(p.Permissions, Permission{
+			Kind: "lifecycle", Source: "retirement-controller", Target: "root", Operation: "RetireSubject", Revision: 1,
+		})
+	})
+	child := invokeOnce(t, s)
+	input, err := s.AdmitInput(t.Context(), Input{
+		TransportID: "retire-root", LogicalID: "retire-root", Target: "retirement-controller", Generation: 1,
+		Obligation: "control", Payload: map[string]Value{"target": Text("root")},
+	})
+	if err != nil || !input.Accepted {
+		t.Fatal(input, err)
+	}
+	retirementStep(t, s, RunID{"retirement-controller", 1}, input.ObservationID)
+	decision := authorizedDecision(t, s, committedRequest(t, s, "retirement-controller"))
+	if !decision.Accepted || !decision.After.Retired {
+		t.Fatal(decision)
+	}
+	before := rootReportRead(t, s, s.conn)
+	if before[0].Outcome != nil || !reflect.DeepEqual(before[0].PendingInvocations, []string{child.Invocation.OperationID}) {
+		t.Fatal(before)
+	}
+	publication, err := s.SettleRoot(t.Context(), before[0].RootID)
+	if err != nil || publication.Outcome.ID == "" || publication.Outcome.Status != "cancelled" ||
+		publication.Outcome.Reason != "subject_retired" {
+		t.Fatal(publication, err)
+	}
+	after := rootReportRead(t, s, s.conn)
+	if !reflect.DeepEqual(after[0].Outcome, &publication.Outcome) ||
+		!reflect.DeepEqual(after[0].PendingInvocations, before[0].PendingInvocations) ||
+		after[0].Charges != before[0].Charges {
+		t.Fatal(before, after)
+	}
+}
+
+func TestRootCompletionsChargeSQLiteSemantics(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		first    string
+		second   string
+		want     int64
+		errorHas string
+	}{
+		{name: "integer", first: `{"Effects":9223372036854775806}`, second: `{"Effects":1}`, want: 9223372036854775807},
+		{name: "overflow", first: `{"Effects":9223372036854775807}`, second: `{"Effects":1}`, errorHas: "integer overflow"},
+		{name: "malformed", first: `{`, second: `{}`, errorHas: "malformed JSON"},
+		{name: "fractional", first: `{"Effects":1.5}`, second: `{}`, errorHas: "invalid syntax"},
+		{name: "integer_string_and_boolean", first: `{"Effects":"5"}`, second: `{"Effects":true}`, want: 6},
+		{name: "null_and_missing", first: `{"Effects":null}`, second: `{}`},
+		{name: "negative", first: `{"Effects":-4}`, second: `{"Effects":2}`, want: -2},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			s, _, roots := rootReportStore(t)
+			for _, raw := range []string{tc.first, tc.second} {
+				op := rootReportCommit(t, s, "a")
+				if _, _, err := s.prepareExternal(t.Context(), op); err != nil {
+					t.Fatal(err)
+				}
+				overwriteRootReportCharge(t, s, op, raw)
+			}
+			got, err := readRootCompletions(t.Context(), s.conn)
+			assertRootReportOriginal(t, s.conn, got, err)
+			if tc.errorHas != "" {
+				if err == nil || got != nil || !strings.Contains(err.Error(), tc.errorHas) {
+					t.Fatalf("charge error: %#v, %v", got, err)
+				}
+				return
+			}
+			for _, r := range got {
+				if r.RootID == roots["a"].ID && r.Charges.Effects != tc.want {
+					t.Fatalf("charge sum: got %d, want %d", r.Charges.Effects, tc.want)
+				}
+			}
+		})
+	}
+}
+
+func overwriteRootReportCharge(t *testing.T, s *Store, op, raw string) {
+	t.Helper()
+	result, err := s.conn.ExecContext(t.Context(), "UPDATE composition_charges SET descriptor=? WHERE operation_id=?", []byte(raw), op)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if n, err := result.RowsAffected(); err != nil || n != 1 {
+		t.Fatal("charge mutation did not affect exactly one retained row", n, err)
+	}
+}
+
+func TestRootCompletionsLaterChargeCannotMaskEarlierResultError(t *testing.T) {
+	s, _, roots := rootReportStore(t)
+	first, later := roots["a"], roots["b"]
+	if first.ID > later.ID {
+		first, later = later, first
+	}
+	firstOp := rootReportCommit(t, s, first.Run.Subject)
+	laterOp := rootReportCommit(t, s, later.Run.Subject)
+	firstAttempt, _, err := s.prepareExternal(t.Context(), firstOp)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, _, err := s.prepareExternal(t.Context(), laterOp); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.recordExternalReceipt(t.Context(), firstAttempt, receiptFor(firstAttempt.Request)); err != nil {
+		t.Fatal(err)
+	}
+	overwriteRootReportCharge(t, s, laterOp, "{")
+	if _, err := s.conn.ExecContext(t.Context(), "UPDATE external_receipts SET descriptor='{}' WHERE intent_id=?", firstOp); err != nil {
+		t.Fatal(err)
+	}
+	_, resultErr := externalOutcome(t.Context(), s.conn, firstOp)
+	if resultErr == nil {
+		t.Fatal("fixture requires an earlier invalid result")
+	}
+	got, err := readRootCompletions(t.Context(), s.conn)
+	assertRootReportOriginal(t, s.conn, got, err)
+	if err == nil || got != nil || err.Error() != resultErr.Error() {
+		t.Fatalf("later malformed charge masked earlier result error: %#v, %v, want %v", got, err, resultErr)
+	}
+}
+
+func TestRootCompletionsChargeAuthorizationFailure(t *testing.T) {
+	s, _, _ := rootReportStore(t)
+	if err := s.conn.Raw(func(driver any) error {
+		driver.(*sqlite3.SQLiteConn).RegisterAuthorizer(func(op int, table, column, _ string) int {
+			if op == sqlite3.SQLITE_READ && table == "composition_charges" && column == "descriptor" {
+				return sqlite3.SQLITE_DENY
+			}
+			return sqlite3.SQLITE_OK
+		})
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	defer s.conn.Raw(func(driver any) error {
+		driver.(*sqlite3.SQLiteConn).RegisterAuthorizer(nil)
+		return nil
+	})
+	q := &rootReportQueryer{queryer: s.conn}
+	got, err := readRootCompletions(t.Context(), q)
+	assertRootReportOriginal(t, s.conn, got, err)
+	if err == nil || got != nil || len(q.chargeReads) != 1 {
+		t.Fatalf("charge authorization failure: %#v, %v, charge reads %d", got, err, len(q.chargeReads))
+	}
+}
+
+func TestRootCompletionsLaterMembershipCannotMaskEarlierResultError(t *testing.T) {
+	s, _, roots := rootReportStore(t)
+	first := roots["a"]
+	if first.ID > roots["b"].ID {
+		first = roots["b"]
+	}
+	op := rootReportCommit(t, s, first.Run.Subject)
+	attempt, _, err := s.prepareExternal(t.Context(), op)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = s.recordExternalReceipt(t.Context(), attempt, receiptFor(attempt.Request)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = s.conn.ExecContext(t.Context(), "UPDATE external_receipts SET descriptor='{}' WHERE intent_id=?", op); err != nil {
+		t.Fatal(err)
+	}
+	rootReportCommit(t, s, "unscoped")
+	q := &rootReportQueryer{queryer: s.conn}
+	q.row = func(ctx context.Context, query string, args ...any) *sql.Row {
+		if query == rootReportMembershipSQL && args[0] == "unscoped" {
+			t.Error("membership reached after an earlier invalid result")
+			return s.conn.QueryRowContext(ctx, "SELECT * FROM alan_missing_root_report_test_table")
+		}
+		return s.conn.QueryRowContext(ctx, query, args...)
+	}
+	got, err := readRootCompletions(t.Context(), q)
+	assertRootReportOriginal(t, q, got, err)
+	if err == nil || got != nil || !errors.Is(err, ErrCorrupt) {
+		t.Fatalf("later membership masked earlier result error: %#v, %v", got, err)
+	}
 }
 
 func TestRootCompletionsOrdinaryMembershipSemantics(t *testing.T) {

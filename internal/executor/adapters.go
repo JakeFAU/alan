@@ -211,7 +211,7 @@ func (s *Store) prepareAdapterWork(ctx context.Context, id string, registry map[
 		s.mu.Unlock()
 		return nil, sql.ErrConnDone
 	}
-	tx, e := beginOwnedTx(ctx, s.conn)
+	tx, e := s.beginOwnedTx(ctx)
 	if e != nil {
 		s.mu.Unlock()
 		return nil, e
@@ -271,7 +271,7 @@ func (s *Store) prepareAdapterWork(ctx context.Context, id string, registry map[
 		e = recordCompositionReservation(ctx, tx, intent.Intent, a.Allowed, a.Reason, a)
 	}
 	if e == nil {
-		e = s.commitOwnedTx(ctx, tx)
+		e = s.commitOwnedTx(ctx, tx, executionDelta{run: intent.Run})
 	}
 	s.mu.Unlock()
 	if e != nil {
@@ -365,7 +365,7 @@ func (s *Store) recordAdapterResult(ctx context.Context, a AdapterAttempt, c eff
 	if s.closed {
 		return r, sql.ErrConnDone
 	}
-	tx, e := beginOwnedTx(ctx, s.conn)
+	tx, e := s.beginOwnedTx(ctx)
 	if e != nil {
 		return r, e
 	}
@@ -420,7 +420,7 @@ func (s *Store) recordAdapterResult(ctx context.Context, a AdapterAttempt, c eff
 	e = tx.QueryRowContext(ctx, "SELECT descriptor FROM adapter_results WHERE intent_id=?", a.Intent.ID).Scan(&prior)
 	if e == nil {
 		if bytes.Equal(prior, b) {
-			return r, s.commitOwnedTx(ctx, tx)
+			return r, s.commitOwnedTx(ctx, tx, executionDelta{run: a.Intent.Run})
 		}
 		if !a.Allowed || a.Intent.Target == receiptReadCapability || r.Disposition != "validated" {
 			return r, ErrConflict
@@ -448,7 +448,7 @@ func (s *Store) recordAdapterResult(ctx context.Context, a AdapterAttempt, c eff
 	if e = s.recordCompositionSource(ctx, tx, compositionExternalResultFact, a.Intent.ID); e != nil {
 		return r, e
 	}
-	return r, s.commitOwnedTx(ctx, tx)
+	return r, s.commitOwnedTx(ctx, tx, executionDelta{run: a.Intent.Run})
 }
 func adapterDescriptor(a AdapterAttempt, r AdapterResult) AdmissionDescriptor {
 	i := a.Intent
@@ -464,7 +464,7 @@ func (s *Store) settleAdapterLocked(ctx context.Context, a AdapterAttempt, r Ada
 	if s.closed {
 		return sql.ErrConnDone
 	}
-	tx, e := beginOwnedTx(ctx, s.conn)
+	tx, e := s.beginOwnedTx(ctx)
 	if e != nil {
 		return e
 	}
@@ -509,7 +509,7 @@ func (s *Store) settleAdapterLocked(ctx context.Context, a AdapterAttempt, r Ada
 	if _, e = tx.ExecContext(ctx, "INSERT INTO settlements VALUES(?,?,?,?)", identity("adapter-outcome", a.Intent.ID), a.Intent.ID, raw, o.ID); e != nil {
 		return e
 	}
-	return s.commitOwnedTx(ctx, tx)
+	return s.commitOwnedTx(ctx, tx, executionDelta{run: a.Intent.Run, observations: []string{o.ID}, settled: a.Intent.ID})
 }
 func validateAdapterAttempt(ctx context.Context, q queryer, a AdapterAttempt, namespace string, l Limits) error {
 	r, i, e := adapterRequest(ctx, q, a.Intent.ID, namespace, l)

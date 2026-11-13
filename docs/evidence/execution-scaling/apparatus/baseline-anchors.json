@@ -1,0 +1,143 @@
+{
+  "store.go": {
+    "entries": [
+      "createStore",
+      "openStore",
+      "Commit"
+    ],
+    "edits": [
+      {
+        "old": "reduction, err := Reduce(p, r.Projection, observation, r.ID, r.Sequence+1, s.limits)",
+        "new": "scalingprobe.Add(\"work.reduce.Commit\",1)\nreduction, err := Reduce(p, r.Projection, observation, r.ID, r.Sequence+1, s.limits)"
+      }
+    ]
+  },
+  "replay.go": {
+    "entries": [
+      "Replay"
+    ],
+    "edits": []
+  },
+  "inspect.go": {
+    "entries": [
+      "Inspect"
+    ],
+    "edits": []
+  },
+  "inspection_execution.go": {
+    "entries": [
+      "InspectExecution"
+    ],
+    "edits": []
+  },
+  "runner.go": {
+    "entries": [
+      "Run",
+      "finishRun",
+      "selectReady"
+    ],
+    "edits": [
+      {
+        "old": "for i := 0; i < len(ids); i++ {",
+        "new": "for i := 0; i < len(ids); i++ {\n scalingprobe.Add(\"work.selectReady.runs_considered\",1)"
+      },
+      {
+        "old": "for _, observationID := range observationIDs {",
+        "new": "for _, observationID := range observationIDs {\n scalingprobe.Add(\"work.selectReady.observations_considered\",1)"
+      },
+      {
+        "old": "for id, intent := range intents {\n\t\tif intent.Kind == \"invocation\" {",
+        "new": "for id, intent := range intents {\n scalingprobe.Add(\"work.pendingDeliveries.intents_considered\",1)\n\t\tif intent.Kind == \"invocation\" {"
+      },
+      {
+        "old": "p, err = boundCompositionProgram(ctx, s.conn, p, id, s.limits)",
+        "new": "scalingprobe.Add(\"work.selectReady.bindings\",1)\np, err = boundCompositionProgram(ctx, s.conn, p, id, s.limits)"
+      },
+      {
+        "old": "if _, err = Reduce(p, run.Projection, nil, id, run.Sequence+1, s.limits); err != nil {",
+        "new": "scalingprobe.Add(\"work.reduce.selectReady\",1)\nif _, err = Reduce(p, run.Projection, nil, id, run.Sequence+1, s.limits); err != nil {"
+      },
+      {
+        "old": "_, err = Reduce(p, run.Projection, &observation.Observation, id, run.Sequence+1, s.limits)",
+        "new": "scalingprobe.Add(\"work.reduce.selectReady\",1)\n_, err = Reduce(p, run.Projection, &observation.Observation, id, run.Sequence+1, s.limits)"
+      }
+    ]
+  },
+  "composition_root.go": {
+    "entries": [
+      "settleRoots",
+      "PrepareRoot",
+      "SettleRoot",
+      "prepareRoot"
+    ],
+    "edits": [
+      {
+        "old": "for _, root := range c.Roots {",
+        "new": "for _, root := range c.Roots {\n scalingprobe.Add(\"work.settleRoots.roots_considered\",1)"
+      }
+    ]
+  },
+  "messages.go": {
+    "entries": [
+      "AuthorizeIntent",
+      "AdmitInput"
+    ],
+    "edits": []
+  },
+  "continuation.go": {
+    "entries": [
+      "ApproveContinuation"
+    ],
+    "edits": []
+  },
+  "adapters.go": {
+    "entries": [
+      "prepareAdapterWork",
+      "accountAdapter",
+      "recordAdapterResult",
+      "settleAdapterLocked"
+    ],
+    "edits": []
+  },
+  "dispatch_admission.go": {
+    "entries": [
+      "recordDispatchAdmission"
+    ],
+    "edits": []
+  },
+  "invocation.go": {
+    "entries": [
+      "AdmitInvocation"
+    ],
+    "edits": []
+  },
+  "external.go": {
+    "entries": [
+      "prepareExternal",
+      "recordExternalReceipt",
+      "settleExternalLocked"
+    ],
+    "edits": []
+  },
+  "composition_inspect.go": {
+    "entries": [
+      "readRootCompletions"
+    ],
+    "edits": [
+      {
+        "old": "for _, id := range roots {",
+        "new": "for _, id := range roots {\n scalingprobe.Add(\"work.readRootCompletions.roots\",1)"
+      },
+      {
+        "old": "for _, operation := range sortedKeys(intents) {",
+        "new": "for _, operation := range sortedKeys(intents) {\n scalingprobe.Add(\"work.readRootCompletions.root_intent_pairs\",1)\n if scalingprobe.IsScope(ctx,8) {scalingprobe.Add(\"work.finishRun.root_intent_pairs\",1)}"
+      }
+    ]
+  },
+  "program.go": {
+    "entries": [
+      "Reduce"
+    ],
+    "edits": []
+  }
+}

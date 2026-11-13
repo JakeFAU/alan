@@ -70,7 +70,7 @@ func (s *Store) prepareExternal(ctx context.Context, id string) (ExternalAttempt
 	if s.closed {
 		return ExternalAttempt{}, false, sql.ErrConnDone
 	}
-	tx, err := beginOwnedTx(ctx, s.conn)
+	tx, err := s.beginOwnedTx(ctx)
 	if err != nil {
 		return ExternalAttempt{}, false, err
 	}
@@ -323,7 +323,7 @@ func (s *Store) recordExternalReceipt(ctx context.Context, a ExternalAttempt, r 
 	if s.closed {
 		return sql.ErrConnDone
 	}
-	tx, err := beginOwnedTx(ctx, s.conn)
+	tx, err := s.beginOwnedTx(ctx)
 	if err != nil {
 		return err
 	}
@@ -447,7 +447,7 @@ func (s *Store) settleExternalLocked(ctx context.Context, o ExternalOutcome) err
 	if s.closed {
 		return sql.ErrConnDone
 	}
-	tx, err := beginOwnedTx(ctx, s.conn)
+	tx, err := s.beginOwnedTx(ctx)
 	if err != nil {
 		return err
 	}

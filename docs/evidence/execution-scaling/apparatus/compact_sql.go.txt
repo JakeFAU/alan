@@ -1,0 +1,24 @@
+
+// MeasurementCompactSnapshot copies a fixed vocabulary, never family/cell keys.
+// Family aggregation traverses the bounded registry without allocating its keys.
+func MeasurementCompactSnapshot() map[string]uint64 {
+ probeSQL.Lock()
+ defer probeSQL.Unlock()
+ out := make(map[string]uint64)
+ for _, name := range probeMetricNames { out["sql.total."+name] = 0 }
+ for _, m := range probeSQL.families {
+  for i, n := range m { out["sql.total."+probeMetricNames[i]] += n }
+ }
+ for _, scope := range probeScopeNames {
+  for _, name := range probeMetricNames { out["sql.scope_total."+scope+"."+name] = 0 }
+ }
+ for cell, m := range probeSQL.cells {
+  for i,n := range m { out["sql.scope_total."+probeScopeNames[cell.scope]+"."+probeMetricNames[i]] += n }
+ }
+ for i,n := range probeSQL.cellOverflow { out["sql.scope_overflow."+probeMetricNames[i]] = n }
+ out["sql.attribution.family_overflow_events"] = probeSQL.familyOverflow
+ out["sql.attribution.cell_overflow_events"] = probeSQL.cellOverflows
+ out["sql.attribution.invalid_scope_events"] = probeSQL.invalidScopes
+ out["sql.attribution.incomplete_events"] = probeSQL.familyOverflow+probeSQL.cellOverflows+probeSQL.invalidScopes
+ return out
+}

@@ -95,6 +95,8 @@ type Store struct {
 	reconciliation   bool
 	composition      *compositionProfile
 
+	execution          *staticExecution
+	executionFallbacks uint64
 	dispatchAdmissions bool // scoped ordinary adapter admissions are journaled in this format
 }
 
@@ -219,11 +221,15 @@ func beginOwnedTx(ctx context.Context, conn *sql.Conn) (*sql.Tx, error) {
 	}
 	return conn.BeginTx(context.WithoutCancel(ctx), nil)
 }
-func (s *Store) commitOwnedTx(ctx context.Context, tx *sql.Tx) error {
+func (s *Store) commitOwnedTx(ctx context.Context, tx *sql.Tx, deltas ...executionDelta) error {
+	var delta *executionDelta
+	if len(deltas) == 1 {
+		delta = &deltas[0]
+	}
 	if err := ctx.Err(); err != nil {
 		return err
 	}
-	if err := tx.Commit(); err != nil {
+	if err := s.commitExecutionTx(ctx, tx, delta); err != nil {
 		return err
 	}
 	s.ownerMu.Lock()
@@ -519,6 +525,7 @@ func createStore(ctx context.Context, path string, p Provision, limits Limits, c
 		return nil, err
 	}
 	s.lock = lock
+	s.initializeExecution(ctx)
 	return s, nil
 }
 
@@ -694,6 +701,7 @@ func openStore(ctx context.Context, path string, limits Limits, composition bool
 		return nil, err
 	}
 	s.lock = lock
+	s.initializeExecution(ctx)
 	return s, nil
 }
 func (s *Store) Close() error {
@@ -719,6 +727,7 @@ func (s *Store) Close() error {
 		return nil
 	}
 	s.closed = true
+	s.execution = nil
 	var errs []error
 	if s.conn != nil {
 		errs = append(errs, s.conn.Close())
@@ -762,7 +771,7 @@ func (s *Store) recordObservation(ctx context.Context, o Observation) error {
 	if s.closed {
 		return sql.ErrConnDone
 	}
-	tx, err := beginOwnedTx(ctx, s.conn)
+	tx, err := s.beginOwnedTx(ctx)
 	if err != nil {
 		return err
 	}
@@ -815,7 +824,7 @@ func (s *Store) Commit(ctx context.Context, a Authority, selected string) (RunSt
 	if s.closed {
 		return RunState{}, sql.ErrConnDone
 	}
-	tx, err := beginOwnedTx(ctx, s.conn)
+	tx, err := s.beginOwnedTx(ctx)
 	if err != nil {
 		return RunState{}, err
 	}
@@ -917,11 +926,13 @@ func (s *Store) Commit(ctx context.Context, a Authority, selected string) (RunSt
 	if _, err = tx.ExecContext(ctx, "UPDATE runs SET sequence=?,projection=? WHERE subject=? AND generation=?", r.Sequence, successor, r.ID.Subject, r.ID.Generation); err != nil {
 		return RunState{}, err
 	}
+	unsupportedDestinations := false
 	if r.Projection.Status != "open" {
 		destinations, e := terminalDestinations(ctx, tx, r.ID.Subject, r.Revision)
 		if e != nil {
 			return RunState{}, e
 		}
+		unsupportedDestinations = len(destinations) != 0
 		b, e := json.Marshal(destinations)
 		if e != nil {
 			return RunState{}, e
@@ -943,7 +954,7 @@ func (s *Store) Commit(ctx context.Context, a Authority, selected string) (RunSt
 	if err = boundary.Reached(ctx, event); err != nil {
 		return RunState{}, err
 	}
-	if err = s.commitOwnedTx(ctx, tx); err != nil {
+	if err = s.commitOwnedTx(ctx, tx, executionDelta{run: r.ID, observations: []string{selected}, intents: reduction.Intents, unsupported: unsupportedDestinations}); err != nil {
 		return RunState{}, err
 	}
 	event.Boundary = "execution.committed"

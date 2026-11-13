@@ -210,7 +210,7 @@ func (s *Store) ApproveContinuation(ctx context.Context, basis ContinuationBasis
 		(basis.ResultDigest != "" && !digestIdentity(basis.ResultDigest)) || !validContinuationReason(reason) {
 		return AdmissionResult{}, fmt.Errorf("invalid continuation approval: %w", ErrConflict)
 	}
-	tx, err := beginOwnedTx(ctx, s.conn)
+	tx, err := s.beginOwnedTx(ctx)
 	if err != nil {
 		return AdmissionResult{}, err
 	}
@@ -281,7 +281,7 @@ func (s *Store) ApproveContinuation(ctx context.Context, basis ContinuationBasis
 	if err = boundary.Reached(ctx, event); err != nil {
 		return AdmissionResult{}, err
 	}
-	if err = s.commitOwnedTx(ctx, tx); err != nil {
+	if err = s.commitOwnedTx(ctx, tx, executionDelta{run: slot.Target, observations: []string{r.ObservationID}}); err != nil {
 		return AdmissionResult{}, err
 	}
 	event.Phase = "post-commit"
