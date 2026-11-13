@@ -1,0 +1,1287 @@
+{
+  "QualifiedPair": {
+    "sources": {
+      "research": {
+        "root": "/Users/jacob/.codex/worktrees/phase3b4-research/alan-research",
+        "commit": "0c303c3d43d6582fed0a9caac24f50e71d844a19",
+        "files": 562,
+        "manifest_sha256": "a43d20c6b495a1cc120be61fc9aacb43f17a8568b1e2693be00689bf15c91058",
+        "archive_sha256": "bac232c039228b203dba241ebe5cb3be1f7116822471e9d1617e0a5ec76910cc",
+        "status": ""
+      },
+      "runtime": {
+        "root": "/private/tmp/alan-phase3b3-runtime",
+        "commit": "fc60391f48b46a8c8635afc46882db8338b6c93b",
+        "files": 350,
+        "manifest_sha256": "a44b40f20a4956e7069c9138fcc8999f381774f045547281e1a6e2d00bed7d16",
+        "archive_sha256": "3e89eae1cb553bad4de35d17e5f37c83b9c35ae3d8a6c429745e0099bb7575f6",
+        "status": ""
+      }
+    },
+    "platform": "macOS-27.2-arm64-arm-64bit-Mach-O",
+    "architecture": "arm64",
+    "scope": "Git-tracked Go/module, Python/shell qualification scripts and testdata outside docs/paper; no SQLite opened"
+  },
+  "Counts": {
+    "normal": {
+      "Cases": 81,
+      "RawEvaluated": 80,
+      "RawValidFinal": 80,
+      "Captures": 163,
+      "AllCapturesRawValid": true,
+      "PrincipalComplete": 40,
+      "SupportedModelProjection": 33,
+      "Contacts": 89,
+      "Applications": 89,
+      "AcknowledgedLosses": 11,
+      "AllEvaluatedExternalValid": true,
+      "AllContinuityValid": true,
+      "UnsupportedReasons": {
+        "rejected_authority_control_not_in_lategrant_issuance": 11,
+        "explicit_selector_policy_narrows_implicit_model_choice": 16,
+        "immediate_selection_narrows_model_admission": 1,
+        "whole_store_crash_paired_expansion_not_established": 10,
+        "separate_grant_with_revocation_not_in_frozen_configuration": 5,
+        "unknown_or_uncalled_prefix_requires_external_evidence": 4,
+        "ordinary_lifecycle_outside_restricted_correspondence": 4,
+        "not_two_original_reciprocal_history": 5,
+        "auxiliary_originals_outside_restricted_correspondence": 4,
+        "no_store_created_input_validation_obstruction": 1,
+        "program_service_order_outside_A_servicing_B_serial": 1,
+        "repeated_physical_exposure_not_atomic_model_apply": 1
+      }
+    },
+    "race": {
+      "Cases": 81,
+      "RawEvaluated": 80,
+      "RawValidFinal": 80,
+      "Captures": 163,
+      "AllCapturesRawValid": true,
+      "PrincipalComplete": 40,
+      "SupportedModelProjection": 33,
+      "Contacts": 89,
+      "Applications": 89,
+      "AcknowledgedLosses": 11,
+      "AllEvaluatedExternalValid": true,
+      "AllContinuityValid": true,
+      "UnsupportedReasons": {
+        "rejected_authority_control_not_in_lategrant_issuance": 11,
+        "explicit_selector_policy_narrows_implicit_model_choice": 16,
+        "immediate_selection_narrows_model_admission": 1,
+        "whole_store_crash_paired_expansion_not_established": 10,
+        "separate_grant_with_revocation_not_in_frozen_configuration": 5,
+        "unknown_or_uncalled_prefix_requires_external_evidence": 4,
+        "ordinary_lifecycle_outside_restricted_correspondence": 4,
+        "not_two_original_reciprocal_history": 5,
+        "auxiliary_originals_outside_restricted_correspondence": 4,
+        "no_store_created_input_validation_obstruction": 1,
+        "program_service_order_outside_A_servicing_B_serial": 1,
+        "repeated_physical_exposure_not_atomic_model_apply": 1
+      }
+    }
+  },
+  "CostObservationsPerMode": 20,
+  "Gates": [
+    {
+      "cwd": "/Users/jacob/.codex/worktrees/phase3b4-research/alan-research",
+      "argv": [
+        "env",
+        "ALAN_PHASE3B4_CHECK_ROOT=/tmp/alan-task5-final-normal",
+        "ALAN_PHASE3B4_PROMOTED_CHECK_ROOT=/tmp/alan-task5-final-promoted-normal",
+        "ALAN_PHASE3B4_CHECK_OUTPUT=/tmp/alan-task5/final-normal-verdicts",
+        "ALAN_PHASE3B4_ATTACK_OUTPUT=/tmp/alan-task5/final-normal-attacks",
+        "go",
+        "test",
+        "-json",
+        "-count=1",
+        "-timeout=5m",
+        "./research/delegationcorrespondence",
+        "-run",
+        "^TestBinding"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 8.64678406715393,
+      "watchdog_expired": false,
+      "owner": "independent",
+      "name": "binding-normal",
+      "record": "/tmp/alan-task5/final-commands/binding-normal.json",
+      "test_skips": [],
+      "package_no_tests": []
+    },
+    {
+      "cwd": "/Users/jacob/.codex/worktrees/phase3b4-research/alan-research",
+      "argv": [
+        "env",
+        "ALAN_PHASE3B4_CHECK_ROOT=/tmp/alan-task5-final-race",
+        "ALAN_PHASE3B4_PROMOTED_CHECK_ROOT=/tmp/alan-task5-final-promoted-race",
+        "ALAN_PHASE3B4_CHECK_OUTPUT=/tmp/alan-task5/final-race-verdicts",
+        "ALAN_PHASE3B4_ATTACK_OUTPUT=/tmp/alan-task5/final-race-attacks",
+        "go",
+        "test",
+        "-json",
+        "-race",
+        "-count=1",
+        "-timeout=5m",
+        "./research/delegationcorrespondence",
+        "-run",
+        "^TestBinding"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 81.72475910186768,
+      "watchdog_expired": false,
+      "owner": "independent",
+      "name": "binding-race",
+      "record": "/tmp/alan-task5/final-commands/binding-race.json",
+      "test_skips": [],
+      "package_no_tests": []
+    },
+    {
+      "cwd": "/Users/jacob/.codex/worktrees/phase3b4-research/alan-research",
+      "argv": [
+        "python3",
+        "research/delegationcorrespondence/qualify_mutants.py",
+        "/Users/jacob/.codex/worktrees/phase3b4-research/alan-research",
+        "/tmp/alan-task5/final-mutants",
+        "/tmp/alan-task5-final-normal"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 5.185641050338745,
+      "watchdog_expired": false,
+      "owner": "independent",
+      "name": "checker-mutants-normal",
+      "record": "/tmp/alan-task5/final-commands/checker-mutants-normal.json",
+      "test_skips": [],
+      "package_no_tests": []
+    },
+    {
+      "cwd": "/Users/jacob/.codex/worktrees/phase3b4-research/alan-research",
+      "argv": [
+        "go",
+        "run",
+        "./research/delegationcorrespondence/cmd/check",
+        "-binding-case",
+        "/tmp/alan-task5-final-normal/P02-v2-2163860456"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 0.36693406105041504,
+      "watchdog_expired": false,
+      "owner": "independent",
+      "name": "cli-binding-case",
+      "record": "/tmp/alan-task5/final-commands/cli-binding-case.json",
+      "test_skips": [],
+      "package_no_tests": []
+    },
+    {
+      "cwd": "/Users/jacob/.codex/worktrees/phase3b4-research/alan-research",
+      "argv": [
+        "python3",
+        "/tmp/alan-task5/export-twice.py"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 10.007087230682373,
+      "watchdog_expired": false,
+      "owner": "independent",
+      "name": "deterministic-exports-twice",
+      "record": "/tmp/alan-task5/final-commands/deterministic-exports-twice.json",
+      "test_skips": [],
+      "package_no_tests": []
+    },
+    {
+      "cwd": "/Users/jacob/.codex/worktrees/phase3b4-research/alan-research",
+      "argv": [
+        "python3",
+        "/tmp/alan-task5/run-runtime-filter.py"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 2.5808768272399902,
+      "watchdog_expired": false,
+      "owner": "independent",
+      "name": "runtime-empty-filter-comparison",
+      "record": "/tmp/alan-task5/final-commands/runtime-empty-filter-comparison.json",
+      "test_skips": [],
+      "package_no_tests": []
+    },
+    {
+      "cwd": "/Users/jacob/.codex/worktrees/phase3b4-research/alan-research",
+      "argv": [
+        "go",
+        "build",
+        "./..."
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 3.1046059131622314,
+      "watchdog_expired": false,
+      "owner": "controller",
+      "name": "research-build",
+      "record": "/tmp/alan-phase3b4-parent-final-gates/research-build.json",
+      "test_skips": [],
+      "package_no_tests": []
+    },
+    {
+      "cwd": "/Users/jacob/.codex/worktrees/phase3b4-research/alan-research",
+      "argv": [
+        "gofmt",
+        "-l",
+        "research/delegationcorrespondence"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 0.053795814514160156,
+      "watchdog_expired": false,
+      "owner": "controller",
+      "name": "research-format",
+      "record": "/tmp/alan-phase3b4-parent-final-gates/research-format.json",
+      "test_skips": [],
+      "package_no_tests": []
+    },
+    {
+      "cwd": "/Users/jacob/.codex/worktrees/phase3b4-research/alan-research",
+      "argv": [
+        "go",
+        "mod",
+        "tidy",
+        "-diff"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 0.11916303634643555,
+      "watchdog_expired": false,
+      "owner": "controller",
+      "name": "research-mod-tidy",
+      "record": "/tmp/alan-phase3b4-parent-final-gates/research-mod-tidy.json",
+      "test_skips": [],
+      "package_no_tests": []
+    },
+    {
+      "cwd": "/Users/jacob/.codex/worktrees/phase3b4-research/alan-research",
+      "argv": [
+        "go",
+        "mod",
+        "verify"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 0.18824100494384766,
+      "watchdog_expired": false,
+      "owner": "controller",
+      "name": "research-mod-verify",
+      "record": "/tmp/alan-phase3b4-parent-final-gates/research-mod-verify.json",
+      "test_skips": [],
+      "package_no_tests": []
+    },
+    {
+      "cwd": "/Users/jacob/.codex/worktrees/phase3b4-research/alan-research",
+      "argv": [
+        "go",
+        "test",
+        "-json",
+        "-race",
+        "-count=1",
+        "-timeout=60m",
+        "./research/twoagent/...",
+        "./research/mutualobligations/...",
+        "./research/authorityservice/...",
+        "./research/delegationcorrespondence/..."
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck",
+        "ALAN_TASK3_RAW": "/tmp/alan-phase3b3-runtime-frozen/race",
+        "ALAN_TASK3_PROGRESS": "1",
+        "ALAN_PHASE3B4_CHECK_ROOT": "/tmp/alan-task5-final-race",
+        "ALAN_PHASE3B4_PROMOTED_CHECK_ROOT": "/tmp/alan-task5-final-promoted-race"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 184.95106768608093,
+      "watchdog_expired": false,
+      "owner": "controller",
+      "name": "research-model-checker-race",
+      "record": "/tmp/alan-phase3b4-parent-final-gates/research-model-checker-race.json",
+      "test_skips": [],
+      "package_no_tests": [
+        {
+          "package": "github.com/JakeFAU/alan-research/research/twoagent/cmd/export",
+          "test": null,
+          "last_output": "?   \tgithub.com/JakeFAU/alan-research/research/twoagent/cmd/export\t[no test files]\n"
+        },
+        {
+          "package": "github.com/JakeFAU/alan-research/research/delegationcorrespondence/cmd/check",
+          "test": null,
+          "last_output": "?   \tgithub.com/JakeFAU/alan-research/research/delegationcorrespondence/cmd/check\t[no test files]\n"
+        },
+        {
+          "package": "github.com/JakeFAU/alan-research/research/delegationcorrespondence/cmd/corpus",
+          "test": null,
+          "last_output": "?   \tgithub.com/JakeFAU/alan-research/research/delegationcorrespondence/cmd/corpus\t[no test files]\n"
+        },
+        {
+          "package": "github.com/JakeFAU/alan-research/research/delegationcorrespondence/cmd/progress",
+          "test": null,
+          "last_output": "?   \tgithub.com/JakeFAU/alan-research/research/delegationcorrespondence/cmd/progress\t[no test files]\n"
+        },
+        {
+          "package": "github.com/JakeFAU/alan-research/research/delegationcorrespondence/cmd/mutations",
+          "test": null,
+          "last_output": "?   \tgithub.com/JakeFAU/alan-research/research/delegationcorrespondence/cmd/mutations\t[no test files]\n"
+        }
+      ]
+    },
+    {
+      "cwd": "/Users/jacob/.codex/worktrees/phase3b4-research/alan-research",
+      "argv": [
+        "go",
+        "test",
+        "-json",
+        "-count=1",
+        "-timeout=60m",
+        "./..."
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck",
+        "ALAN_TASK3_RAW": "/tmp/alan-phase3b3-runtime-frozen/normal",
+        "ALAN_TASK3_PROGRESS": "1",
+        "ALAN_PHASE3B4_CHECK_ROOT": "/tmp/alan-task5-final-normal",
+        "ALAN_PHASE3B4_PROMOTED_CHECK_ROOT": "/tmp/alan-task5-final-promoted-normal"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 1517.3825709819794,
+      "watchdog_expired": false,
+      "owner": "controller",
+      "name": "research-ordinary",
+      "record": "/tmp/alan-phase3b4-parent-final-gates/research-ordinary.json",
+      "test_skips": [
+        {
+          "package": "github.com/JakeFAU/alan-research/examples/communication",
+          "test": "TestCommunicationArtifactExport",
+          "last_output": "--- SKIP: TestCommunicationArtifactExport (0.00s)\n"
+        },
+        {
+          "package": "github.com/JakeFAU/alan-research/examples/join",
+          "test": "TestJoinArtifactExport",
+          "last_output": "--- SKIP: TestJoinArtifactExport (0.00s)\n"
+        },
+        {
+          "package": "github.com/JakeFAU/alan-research/examples/substitution/a",
+          "test": "TestCandidateAExport",
+          "last_output": "--- SKIP: TestCandidateAExport (0.00s)\n"
+        }
+      ],
+      "package_no_tests": [
+        {
+          "package": "github.com/JakeFAU/alan-research/examples/effectboundary",
+          "test": null,
+          "last_output": "?   \tgithub.com/JakeFAU/alan-research/examples/effectboundary\t[no test files]\n"
+        },
+        {
+          "package": "github.com/JakeFAU/alan-research/examples/substitution/b",
+          "test": null,
+          "last_output": "?   \tgithub.com/JakeFAU/alan-research/examples/substitution/b\t[no test files]\n"
+        },
+        {
+          "package": "github.com/JakeFAU/alan-research/examples/substitution/protocol",
+          "test": null,
+          "last_output": "?   \tgithub.com/JakeFAU/alan-research/examples/substitution/protocol\t[no test files]\n"
+        },
+        {
+          "package": "github.com/JakeFAU/alan-research/examples/worktree",
+          "test": null,
+          "last_output": "?   \tgithub.com/JakeFAU/alan-research/examples/worktree\t[no test files]\n"
+        },
+        {
+          "package": "github.com/JakeFAU/alan-research/research/delegationcorrespondence/cmd/check",
+          "test": null,
+          "last_output": "?   \tgithub.com/JakeFAU/alan-research/research/delegationcorrespondence/cmd/check\t[no test files]\n"
+        },
+        {
+          "package": "github.com/JakeFAU/alan-research/research/delegationcorrespondence/cmd/corpus",
+          "test": null,
+          "last_output": "?   \tgithub.com/JakeFAU/alan-research/research/delegationcorrespondence/cmd/corpus\t[no test files]\n"
+        },
+        {
+          "package": "github.com/JakeFAU/alan-research/research/delegationcorrespondence/cmd/mutations",
+          "test": null,
+          "last_output": "?   \tgithub.com/JakeFAU/alan-research/research/delegationcorrespondence/cmd/mutations\t[no test files]\n"
+        },
+        {
+          "package": "github.com/JakeFAU/alan-research/research/delegationcorrespondence/cmd/progress",
+          "test": null,
+          "last_output": "?   \tgithub.com/JakeFAU/alan-research/research/delegationcorrespondence/cmd/progress\t[no test files]\n"
+        },
+        {
+          "package": "github.com/JakeFAU/alan-research/research/dispatchauthority/cmd/export",
+          "test": null,
+          "last_output": "?   \tgithub.com/JakeFAU/alan-research/research/dispatchauthority/cmd/export\t[no test files]\n"
+        },
+        {
+          "package": "github.com/JakeFAU/alan-research/research/effectfulcomposition/cmd/export",
+          "test": null,
+          "last_output": "?   \tgithub.com/JakeFAU/alan-research/research/effectfulcomposition/cmd/export\t[no test files]\n"
+        },
+        {
+          "package": "github.com/JakeFAU/alan-research/research/effectprotocol/cmd/export",
+          "test": null,
+          "last_output": "?   \tgithub.com/JakeFAU/alan-research/research/effectprotocol/cmd/export\t[no test files]\n"
+        },
+        {
+          "package": "github.com/JakeFAU/alan-research/research/reconciliation/cmd/export",
+          "test": null,
+          "last_output": "?   \tgithub.com/JakeFAU/alan-research/research/reconciliation/cmd/export\t[no test files]\n"
+        },
+        {
+          "package": "github.com/JakeFAU/alan-research/research/twoagent/cmd/export",
+          "test": null,
+          "last_output": "?   \tgithub.com/JakeFAU/alan-research/research/twoagent/cmd/export\t[no test files]\n"
+        },
+        {
+          "package": "github.com/JakeFAU/alan-research/runtime",
+          "test": null,
+          "last_output": "?   \tgithub.com/JakeFAU/alan-research/runtime\t[no test files]\n"
+        }
+      ]
+    },
+    {
+      "cwd": "/Users/jacob/.codex/worktrees/phase3b4-research/alan-research",
+      "argv": [
+        "go",
+        "test",
+        "-json",
+        "-tags=integration",
+        "-count=1",
+        "-timeout=10m",
+        "./internal/durabletest",
+        "-run",
+        "^TestPhase3B2"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck",
+        "ALAN_PHASE2_EVIDENCE": "/tmp/alan-task5-prior-authority-normal"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 12.911550998687744,
+      "watchdog_expired": false,
+      "owner": "controller",
+      "name": "research-prior-authority-normal",
+      "record": "/tmp/alan-phase3b4-parent-final-gates/research-prior-authority-normal.json",
+      "test_skips": [],
+      "package_no_tests": []
+    },
+    {
+      "cwd": "/Users/jacob/.codex/worktrees/phase3b4-research/alan-research",
+      "argv": [
+        "go",
+        "test",
+        "-json",
+        "-race",
+        "-tags=integration",
+        "-count=1",
+        "-timeout=10m",
+        "./internal/durabletest",
+        "-run",
+        "^TestPhase3B2"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck",
+        "ALAN_PHASE2_EVIDENCE": "/tmp/alan-task5-prior-authority-race"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 48.791447162628174,
+      "watchdog_expired": false,
+      "owner": "controller",
+      "name": "research-prior-authority-race",
+      "record": "/tmp/alan-phase3b4-parent-final-gates/research-prior-authority-race.json",
+      "test_skips": [],
+      "package_no_tests": []
+    },
+    {
+      "cwd": "/Users/jacob/.codex/worktrees/phase3b4-research/alan-research",
+      "argv": [
+        "go",
+        "test",
+        "-json",
+        "-tags=integration",
+        "-count=1",
+        "-timeout=10m",
+        "./examples/communication/mutual"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck",
+        "ALAN_PHASE3B_RUNTIME_EXPORT": "/tmp/alan-task5-prior-reciprocal-normal"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 1.8572707176208496,
+      "watchdog_expired": false,
+      "owner": "controller",
+      "name": "research-prior-reciprocal-normal",
+      "record": "/tmp/alan-phase3b4-parent-final-gates/research-prior-reciprocal-normal.json",
+      "test_skips": [],
+      "package_no_tests": []
+    },
+    {
+      "cwd": "/Users/jacob/.codex/worktrees/phase3b4-research/alan-research",
+      "argv": [
+        "go",
+        "test",
+        "-json",
+        "-race",
+        "-tags=integration",
+        "-count=1",
+        "-timeout=10m",
+        "./examples/communication/mutual"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck",
+        "ALAN_PHASE3B_RUNTIME_EXPORT": "/tmp/alan-task5-prior-reciprocal-race"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 7.981600999832153,
+      "watchdog_expired": false,
+      "owner": "controller",
+      "name": "research-prior-reciprocal-race",
+      "record": "/tmp/alan-phase3b4-parent-final-gates/research-prior-reciprocal-race.json",
+      "test_skips": [],
+      "package_no_tests": []
+    },
+    {
+      "cwd": "/Users/jacob/.codex/worktrees/phase3b4-research/alan-research",
+      "argv": [
+        "staticcheck",
+        "-tags=integration",
+        "./research/delegationcorrespondence/..."
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 0.14884686470031738,
+      "watchdog_expired": false,
+      "owner": "controller",
+      "name": "research-staticcheck-changed",
+      "record": "/tmp/alan-phase3b4-parent-final-gates/research-staticcheck-changed.json",
+      "test_skips": [],
+      "package_no_tests": []
+    },
+    {
+      "cwd": "/Users/jacob/.codex/worktrees/phase3b4-research/alan-research",
+      "argv": [
+        "staticcheck",
+        "-tags=integration",
+        "./..."
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck"
+      },
+      "exit": 1,
+      "source_unchanged": true,
+      "elapsed_seconds": 1.7179131507873535,
+      "watchdog_expired": false,
+      "owner": "controller",
+      "name": "research-staticcheck-integration",
+      "record": "/tmp/alan-phase3b4-parent-final-gates/research-staticcheck-integration.json",
+      "test_skips": [],
+      "package_no_tests": []
+    },
+    {
+      "cwd": "/Users/jacob/.codex/worktrees/phase3b4-research/alan-research",
+      "argv": [
+        "staticcheck",
+        "./..."
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck"
+      },
+      "exit": 1,
+      "source_unchanged": true,
+      "elapsed_seconds": 2.4212422370910645,
+      "watchdog_expired": false,
+      "owner": "controller",
+      "name": "research-staticcheck",
+      "record": "/tmp/alan-phase3b4-parent-final-gates/research-staticcheck.json",
+      "test_skips": [],
+      "package_no_tests": []
+    },
+    {
+      "cwd": "/Users/jacob/.codex/worktrees/phase3b4-research/alan-research",
+      "argv": [
+        "go",
+        "vet",
+        "-tags=integration",
+        "./..."
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 2.1130356788635254,
+      "watchdog_expired": false,
+      "owner": "controller",
+      "name": "research-vet-integration",
+      "record": "/tmp/alan-phase3b4-parent-final-gates/research-vet-integration.json",
+      "test_skips": [],
+      "package_no_tests": []
+    },
+    {
+      "cwd": "/Users/jacob/.codex/worktrees/phase3b4-research/alan-research",
+      "argv": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 2.1817688941955566,
+      "watchdog_expired": false,
+      "owner": "controller",
+      "name": "research-vet",
+      "record": "/tmp/alan-phase3b4-parent-final-gates/research-vet.json",
+      "test_skips": [],
+      "package_no_tests": []
+    },
+    {
+      "cwd": "/private/tmp/alan-phase3b3-runtime",
+      "argv": [
+        "go",
+        "build",
+        "./..."
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck",
+        "ALAN_PHASE3B3_OLD_READER": "/tmp/alan-phase3b4-pre-v1-reader/alan",
+        "ALAN_PHASE3B4_OLD_READER": "/tmp/alan-phase3b4-task1/compatibility/old-reader.test"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 3.1979172229766846,
+      "watchdog_expired": false,
+      "owner": "controller",
+      "name": "runtime-build",
+      "record": "/tmp/alan-phase3b4-parent-final-gates/runtime-build.json",
+      "test_skips": [],
+      "package_no_tests": []
+    },
+    {
+      "cwd": "/private/tmp/alan-phase3b3-runtime",
+      "argv": [
+        "gofmt",
+        "-l",
+        "adapters",
+        "author",
+        "cmd",
+        "compose",
+        "effects",
+        "examples",
+        "internal",
+        "runtime",
+        "schema"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck",
+        "ALAN_PHASE3B3_OLD_READER": "/tmp/alan-phase3b4-pre-v1-reader/alan",
+        "ALAN_PHASE3B4_OLD_READER": "/tmp/alan-phase3b4-task1/compatibility/old-reader.test"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 0.14324569702148438,
+      "watchdog_expired": false,
+      "owner": "controller",
+      "name": "runtime-format",
+      "record": "/tmp/alan-phase3b4-parent-final-gates/runtime-format.json",
+      "test_skips": [],
+      "package_no_tests": []
+    },
+    {
+      "cwd": "/private/tmp/alan-phase3b3-runtime",
+      "argv": [
+        "go",
+        "test",
+        "-json",
+        "-count=1",
+        "-timeout=60m",
+        "-race",
+        "-tags=integration",
+        "./..."
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck",
+        "ALAN_PHASE3B3_OLD_READER": "/tmp/alan-phase3b4-pre-v1-reader/alan",
+        "ALAN_PHASE3B4_OLD_READER": "/tmp/alan-phase3b4-task1/compatibility/old-reader.test",
+        "ALAN_PHASE3B4_EVIDENCE": "/tmp/alan-task5-final-race",
+        "ALAN_PHASE3B3_EVIDENCE": "/tmp/alan-task5-final-v1-race"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 566.1700558662415,
+      "watchdog_expired": false,
+      "owner": "controller",
+      "name": "runtime-integration-race",
+      "record": "/tmp/alan-phase3b4-parent-final-gates/runtime-integration-race.json",
+      "test_skips": [
+        {
+          "package": "github.com/JakeFAU/alan/internal/executor",
+          "test": "TestPhase3B4PromotedPublicParents",
+          "last_output": "--- SKIP: TestPhase3B4PromotedPublicParents (0.00s)\n"
+        },
+        {
+          "package": "github.com/JakeFAU/alan/internal/durabletest",
+          "test": "TestPhase3B3BaselineS2CompletionExpectedFailure",
+          "last_output": "--- SKIP: TestPhase3B3BaselineS2CompletionExpectedFailure (0.00s)\n"
+        }
+      ],
+      "package_no_tests": [
+        {
+          "package": "github.com/JakeFAU/alan/examples/inspect-execution",
+          "test": null,
+          "last_output": "?   \tgithub.com/JakeFAU/alan/examples/inspect-execution\t[no test files]\n"
+        },
+        {
+          "package": "github.com/JakeFAU/alan/examples/quickstart",
+          "test": null,
+          "last_output": "?   \tgithub.com/JakeFAU/alan/examples/quickstart\t[no test files]\n"
+        },
+        {
+          "package": "github.com/JakeFAU/alan/internal/storetest",
+          "test": null,
+          "last_output": "?   \tgithub.com/JakeFAU/alan/internal/storetest\t[no test files]\n"
+        }
+      ]
+    },
+    {
+      "cwd": "/private/tmp/alan-phase3b3-runtime",
+      "argv": [
+        "go",
+        "test",
+        "-json",
+        "-count=1",
+        "-timeout=60m",
+        "-tags=integration",
+        "./..."
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck",
+        "ALAN_PHASE3B3_OLD_READER": "/tmp/alan-phase3b4-pre-v1-reader/alan",
+        "ALAN_PHASE3B4_OLD_READER": "/tmp/alan-phase3b4-task1/compatibility/old-reader.test",
+        "ALAN_PHASE3B4_EVIDENCE": "/tmp/alan-task5-final-normal",
+        "ALAN_PHASE3B3_EVIDENCE": "/tmp/alan-task5-final-v1-normal"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 53.688186168670654,
+      "watchdog_expired": false,
+      "owner": "controller",
+      "name": "runtime-integration",
+      "record": "/tmp/alan-phase3b4-parent-final-gates/runtime-integration.json",
+      "test_skips": [
+        {
+          "package": "github.com/JakeFAU/alan/internal/executor",
+          "test": "TestPhase3B4PromotedPublicParents",
+          "last_output": "--- SKIP: TestPhase3B4PromotedPublicParents (0.00s)\n"
+        },
+        {
+          "package": "github.com/JakeFAU/alan/internal/durabletest",
+          "test": "TestPhase3B3BaselineS2CompletionExpectedFailure",
+          "last_output": "--- SKIP: TestPhase3B3BaselineS2CompletionExpectedFailure (0.00s)\n"
+        }
+      ],
+      "package_no_tests": [
+        {
+          "package": "github.com/JakeFAU/alan/examples/inspect-execution",
+          "test": null,
+          "last_output": "?   \tgithub.com/JakeFAU/alan/examples/inspect-execution\t[no test files]\n"
+        },
+        {
+          "package": "github.com/JakeFAU/alan/examples/quickstart",
+          "test": null,
+          "last_output": "?   \tgithub.com/JakeFAU/alan/examples/quickstart\t[no test files]\n"
+        },
+        {
+          "package": "github.com/JakeFAU/alan/internal/storetest",
+          "test": null,
+          "last_output": "?   \tgithub.com/JakeFAU/alan/internal/storetest\t[no test files]\n"
+        }
+      ]
+    },
+    {
+      "cwd": "/private/tmp/alan-phase3b3-runtime",
+      "argv": [
+        "go",
+        "mod",
+        "tidy",
+        "-diff"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck",
+        "ALAN_PHASE3B3_OLD_READER": "/tmp/alan-phase3b4-pre-v1-reader/alan",
+        "ALAN_PHASE3B4_OLD_READER": "/tmp/alan-phase3b4-task1/compatibility/old-reader.test"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 0.08640575408935547,
+      "watchdog_expired": false,
+      "owner": "controller",
+      "name": "runtime-mod-tidy",
+      "record": "/tmp/alan-phase3b4-parent-final-gates/runtime-mod-tidy.json",
+      "test_skips": [],
+      "package_no_tests": []
+    },
+    {
+      "cwd": "/private/tmp/alan-phase3b3-runtime",
+      "argv": [
+        "go",
+        "mod",
+        "verify"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck",
+        "ALAN_PHASE3B3_OLD_READER": "/tmp/alan-phase3b4-pre-v1-reader/alan",
+        "ALAN_PHASE3B4_OLD_READER": "/tmp/alan-phase3b4-task1/compatibility/old-reader.test"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 0.11699986457824707,
+      "watchdog_expired": false,
+      "owner": "controller",
+      "name": "runtime-mod-verify",
+      "record": "/tmp/alan-phase3b4-parent-final-gates/runtime-mod-verify.json",
+      "test_skips": [],
+      "package_no_tests": []
+    },
+    {
+      "cwd": "/private/tmp/alan-phase3b3-runtime",
+      "argv": [
+        "go",
+        "test",
+        "-json",
+        "-count=1",
+        "-timeout=60m",
+        "./..."
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck",
+        "ALAN_PHASE3B3_OLD_READER": "/tmp/alan-phase3b4-pre-v1-reader/alan",
+        "ALAN_PHASE3B4_OLD_READER": "/tmp/alan-phase3b4-task1/compatibility/old-reader.test"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 62.05866861343384,
+      "watchdog_expired": false,
+      "owner": "controller",
+      "name": "runtime-ordinary",
+      "record": "/tmp/alan-phase3b4-parent-final-gates/runtime-ordinary.json",
+      "test_skips": [],
+      "package_no_tests": [
+        {
+          "package": "github.com/JakeFAU/alan/examples/inspect-execution",
+          "test": null,
+          "last_output": "?   \tgithub.com/JakeFAU/alan/examples/inspect-execution\t[no test files]\n"
+        },
+        {
+          "package": "github.com/JakeFAU/alan/examples/quickstart",
+          "test": null,
+          "last_output": "?   \tgithub.com/JakeFAU/alan/examples/quickstart\t[no test files]\n"
+        },
+        {
+          "package": "github.com/JakeFAU/alan/internal/storetest",
+          "test": null,
+          "last_output": "?   \tgithub.com/JakeFAU/alan/internal/storetest\t[no test files]\n"
+        }
+      ]
+    },
+    {
+      "cwd": "/private/tmp/alan-phase3b3-runtime",
+      "argv": [
+        "go",
+        "test",
+        "-json",
+        "-count=1",
+        "-timeout=10m",
+        "-tags=integration",
+        "./internal/executor",
+        "-run",
+        "^TestPhase3B4PromotedPublicParents$"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck",
+        "ALAN_PHASE3B3_OLD_READER": "/tmp/alan-phase3b4-pre-v1-reader/alan",
+        "ALAN_PHASE3B4_OLD_READER": "/tmp/alan-phase3b4-task1/compatibility/old-reader.test",
+        "ALAN_PHASE3B4_PUBLIC_PARENTS": "/tmp/alan-task5-final-normal",
+        "ALAN_PHASE3B4_PROMOTED_OUTPUT": "/tmp/alan-task5-final-promoted-normal"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 0.9699809551239014,
+      "watchdog_expired": false,
+      "owner": "controller",
+      "name": "runtime-promoted-normal",
+      "record": "/tmp/alan-phase3b4-parent-final-gates/runtime-promoted-normal.json",
+      "test_skips": [],
+      "package_no_tests": []
+    },
+    {
+      "cwd": "/private/tmp/alan-phase3b3-runtime",
+      "argv": [
+        "go",
+        "test",
+        "-json",
+        "-count=1",
+        "-timeout=10m",
+        "-tags=integration",
+        "-race",
+        "./internal/executor",
+        "-run",
+        "^TestPhase3B4PromotedPublicParents$"
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck",
+        "ALAN_PHASE3B3_OLD_READER": "/tmp/alan-phase3b4-pre-v1-reader/alan",
+        "ALAN_PHASE3B4_OLD_READER": "/tmp/alan-phase3b4-task1/compatibility/old-reader.test",
+        "ALAN_PHASE3B4_PUBLIC_PARENTS": "/tmp/alan-task5-final-race",
+        "ALAN_PHASE3B4_PROMOTED_OUTPUT": "/tmp/alan-task5-final-promoted-race"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 6.862587928771973,
+      "watchdog_expired": false,
+      "owner": "controller",
+      "name": "runtime-promoted-race",
+      "record": "/tmp/alan-phase3b4-parent-final-gates/runtime-promoted-race.json",
+      "test_skips": [],
+      "package_no_tests": []
+    },
+    {
+      "cwd": "/private/tmp/alan-phase3b3-runtime",
+      "argv": [
+        "staticcheck",
+        "-tags=integration",
+        "./..."
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck",
+        "ALAN_PHASE3B3_OLD_READER": "/tmp/alan-phase3b4-pre-v1-reader/alan",
+        "ALAN_PHASE3B4_OLD_READER": "/tmp/alan-phase3b4-task1/compatibility/old-reader.test"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 1.8308911323547363,
+      "watchdog_expired": false,
+      "owner": "controller",
+      "name": "runtime-staticcheck-integration",
+      "record": "/tmp/alan-phase3b4-parent-final-gates/runtime-staticcheck-integration.json",
+      "test_skips": [],
+      "package_no_tests": []
+    },
+    {
+      "cwd": "/private/tmp/alan-phase3b3-runtime",
+      "argv": [
+        "staticcheck",
+        "./..."
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck",
+        "ALAN_PHASE3B3_OLD_READER": "/tmp/alan-phase3b4-pre-v1-reader/alan",
+        "ALAN_PHASE3B4_OLD_READER": "/tmp/alan-phase3b4-task1/compatibility/old-reader.test"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 2.1939969062805176,
+      "watchdog_expired": false,
+      "owner": "controller",
+      "name": "runtime-staticcheck",
+      "record": "/tmp/alan-phase3b4-parent-final-gates/runtime-staticcheck.json",
+      "test_skips": [],
+      "package_no_tests": []
+    },
+    {
+      "cwd": "/private/tmp/alan-phase3b3-runtime",
+      "argv": [
+        "go",
+        "vet",
+        "-tags=integration",
+        "./..."
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck",
+        "ALAN_PHASE3B3_OLD_READER": "/tmp/alan-phase3b4-pre-v1-reader/alan",
+        "ALAN_PHASE3B4_OLD_READER": "/tmp/alan-phase3b4-task1/compatibility/old-reader.test"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 2.200911045074463,
+      "watchdog_expired": false,
+      "owner": "controller",
+      "name": "runtime-vet-integration",
+      "record": "/tmp/alan-phase3b4-parent-final-gates/runtime-vet-integration.json",
+      "test_skips": [],
+      "package_no_tests": []
+    },
+    {
+      "cwd": "/private/tmp/alan-phase3b3-runtime",
+      "argv": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOPROXY": "off",
+        "GOSUMDB": "off",
+        "GOMODCACHE": "/tmp/alan-phase3b4-qualification-modcache",
+        "GOCACHE": "/tmp/alan-phase3a-go-build",
+        "STATICCHECK_CACHE": "/tmp/alan-phase3b4-staticcheck",
+        "ALAN_PHASE3B3_OLD_READER": "/tmp/alan-phase3b4-pre-v1-reader/alan",
+        "ALAN_PHASE3B4_OLD_READER": "/tmp/alan-phase3b4-task1/compatibility/old-reader.test"
+      },
+      "exit": 0,
+      "source_unchanged": true,
+      "elapsed_seconds": 0.7199959754943848,
+      "watchdog_expired": false,
+      "owner": "controller",
+      "name": "runtime-vet",
+      "record": "/tmp/alan-phase3b4-parent-final-gates/runtime-vet.json",
+      "test_skips": [],
+      "package_no_tests": []
+    }
+  ],
+  "ResearchEvidenceDirectory": "docs/foundational/phase3b4/evidence/task5",
+  "NoRuntimeExecutableChanges": true,
+  "IndependentReview": "controller pending",
+  "ManuscriptReconciliation": "Task6 pending"
+}

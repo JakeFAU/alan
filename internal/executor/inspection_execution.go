@@ -366,7 +366,7 @@ func (b *inspectionBuilder) buildRuns() error {
 		if programHash([]byte(raw)) != id || decode([]byte(raw), &p) != nil || p.Semantics != r["semantics"] {
 			return corrupt("invalid retained program %s", id)
 		}
-		if err := validateRequestAuthorityProgram(p, b.snap.Features.RequestAuthority); err != nil {
+		if err := validateRequestAuthorityProgram(p, requestAuthorityVersionForSchema(b.snap.StorageVersion)); err != nil {
 			return err
 		}
 		if err := validateProgram(p); err != nil {
@@ -459,6 +459,9 @@ func protocolTables(stored int) []string {
 // Check the physical format before selecting validators. Editing both version
 // numbers cannot hide retained membership, expenditure or receipt evidence.
 func checkProtocolTables(ctx context.Context, q queryer, version int) error {
+	if err := validateRequestBindingIndex(ctx, q, version); err != nil {
+		return err
+	}
 	// Formats 9 and 11 have the same tables. The journal CHECK independently
 	// distinguishes the continuation contract even before its first approval.
 	rows, err := q.QueryContext(ctx, `SELECT lower(name), type,
