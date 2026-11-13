@@ -28,6 +28,8 @@ Declare a finite sequence with `author.BoundedSeries(observation, author.SeriesO
 
 [Readiness program reuse](docs/evidence/performance-p3/decision.md) records a separate integrated-baseline comparison: the 256-operation median falls from 60.56s to 47.19s by reusing validated unbound programs within one readiness call. Per-run binding, authorization and observation checks remain. The report distinguishes allocation savings, slightly higher peak memory, exact source qualification and scope limits.
 
+[Bounded execution scaling](docs/evidence/execution-scaling/results.md) measures guarded owner discovery, grouped full reports and a separately tested targeted continuation-basis read. The results include recovery qualification and the remaining full-report costs.
+
 ## Run a computation
 
 Use Go 1.27.3, CGO, a C compiler and a local Unix filesystem. In your application module, run `go get github.com/JakeFAU/alan/runtime`. Import `github.com/JakeFAU/alan/author` to define a program and `github.com/JakeFAU/alan/runtime` to run it. From a checkout, run the [quickstart](examples/quickstart/main.go).
