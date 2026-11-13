@@ -3,10 +3,13 @@
 package executor
 
 import (
+	"context"
 	"errors"
+	"testing"
+
 	"github.com/JakeFAU/alan/effects"
 	recordschema "github.com/JakeFAU/alan/schema"
-	"testing"
+	"github.com/mattn/go-sqlite3"
 )
 
 // Simulate a fully masked profile before its first approval. The persisted
@@ -121,7 +124,38 @@ func TestContinuationConflictPromotion(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := owner.Close(); err != nil {
-		t.Fatal(err)
+	defer owner.Close()
+	got, err := owner.ContinuationBasis(ctx, slot.Target)
+	if err != nil || got != basis {
+		t.Fatalf("promoted owner's basis = %+v, %v", got, err)
 	}
+	t.Run("canceled inside read", func(t *testing.T) {
+		canceled, cancel := context.WithCancel(t.Context())
+		defer cancel()
+		if err := owner.conn.Raw(func(driver any) error {
+			driver.(*sqlite3.SQLiteConn).RegisterAuthorizer(func(op int, table, _ string, _ string) int {
+				if op == sqlite3.SQLITE_READ && table == "composition_facts" {
+					cancel()
+				}
+				return sqlite3.SQLITE_OK
+			})
+			return nil
+		}); err != nil {
+			t.Fatal(err)
+		}
+		got, err := owner.ContinuationBasis(canceled, slot.Target)
+		if reset := owner.conn.Raw(func(driver any) error {
+			driver.(*sqlite3.SQLiteConn).RegisterAuthorizer(nil)
+			return nil
+		}); reset != nil {
+			t.Fatal(reset)
+		}
+		if got != (ContinuationBasis{}) || !errors.Is(err, context.Canceled) {
+			t.Fatalf("canceled read = %+v, %v", got, err)
+		}
+		got, err = owner.ContinuationBasis(t.Context(), slot.Target)
+		if err != nil || got != basis {
+			t.Fatalf("next owner read = %+v, %v", got, err)
+		}
+	})
 }
