@@ -343,10 +343,16 @@ func createStore(ctx context.Context, path string, p Provision, limits Limits, c
 		version = compositionSchemaVersion
 		ddl := compositionSchema
 		if composition.RequestAuthority != "" {
-			if composition.RequestAuthority != RequestAuthorityVersion || composition.Version != compositionProtocolVersion || composition.RecordDispatchAdmissions || len(composition.Continuations) != 0 || len(composition.Templates) != 0 || p.Reconciliation != nil || len(p.Subjects) != 2 || len(p.Runs) != 2 {
+			if !supportedRequestAuthority(composition.RequestAuthority) || composition.Version != compositionProtocolVersion || composition.RecordDispatchAdmissions || len(composition.Continuations) != 0 || len(composition.Templates) != 0 || p.Reconciliation != nil || len(p.Subjects) != 2 || len(p.Runs) != 2 {
 				return nil, ErrVersion
 			}
 			version = requestAuthoritySchema
+			if composition.RequestAuthority == RequestAuthorityBindingVersion {
+				version = requestAuthorityBindingSchema
+				if _, err = tx.ExecContext(ctx, "CREATE INDEX admissions_observation_id ON admissions(observation_id)"); err != nil {
+					return nil, err
+				}
+			}
 			ddl = compositionSchemaBeforeRead + ",'authority_admission'" + compositionSchemaAfterRead
 		}
 		if len(composition.Continuations) > 0 {
@@ -536,11 +542,11 @@ func insertArtifact(ctx context.Context, tx *sql.Tx, a Artifact, l Limits) error
 	if err := validateProgram(p); err != nil {
 		return err
 	}
-	enabled, e := requestAuthorityEnabled(ctx, tx)
+	version, e := storedRequestAuthorityVersion(ctx, tx)
 	if e != nil {
 		return e
 	}
-	if e = validateRequestAuthorityProgram(p, enabled); e != nil {
+	if e = validateRequestAuthorityProgram(p, version); e != nil {
 		return e
 	}
 	var sem string
@@ -580,11 +586,11 @@ func loadProgram(ctx context.Context, q queryer, id string, l Limits) (Program, 
 	if p.Semantics != a.Semantics {
 		return Program{}, ErrVersion
 	}
-	enabled, e := requestAuthorityEnabled(ctx, q)
+	version, e := storedRequestAuthorityVersion(ctx, q)
 	if e != nil {
 		return p, e
 	}
-	if e = validateRequestAuthorityProgram(p, enabled); e != nil {
+	if e = validateRequestAuthorityProgram(p, version); e != nil {
 		return p, e
 	}
 	return p, validateProgram(p)

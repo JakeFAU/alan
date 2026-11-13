@@ -51,7 +51,7 @@ func retainCompositionProfile(ctx context.Context, q queryer, namespace string, 
 	if err := validateCompositionEncoding(c); err != nil {
 		return nil, err
 	}
-	if c.RequestAuthority != "" && (c.RequestAuthority != RequestAuthorityVersion || c.Version != compositionProtocolVersion || len(c.Templates) != 0 || len(c.Continuations) != 0 || c.RecordDispatchAdmissions) {
+	if c.RequestAuthority != "" && (!supportedRequestAuthority(c.RequestAuthority) || c.Version != compositionProtocolVersion || len(c.Templates) != 0 || len(c.Continuations) != 0 || c.RecordDispatchAdmissions) {
 		return nil, ErrVersion
 	}
 	if c.Version != "" && c.Version != compositionProtocolVersion {
@@ -287,7 +287,7 @@ func readCompositionProfile(ctx context.Context, q queryer, l Limits) (*composit
 	if err = decode(raw, &c); err != nil {
 		return nil, err
 	}
-	if (c.RequestAuthority != "") != hasRequestAuthoritySchema(stored) {
+	if c.RequestAuthority != requestAuthorityVersionForSchema(stored) {
 		return nil, ErrVersion
 	}
 	if version != compositionVersion(c) || c.RecordDispatchAdmissions != hasDispatchAdmissionSchema(stored) || (len(c.Continuations) > 0) != hasContinuationSchema(stored) {

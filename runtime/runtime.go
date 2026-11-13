@@ -80,6 +80,9 @@ type ReceiptGrant = executor.ReceiptGrant
 // RequestAuthorityVersion selects the bounded request-bound authority protocol.
 const RequestAuthorityVersion = executor.RequestAuthorityVersion
 
+// RequestAuthorityBindingVersion opts into exact historical request selection.
+const RequestAuthorityBindingVersion = executor.RequestAuthorityBindingVersion
+
 type AuthorityRoot = executor.AuthorityRoot
 type DelegationClaim = executor.DelegationClaim
 type RevocationClaim = executor.RevocationClaim

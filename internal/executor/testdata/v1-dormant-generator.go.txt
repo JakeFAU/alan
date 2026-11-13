@@ -1,0 +1,24 @@
+package main
+import (
+ "context"
+ "crypto/sha256"
+ "encoding/hex"
+ "encoding/json"
+ "fmt"
+ "os"
+ "github.com/JakeFAU/alan/runtime"
+ "github.com/JakeFAU/alan/examples/delegation"
+)
+func main(){
+ p,_,err:=delegation.Reciprocal(delegation.Options{EndpointA:"http://127.0.0.1:1234",EndpointB:"http://127.0.0.1:1235",Scenario:delegation.S2Handshake});if err!=nil{panic(err)}
+ a:=&p.Programs[0]; old:=a.ID
+ var prog map[string]any; if err=json.Unmarshal(a.Bytes,&prog);err!=nil{panic(err)}
+ code:=prog["Code"].([]any)
+ suffix:=map[string]any{"Op":"emit","Effect":map[string]any{"Kind":"lifecycle","Payload":map[string]any{"operation":map[string]any{"Literal":map[string]any{"Kind":"string","Text":"DelegateAuthority"}},"claim":map[string]any{"Literal":map[string]any{"Kind":"string","Text":"uninterpreted dormant text"}}}}}
+ prog["Code"]=append(code,suffix)
+ a.Bytes,err=json.Marshal(prog);if err!=nil{panic(err)}
+ sum:=sha256.Sum256(a.Bytes);a.ID=hex.EncodeToString(sum[:])
+ for i:=range p.Runs{if p.Runs[i].ProgramID==old{p.Runs[i].ProgramID=a.ID}}
+ s,err:=runtime.Create(context.Background(),os.Args[1],p,runtime.DefaultLimits());fmt.Printf("Create error=%v\n",err)
+ if s!=nil{s.Close();_,err=runtime.Replay(context.Background(),os.Args[1],runtime.DefaultLimits());fmt.Printf("Replay error=%v\n",err)}
+}

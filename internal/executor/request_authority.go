@@ -13,6 +13,9 @@ import (
 )
 
 const RequestAuthorityVersion = "alan/request-authority/v1"
+const RequestAuthorityBindingVersion = "alan/request-authority/v2"
+const requestAuthorityBindingSchema = 15
+const requestAuthorityBindingConflictSchema = 16
 const requestAuthoritySchema = 13
 const requestAuthorityConflictSchema = 14
 
@@ -55,7 +58,23 @@ type EffectAuthority struct {
 }
 
 func hasRequestAuthoritySchema(v int) bool {
-	return v == requestAuthoritySchema || v == requestAuthorityConflictSchema
+	return requestAuthorityVersionForSchema(v) != ""
+}
+func requestAuthorityVersionForSchema(v int) string {
+	switch v {
+	case requestAuthoritySchema, requestAuthorityConflictSchema:
+		return RequestAuthorityVersion
+	case requestAuthorityBindingSchema, requestAuthorityBindingConflictSchema:
+		return RequestAuthorityBindingVersion
+	}
+	return ""
+}
+func supportedRequestAuthority(v string) bool {
+	return v == RequestAuthorityVersion || v == RequestAuthorityBindingVersion
+}
+func storedRequestAuthorityVersion(ctx context.Context, q queryer) (string, error) {
+	v, err := storedSchemaNumber(ctx, q)
+	return requestAuthorityVersionForSchema(v), err
 }
 func requestAuthorityEnabled(ctx context.Context, q queryer) (bool, error) {
 	v, e := storedSchemaNumber(ctx, q)
@@ -82,7 +101,7 @@ func validateAuthorityUse(u *AuthorityUse) error {
 	if !utf8.ValidString(u.GrantID) {
 		return fmt.Errorf("invalid UTF-8 grant identity")
 	}
-	if u.Version != RequestAuthorityVersion || (u.Path != "own" && u.Path != "delegated") || (u.Path == "own" && u.GrantID != "") || (u.Path == "delegated" && u.GrantID == "") {
+	if !supportedRequestAuthority(u.Version) || (u.Path != "own" && u.Path != "delegated") || (u.Path == "own" && u.GrantID != "") || (u.Path == "delegated" && u.GrantID == "") {
 		return ErrVersion
 	}
 	return validateAuthorityRoot(u.Root)
@@ -99,7 +118,10 @@ func parseAuthorityClaim(r LifecycleRequest) (DelegationClaim, RevocationClaim, 
 		if err := decode(raw, &d); err != nil {
 			return d, v, err
 		}
-		if !sameJSON(raw, d) || d.Version != RequestAuthorityVersion || !validAuthorityRun(d.Recipient) || !validAuthorityRun(d.RecipientRoot) || d.RecipientRevision <= 0 || d.OriginalRequestID == "" {
+		if !supportedRequestAuthority(d.Version) {
+			return d, v, ErrVersion
+		}
+		if !sameJSON(raw, d) || !validAuthorityRun(d.Recipient) || !validAuthorityRun(d.RecipientRoot) || d.RecipientRevision <= 0 || d.OriginalRequestID == "" {
 			return d, v, ErrCorrupt
 		}
 		if _, _, err := authorityOperationLocator(d.ServiceOperationID); err != nil {
@@ -113,7 +135,10 @@ func parseAuthorityClaim(r LifecycleRequest) (DelegationClaim, RevocationClaim, 
 	if err := decode(raw, &v); err != nil {
 		return d, v, err
 	}
-	if !sameJSON(raw, v) || v.Version != RequestAuthorityVersion {
+	if !supportedRequestAuthority(v.Version) {
+		return d, v, ErrVersion
+	}
+	if !sameJSON(raw, v) {
 		return d, v, ErrCorrupt
 	}
 	return d, v, validateAuthorityRoot(v.Root)
@@ -162,7 +187,11 @@ func readAuthorityPrefix(ctx context.Context, q queryer, before int64) (*authori
 	if err = decode(raw, &x.profile); err != nil {
 		return nil, err
 	}
-	if x.profile.RequestAuthority != RequestAuthorityVersion {
+	version, err := storedRequestAuthorityVersion(ctx, q)
+	if err != nil {
+		return nil, err
+	}
+	if x.profile.RequestAuthority != version {
 		return nil, ErrVersion
 	}
 	for _, root := range x.profile.Roots {
@@ -302,6 +331,13 @@ func decideRequestAuthority(ctx context.Context, q queryer, r LifecycleRequest, 
 	if err != nil {
 		return LifecycleResult{}, err
 	}
+	version, err := storedRequestAuthorityVersion(ctx, q)
+	if err != nil {
+		return LifecycleResult{}, err
+	}
+	if (r.Operation == "DelegateAuthority" && d.Version != version) || (r.Operation == "RevokeAuthority" && v.Version != version) {
+		return LifecycleResult{}, ErrVersion
+	}
 	root := v.Root
 	if r.Operation == "DelegateAuthority" {
 		root = d.Root
@@ -310,7 +346,7 @@ func decideRequestAuthority(ctx context.Context, q queryer, r LifecycleRequest, 
 	if err != nil {
 		return LifecycleResult{}, err
 	}
-	out := LifecycleResult{Request: r, DecisionSequence: order, Before: before, After: before, Authority: &AuthorityDecision{Version: RequestAuthorityVersion, Namespace: x.namespace, Root: root, RootID: compositionRootID(x.namespace, root.RootRun)}}
+	out := LifecycleResult{Request: r, DecisionSequence: order, Before: before, After: before, Authority: &AuthorityDecision{Version: x.profile.RequestAuthority, Namespace: x.namespace, Root: root, RootID: compositionRootID(x.namespace, root.RootRun)}}
 	if r.Operation == "DelegateAuthority" {
 		out.Authority.RecipientRootID = compositionRootID(x.namespace, d.RecipientRoot)
 	}
@@ -382,7 +418,7 @@ func evaluateEffectAuthority(ctx context.Context, q queryer, i retainedIntent, p
 	if err != nil {
 		return nil, err
 	}
-	w := &EffectAuthority{Version: RequestAuthorityVersion, Namespace: x.namespace, Use: i.Authority, ServingRootID: x.memberRoot(i.Run)}
+	w := &EffectAuthority{Version: x.profile.RequestAuthority, Namespace: x.namespace, Use: i.Authority, ServingRootID: x.memberRoot(i.Run)}
 	if w.ServingRootID == "" {
 		return nil, ErrCorrupt
 	}
@@ -391,6 +427,9 @@ func evaluateEffectAuthority(ctx context.Context, q queryer, i retainedIntent, p
 		return deny("authority_missing")
 	}
 	u := i.Authority
+	if u.Version != x.profile.RequestAuthority {
+		return nil, ErrVersion
+	}
 	if err = validateAuthorityUse(u); err != nil {
 		return nil, err
 	}
@@ -432,61 +471,75 @@ func evaluateEffectAuthority(ctx context.Context, q queryer, i retainedIntent, p
 		if e != nil {
 			return nil, e
 		}
+		if d.Version != x.profile.RequestAuthority || grant.Authority.Version != x.profile.RequestAuthority {
+			return nil, ErrVersion
+		}
 		if d.Root != u.Root || d.Recipient != i.Run || d.RecipientRevision != i.revision || !x.rootMember(i.Run, d.RecipientRoot) || d.ServiceOperationID != i.ID || i.Ordinal != 0 {
 			return deny("authority_service_mismatch")
 		}
 		w.OriginalRequestID = d.OriginalRequestID
 		w.ServiceOperationID = d.ServiceOperationID
 		w.GrantDecisionSequence = grant.DecisionSequence
-		if i.Sequence <= 1 {
-			return deny("authority_request_not_selected")
-		}
-		var selected sql.NullString
-		if e = q.QueryRowContext(ctx, "SELECT selected_observation FROM history WHERE subject=? AND generation=? AND sequence=?", i.Run.Subject, i.Run.Generation, i.Sequence-1).Scan(&selected); e != nil {
-			return nil, e
-		}
-		if !selected.Valid {
-			return deny("authority_request_not_selected")
-		}
-		var raw []byte
-		var consumed sql.NullInt64
-		var observation Observation
-		var observedRun RunID
-		if e = q.QueryRowContext(ctx, "SELECT subject,generation,descriptor,consumed_sequence FROM observations WHERE id=?", selected.String).Scan(&observedRun.Subject, &observedRun.Generation, &raw, &consumed); e != nil {
-			return nil, e
-		}
-		if e = decode(raw, &observation); e != nil {
-			return nil, e
-		}
-		if observedRun != i.Run || !sameJSON(raw, observation) || observation.ID != selected.String || observation.Run != i.Run || observation.Provenance != "ordinary-message" || observation.Source != d.Root.Run.Subject || observation.SourceGeneration != d.Root.Run.Generation || !consumed.Valid || consumed.Int64 != i.Sequence-1 {
-			return deny("authority_request_not_selected")
-		}
-		ids, e := stringList(ctx, q, "SELECT id FROM admissions")
-		if e != nil {
-			return nil, e
-		}
-		admitted := false
-		for _, id := range ids {
-			desc, a, e := loadAdmissionKey(ctx, q, id)
+		if x.profile.RequestAuthority == RequestAuthorityBindingVersion {
+			selected, consumed, err := selectedOriginalRequest(ctx, q, x, i, d)
+			if err != nil {
+				return nil, err
+			}
+			if selected == "" {
+				return deny("authority_request_not_selected")
+			}
+			w.RequestObservationID, w.RequestConsumedSequence = selected, consumed
+		} else {
+			if i.Sequence <= 1 {
+				return deny("authority_request_not_selected")
+			}
+			var selected sql.NullString
+			if e = q.QueryRowContext(ctx, "SELECT selected_observation FROM history WHERE subject=? AND generation=? AND sequence=?", i.Run.Subject, i.Run.Generation, i.Sequence-1).Scan(&selected); e != nil {
+				return nil, e
+			}
+			if !selected.Valid {
+				return deny("authority_request_not_selected")
+			}
+			var raw []byte
+			var consumed sql.NullInt64
+			var observation Observation
+			var observedRun RunID
+			if e = q.QueryRowContext(ctx, "SELECT subject,generation,descriptor,consumed_sequence FROM observations WHERE id=?", selected.String).Scan(&observedRun.Subject, &observedRun.Generation, &raw, &consumed); e != nil {
+				return nil, e
+			}
+			if e = decode(raw, &observation); e != nil {
+				return nil, e
+			}
+			if observedRun != i.Run || !sameJSON(raw, observation) || observation.ID != selected.String || observation.Run != i.Run || observation.Provenance != "ordinary-message" || observation.Source != d.Root.Run.Subject || observation.SourceGeneration != d.Root.Run.Generation || !consumed.Valid || consumed.Int64 != i.Sequence-1 {
+				return deny("authority_request_not_selected")
+			}
+			ids, e := stringList(ctx, q, "SELECT id FROM admissions")
 			if e != nil {
 				return nil, e
 			}
-			if a.Accepted && a.Bound != nil && *a.Bound == i.Run && desc.Kind == "message" && desc.IntentID == d.OriginalRequestID && a.ObservationID == selected.String && reflect.DeepEqual(observationFor(desc, i.Run), observation) {
-				admitted = true
+			admitted := false
+			for _, id := range ids {
+				desc, a, e := loadAdmissionKey(ctx, q, id)
+				if e != nil {
+					return nil, e
+				}
+				if a.Accepted && a.Bound != nil && *a.Bound == i.Run && desc.Kind == "message" && desc.IntentID == d.OriginalRequestID && a.ObservationID == selected.String && reflect.DeepEqual(observationFor(desc, i.Run), observation) {
+					admitted = true
+				}
 			}
+			if !admitted || !x.has(compositionAuthorizationFact, d.OriginalRequestID) {
+				return deny("authority_request_not_admitted")
+			}
+			auth, e := loadAuthorization(ctx, q, d.OriginalRequestID)
+			if e != nil {
+				return nil, e
+			}
+			if !auth.Allowed {
+				return deny("authority_request_not_admitted")
+			}
+			w.RequestObservationID = selected.String
+			w.RequestConsumedSequence = consumed.Int64
 		}
-		if !admitted || !x.has(compositionAuthorizationFact, d.OriginalRequestID) {
-			return deny("authority_request_not_admitted")
-		}
-		auth, e := loadAuthorization(ctx, q, d.OriginalRequestID)
-		if e != nil {
-			return nil, e
-		}
-		if !auth.Allowed {
-			return deny("authority_request_not_admitted")
-		}
-		w.RequestObservationID = selected.String
-		w.RequestConsumedSequence = consumed.Int64
 	}
 	w.Allowed = true
 	w.Reason = "authorized"
@@ -516,14 +569,22 @@ func retainedEffectAuthority(ctx context.Context, q queryer, i retainedIntent, a
 	}
 	return expected, nil
 }
-func validateRequestAuthorityProgram(p Program, enabled bool) error {
+func validateRequestAuthorityProgram(p Program, version string) error {
 	for _, in := range p.Code {
 		if in.Effect == nil {
 			continue
 		}
 		e := in.Effect
+		// V1 treats claim payload text as dormant until its authority operation
+		// is emitted. Only v2 adds literal-claim preflight at program loading.
+		if version == RequestAuthorityBindingVersion && e.Kind == "lifecycle" && e.Payload["operation"].Literal != nil && authorityOperation(e.Payload["operation"].Literal.Text) && e.Payload["claim"].Literal != nil {
+			var tag struct{ Version string }
+			if json.Unmarshal([]byte(e.Payload["claim"].Literal.Text), &tag) != nil || tag.Version != version {
+				return ErrVersion
+			}
+		}
 		if e.Authority != nil {
-			if !enabled {
+			if version == "" || e.Authority.Version != version {
 				return ErrVersion
 			}
 			if e.Kind != "external" && e.Kind != "adapter" {
@@ -540,12 +601,13 @@ func validateRequestAuthorityProgram(p Program, enabled bool) error {
 const authorityCurrentPrefix = math.MaxInt64
 
 func validateRequestAuthorityIntent(ctx context.Context, q queryer, i Intent, revision int64) error {
-	enabled, err := requestAuthorityEnabled(ctx, q)
+	version, err := storedRequestAuthorityVersion(ctx, q)
+	enabled := version != ""
 	if err != nil {
 		return err
 	}
 	if i.Authority != nil {
-		if !enabled || (i.Kind != "external" && i.Kind != "adapter") {
+		if !enabled || i.Authority.Version != version || (i.Kind != "external" && i.Kind != "adapter") {
 			return ErrVersion
 		}
 		if err = validateAuthorityUse(i.Authority); err != nil {
@@ -558,7 +620,10 @@ func validateRequestAuthorityIntent(ctx context.Context, q queryer, i Intent, re
 		if i.Payload["operation"].Kind != "string" || i.Payload["revision"].Kind != "int" || i.Payload["revision"].Number <= 0 || i.Target == "" || i.Generation <= 0 || i.Obligation == "" {
 			return ErrCorrupt
 		}
-		_, _, err = parseAuthorityClaim(LifecycleRequest{Intent: i, SourceRevision: revision, Operation: i.Payload["operation"].Text, ExpectedRevision: i.Payload["revision"].Number})
+		d, v, err := parseAuthorityClaim(LifecycleRequest{Intent: i, SourceRevision: revision, Operation: i.Payload["operation"].Text, ExpectedRevision: i.Payload["revision"].Number})
+		if err == nil && ((i.Payload["operation"].Text == "DelegateAuthority" && d.Version != version) || (i.Payload["operation"].Text == "RevokeAuthority" && v.Version != version)) {
+			return ErrVersion
+		}
 		return err
 	}
 	return nil
