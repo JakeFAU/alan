@@ -61,7 +61,19 @@
 - [ ] Otherwise freeze a narrowly specified opt-in interface and tests before implementation, compare execution facts under both modes, and review independently. Do not claim full-report and smaller-output measurements are equivalent contracts.
 - [ ] Commit the decision, any qualifying code and tests; obtain explicit review disposition.
 
-### Task 4: Frozen qualification and draft delivery
+### Task 4: Review reproducible qualification apparatus
+
+**Files:** A small P5 campaign entry point and controls under `docs/evidence/report-scaling/`, reusing the tracked P4 measurement/custody/qualification helpers without changing them.
+
+**Interfaces:** Exact baseline/candidate source exports, TaskRecorder, existing full-report driver, historical readers, same-seed comparator and acknowledged process barriers.
+
+- [ ] Record the Task 3 decision and split this qualification work from campaign execution so the apparatus is reviewed before confirmatory measurements.
+- [ ] Implement source/tool freeze, build, excluded smoke, frozen gate/recovery/differential routes, paired timing and strict analysis. Bind actual source/archive/tool/binary identities and preserve every failed attempt.
+- [ ] Freeze a single full-report comparison with seven bounds, 14 excluded warmups and 84 measured rows in six adjacent balanced AB/BA pairs per bound. Counter/profile captures stay separate from primary timing.
+- [ ] Supply real old-reader fixtures, exact required test events, full main/WAL/SHM custody, and independently rebuilt public consumers using the existing reviewed helpers.
+- [ ] Add focused apparatus controls for altered/missing rows, wrong source/binary, incomplete reports and unexpected exits; run excluded smoke, commit and obtain independent apparatus review.
+
+### Task 5: Frozen qualification and draft delivery
 
 **Files:** Focused documentation/README and compact raw evidence, reproduction scripts and review reports under `docs/evidence/report-scaling/`.
 
