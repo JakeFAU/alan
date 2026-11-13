@@ -1,5 +1,6 @@
 """Controls for the frozen P5 schedule, evidence reread and full-report cuts."""
 import copy
+import json
 from pathlib import Path
 import signal
 import sys
@@ -7,6 +8,7 @@ from tempfile import TemporaryDirectory
 import unittest
 
 import campaign
+from campaign_qualification import controlled
 from qualification import verify_direct_reports
 
 
@@ -68,6 +70,40 @@ class EvidenceTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             campaign.read_rows(rec, 'smoke', rows)
 
+    def test_build_cannot_replace_frozen_source_with_coherent_foreign_manifest(self):
+        source, other = self.root / 'source', self.root / 'foreign'
+        for path in (source, other):
+            path.mkdir()
+            (path / 'input.go').write_text('same content')
+        env = {'PATH': '/usr/bin:/bin'}
+        parent = campaign.TaskRecorder(self.root, env=env, sources={'candidate': source})
+        foreign = campaign.TaskRecorder(self.root, env=env, sources={'candidate': other})
+        campaign.separate_inputs(foreign, 'timing', [])
+        digest = campaign.sha(self.root / 'timing-inputs.json')
+        with self.assertRaisesRegex(ValueError, 'dropped or replaced a frozen source'):
+            campaign.load_inputs(self.root, env, 'timing', digest, parent)
+
+    def test_bound_files_reject_drift_without_binding_unrelated_results(self):
+        env = {'PATH': '/usr/bin:/bin'}
+        source = self.root / 'source'
+        source.mkdir()
+        entry = source / 'driver.py'
+        entry.write_text('original')
+        report = self.root / 'build-info.log'
+        report.write_text('build info')
+        rec = campaign.TaskRecorder(self.root, env=env, tools=[entry])
+        campaign.separate_inputs(rec, 'timing', [report])
+        digest = campaign.sha(self.root / 'timing-inputs.json')
+        (source / 'results.md').write_text('additional evidence')
+        campaign.load_inputs(self.root, env, 'timing', digest, rec)
+        report.write_text('changed build info')
+        with self.assertRaisesRegex(ValueError, 'bound archive or build evidence changed'):
+            campaign.load_inputs(self.root, env, 'timing', digest, rec)
+        report.write_text('build info')
+        entry.write_text('changed executable input')
+        with self.assertRaisesRegex(ValueError, 'frozen inputs changed'):
+            campaign.load_inputs(self.root, env, 'timing', digest, rec)
+
     def test_usage_with_driver_progress_and_duplicate_or_missing_marker(self):
         rec = campaign.TaskRecorder(self.root, env={'PATH': '/usr/bin:/bin'})
         wrapper = [sys.executable, '-B', str(campaign.HERE / 'sample_usage.py'), sys.executable, '-B', '-c']
@@ -95,6 +131,21 @@ class EvidenceTest(unittest.TestCase):
         timeout = campaign.read(rec.gates / 'timeout/outcome.json')
         self.assertEqual((terminated['exit'], terminated['timeout']), (-signal.SIGTERM, False))
         self.assertEqual((timeout['exit'], timeout['timeout']), (-signal.SIGKILL, True))
+
+    def test_controlled_json_reassembles_fragmented_test_output(self):
+        log = self.root / 'test2json.jsonl'
+        case = {'case': 'repeated', 'evidence': 'x' * 2100}
+        value = '    evidence.go:13: M4_CONTROLLED ' + json.dumps(case) + '\n'
+        other = '    unrelated.go:4: ordinary output\n'
+        chunks = [('TestRecovery', value[:1024]), ('TestOther', other),
+                  ('TestRecovery', value[1024:2048]), ('TestRecovery', value[2048:])]
+        events = [json.dumps({'Action': 'output', 'Package': 'weather', 'Test': name, 'Output': text})
+                  for name, text in chunks]
+        log.write_text('\n'.join(events))
+        self.assertEqual(controlled(log, 'M4_CONTROLLED'), {'repeated': case})
+        log.write_text('\n'.join(events[:-1]))
+        with self.assertRaisesRegex(ValueError, 'truncated'):
+            controlled(log, 'M4_CONTROLLED')
 
     def test_direct_report_checks_every_field_at_every_cut(self):
         rr = dict.fromkeys(('Steps', 'Dispatches', 'Quiescent', 'OpenRuns',

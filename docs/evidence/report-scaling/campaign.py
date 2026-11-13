@@ -11,7 +11,7 @@ import sys
 
 from measure import BASE, BASE_TREE, EVIDENCE, HERE, REPO, attribution, build_driver, pinned_inputs
 from controller import OLD_CLI, OLD_OWNER, bind_toolchain, environment
-from custody import TaskRecorder, extract_source, inventory, members, read, restore_inputs, separate_inputs, sha, write
+from custody import TaskRecorder, extract_source, inventory, members, read, separate_inputs, sha, write
 from measurement import BOUNDS, command, resources, row, summary, validate_report
 from overlays import scopes
 from sample_usage import USAGE_PREFIX
@@ -23,6 +23,8 @@ PINS = {'baseline': (BASE, BASE_TREE),
 HELPERS = ('execution-scaling/task5', 'execution-scaling/apparatus', 'performance-p2/driver',
            'performance-p2/instrument', 'performance-p3/campaign', 'performance-p3/final',
            'performance-p3/qualification')
+P5_INPUTS = ('campaign.py', 'campaign_qualification.py', 'measure.py', 'oracle.py',
+             'report_frozen_test.go.txt', 'sample_usage.py')
 WORKSPACE = REPO / '.superpowers/sdd/plan-report-scaling'
 
 
@@ -55,8 +57,8 @@ def freeze(root, revision, gopath, excluded, smoke_gocache=None):
             raise ValueError('shared build cache is available only for excluded smoke')
         env['GOCACHE'] = str(smoke_gocache.resolve())
     rec = TaskRecorder(root, env=env)
-    rec.bind_tool(Path(__file__))
-    rec.bind_tool(HERE / 'sample_usage.py')
+    for name in P5_INPUTS:
+        rec.bind_tool(HERE / name)
     head = rec.run('checkout-head', ['git', 'rev-parse', 'HEAD'], REPO).read_text().strip()
     status = rec.run('checkout-status', ['git', 'status', '--porcelain=v1', '--untracked-files=all'],
                      REPO).read_text()
@@ -91,10 +93,14 @@ def freeze(root, revision, gopath, excluded, smoke_gocache=None):
             if proof.read_text().splitlines() != got:
                 raise ValueError('detached Git metadata disagrees with source archive')
     frozen = rec.sources['candidate'] / 'docs/evidence'
-    for name in HELPERS + ('report-scaling',):
+    for name in HELPERS:
         if inventory(EVIDENCE / name) != inventory(frozen / name):
             raise ValueError('live apparatus differs from frozen candidate: ' + name)
         rec.bind('apparatus-' + name.replace('/', '-'), EVIDENCE / name)
+    for name in P5_INPUTS:
+        path = HERE / name
+        if sha(path) != sha(frozen / 'report-scaling' / name):
+            raise ValueError('live P5 input differs from frozen candidate: ' + name)
     pinned_inputs()
     toolchain = bind_toolchain(rec)
     # Xcode command shims and their selected executable are distinct inputs.
@@ -104,7 +110,8 @@ def freeze(root, revision, gopath, excluded, smoke_gocache=None):
     for side in identities:
         rec.run(side + '-module-resolution', ['go', 'list', '-mod=readonly', '-m', 'all'], rec.sources[side])
     artifacts = [root / 'archives' / (side + '.tar') for side in identities]
-    artifacts.extend(path for gate in sorted(rec.gates.iterdir()) for path in sorted(gate.iterdir()))
+    artifacts.extend(gate / name for gate in sorted(rec.gates.iterdir())
+                     for name in ('command.json', 'outcome.json', 'stdout.log', 'stderr.log'))
     separate_inputs(rec, 'source', artifacts)
     lock = root / 'source-freeze.json'
     write(lock, {'format': 'alan/p5-source-v1', 'sources': identities, 'excluded': excluded,
@@ -112,6 +119,25 @@ def freeze(root, revision, gopath, excluded, smoke_gocache=None):
                  'smoke_gocache': str(smoke_gocache.resolve()) if smoke_gocache else None,
                  'inputs_sha256': sha(root / 'source-inputs.json')})
     print('SOURCE FREEZE ' + sha(lock), flush=True)
+
+
+def load_inputs(root, env, component, digest, parent=None):
+    path = root / (component + '-inputs.json')
+    if sha(path) != digest:
+        raise ValueError('input binding digest differs: ' + component)
+    binding = read(path)
+    sources = {name: Path(source) for name, source in binding['sources'].items()}
+    tools = [Path(tool) for tool in binding['tools']]
+    if parent:
+        previous = parent.expected
+        snapshot = binding['snapshot']
+        if (not parent.sources.items() <= sources.items() or not set(parent.tools) <= set(tools)
+                or any(snapshot[key].get(name) != value for key in ('sources', 'tools')
+                       for name, value in previous[key].items())):
+            raise ValueError('build binding dropped or replaced a frozen source or tool')
+    if any(sha(file) != value for file, value in binding['related_files'].items()):
+        raise ValueError('bound archive or build evidence changed: ' + component)
+    return TaskRecorder(root, env=env, sources=sources, tools=tools, expected=binding['snapshot'])
 
 
 def open_freeze(root, digest):
@@ -125,8 +151,7 @@ def open_freeze(root, digest):
         env['GOCACHE'] = plan['smoke_gocache']
     if plan['format'] != 'alan/p5-source-v1' or env != plan['environment']:
         raise ValueError('source format or environment differs')
-    rec = TaskRecorder(root, env=env)
-    restore_inputs(rec, root / 'source-inputs.json', plan['inputs_sha256'])
+    rec = load_inputs(root, env, 'source', plan['inputs_sha256'])
     for side, identity in plan['sources'].items():
         if sha(root / 'archives' / (side + '.tar')) != identity['archive_sha256']:
             raise ValueError('source archive changed: ' + side)
@@ -155,10 +180,13 @@ def require_rows(root, plan, component, binaries, rows):
 
 
 def seal_build(rec, component, source_digest, extra=None):
-    paths = [path for path in (rec.root / 'builds' / component).rglob('*') if path.is_file()]
     if component == 'qualification':
-        paths.extend(path for gate in rec.gates.iterdir() for path in gate.iterdir()
-                     if gate.name.startswith(('qualify-', 'weather-', 'baseline-direct-', 'candidate-direct-')))
+        gates = [gate for gate in rec.gates.iterdir() if gate.name.startswith(
+                 ('qualify-', 'weather-', 'baseline-direct-', 'candidate-direct-'))]
+    else:
+        gates = list((rec.root / 'builds' / component).glob('*/gates/*'))
+    paths = [gate / name for gate in sorted(gates)
+             for name in ('command.json', 'outcome.json', 'stdout.log', 'stderr.log')]
     separate_inputs(rec, component, paths)
     lock = rec.root / (component + '-freeze.json')
     write(lock, {'component': component, 'source_sha256': source_digest,
@@ -173,8 +201,8 @@ def open_build(rec, component, source_digest, build_digest):
     binding = read(lock)
     if (binding['component'], binding['source_sha256']) != (component, source_digest):
         raise ValueError('build/source component differs')
-    restore_inputs(rec, rec.root / (component + '-inputs.json'), binding['inputs_sha256'])
-    return binding
+    frozen = load_inputs(rec.root, rec.env, component, binding['inputs_sha256'], parent=rec)
+    return frozen, binding
 
 
 def build_measurement(rec, plan, component, digest):
@@ -362,7 +390,7 @@ def main():
             if action == 'build':
                 build_measurement(rec, plan, component, args.source_digest)
                 return
-            bound = open_build(rec, component, args.source_digest, args.build_digest)
+            rec, bound = open_build(rec, component, args.source_digest, args.build_digest)
             rows = require_rows(root, plan, component, bound['binaries'], bound['rows'])
             if action == 'run':
                 execute_rows(rec, component, rows)

@@ -221,15 +221,24 @@ def differential(rec, plan, excluded):
 
 
 def controlled(log, marker):
-    result = {}
-    for line in log.read_text().splitlines():
-        item = json.loads(line)
-        _, found, data = item.get('Output', '').partition(marker + ' ')
-        if found:
-            value = json.loads(data)
-            if value['case'] in result:
-                raise ValueError('duplicate weather case evidence')
-            result[value['case']] = value
+    result, pending = {}, {}
+    for event in log.read_text().splitlines():
+        item = json.loads(event)
+        if item['Action'] != 'output':
+            continue
+        key = (item['Package'], item.get('Test'))
+        pieces = (pending.pop(key, '') + item['Output']).split('\n')
+        if pieces[-1]:
+            pending[key] = pieces[-1]
+        for line in pieces[:-1]:
+            _, found, data = line.partition(marker + ' ')
+            if found:
+                value = json.loads(data)
+                if value['case'] in result:
+                    raise ValueError('duplicate weather case evidence')
+                result[value['case']] = value
+    if any(marker + ' ' in partial for partial in pending.values()):
+        raise ValueError('truncated weather case evidence')
     return result
 
 
@@ -266,12 +275,12 @@ def weather(rec, plan, excluded):
             binaries = list(consumers.rglob('weather-agent'))
             if len(binaries) != 1:
                 raise ValueError('weather test did not retain its actual public consumer')
-            for binary in binaries:
-                if not binary.is_file() or any(not (binary.parent / path).is_file() for path in ('go.mod', 'go.sum', 'main.go')):
-                    raise ValueError('weather consumer source/module evidence is incomplete')
-                rec.bind(side + '-' + section + '-weather-public-module', binary.parent)
-                rec.bind_tool(binary)
-                rec.run(side + '-' + section + '-weather-public-build-info', ['go', 'version', '-m', binary])
+            binary, = binaries
+            if not binary.is_file() or any(not (binary.parent / path).is_file() for path in ('go.mod', 'go.sum', 'main.go')):
+                raise ValueError('weather consumer source/module evidence is incomplete')
+            rec.bind(side + '-' + section + '-weather-public-module', binary.parent)
+            rec.bind_tool(binary)
+            rec.run(side + '-' + section + '-weather-public-build-info', ['go', 'version', '-m', binary])
             sealed = inventory(archives)
             for index, db in enumerate(stops):
                 name = f'{side}-{section}-stop{index + 1}'
@@ -335,7 +344,7 @@ def dispatch(rec, plan, args):
     elif args.phase == 'outside-rebuild':
         reproduce(rec, plan, args.outside)
     else:
-        open_build(rec, 'qualification', args.source_digest, args.build_digest)
+        rec, _ = open_build(rec, 'qualification', args.source_digest, args.build_digest)
         if args.phase == 'historical-smoke':
             historical(rec, plan)
         elif args.phase in ('differential', 'differential-smoke'):
