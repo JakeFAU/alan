@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+
+	"github.com/mattn/go-sqlite3"
 )
 
 // RootCompletion exposes logical completion separately from local run status and
@@ -36,11 +38,11 @@ func readRootCompletions(ctx context.Context, q queryer) ([]RootCompletion, erro
 	if err != nil {
 		return nil, err
 	}
-	// Callers provide a stable ownership/transaction cut. Reuse membership,
-	// including successful absence, only within this call.
-	var membershipRoots map[RunID]string
+	// Both groupings are local to the caller's ownership/transaction cut.
+	var charges map[string]compositionCharge
+	operationsByRoot := make(map[string][]string)
 	out := []RootCompletion{}
-	for _, id := range roots {
+	for index, id := range roots {
 		var raw []byte
 		var root ResourceRoot
 		if err = q.QueryRowContext(ctx, "SELECT descriptor FROM composition_roots WHERE id=?", id).Scan(&raw); err != nil {
@@ -54,9 +56,20 @@ func readRootCompletions(ctx context.Context, q queryer) ([]RootCompletion, erro
 			return nil, err
 		}
 		r := RootCompletion{RootID: id, Run: root.Run, LocalStatus: state.Projection.Status, Limits: root.Limits, PendingInvocations: []string{}, UnresolvedExternal: []string{}, UnknownExternal: []string{}}
+		if index == 0 {
+			charges, err = readRootReportCharges(ctx, q)
+			if err != nil {
+				return nil, err
+			}
+		}
+		r.Charges = charges[id]
 		r.Charges.RootID = id
-		if err = q.QueryRowContext(ctx, "SELECT coalesce(sum(json_extract(descriptor,'$.Invocations')),0),coalesce(sum(json_extract(descriptor,'$.CreatedRuns')),0),coalesce(sum(json_extract(descriptor,'$.Effects')),0) FROM composition_charges WHERE root_id=?", id).Scan(&r.Charges.Invocations, &r.Charges.CreatedRuns, &r.Charges.Effects); err != nil {
-			return nil, err
+		if charges == nil {
+			// When batching cannot reproduce a total, let SQLite evaluate
+			// each root's original expressions at its original boundary.
+			if err = q.QueryRowContext(ctx, "SELECT coalesce(sum(json_extract(descriptor,'$.Invocations')),0),coalesce(sum(json_extract(descriptor,'$.CreatedRuns')),0),coalesce(sum(json_extract(descriptor,'$.Effects')),0) FROM composition_charges WHERE root_id=?", id).Scan(&r.Charges.Invocations, &r.Charges.CreatedRuns, &r.Charges.Effects); err != nil {
+				return nil, err
+			}
 		}
 		prepared, err := prepareRoot(ctx, q, id)
 		if err != nil {
@@ -67,22 +80,32 @@ func readRootCompletions(ctx context.Context, q queryer) ([]RootCompletion, erro
 			o := prepared.Outcome
 			r.Outcome = &o
 		}
-		for _, operation := range sortedKeys(intents) {
+		operations := operationsByRoot[id]
+		var membershipRoots map[RunID]string
+		if index == 0 {
+			// Resolve membership during the first root's sorted traversal.
+			// Its result checks must still precede any later lookups.
+			operations = sortedKeys(intents)
+			membershipRoots = make(map[RunID]string)
+		}
+		for _, operation := range operations {
 			i := intents[operation]
-			memberRoot, cached := membershipRoots[i.Run]
 			var e error
-			if !cached {
-				memberRoot, e = compositionMembershipRoot(ctx, q, i.Run)
-				if e != nil {
-					return nil, e
+			if index == 0 {
+				memberRoot, cached := membershipRoots[i.Run]
+				if !cached {
+					memberRoot, e = compositionMembershipRoot(ctx, q, i.Run)
+					if e != nil {
+						return nil, e
+					}
+					membershipRoots[i.Run] = memberRoot
 				}
-				if membershipRoots == nil {
-					membershipRoots = make(map[RunID]string)
+				if memberRoot != id {
+					if memberRoot != "" {
+						operationsByRoot[memberRoot] = append(operationsByRoot[memberRoot], operation)
+					}
+					continue
 				}
-				membershipRoots[i.Run] = memberRoot
-			}
-			if memberRoot != id {
-				continue
 			}
 			switch i.Kind {
 			case "invocation":
@@ -123,4 +146,59 @@ func readRootCompletions(ctx context.Context, q queryer) ([]RootCompletion, erro
 		out = append(out, r)
 	}
 	return out, nil
+}
+
+func readRootReportCharges(ctx context.Context, q queryer) (map[string]compositionCharge, error) {
+	rows, err := q.QueryContext(ctx, `
+		WITH charges AS (
+			SELECT root_id, json_extract(descriptor,'$.Invocations') AS invocations,
+				json_extract(descriptor,'$.CreatedRuns') AS created_runs,
+				json_extract(descriptor,'$.Effects') AS effects
+			FROM composition_charges
+		)
+		SELECT root_id, sum(invocations), sum(created_runs), sum(effects),
+			max(typeof(invocations) != 'integer' OR invocations < 0
+				OR typeof(created_runs) != 'integer' OR created_runs < 0
+				OR typeof(effects) != 'integer' OR effects < 0)
+		FROM charges GROUP BY root_id`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	charges := make(map[string]compositionCharge)
+	for rows.Next() {
+		var root, invocations, createdRuns, effects any
+		var outsideDomain bool
+		if err = rows.Scan(&root, &invocations, &createdRuns, &effects, &outsideDomain); err != nil {
+			return nil, err
+		}
+		if outsideDomain {
+			// Signed or non-integer inputs can make SUM sensitive to scan
+			// order. Retain the original per-root SQLite behavior for them.
+			return nil, nil
+		}
+		id, textRoot := root.(string)
+		invocationTotal, integerInvocations := invocations.(int64)
+		createdRunTotal, integerCreatedRuns := createdRuns.(int64)
+		effectTotal, integerEffects := effects.(int64)
+		if !(textRoot && integerInvocations && integerCreatedRuns && integerEffects) {
+			return nil, nil
+		}
+		charges[id] = compositionCharge{
+			Invocations: invocationTotal,
+			CreatedRuns: createdRunTotal,
+			Effects:     effectTotal,
+		}
+	}
+	err = rows.Err()
+	var sqliteErr sqlite3.Error
+	if errors.As(err, &sqliteErr) && sqliteErr.Code == sqlite3.ErrError {
+		switch sqliteErr.Error() {
+		case "malformed JSON", "integer overflow":
+			// The failing row can belong to a root the traversal has not
+			// reached. The original query reproduces its error in order.
+			return nil, nil
+		}
+	}
+	return charges, err
 }
