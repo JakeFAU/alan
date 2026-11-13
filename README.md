@@ -30,6 +30,8 @@ Declare a finite sequence with `author.BoundedSeries(observation, author.SeriesO
 
 [Bounded execution scaling](docs/evidence/execution-scaling/results.md) measures guarded owner discovery, grouped full reports and a separately tested targeted continuation-basis read. The results include recovery qualification and the remaining full-report costs.
 
+[Full report scaling](docs/evidence/report-scaling/results.md) measures report-local batching. On the frozen 256-operation series, median Execute elapsed fell from 7.031 s to 4.613 s with complete reports. The results include SQL work, allocation, peak RSS, and compatibility and recovery qualification.
+
 ## Run a computation
 
 Use Go 1.27.3, CGO, a C compiler and a local Unix filesystem. In your application module, run `go get github.com/JakeFAU/alan/runtime`. Import `github.com/JakeFAU/alan/author` to define a program and `github.com/JakeFAU/alan/runtime` to run it. From a checkout, run the [quickstart](examples/quickstart/main.go).

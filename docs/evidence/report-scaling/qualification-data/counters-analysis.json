@@ -1,0 +1,471 @@
+{
+  "analysis": {
+    "counters-b256-baseline": {
+      "execute_sql": {
+        "executions": 790220,
+        "fullscan_steps": 587010,
+        "sqlite_row_returns": 1018096,
+        "vm_steps": 16221607
+      },
+      "finishRun_families": {
+        "SELECT count(*) FROM message_acknowledgments WHERE intent_id=?": {
+          "executions": 32896,
+          "fullscan_steps": 0,
+          "sqlite_row_returns": 32896,
+          "vm_steps": 394752
+        },
+        "SELECT count(*) FROM settlements WHERE id=?": {
+          "executions": 65792,
+          "fullscan_steps": 0,
+          "sqlite_row_returns": 65792,
+          "vm_steps": 855296
+        },
+        "SELECT descriptor FROM adapter_results WHERE intent_id=?": {
+          "executions": 32896,
+          "fullscan_steps": 0,
+          "sqlite_row_returns": 32896,
+          "vm_steps": 394752
+        },
+        "SELECT descriptor FROM composition_freezes WHERE scope_id=?": {
+          "executions": 32640,
+          "fullscan_steps": 0,
+          "sqlite_row_returns": 0,
+          "vm_steps": 326400
+        },
+        "SELECT descriptor FROM composition_root_publications WHERE scope_id=?": {
+          "executions": 65536,
+          "fullscan_steps": 0,
+          "sqlite_row_returns": 32896,
+          "vm_steps": 721152
+        },
+        "SELECT descriptor FROM composition_roots WHERE id=?": {
+          "executions": 131072,
+          "fullscan_steps": 0,
+          "sqlite_row_returns": 131072,
+          "vm_steps": 1572864
+        },
+        "SELECT id FROM composition_roots ORDER BY id": {
+          "executions": 256,
+          "fullscan_steps": 65280,
+          "sqlite_row_returns": 65536,
+          "vm_steps": 198400
+        },
+        "SELECT id,subject,generation,sequence,ordinal,source_revision,descriptor FROM intents": {
+          "executions": 768,
+          "fullscan_steps": 97920,
+          "sqlite_row_returns": 98688,
+          "vm_steps": 892800
+        },
+        "SELECT r.program_id,r.epoch,r.sequence,s.revision,r.projection FROM runs r JOIN subjects s ON s.id=r.subject WHERE r.subject=? AND r.generation=?": {
+          "executions": 131072,
+          "fullscan_steps": 0,
+          "sqlite_row_returns": 131072,
+          "vm_steps": 3145728
+        },
+        "SELECT result FROM admissions": {
+          "executions": 256,
+          "fullscan_steps": 65280,
+          "sqlite_row_returns": 65536,
+          "vm_steps": 198144
+        },
+        "SELECT root_id FROM composition_static_members WHERE subject=? AND generation=? UNION ALL SELECT root_id FROM composition_members WHERE subject=? AND generation=?": {
+          "executions": 32896,
+          "fullscan_steps": 0,
+          "sqlite_row_returns": 32896,
+          "vm_steps": 460544
+        },
+        "SELECT root_id,decision_order,descriptor FROM composition_closures WHERE scope_id=?": {
+          "executions": 32640,
+          "fullscan_steps": 0,
+          "sqlite_row_returns": 0,
+          "vm_steps": 326400
+        },
+        "SELECT schema_version FROM metadata WHERE singleton=?": {
+          "executions": 33152,
+          "fullscan_steps": 0,
+          "sqlite_row_returns": 33152,
+          "vm_steps": 265216
+        },
+        "SELECT source_revision,descriptor FROM intents WHERE id=?": {
+          "executions": 32896,
+          "fullscan_steps": 0,
+          "sqlite_row_returns": 32896,
+          "vm_steps": 427648
+        },
+        "SELECT subject,generation FROM runs ORDER BY subject,generation": {
+          "executions": 256,
+          "fullscan_steps": 65280,
+          "sqlite_row_returns": 65536,
+          "vm_steps": 263936
+        },
+        "SELECT subject,generation,sequence,destinations,delivery_status FROM terminal_obligations ORDER BY subject,generation": {
+          "executions": 256,
+          "fullscan_steps": 32640,
+          "sqlite_row_returns": 32896,
+          "vm_steps": 265216
+        },
+        "SELECT version FROM composition_profile WHERE singleton=?": {
+          "executions": 256,
+          "fullscan_steps": 0,
+          "sqlite_row_returns": 256,
+          "vm_steps": 2048
+        },
+        "WITH charges AS ( SELECT root_id, json_extract(descriptor,?) AS invocations, json_extract(descriptor,?) AS created_runs, json_extract(descriptor,?) AS effects FROM composition_charges ) SELECT root_id, sum(invocations), sum(created_runs), sum(effects), max(typeof(invocations) != ? OR invocations < ? OR typeof(created_runs) != ? OR created_runs < ? OR typeof(effects) != ? OR effects < ?) FROM charges GROUP BY root_id": {
+          "executions": 256,
+          "fullscan_steps": 32640,
+          "sqlite_row_returns": 32896,
+          "vm_steps": 2771200
+        }
+      },
+      "finishRun_sql": {
+        "executions": 625792,
+        "fullscan_steps": 359040,
+        "sqlite_row_returns": 886912,
+        "vm_steps": 13482496
+      },
+      "roots_emitted": 65536
+    },
+    "counters-b256-candidate": {
+      "execute_sql": {
+        "executions": 397772,
+        "fullscan_steps": 717570,
+        "sqlite_row_returns": 854128,
+        "vm_steps": 15834791
+      },
+      "finishRun_families": {
+        "SELECT count(*) FROM message_acknowledgments WHERE intent_id=?": {
+          "executions": 32896,
+          "fullscan_steps": 0,
+          "sqlite_row_returns": 32896,
+          "vm_steps": 394752
+        },
+        "SELECT count(*) FROM settlements WHERE id=?": {
+          "executions": 65792,
+          "fullscan_steps": 0,
+          "sqlite_row_returns": 65792,
+          "vm_steps": 855296
+        },
+        "SELECT descriptor FROM adapter_results WHERE intent_id=?": {
+          "executions": 32896,
+          "fullscan_steps": 0,
+          "sqlite_row_returns": 32896,
+          "vm_steps": 394752
+        },
+        "SELECT id FROM composition_roots ORDER BY id": {
+          "executions": 256,
+          "fullscan_steps": 65280,
+          "sqlite_row_returns": 65536,
+          "vm_steps": 198400
+        },
+        "SELECT id,subject,generation,sequence,ordinal,source_revision,descriptor FROM intents": {
+          "executions": 768,
+          "fullscan_steps": 97920,
+          "sqlite_row_returns": 98688,
+          "vm_steps": 892800
+        },
+        "SELECT r.id, r.descriptor, p.scope_id, p.descriptor, (f.scope_id IS NOT NULL) + (f.descriptor IS NOT NULL), (c.scope_id IS NOT NULL) + (c.root_id IS NOT NULL) + (c.decision_order IS NOT NULL) + (c.descriptor IS NOT NULL) FROM composition_roots r LEFT JOIN composition_root_publications p ON p.scope_id = ? || r.id LEFT JOIN composition_freezes f ON f.scope_id = ? || r.id LEFT JOIN composition_closures c ON c.scope_id = ? || r.id": {
+          "executions": 256,
+          "fullscan_steps": 65280,
+          "sqlite_row_returns": 65536,
+          "vm_steps": 4524032
+        },
+        "SELECT r.subject, r.generation, r.program_id, r.epoch, r.sequence, s.id IS NOT NULL, s.revision, r.projection FROM runs r LEFT JOIN subjects s ON s.id = r.subject": {
+          "executions": 256,
+          "fullscan_steps": 65280,
+          "sqlite_row_returns": 65536,
+          "vm_steps": 1181696
+        },
+        "SELECT result FROM admissions": {
+          "executions": 256,
+          "fullscan_steps": 65280,
+          "sqlite_row_returns": 65536,
+          "vm_steps": 198144
+        },
+        "SELECT root_id FROM composition_static_members WHERE subject=? AND generation=? UNION ALL SELECT root_id FROM composition_members WHERE subject=? AND generation=?": {
+          "executions": 32896,
+          "fullscan_steps": 0,
+          "sqlite_row_returns": 32896,
+          "vm_steps": 460544
+        },
+        "SELECT schema_version FROM metadata WHERE singleton=?": {
+          "executions": 33152,
+          "fullscan_steps": 0,
+          "sqlite_row_returns": 33152,
+          "vm_steps": 265216
+        },
+        "SELECT source_revision,descriptor FROM intents WHERE id=?": {
+          "executions": 32896,
+          "fullscan_steps": 0,
+          "sqlite_row_returns": 32896,
+          "vm_steps": 427648
+        },
+        "SELECT subject,generation FROM runs ORDER BY subject,generation": {
+          "executions": 256,
+          "fullscan_steps": 65280,
+          "sqlite_row_returns": 65536,
+          "vm_steps": 263936
+        },
+        "SELECT subject,generation,sequence,destinations,delivery_status FROM terminal_obligations ORDER BY subject,generation": {
+          "executions": 256,
+          "fullscan_steps": 32640,
+          "sqlite_row_returns": 32896,
+          "vm_steps": 265216
+        },
+        "SELECT version FROM composition_profile WHERE singleton=?": {
+          "executions": 256,
+          "fullscan_steps": 0,
+          "sqlite_row_returns": 256,
+          "vm_steps": 2048
+        },
+        "WITH charges AS ( SELECT root_id, json_extract(descriptor,?) AS invocations, json_extract(descriptor,?) AS created_runs, json_extract(descriptor,?) AS effects FROM composition_charges ) SELECT root_id, sum(invocations), sum(created_runs), sum(effects), max(typeof(invocations) != ? OR invocations < ? OR typeof(created_runs) != ? OR created_runs < ? OR typeof(effects) != ? OR effects < ?) FROM charges GROUP BY root_id": {
+          "executions": 256,
+          "fullscan_steps": 32640,
+          "sqlite_row_returns": 32896,
+          "vm_steps": 2771200
+        }
+      },
+      "finishRun_sql": {
+        "executions": 233344,
+        "fullscan_steps": 489600,
+        "sqlite_row_returns": 722944,
+        "vm_steps": 13095680
+      },
+      "roots_emitted": 65536
+    },
+    "counters-b8-baseline": {
+      "execute_sql": {
+        "executions": 5672,
+        "fullscan_steps": 490,
+        "sqlite_row_returns": 4892,
+        "vm_steps": 76954
+      },
+      "finishRun_families": {
+        "SELECT count(*) FROM message_acknowledgments WHERE intent_id=?": {
+          "executions": 36,
+          "fullscan_steps": 0,
+          "sqlite_row_returns": 36,
+          "vm_steps": 432
+        },
+        "SELECT count(*) FROM settlements WHERE id=?": {
+          "executions": 72,
+          "fullscan_steps": 0,
+          "sqlite_row_returns": 72,
+          "vm_steps": 936
+        },
+        "SELECT descriptor FROM adapter_results WHERE intent_id=?": {
+          "executions": 36,
+          "fullscan_steps": 0,
+          "sqlite_row_returns": 36,
+          "vm_steps": 432
+        },
+        "SELECT descriptor FROM composition_freezes WHERE scope_id=?": {
+          "executions": 28,
+          "fullscan_steps": 0,
+          "sqlite_row_returns": 0,
+          "vm_steps": 280
+        },
+        "SELECT descriptor FROM composition_root_publications WHERE scope_id=?": {
+          "executions": 64,
+          "fullscan_steps": 0,
+          "sqlite_row_returns": 36,
+          "vm_steps": 712
+        },
+        "SELECT descriptor FROM composition_roots WHERE id=?": {
+          "executions": 128,
+          "fullscan_steps": 0,
+          "sqlite_row_returns": 128,
+          "vm_steps": 1536
+        },
+        "SELECT id FROM composition_roots ORDER BY id": {
+          "executions": 8,
+          "fullscan_steps": 56,
+          "sqlite_row_returns": 64,
+          "vm_steps": 248
+        },
+        "SELECT id,subject,generation,sequence,ordinal,source_revision,descriptor FROM intents": {
+          "executions": 24,
+          "fullscan_steps": 84,
+          "sqlite_row_returns": 108,
+          "vm_steps": 1116
+        },
+        "SELECT r.program_id,r.epoch,r.sequence,s.revision,r.projection FROM runs r JOIN subjects s ON s.id=r.subject WHERE r.subject=? AND r.generation=?": {
+          "executions": 128,
+          "fullscan_steps": 0,
+          "sqlite_row_returns": 128,
+          "vm_steps": 3072
+        },
+        "SELECT result FROM admissions": {
+          "executions": 8,
+          "fullscan_steps": 56,
+          "sqlite_row_returns": 64,
+          "vm_steps": 240
+        },
+        "SELECT root_id FROM composition_static_members WHERE subject=? AND generation=? UNION ALL SELECT root_id FROM composition_members WHERE subject=? AND generation=?": {
+          "executions": 36,
+          "fullscan_steps": 0,
+          "sqlite_row_returns": 36,
+          "vm_steps": 504
+        },
+        "SELECT root_id,decision_order,descriptor FROM composition_closures WHERE scope_id=?": {
+          "executions": 28,
+          "fullscan_steps": 0,
+          "sqlite_row_returns": 0,
+          "vm_steps": 280
+        },
+        "SELECT schema_version FROM metadata WHERE singleton=?": {
+          "executions": 44,
+          "fullscan_steps": 0,
+          "sqlite_row_returns": 44,
+          "vm_steps": 352
+        },
+        "SELECT source_revision,descriptor FROM intents WHERE id=?": {
+          "executions": 36,
+          "fullscan_steps": 0,
+          "sqlite_row_returns": 36,
+          "vm_steps": 468
+        },
+        "SELECT subject,generation FROM runs ORDER BY subject,generation": {
+          "executions": 8,
+          "fullscan_steps": 56,
+          "sqlite_row_returns": 64,
+          "vm_steps": 312
+        },
+        "SELECT subject,generation,sequence,destinations,delivery_status FROM terminal_obligations ORDER BY subject,generation": {
+          "executions": 8,
+          "fullscan_steps": 28,
+          "sqlite_row_returns": 36,
+          "vm_steps": 352
+        },
+        "SELECT version FROM composition_profile WHERE singleton=?": {
+          "executions": 8,
+          "fullscan_steps": 0,
+          "sqlite_row_returns": 8,
+          "vm_steps": 64
+        },
+        "WITH charges AS ( SELECT root_id, json_extract(descriptor,?) AS invocations, json_extract(descriptor,?) AS created_runs, json_extract(descriptor,?) AS effects FROM composition_charges ) SELECT root_id, sum(invocations), sum(created_runs), sum(effects), max(typeof(invocations) != ? OR invocations < ? OR typeof(created_runs) != ? OR created_runs < ? OR typeof(effects) != ? OR effects < ?) FROM charges GROUP BY root_id": {
+          "executions": 8,
+          "fullscan_steps": 28,
+          "sqlite_row_returns": 36,
+          "vm_steps": 3272
+        }
+      },
+      "finishRun_sql": {
+        "executions": 708,
+        "fullscan_steps": 308,
+        "sqlite_row_returns": 932,
+        "vm_steps": 14608
+      },
+      "roots_emitted": 64
+    },
+    "counters-b8-candidate": {
+      "execute_sql": {
+        "executions": 5312,
+        "fullscan_steps": 602,
+        "sqlite_row_returns": 4728,
+        "vm_steps": 76770
+      },
+      "finishRun_families": {
+        "SELECT count(*) FROM message_acknowledgments WHERE intent_id=?": {
+          "executions": 36,
+          "fullscan_steps": 0,
+          "sqlite_row_returns": 36,
+          "vm_steps": 432
+        },
+        "SELECT count(*) FROM settlements WHERE id=?": {
+          "executions": 72,
+          "fullscan_steps": 0,
+          "sqlite_row_returns": 72,
+          "vm_steps": 936
+        },
+        "SELECT descriptor FROM adapter_results WHERE intent_id=?": {
+          "executions": 36,
+          "fullscan_steps": 0,
+          "sqlite_row_returns": 36,
+          "vm_steps": 432
+        },
+        "SELECT id FROM composition_roots ORDER BY id": {
+          "executions": 8,
+          "fullscan_steps": 56,
+          "sqlite_row_returns": 64,
+          "vm_steps": 248
+        },
+        "SELECT id,subject,generation,sequence,ordinal,source_revision,descriptor FROM intents": {
+          "executions": 24,
+          "fullscan_steps": 84,
+          "sqlite_row_returns": 108,
+          "vm_steps": 1116
+        },
+        "SELECT r.id, r.descriptor, p.scope_id, p.descriptor, (f.scope_id IS NOT NULL) + (f.descriptor IS NOT NULL), (c.scope_id IS NOT NULL) + (c.root_id IS NOT NULL) + (c.decision_order IS NOT NULL) + (c.descriptor IS NOT NULL) FROM composition_roots r LEFT JOIN composition_root_publications p ON p.scope_id = ? || r.id LEFT JOIN composition_freezes f ON f.scope_id = ? || r.id LEFT JOIN composition_closures c ON c.scope_id = ? || r.id": {
+          "executions": 8,
+          "fullscan_steps": 56,
+          "sqlite_row_returns": 64,
+          "vm_steps": 4480
+        },
+        "SELECT r.subject, r.generation, r.program_id, r.epoch, r.sequence, s.id IS NOT NULL, s.revision, r.projection FROM runs r LEFT JOIN subjects s ON s.id = r.subject": {
+          "executions": 8,
+          "fullscan_steps": 56,
+          "sqlite_row_returns": 64,
+          "vm_steps": 1216
+        },
+        "SELECT result FROM admissions": {
+          "executions": 8,
+          "fullscan_steps": 56,
+          "sqlite_row_returns": 64,
+          "vm_steps": 240
+        },
+        "SELECT root_id FROM composition_static_members WHERE subject=? AND generation=? UNION ALL SELECT root_id FROM composition_members WHERE subject=? AND generation=?": {
+          "executions": 36,
+          "fullscan_steps": 0,
+          "sqlite_row_returns": 36,
+          "vm_steps": 504
+        },
+        "SELECT schema_version FROM metadata WHERE singleton=?": {
+          "executions": 44,
+          "fullscan_steps": 0,
+          "sqlite_row_returns": 44,
+          "vm_steps": 352
+        },
+        "SELECT source_revision,descriptor FROM intents WHERE id=?": {
+          "executions": 36,
+          "fullscan_steps": 0,
+          "sqlite_row_returns": 36,
+          "vm_steps": 468
+        },
+        "SELECT subject,generation FROM runs ORDER BY subject,generation": {
+          "executions": 8,
+          "fullscan_steps": 56,
+          "sqlite_row_returns": 64,
+          "vm_steps": 312
+        },
+        "SELECT subject,generation,sequence,destinations,delivery_status FROM terminal_obligations ORDER BY subject,generation": {
+          "executions": 8,
+          "fullscan_steps": 28,
+          "sqlite_row_returns": 36,
+          "vm_steps": 352
+        },
+        "SELECT version FROM composition_profile WHERE singleton=?": {
+          "executions": 8,
+          "fullscan_steps": 0,
+          "sqlite_row_returns": 8,
+          "vm_steps": 64
+        },
+        "WITH charges AS ( SELECT root_id, json_extract(descriptor,?) AS invocations, json_extract(descriptor,?) AS created_runs, json_extract(descriptor,?) AS effects FROM composition_charges ) SELECT root_id, sum(invocations), sum(created_runs), sum(effects), max(typeof(invocations) != ? OR invocations < ? OR typeof(created_runs) != ? OR created_runs < ? OR typeof(effects) != ? OR effects < ?) FROM charges GROUP BY root_id": {
+          "executions": 8,
+          "fullscan_steps": 28,
+          "sqlite_row_returns": 36,
+          "vm_steps": 3272
+        }
+      },
+      "finishRun_sql": {
+        "executions": 348,
+        "fullscan_steps": 420,
+        "sqlite_row_returns": 768,
+        "vm_steps": 14424
+      },
+      "roots_emitted": 64
+    }
+  },
+  "build_sha256": "c3050be929f686d5449bcb8321ae673d001611ff6503ceb626152f2b55e69cda",
+  "excluded": false,
+  "source_sha256": "91686728d67fcd3f10bc338ca8804d12d729caee38454d887af83fd7f24dabdb"
+}
