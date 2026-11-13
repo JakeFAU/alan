@@ -382,3 +382,35 @@ func TestOwnerContinuationBasisRejectsMalformedReferencedEvidence(t *testing.T) 
 		})
 	}
 }
+
+func TestOwnerContinuationBasisRejectsApprovedIntentIdentityMismatch(t *testing.T) {
+	for _, tc := range []struct{ name, query string }{
+		{"subject", "UPDATE intents SET subject='foreign' WHERE id=?"},
+		{"generation", "UPDATE intents SET generation=generation+100 WHERE id=?"},
+		{"sequence", "UPDATE intents SET sequence=sequence+100 WHERE id=?"},
+		{"ordinal", "UPDATE intents SET ordinal=ordinal+100 WHERE id=?"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			f := newMeterFixture(t, "north")
+			if err := f.run(t.Context()); err != nil {
+				t.Fatal(err)
+			}
+			original := meterBasis(t, f)
+			decision, err := f.owner.ApproveContinuation(t.Context(), original, "new sample")
+			if err != nil || !decision.Accepted {
+				t.Fatalf("approval = %+v, %v", decision, err)
+			}
+			changeMeterLedger(t, f.path, func(tx *sql.Tx) {
+				meterExec(t, tx, tc.query, original.PredecessorID)
+			})
+			before := meterFingerprint(t, f.path)
+			got, err := readContinuationBasis(t, t.Context(), f.owner, meterNext)
+			if got != (runtime.ContinuationBasis{}) || !errors.Is(err, runtime.ErrCorrupt) {
+				t.Fatalf("approved basis with mismatched intent %s = %+v, %v", tc.name, got, err)
+			}
+			if after := meterFingerprint(t, f.path); after != before {
+				t.Fatal("rejecting owner read changed durable bytes")
+			}
+		})
+	}
+}

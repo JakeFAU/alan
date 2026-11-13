@@ -107,12 +107,14 @@ func (s *Store) readContinuationBasis(ctx context.Context, q queryer, slot Conti
 	return basis, nil
 }
 
+const continuationIntentRows = `SELECT i.id,i.subject,i.generation,i.sequence,i.ordinal,i.source_revision,i.descriptor,h.source_revision,h.intents
+	FROM intents i LEFT JOIN history h USING(subject,generation,sequence)`
+
 // The UNIQUE(subject,generation,sequence,ordinal) index bounds discovery to
 // the declared predecessor generation. The join uses history's original
-// reduction key. Reduce emits one intent at ordinal zero per emit instruction.
+// reduction key.
 func continuationOriginals(ctx context.Context, q queryer, run RunID) ([]retainedIntent, error) {
-	rows, err := q.QueryContext(ctx, `SELECT i.id,i.sequence,i.ordinal,i.source_revision,i.descriptor,h.source_revision,h.intents
-		FROM intents i LEFT JOIN history h USING(subject,generation,sequence)
+	rows, err := q.QueryContext(ctx, continuationIntentRows+`
 		WHERE i.subject=? AND i.generation=? ORDER BY i.sequence,i.ordinal`, run.Subject, run.Generation)
 	if err != nil {
 		return nil, err
@@ -120,23 +122,34 @@ func continuationOriginals(ctx context.Context, q queryer, run RunID) ([]retaine
 	defer rows.Close()
 	var intents []retainedIntent
 	for rows.Next() {
-		var i retainedIntent
-		var id string
-		var sequence, ordinal int64
-		var revision sql.NullInt64
-		var emitted []byte
-		if err := rows.Scan(&id, &sequence, &ordinal, &i.revision, &i.raw, &revision, &emitted); err != nil {
+		i, err := scanContinuationOriginal(rows)
+		if err != nil {
 			return nil, err
-		}
-		if decode(i.raw, &i.Intent) != nil || !sameJSON(i.raw, i.Intent) || sequence < 1 || i.revision < 1 ||
-			i.Run != run || i.Sequence != sequence || int64(i.Ordinal) != ordinal || i.ID != id ||
-			id != identity(run.Subject, run.Generation, sequence, ordinal) ||
-			ordinal != 0 || !revision.Valid || revision.Int64 != i.revision || !sameJSON(emitted, []Intent{i.Intent}) {
-			return nil, corrupt("continuation intent row identity")
 		}
 		intents = append(intents, i)
 	}
 	return intents, rows.Err()
+}
+
+// Both discovery and keyed approval lookup bind the descriptor to its
+// stored identity and original reduction. Reduce emits one intent at ordinal zero.
+func scanContinuationOriginal(row interface{ Scan(...any) error }) (retainedIntent, error) {
+	var i retainedIntent
+	var id string
+	var run RunID
+	var sequence, ordinal int64
+	var revision sql.NullInt64
+	var emitted []byte
+	if err := row.Scan(&id, &run.Subject, &run.Generation, &sequence, &ordinal, &i.revision, &i.raw, &revision, &emitted); err != nil {
+		return i, err
+	}
+	if decode(i.raw, &i.Intent) != nil || !sameJSON(i.raw, i.Intent) || sequence < 1 || i.revision < 1 ||
+		i.Run != run || i.Sequence != sequence || int64(i.Ordinal) != ordinal || i.ID != id ||
+		id != identity(run.Subject, run.Generation, sequence, ordinal) ||
+		ordinal != 0 || !revision.Valid || revision.Int64 != i.revision || !sameJSON(emitted, []Intent{i.Intent}) {
+		return retainedIntent{}, corrupt("continuation intent row identity")
+	}
+	return i, nil
 }
 
 type continuationOriginalEvidence struct {
@@ -339,15 +352,6 @@ func (s *Store) validateContinuationReservation(ctx context.Context, q queryer, 
 	}
 	if committed >= authorization.Order || authorization.Order >= reservation.Order {
 		return corrupt("continuation reservation precedes its source authority")
-	}
-	var revision int64
-	var intents []byte
-	if err := q.QueryRowContext(ctx, "SELECT source_revision,intents FROM history WHERE subject=? AND generation=? AND sequence=?",
-		i.Run.Subject, i.Run.Generation, i.Sequence).Scan(&revision, &intents); err != nil {
-		return err
-	}
-	if i.Ordinal != 0 || i.revision != revision || !sameJSON(intents, []Intent{i.Intent}) {
-		return corrupt("continuation intent differs from its original reduction")
 	}
 	return nil
 }
@@ -588,7 +592,7 @@ func (s *Store) approvedContinuationBasis(ctx context.Context, q queryer, slot C
 	if err := validateContinuationAdmission(ctx, q, d, r, o, slot.Target, "accepted", decision.Order); err != nil {
 		return ContinuationBasis{}, err
 	}
-	i, err := loadIntent(ctx, q, w.view.Approval.PredecessorID)
+	i, err := scanContinuationOriginal(q.QueryRowContext(ctx, continuationIntentRows+" WHERE i.id=?", w.view.Approval.PredecessorID))
 	if err != nil {
 		return ContinuationBasis{}, err
 	}
