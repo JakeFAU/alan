@@ -4,20 +4,20 @@
 
 **Goal:** Remove redundant SQL-per-record probes and unrelated matching from the ordinary bounded-series execution path, while preserving causal evidence and recovery.
 
-**Architecture:** Bulk retained reads and semantic indexes confined to one locked call; targeted owner-only continuation evidence reading. No persistent cache or scheduling policy change. Full reporting/audits remain explicitly costed.
+**Architecture (amended 2026-11-13):** Guarded affected-work identities within one Store owner for validated static composition; original traversal for unsupported shapes/mutations; grouped full reporting and targeted owner-only continuation evidence. See [structural-contract.md](structural-contract.md). The initial call-local batching design was insufficient to remove the repeated walks.
 
-**Tech Stack:** Existing Go 1.27.3, database/sql, go-sqlite3 v1.14.52; Python standard library for evidence.
+**Tech Stack:** Matched Go 1.27.4, database/sql, go-sqlite3 v1.14.52; Python standard library for evidence.
 
-**Spec:** [contract.md](contract.md), frozen before production edits following the user's instruction “Make it so.”
+**Spec:** [structural-contract.md](structural-contract.md) prospectively amends [contract.md](contract.md) after the user identified the quadratic bookkeeping. Task1 remains complete; its evidence is not relabeled.
 
 ## Global Constraints
 
 - Preserve original identities, authority, approval, ordering, independent expenditure, uncertainty, receipt conflicts and recovery.
-- No new dependency, table, index, schema migration, persistent scheduling cache, global scheduler or public execution abstraction.
+- No new dependency, table, index, schema migration, durable scheduling cache, global scheduler or public execution abstraction. A guarded disposable Store index is allowed only by the amended contract.
 - Keep BoundedSeries and RunReport contracts; the sole permitted API addition is read-only `Store.ContinuationBasis(context.Context, RunID) (ContinuationBasis, error)`.
 - No live providers, merge or release. Preserve prior evidence and all failures/rejected findings.
 - One implementation writer; no nested subagents. Serial heavy measurements. No relabeling tests after source changes.
-- Call-local reuse ends before mutations; existing fresh-owner/full-reader validation stays independent.
+- Reuse across calls requires the amended mutation and fallback proof; existing fresh-owner/full-reader validation stays independent.
 
 ## Review Focus
 
@@ -39,28 +39,29 @@
 - [ ] Implement minimal diagnostic/driver overlay with input-anchor/hash checks and tests rejecting invalid modes, empty/failed rows and changed inputs. Preserve original driver/proof functionality.
 - [ ] Freeze exact invariants and planned edits before production changes; commit, report and obtain independent specification/quality review.
 
-### Task 2: Batch readiness and delivery reads
+### Task 2: Retain affected execution work for static composition
 
-**Files:** `internal/executor/runner.go`, new focused retained-read helper/test files if needed. Do not modify authority, Commit or reducer semantics.
+**Files:** private execution-index helpers/tests; `store.go`, `runner.go`, `composition_root.go` and explicitly classified hot writer call sites. Preserve baseline traversal helpers as independent test oracles.
 
-**Interfaces:** Keep `selectReady`, `pendingDeliveries`, `finishRun` signatures and public RunReport unchanged. Preserve original selector reference tests. Produce bulk run/status reads and grouped observation candidates, plus bulk retained delivery status reusable within a report call.
+**Interfaces:** No public changes. Indexes contain affected identities and observation membership; no cached dispatch authority. Exact scope and deltas: [structural contract](structural-contract.md) and [source review](reviews/structural-design.md), especially its preferred static implementation section.
 
-- [ ] Add differential tests against the frozen original selector/delivery paths: rotation, missing last, generations/retirement, closed runs, consumed/wrong-run observations, first-reached corrupt program/binding/projection, old-format absence, all effect kinds and unknown outcomes.
-- [ ] Establish a diagnostic RED count for SQL-per-run/status probes and unrelated observation visits.
-- [ ] Replace per-record queries with bulk inputs under the same Store lock; decode projections lazily in the original visited order, validate all observations as before, group only after validation. Preserve per-run binding and reducer checks while allowing bulk membership lookups at the same cut.
-- [ ] Use bulk ack/settlement/delivery identity sets without assuming payload identity or hiding unexpected table errors. Prepare only still-unresolved invocations using existing semantics.
-- [ ] Run focused ordinary/race/reference tests and verify exact choices/errors/reports plus lower work counts. Commit and independently review.
+- [ ] Freeze baseline differential oracles and structural RED tests before production edits. Preserve old P3 selector tests and first-reached errors.
+- [ ] Establish eligibility from validated profile/programs and retained state. Arm only after successful Create/Open activation; no eager reducer execution.
+- [ ] Introduce pre-transaction/read anomaly guards, explicit successful-commit deltas and permanent owner-lifetime fallback for all other writes. Audit direct commits and lock order; bookkeeping failure cannot change an already committed operation's result.
+- [ ] Reuse unchanged blocked-run discovery and observation membership; discover pending deliveries from unresolved original IDs; prepare only affected roots in original order. Final transactions remain authoritative. Never carry per-Run attempt/rotation policy across calls.
+- [ ] Qualify invalidation premises independently: rollback, failed commit, direct corruption then legitimate write, DELETE/REPLACE, triggers, limits/schema/context, unsupported mutation, foreign Store, late/conflicting results, fresh owner and cancellation.
+- [ ] Run focused differential/race and structural work-count tests; record precise scope and remaining visits. Commit and obtain independent semantic/durability review before proceeding.
 
-### Task 3: Batch root settlement and report relationships
+### Task 3: Group full report relationships
 
 **Files:** `internal/executor/composition_root.go`, `composition_inspect.go`, focused helper/tests. Touch descendant scope traversal only if measured cost requires it.
 
-**Interfaces:** Keep PrepareRoot/SettleRoot/RootCompletion contracts. Consume retained root/freeze/closure/publication rows at one cut, same precedence as existing prepare helpers. Reports include all roots and exact charges.
+**Interfaces:** Keep PrepareRoot/SettleRoot/RootCompletion contracts. Consume retained root/freeze/closure/publication rows at one cut, same precedence as existing prepare helpers. Root scheduling was handled in Task2. Reports include all roots and exact charges.
 
 - [ ] Add baseline/candidate comparisons for no freeze, known result awaiting settlement, successful root, early failed child, retired/revoked scope, pending descendant and unresolved external consequences; deliberately malformed rows must not become completion.
 - [ ] Establish RED SQL-per-root and root×intent matching counts.
-- [ ] Bulk root preparatory inputs and root completion data. Group sorted original intent IDs by authentic membership once; preserve deterministic root/operation ordering and independent unknown/result distinctions.
-- [ ] Avoid deeper settlement preparation only from retained publication or absence of freeze/closure at the same cut; final settlement still uses existing transaction checks. No cache survives the call.
+- [ ] Group sorted original intent IDs by authentic membership once and aggregate charges once per report; preserve deterministic root/operation ordering and independent unknown/result distinctions. Eliminate the root-by-intent cross product and per-root charge scans.
+- [ ] Preserve per-record report validation and all output. Report grouping ends at the same coherent call. Defer compact report mode until this structural change has been measured; no silent omission.
 - [ ] Run focused composition, receipt/reconciliation, lifecycle and report tests ordinary/race and compare retained outcomes. Commit and independently review.
 
 ### Task 4: Read targeted continuation evidence
