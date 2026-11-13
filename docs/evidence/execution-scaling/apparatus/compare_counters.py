@@ -25,6 +25,28 @@ def comparable(original, compact):
     return checks
 
 
+def validated_prefixes(report, bound, path):
+    declared_bound = report.get('bound')
+    if type(declared_bound) is not int or declared_bound != bound:
+        raise ValueError(f'{path}: expected report bound {bound}, got {declared_bound!r}')
+    if report.get('prefix_enabled') is not True:
+        raise ValueError(f'{path}: prefix proofs must be enabled')
+    prefixes = report.get('prefixes')
+    if not isinstance(prefixes, list) or len(prefixes) != bound:
+        raise ValueError(f'{path}: expected exactly {bound} prefixes')
+
+    # The pinned P2 driver emits exactly one retained prefix per position, 1..B.
+    for position, prefix in enumerate(prefixes, start=1):
+        if not isinstance(prefix, dict):
+            raise ValueError(f'{path}: expected a prefix record at position {position}')
+        for field, expected in (('position', position), ('declaration_bound', bound),
+                                ('retained_positions', position)):
+            actual = prefix.get(field)
+            if type(actual) is not int or actual != expected:
+                raise ValueError(f'{path}: prefix {position} expected {field}={expected}, got {actual!r}')
+    return prefixes
+
+
 def compare(root):
     results = []
     for bound in [1,8]:
@@ -32,6 +54,8 @@ def compare(root):
         original, compact = [json.loads(p.read_text()) for p in paths]
         if not original['invariants_ok'] or not compact['invariants_ok'] or original.get('error') or compact.get('error'):
             raise ValueError('independent public proof failed')
+        original_prefixes = validated_prefixes(original, bound, paths[0])
+        compact_prefixes = validated_prefixes(compact, bound, paths[1])
         checks = 0
         if len(original['stages']) != len(compact['stages']):
             raise ValueError('stages changed')
@@ -39,7 +63,7 @@ def compare(root):
             if (a['name'],a.get('position',0)) != (b['name'],b.get('position',0)):
                 raise ValueError('stage order changed')
             checks += comparable(a.get('counter_deltas',{}), b.get('counter_deltas',{}))
-        for a,b in zip(original['prefixes'],compact['prefixes']):
+        for a,b in zip(original_prefixes,compact_prefixes):
             for field in ['direct','cumulative']:
                 checks += comparable(a[field].get('counter_deltas',{}),b[field].get('counter_deltas',{}))
         execute = next(s for s in compact['stages'] if s['name']=='execute_window')['counter_deltas']
