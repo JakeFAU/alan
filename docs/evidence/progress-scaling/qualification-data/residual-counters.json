@@ -1,0 +1,237 @@
+{
+  "candidate_full_minus_progress_b256_engine": {
+    "executions": {
+      "PRAGMA main.data_version": 8,
+      "PRAGMA main.schema_version": 8,
+      "PRAGMA temp.schema_version": 8,
+      "SELECT total_changes()": 8
+    },
+    "fullscan_steps": {},
+    "sqlite_row_returns": {
+      "PRAGMA main.data_version": 8,
+      "PRAGMA main.schema_version": 8,
+      "PRAGMA temp.schema_version": 8,
+      "SELECT total_changes()": 8
+    },
+    "vm_steps": {
+      "PRAGMA main.data_version": 48,
+      "PRAGMA main.schema_version": 48,
+      "PRAGMA temp.schema_version": 48,
+      "SELECT total_changes()": 32
+    }
+  },
+  "candidate_full_minus_progress_non_sql": {},
+  "meaning": "SQLite status-counter deltas in the Execute window; separate instrumented lane, not timing. Aggregated across connection-class and post-autocommit partitions.",
+  "rows": {
+    "baseline-full-b256": {
+      "engine_templates_with_fullscan_steps": {
+        "INSERT INTO history VALUES(?,?,?,?,?,?,?,?)": {
+          "executions": 1023,
+          "fullscan_steps": 130305,
+          "vm_steps": 448193
+        },
+        "SELECT count(*) FROM composition_charges WHERE root_id=? AND kind=?": {
+          "executions": 256,
+          "fullscan_steps": 32385,
+          "sqlite_row_returns": 256,
+          "vm_steps": 100736
+        },
+        "SELECT result FROM attempts WHERE intent_id=?": {
+          "executions": 512,
+          "fullscan_steps": 65280,
+          "sqlite_row_returns": 512,
+          "vm_steps": 200960
+        }
+      },
+      "raw": ".superpowers/sdd/plan-progress-scaling/task1-counters/gates/counters-b256-base-full/stdout.log",
+      "sha256": "12ed6c8f3e9282898ebce827adaca03bf42c8bd79a599fa1f1241e9427e77599",
+      "totals": {
+        "engine": {
+          "executions": 164540,
+          "fullscan_steps": 227970,
+          "sqlite_row_returns": 131296,
+          "vm_steps": 2739727
+        },
+        "report": {
+          "executions": 233344,
+          "fullscan_steps": 489600,
+          "sqlite_row_returns": 722944,
+          "vm_steps": 13095680
+        }
+      }
+    },
+    "baseline-full-b8": {
+      "engine_templates_with_fullscan_steps": {
+        "INSERT INTO history VALUES(?,?,?,?,?,?,?,?)": {
+          "executions": 31,
+          "fullscan_steps": 105,
+          "vm_steps": 2041
+        },
+        "SELECT count(*) FROM composition_charges WHERE root_id=? AND kind=?": {
+          "executions": 8,
+          "fullscan_steps": 21,
+          "sqlite_row_returns": 8,
+          "vm_steps": 172
+        },
+        "SELECT result FROM attempts WHERE intent_id=?": {
+          "executions": 16,
+          "fullscan_steps": 56,
+          "sqlite_row_returns": 16,
+          "vm_steps": 328
+        }
+      },
+      "raw": ".superpowers/sdd/plan-progress-scaling/task1-counters/gates/counters-b8-base-full/stdout.log",
+      "sha256": "2de11e87fe393c3017440848c678ff796247e3a82f17502e256c3b0d4d0dc347",
+      "totals": {
+        "engine": {
+          "executions": 4964,
+          "fullscan_steps": 182,
+          "sqlite_row_returns": 3960,
+          "vm_steps": 62346
+        },
+        "report": {
+          "executions": 348,
+          "fullscan_steps": 420,
+          "sqlite_row_returns": 768,
+          "vm_steps": 14424
+        }
+      }
+    },
+    "candidate-full-b256": {
+      "engine_templates_with_fullscan_steps": {
+        "INSERT INTO history VALUES(?,?,?,?,?,?,?,?)": {
+          "executions": 1023,
+          "fullscan_steps": 130305,
+          "vm_steps": 448193
+        },
+        "SELECT count(*) FROM composition_charges WHERE root_id=? AND kind=?": {
+          "executions": 256,
+          "fullscan_steps": 32385,
+          "sqlite_row_returns": 256,
+          "vm_steps": 100736
+        },
+        "SELECT result FROM attempts WHERE intent_id=?": {
+          "executions": 512,
+          "fullscan_steps": 65280,
+          "sqlite_row_returns": 512,
+          "vm_steps": 200960
+        }
+      },
+      "raw": ".superpowers/sdd/plan-progress-scaling/task3-counters-full/gates/counters-b256-candidate-full/stdout.log",
+      "sha256": "79f7582731c0be2884c80189df0646ceec4720128fc8c273ae125cfbb6088421",
+      "totals": {
+        "engine": {
+          "executions": 164460,
+          "fullscan_steps": 227970,
+          "sqlite_row_returns": 131216,
+          "vm_steps": 2739287
+        },
+        "report": {
+          "executions": 233344,
+          "fullscan_steps": 489600,
+          "sqlite_row_returns": 722944,
+          "vm_steps": 13095680
+        }
+      }
+    },
+    "candidate-full-b8": {
+      "engine_templates_with_fullscan_steps": {
+        "INSERT INTO history VALUES(?,?,?,?,?,?,?,?)": {
+          "executions": 31,
+          "fullscan_steps": 105,
+          "vm_steps": 2041
+        },
+        "SELECT count(*) FROM composition_charges WHERE root_id=? AND kind=?": {
+          "executions": 8,
+          "fullscan_steps": 21,
+          "sqlite_row_returns": 8,
+          "vm_steps": 172
+        },
+        "SELECT result FROM attempts WHERE intent_id=?": {
+          "executions": 16,
+          "fullscan_steps": 56,
+          "sqlite_row_returns": 16,
+          "vm_steps": 328
+        }
+      },
+      "raw": ".superpowers/sdd/plan-progress-scaling/task3-counters-full/gates/counters-b8-candidate-full/stdout.log",
+      "sha256": "27508d24b25a20d56d7346790293bfade1826f5087b8acea91860136a5bbb173",
+      "totals": {
+        "engine": {
+          "executions": 4964,
+          "fullscan_steps": 182,
+          "sqlite_row_returns": 3960,
+          "vm_steps": 62346
+        },
+        "report": {
+          "executions": 348,
+          "fullscan_steps": 420,
+          "sqlite_row_returns": 768,
+          "vm_steps": 14424
+        }
+      }
+    },
+    "candidate-progress-b256": {
+      "engine_templates_with_fullscan_steps": {
+        "INSERT INTO history VALUES(?,?,?,?,?,?,?,?)": {
+          "executions": 1023,
+          "fullscan_steps": 130305,
+          "vm_steps": 448193
+        },
+        "SELECT count(*) FROM composition_charges WHERE root_id=? AND kind=?": {
+          "executions": 256,
+          "fullscan_steps": 32385,
+          "sqlite_row_returns": 256,
+          "vm_steps": 100736
+        },
+        "SELECT result FROM attempts WHERE intent_id=?": {
+          "executions": 512,
+          "fullscan_steps": 65280,
+          "sqlite_row_returns": 512,
+          "vm_steps": 200960
+        }
+      },
+      "raw": ".superpowers/sdd/plan-progress-scaling/task3-counters-progress/gates/counters-b256-candidate-progress/stdout.log",
+      "sha256": "ae13b133fff421b657feaa9ee973ebd2a3c549bfd471cf276e3badc35a50095d",
+      "totals": {
+        "engine": {
+          "executions": 164428,
+          "fullscan_steps": 227970,
+          "sqlite_row_returns": 131184,
+          "vm_steps": 2739111
+        }
+      }
+    },
+    "candidate-progress-b8": {
+      "engine_templates_with_fullscan_steps": {
+        "INSERT INTO history VALUES(?,?,?,?,?,?,?,?)": {
+          "executions": 31,
+          "fullscan_steps": 105,
+          "vm_steps": 2041
+        },
+        "SELECT count(*) FROM composition_charges WHERE root_id=? AND kind=?": {
+          "executions": 8,
+          "fullscan_steps": 21,
+          "sqlite_row_returns": 8,
+          "vm_steps": 172
+        },
+        "SELECT result FROM attempts WHERE intent_id=?": {
+          "executions": 16,
+          "fullscan_steps": 56,
+          "sqlite_row_returns": 16,
+          "vm_steps": 328
+        }
+      },
+      "raw": ".superpowers/sdd/plan-progress-scaling/task3-counters-progress/gates/counters-b8-candidate-progress/stdout.log",
+      "sha256": "3dafc65f3bfe351797e817ce0b686f7e771e74620e8f206ed0f0f90d5aea4103",
+      "totals": {
+        "engine": {
+          "executions": 4964,
+          "fullscan_steps": 182,
+          "sqlite_row_returns": 3960,
+          "vm_steps": 62346
+        }
+      }
+    }
+  }
+}

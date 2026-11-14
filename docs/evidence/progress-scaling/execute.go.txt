@@ -1,0 +1,56 @@
+	if err = r.measure("execute_window", 0, func() error {
+		var registryStart map[string]uint64
+		if counterRegistry != nil {
+			registryStart = counterRegistry()
+		}
+		for i := 1; i <= r.Bound; i++ {
+			if i > 1 {
+				start := time.Now()
+				basis, e := store.ContinuationBasis(ctx, aruntime.RunID{Subject: fmt.Sprintf("series-%d", i), Generation: 1})
+				r.recordOperation("approval_targeted_basis", i, start, e)
+				if e != nil {
+					return e
+				}
+				start = time.Now()
+				_, e = store.ApproveContinuation(ctx, basis, "operator")
+				r.recordOperation("approval_establishment", i, start, e)
+				if e != nil {
+					return e
+				}
+			}
+			start := time.Now()
+			got, e := runObservation(ctx, store, opts)
+			r.recordOperation("run", i, start, e)
+			if e != nil {
+				return e
+			}
+			want := progressTuple{Steps: 4, Dispatches: 1, Quiescent: true}
+			if i == 1 {
+				want.Steps = 3
+			}
+			if got != want {
+				return fmt.Errorf("position %d progress=%+v want=%+v", i, got, want)
+			}
+			if calls := m.contactCount(); calls != i {
+				return fmt.Errorf("position %d adapter contacts=%d", i, calls)
+			}
+		}
+		if counterRegistry != nil {
+			var e error
+			r.ExecuteCounterRegistry, e = subtractCounters(registryStart, counterRegistry())
+			if e != nil {
+				return e
+			}
+		}
+		return nil
+	}); err != nil {
+		return err
+	}
+	var finalReport aruntime.RunReport
+	if err = r.measure("final_full_report", 0, func() error {
+		var e error
+		finalReport, e = store.Run(ctx, opts)
+		return e
+	}); err != nil {
+		return err
+	}

@@ -1,0 +1,314 @@
+package main
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"os"
+	"path/filepath"
+	"reflect"
+	"testing"
+	"time"
+
+	"github.com/JakeFAU/alan/adapters/openmeteo"
+	"github.com/JakeFAU/alan/author"
+	"github.com/JakeFAU/alan/effects"
+	"github.com/JakeFAU/alan/runtime"
+)
+
+type parityContact struct {
+	Index                    int
+	Operation, ClientID, URI string
+	Status                   int
+	Body                     string
+	Written                  bool
+}
+
+type parityCut struct {
+	Label    string
+	Progress *runtime.RunProgress
+	Approval *runtime.AdmissionResult
+	Snapshot *runtime.ExecutionSnapshot
+	History  []runtime.ExecutionStep
+	Replay   runtime.ReplayReport
+	Series   author.SeriesView
+	Contacts []parityContact
+}
+
+func retainParity(t *testing.T, path string, value any) {
+	t.Helper()
+	dir := os.Getenv("ALAN_P6_PARITY")
+	if dir == "" {
+		t.Fatal("missing evidence output path")
+	}
+	if err := os.MkdirAll(dir, 0700); err != nil {
+		t.Fatal(err)
+	}
+	f, err := os.OpenFile(filepath.Join(dir, path+".json"), os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := errors.Join(json.NewEncoder(f).Encode(value), f.Close()); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func captureParity(t *testing.T, binary, db string, provider *weatherProvider, spent int, label string, progress *runtime.RunProgress, approval *runtime.AdmissionResult) parityCut {
+	t.Helper()
+	snapshot, _ := inspectAndReplayWeather(t, binary, db, provider, 8, spent)
+	replay, err := runtime.Replay(t.Context(), db, runtime.DefaultLimits())
+	if err != nil || !reflect.DeepEqual(snapshot.Roots, replay.Roots) {
+		t.Fatalf("%s independent Replay roots: %v", label, err)
+	}
+	var history []runtime.ExecutionStep
+	for offset := 0; ; {
+		page, err := snapshot.History(offset, runtime.MaxHistoryPage)
+		if err != nil {
+			t.Fatal(err)
+		}
+		history = append(history, page.Steps...)
+		if !page.More {
+			break
+		}
+		offset = page.Next
+	}
+	var contacts []parityContact
+	for _, c := range provider.contacts() {
+		contacts = append(contacts, parityContact{c.index, c.operation, c.clientID, c.uri, c.status, c.body, c.written})
+	}
+	return parityCut{label, progress, approval, snapshot, history, replay, seriesInspect(t, snapshot, provider), contacts}
+}
+
+func copyParityStore(t *testing.T, source, name string) string {
+	t.Helper()
+	dir := os.Getenv("ALAN_SERIES_EVIDENCE_DIR")
+	if dir == "" {
+		t.Fatal("missing complete-copy evidence path")
+	}
+	preserveSeries(t, source, name)
+	return filepath.Join(dir, name+".sqlite")
+}
+
+func parityOptions(t *testing.T, p *weatherProvider) runtime.RunOptions {
+	t.Helper()
+	adapter, err := openmeteo.New(p.endpoint())
+	if err != nil {
+		t.Fatal(err)
+	}
+	return runtime.RunOptions{MaxSteps: 512, MaxDispatch: 128, MaxInFlight: 1, ExternalTimeout: 30 * time.Second,
+		Adapters: map[string]effects.Adapter{"open-meteo": adapter}}
+}
+
+func advanceParity(ctx context.Context, owner *runtime.Store, opts runtime.RunOptions, progress bool) (runtime.RunProgress, error) {
+	if progress {
+		return owner.RunProgress(ctx, opts)
+	}
+	report, err := owner.Run(ctx, opts)
+	return runtime.RunProgress{Steps: report.Steps, Dispatches: report.Dispatches, Quiescent: report.Quiescent}, err
+}
+
+func openParity(t *testing.T, db string) *runtime.Store {
+	t.Helper()
+	owner, err := runtime.Open(t.Context(), db, runtime.DefaultLimits())
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = owner.Close() })
+	return owner
+}
+
+func closeParity(t *testing.T, owner *runtime.Store) {
+	t.Helper()
+	if err := owner.Close(); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func approveParity(t *testing.T, owner *runtime.Store, before *runtime.ExecutionSnapshot, n int) runtime.AdmissionResult {
+	t.Helper()
+	basis, err := owner.ContinuationBasis(t.Context(), readID(n))
+	if err != nil {
+		t.Fatal(err)
+	}
+	reason, err := weatherReason(before, basis, n)
+	if err != nil {
+		t.Fatal(err)
+	}
+	first, err := owner.ApproveContinuation(t.Context(), basis, reason)
+	if err != nil || !first.Accepted {
+		t.Fatalf("read %d approval: %+v %v", n, first, err)
+	}
+	again, err := owner.ApproveContinuation(t.Context(), basis, reason)
+	if err != nil || !reflect.DeepEqual(again, first) {
+		t.Fatalf("read %d duplicate changed first decision: %+v %v", n, again, err)
+	}
+	return first
+}
+
+func requireAdvance(t *testing.T, owner *runtime.Store, opts runtime.RunOptions, progress bool, label string, idle bool) runtime.RunProgress {
+	t.Helper()
+	got, err := advanceParity(t.Context(), owner, opts, progress)
+	if err != nil || !got.Quiescent || idle && got != (runtime.RunProgress{Quiescent: true}) {
+		t.Fatalf("%s progress=%+v error=%v", label, got, err)
+	}
+	return got
+}
+
+func checkThirdAndFourth(t *testing.T, final parityCut, scenario string) {
+	t.Helper()
+	view := final.Series
+	third, fourth := view.Positions[2], view.Positions[3]
+	if len(final.Contacts) != 4 || view.Spent != 4 || len(final.Snapshot.Continuations) != 3 ||
+		fourth.State != author.SeriesCompleted || fourth.Observation == nil || fourth.Approval == nil ||
+		fourth.Approval.SelectedAt == nil || fourth.Approval.Approval.PredecessorID != third.Effect.OperationID ||
+		fourth.Effect.OperationID == third.Effect.OperationID || final.Contacts[2].Operation != third.Effect.OperationID ||
+		final.Contacts[3].Operation != fourth.Effect.OperationID {
+		t.Fatalf("%s original third/fourth approval, contact or selection missing", scenario)
+	}
+	switch scenario {
+	case "success":
+		if view.Completed != 4 || view.Selected != 4 || view.Unresolved != 0 {
+			t.Fatal("successful originals were lost")
+		}
+	case "refusal":
+		if third.State != author.SeriesFailed || third.Observation == nil || third.Effect.ResultDisposition != "http_rejected" ||
+			view.Completed != 3 || view.Selected != 4 || view.Failed != 1 {
+			t.Fatal("refused third lost its original selected rejection")
+		}
+	case "unknown":
+		if third.State != author.SeriesOutcomeUnknown || third.Observation != nil || third.Effect.AdapterResult != nil ||
+			third.Effect.DispatchAdmission == nil || !fourth.Approval.Approval.Admitted ||
+			fourth.Approval.Approval.ResultDigest != "" || view.Completed != 3 || view.Selected != 3 || view.Unresolved != 1 {
+			t.Fatal("unknown third gained a result or lost its original paid admission")
+		}
+	}
+	for _, future := range view.Positions[4:] {
+		if future.Approval != nil || future.Effect != nil || future.Observation != nil {
+			t.Fatal("fourth approval spilled authority")
+		}
+	}
+}
+
+// The provider keeps the same endpoint across both branches. Each branch gets
+// the identical wire script and its own independent contact journal.
+func TestP6SameSeedParity(t *testing.T) {
+	binary := publicWeatherBinary(t)
+	for _, scenario := range []string{"success", "refusal", "unknown"} {
+		t.Run(scenario, func(t *testing.T) {
+			replies := seriesReplies()[:4]
+			switch scenario {
+			case "refusal":
+				replies[2] = wireFaults()["refused"]
+			case "unknown":
+				replies[2] = wireFaults()["socket_close"]
+			}
+			p := newWeatherProvider(t, replies...)
+			seed := startWeather(t, binary, p.endpoint(), 8)
+			seedDigest := weatherDBBytes(t, seed)
+			opts := parityOptions(t, p)
+			var full []parityCut
+			for _, progress := range []bool{false, true} {
+				name := fmt.Sprintf("%s-progress-%t", scenario, progress)
+				db := copyParityStore(t, seed, name)
+				var cuts []parityCut
+				appendCut := func(spent int, label string, result *runtime.RunProgress, approval *runtime.AdmissionResult) {
+					cut := captureParity(t, binary, db, p, spent, label, result, approval)
+					cuts = append(cuts, cut)
+				}
+				appendCut(0, "seed", nil, nil)
+				for n := 1; n <= 4; n++ {
+					owner := openParity(t, db)
+					if n > 1 {
+						approval := approveParity(t, owner, cuts[len(cuts)-1].Snapshot, n)
+						appendCut(n-1, fmt.Sprintf("approval-%d-twice", n), nil, &approval)
+					}
+					label := fmt.Sprintf("execute-%d", n)
+					got := requireAdvance(t, owner, opts, progress, label, false)
+					if got.Dispatches != 1 {
+						t.Fatalf("%s did not account for original dispatch: %+v", label, got)
+					}
+					closeParity(t, owner)
+					p.requireContacts(t, n)
+					appendCut(n, label, &got, nil)
+					for i := 1; i <= 2; i++ {
+						owner = openParity(t, db)
+						label = fmt.Sprintf("reopen-%d-%d", n, i)
+						idle := requireAdvance(t, owner, opts, !progress, label, true)
+						closeParity(t, owner)
+						appendCut(n, label, &idle, nil)
+					}
+				}
+				final := cuts[len(cuts)-1]
+				checkThirdAndFourth(t, final, scenario)
+				recordSeries(t, final.Snapshot, p, nil)
+				retainParity(t, name, cuts)
+				if progress {
+					if !reflect.DeepEqual(full, cuts) {
+						for i, got := range cuts {
+							if !reflect.DeepEqual(full[i], got) {
+								t.Errorf("same-seed divergence in cut %s", got.Label)
+							}
+						}
+						t.Fatal("full/progress changed typed execution evidence")
+					}
+				} else {
+					full = cuts
+					p.mu.Lock()
+					p.log = nil
+					p.mu.Unlock()
+				}
+			}
+			if seedDigest != weatherDBBytes(t, seed) {
+				t.Fatal("closed seed changed")
+			}
+		})
+	}
+}
+
+// The executing child uses progress. Both methods resume independent copies
+// of the same acknowledged, reaped, result-retained cut.
+func TestP6OppositeMethodRecovery(t *testing.T) {
+	binary := publicWeatherBinary(t)
+	p := newWeatherProvider(t, seriesReplies()[:1]...)
+	db := startWeather(t, binary, p.endpoint(), 8)
+	filter := weatherCut{Subject: "weather-1", Generation: 1, Boundary: "adapter.result-recorded", Phase: "pre-settlement"}
+	child := launchWeather(t, binary, db, "resume", &filter)
+	ack := child.awaitCut(t)
+	child.kill(t, ack.witness())
+	raw := filepath.Join(os.Getenv("ALAN_SERIES_EVIDENCE_DIR"), fmt.Sprintf("%s-raw-stop-%d.sqlite", t.Name(), child.cmd.Process.Pid))
+	readCopy := copyParityStore(t, raw, "opposite-read-copy")
+	stopped := captureParity(t, binary, readCopy, p, 1, "reaped-result-retained", nil, nil)
+	if effect := weatherEffect(t, stopped.Snapshot, "weather-1"); effect.AdapterResult == nil || effect.Settlement != nil || effect.OperationID != p.contacts()[0].operation {
+		t.Fatal("process did not stop with its original retained unsettled result")
+	}
+	retainParity(t, "opposite-stopped", stopped)
+	opts := parityOptions(t, p)
+	var full parityCut
+	for _, progress := range []bool{false, true} {
+		name := fmt.Sprintf("opposite-progress-%t", progress)
+		clone := copyParityStore(t, raw, name)
+		owner := openParity(t, clone)
+		got := requireAdvance(t, owner, opts, progress, "resume-retained-result", false)
+		closeParity(t, owner)
+		// The runner counts the retained result's local dispatch accounting.
+		// The provider log below checks for actual new contacts.
+		if got.Steps <= 0 || got.Dispatches != 1 {
+			t.Fatalf("recovery did not consume the original retained result: %+v", got)
+		}
+		cut := captureParity(t, binary, clone, p, 1, "resumed", &got, nil)
+		original := stopped.Series.Positions[0]
+		recovered := cut.Series.Positions[0]
+		if recovered.State != author.SeriesCompleted || recovered.Observation == nil ||
+			recovered.Effect.OperationID != original.Effect.OperationID || recovered.Root.RootID != original.Root.RootID ||
+			!reflect.DeepEqual(recovered.Effect.AdapterResult, original.Effect.AdapterResult) {
+			t.Fatal("recovery lost or replaced the original result, operation or root")
+		}
+		p.requireContacts(t, 1)
+		retainParity(t, name, cut)
+		if progress && !reflect.DeepEqual(full, cut) {
+			t.Fatal("opposite-method resume changed the recovered typed cut")
+		}
+		full = cut
+	}
+}
