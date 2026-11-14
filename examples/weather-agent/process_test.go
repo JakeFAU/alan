@@ -76,9 +76,14 @@ func publicWeatherBinary(t *testing.T) string {
 
 func weatherCommand(t *testing.T, binary string, args ...string) string {
 	t.Helper()
+	return weatherOutput(t, binary, append(args, "--json")...)
+}
+
+func weatherOutput(t *testing.T, binary string, args ...string) string {
+	t.Helper()
 	ctx, cancel := context.WithTimeout(t.Context(), weatherProcessTimeout)
 	defer cancel()
-	cmd := exec.CommandContext(ctx, binary, append(args, "--json")...)
+	cmd := exec.CommandContext(ctx, binary, args...)
 	cmd.Env = append(os.Environ(), "ALAN_BARRIER=", "GORACE=atexit_sleep_ms=0")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
@@ -239,6 +244,12 @@ func TestWeatherProcessRecovery(t *testing.T) {
 			owner.kill(t, event.witness())
 			stopped, v := inspectAndReplayWeather(t, binary, db, p, 1, c.spent)
 			c.checkStop(t, path, stopped, v, p)
+			if c.name == "after_terminal" {
+				status := weatherOutput(t, binary, "status", "--db", db)
+				requireWeatherText(t, status, []string{"Previously retained", "Observation selected", "Local completion remains pending", "weather-agent resume"},
+					[]string{"Resume may contact the provider", "weather-agent refresh"})
+				p.requireContacts(t, 1)
+			}
 			pause := weatherInterruption(t, event.witness(), event.PID, c.contacts, stopped)
 			if event.Attempt != "" {
 				original := weatherEffect(t, stopped, "weather-1")
@@ -362,6 +373,16 @@ func weatherRefresh(t *testing.T, binary string, lose bool) {
 		pauses = append(pauses, weatherInterruption(t, "endpoint accepted index=1 and withheld response", first.cmd.Process.Pid, 1, stopped))
 	}
 	original := weatherEffect(t, stopped, "weather-1")
+	if lose {
+		before := weatherDBBytes(t, db)
+		status := weatherOutput(t, binary, "status", "--db", db)
+		requireWeatherText(t, status, []string{original.OperationID, "provider response is unknown", "Optional separate approval for read 2"},
+			[]string{"weather-agent resume"})
+		if status != weatherOutput(t, binary, "status", "--db", db) || before != weatherDBBytes(t, db) {
+			t.Fatal("repeated fresh status altered the unknown cut")
+		}
+		p.requireContacts(t, 1)
+	}
 	for i := 0; i < 2; i++ {
 		_ = weatherCommand(t, binary, "resume", "--db", db)
 		next, v := inspectAndReplayWeather(t, binary, db, p, 2, 1)
@@ -380,6 +401,11 @@ func weatherRefresh(t *testing.T, binary string, lose bool) {
 		_ = weatherCommand(t, binary, "refresh", "--db", db, "--read", "2")
 	}
 	p.requireContacts(t, 1)
+	if lose {
+		requireWeatherText(t, weatherOutput(t, binary, "status", "--db", db),
+			[]string{original.OperationID, "Resume will not retry this original", "Read 2. Approved", "Resume may contact the provider", "weather-agent resume"},
+			[]string{"weather-agent refresh"})
+	}
 	served := decodeWeather(t, weatherCommand(t, binary, "resume", "--db", db))
 	s, v := inspectAndReplayWeather(t, binary, db, p, 2, 2)
 	p.requireContacts(t, 2)
@@ -402,6 +428,8 @@ func weatherRefresh(t *testing.T, binary string, lose bool) {
 	}
 	if lose {
 		unresolvedWeather(t, s, v.read(t, 1), contact.operation)
+		requireWeatherText(t, weatherOutput(t, binary, "status", "--db", db), []string{contact.operation, v.read(t, 2).Operation,
+			"provider response is unknown", "does not settle it", "No remaining read slot"}, []string{"weather-agent refresh", "weather-agent resume"})
 	} else {
 		authenticWeather(t, s, v.read(t, 1), 1, contact)
 	}

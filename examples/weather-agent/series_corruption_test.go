@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"database/sql"
 	"path/filepath"
 	"testing"
@@ -57,6 +58,10 @@ func TestWeatherSeriesCorruption(t *testing.T) {
 			}
 			if _, err := runtime.Replay(t.Context(), copy, runtime.DefaultLimits()); err == nil {
 				t.Error("Replay accepted impossible history")
+			}
+			var output bytes.Buffer
+			if err := run(t.Context(), []string{"status", "--db", copy}, &output); err == nil || output.Len() != 0 {
+				t.Errorf("status did not reject impossible history (err=%v, bytes=%d)", err, output.Len())
 			}
 			if before != weatherDBBytes(t, copy) {
 				t.Fatal("readers modified corrupt DB/WAL")

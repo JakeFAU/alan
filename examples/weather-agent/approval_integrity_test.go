@@ -63,7 +63,11 @@ func TestWeatherApprovalIntegrity(t *testing.T) {
 	}
 	wrongReason := copyWeatherApprovalCut(t, source)
 	wrongHandle := copyWeatherApprovalCut(t, source)
+	requireWeatherText(t, humanWeatherCommand(t, "status", "--db", source),
+		[]string{"Optional separate approval for read 2"}, nil)
 	appCommand(t, "refresh", "--db", source, "--read", "2")
+	requireWeatherText(t, humanWeatherCommand(t, "status", "--db", source),
+		[]string{"Read 2. Approved", "weather-agent resume"}, []string{"weather-agent refresh"})
 	control := retainedWeatherApproval(t, source)
 	foreign := filepath.Join(t.TempDir(), "weather.sqlite")
 	if got := createM4Weather(t, foreign, p.endpoint(), 2); got.Namespace == r.Namespace || got.OpportunitiesSpent != 0 {
@@ -93,7 +97,7 @@ func TestWeatherApprovalIntegrity(t *testing.T) {
 				t.Fatal(err)
 			}
 			priorContacts := len(p.contacts())
-			for _, action := range []string{"inspect", "replay"} {
+			for _, action := range []string{"inspect", "status", "replay"} {
 				var out bytes.Buffer
 				if err := run(t.Context(), []string{action, "--db", tc.db, "--json"}, &out); err == nil {
 					if got := decodeWeather(t, out.String()).read(t, 2); got.State == "refresh_approved" {

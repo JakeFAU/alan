@@ -63,6 +63,27 @@ func TestWeatherContinuationPredecessors(t *testing.T) {
 			if before.State != tc.state || secondApproval(t, at) != nil || tc.name == "settled_unselected" && selectedWeather(t, at, before) != nil {
 				t.Fatalf("wrong predecessor cut %s: %+v", tc.name, before)
 			}
+			var present, absent []string
+			switch tc.name {
+			case "unspent":
+				present = []string{"Original read can run", "Opportunity unspent", "Resume may contact the provider"}
+			case "retained_unsettled", "settled_unselected":
+				present = []string{"Response retained (HTTP 200)", "Observation unselected", "Retained result needs local work", "weather-agent resume"}
+				absent = []string{"Resume may contact the provider"}
+			case "spent_before_dispatch":
+				present = []string{"before local dispatch", "Optional separate approval for read 2", "Opportunity spent"}
+				absent = []string{"provider response is unknown", "weather-agent resume"}
+			case "lost_after_acceptance":
+				present = []string{"provider response is unknown", "Resume will not retry this original", "does not settle it", "Optional separate approval for read 2"}
+				absent = []string{"weather-agent resume"}
+			case "retained_refusal":
+				present = []string{"Response retained (HTTP 429)", "Observation selected", "http_rejected", "Optional separate approval for read 2"}
+			}
+			if !tc.eligible {
+				absent = append(absent, "weather-agent refresh", "Eligible for separate approval")
+			}
+			requireWeatherText(t, humanWeatherCommand(t, "status", "--db", db), append(present, before.OperationID), absent)
+			p.requireContacts(t, tc.contacts)
 			if owner != nil {
 				pauses = append(pauses, continuationStop(t, witness, owner.cmd.Process.Pid, tc.contacts, at))
 			}

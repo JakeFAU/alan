@@ -162,7 +162,7 @@ func TestWeatherApplicationRejectsSubstitutedEvidence(t *testing.T) {
 			if err != nil || cut.Effects[0].ResultDisposition != "validated" {
 				t.Fatalf("expected a valid ALAN result from substituted adapter: %v", err)
 			}
-			for _, action := range []string{"inspect", "replay", "resume"} {
+			for _, action := range []string{"inspect", "status", "replay", "resume"} {
 				var output bytes.Buffer
 				err := run(t.Context(), []string{action, "--db", db}, &output)
 				if err == nil || output.Len() != 0 || contacts.Load() != before+1 {
@@ -179,6 +179,8 @@ func TestWeatherApplicationZeroAllowanceAndProvisioningConflicts(t *testing.T) {
 	endpoint := "http://127.0.0.1:1/v1/forecast"
 	start := provisioning(db, endpoint, 0)
 	created := appCommand(t, start...)
+	requireWeatherText(t, humanWeatherCommand(t, "status", "--db", db),
+		[]string{"Opportunities spent 0 of 0", "No remaining read slot"}, []string{"weather-agent resume", "weather-agent refresh"})
 	blocked := appCommand(t, "run", "--db", db)
 	if blocked.OpportunitiesSpent != 0 || blocked.Reads[0].Report != "" || blocked.Reads[0].State != "unavailable" {
 		t.Fatalf("zero allowance: %+v", blocked)
@@ -244,6 +246,8 @@ func TestWeatherApplicationRejectsUnrelatedPeerHandle(t *testing.T) {
 		t.Fatalf("run: %v, close: %v", err, closeErr)
 	}
 	got := appCommand(t, "inspect", "--db", db)
+	requireWeatherText(t, humanWeatherCommand(t, "status", "--db", db),
+		[]string{"unexpected local refresh input", "Response retained (HTTP 429)"}, []string{"weather-agent refresh", "Eligible for separate approval"})
 	if len(got.RefusedInputs) != 1 || got.RefusedInputs[0].TransportID != refused.TransportID {
 		t.Fatalf("missing declined local input: %+v", got.RefusedInputs)
 	}
