@@ -71,6 +71,7 @@ const (
 	resumeProvider
 	resumeLocal
 	approveRead
+	approvalOccupied
 )
 
 func (s summary) nextAction(cut *runtime.ExecutionSnapshot, r readSummary) nextAction {
@@ -89,8 +90,8 @@ func (s summary) nextAction(cut *runtime.ExecutionSnapshot, r readSummary) nextA
 		switch {
 		case r.Read == 1 && s.Allowance > 0, r.ApprovalObservationID != "":
 			return resumeProvider
-		case r.Read > 1 && canApproveRead(cut, r.Read):
-			return approveRead
+		case r.Read > 1:
+			return nextApprovalAction(cut, r.Read)
 		}
 	case runtime.EffectCommitted, runtime.EffectAuthorized:
 		if s.Allowance > 0 {
@@ -104,14 +105,24 @@ func (s summary) nextAction(cut *runtime.ExecutionSnapshot, r readSummary) nextA
 	return noAction
 }
 
-func canApproveRead(cut *runtime.ExecutionSnapshot, n int) bool {
+func nextApprovalAction(cut *runtime.ExecutionSnapshot, n int) nextAction {
 	if len(cut.Composition.Continuations) == 0 {
-		// summarize has already checked any retained legacy input.
-		_, err := legacyApprovalPayload(cut, n)
-		return err == nil
+		// Valid retained approvals are handled before reaching this check.
+		// A decision still occupies its input transport ID after a refusal
+		// or when it targeted a different route.
+		id := approvalID(n)
+		for _, a := range cut.Admissions {
+			if a.Domain == "input" && a.TransportID == id {
+				return approvalOccupied
+			}
+		}
+		if _, err := legacyApprovalPayload(cut, n); err == nil {
+			return approveRead
+		}
+	} else if _, _, err := weatherApprovalBasis(cut, n); err == nil {
+		return approveRead
 	}
-	_, _, err := weatherApprovalBasis(cut, n)
-	return err == nil
+	return noAction
 }
 
 func (r readSummary) writeHumanRead(buf *strings.Builder, next nextAction) {
@@ -133,9 +144,12 @@ func (r readSummary) writeHumanRead(buf *strings.Builder, next nextAction) {
 		}
 		buf.WriteString(r.Report)
 	case "awaiting_refresh_approval":
-		if next == approveRead {
+		switch next {
+		case approveRead:
 			buf.WriteString("Eligible for separate approval of a new observation.")
-		} else {
+		case approvalOccupied:
+			fmt.Fprintf(buf, "Approval blocked because a retained input already uses transport ID %q.", approvalID(r.Read))
+		default:
 			fmt.Fprintf(buf, "Waiting for read %d to qualify as a predecessor.", r.Read-1)
 		}
 	case "refresh_approved":

@@ -8,6 +8,9 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/JakeFAU/alan/runtime"
+	"github.com/JakeFAU/alan/schema"
 )
 
 func humanWeatherCommand(t *testing.T, args ...string) string {
@@ -100,6 +103,61 @@ func TestWeatherStatusGuidesOnlyEligibleReads(t *testing.T) {
 	appCommand(t, "resume", "--db", db)
 	requireWeatherText(t, status(), []string{"Opportunities spent 3 of 3", "No remaining read slot"}, []string{"weather-agent refresh", "weather-agent resume"})
 	p.requireContacts(t, 3)
+}
+
+func TestWeatherStatusDetectsOccupiedLegacyApproval(t *testing.T) {
+	p := newWeatherProvider(t, seriesReplies()...)
+	source := filepath.Join(t.TempDir(), "legacy.sqlite")
+	createM4Weather(t, source, p.endpoint(), 2)
+	original := appCommand(t, "resume", "--db", source).Reads[0]
+	if original.State != "reported" || original.OperationID == "" {
+		t.Fatalf("missing completed predecessor: %+v", original)
+	}
+	for _, tc := range []struct{ name, target, reason string }{
+		{"refused_canonical_route", "weather-2", "schema_invalid"},
+		{"refused_other_route", "foreign", "target_missing"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			db := copyWeatherApprovalCut(t, source)
+			owner, err := runtime.Open(t.Context(), db, runtime.DefaultLimits())
+			if err != nil {
+				t.Fatal(err)
+			}
+			const transport = "weather-refresh-2"
+			refused, err := owner.AdmitInput(t.Context(), runtime.Input{
+				TransportID: transport, LogicalID: transport, Target: tc.target, Generation: 1, Obligation: approval,
+				Payload: map[string]schema.Value{"previous_operation_id": schema.Text("incomplete")},
+			})
+			if err := errors.Join(err, owner.Close()); err != nil {
+				t.Fatal(err)
+			}
+			if refused.Accepted || refused.Reason != tc.reason || refused.TransportID != transport {
+				t.Fatalf("expected the retained refusal, got %+v", refused)
+			}
+			before := weatherDBBytes(t, db)
+			detailed := humanWeatherCommand(t, "inspect", "--db", db)
+			got := humanWeatherCommand(t, "status", "--db", db)
+			requireWeatherText(t, got,
+				[]string{original.OperationID, original.Report, "Read 2. Approval blocked", transport, "retained input"},
+				[]string{"weather-agent refresh", "Eligible for separate approval", "weather-agent resume"})
+			if detailed != humanWeatherCommand(t, "status", "--db", db, "--json") || before != weatherDBBytes(t, db) {
+				t.Fatal("status changed the detailed report or modified the database/WAL")
+			}
+			err = run(t.Context(), []string{"refresh", "--db", db, "--read", "2"}, io.Discard)
+			if !errors.Is(err, runtime.ErrConflict) {
+				t.Fatalf("refresh should preserve its conflict, got %v", err)
+			}
+			if after := weatherSnapshot(t, db); len(after.Effects) != 1 || weatherEffect(t, after, "weather-1").OperationID != original.OperationID {
+				t.Fatal("the failed approval changed original effects")
+			}
+			p.requireContacts(t, 1)
+		})
+	}
+	// The same fixed key still works when it contains a valid approval.
+	appCommand(t, "refresh", "--db", source, "--read", "2")
+	requireWeatherText(t, humanWeatherCommand(t, "status", "--db", source),
+		[]string{"Read 2. Approved", "weather-agent resume"}, []string{"Approval blocked", "weather-agent refresh"})
+	p.requireContacts(t, 1)
 }
 
 func checkWeatherShellCommand(t *testing.T, status, action, db string, extra ...string) {
