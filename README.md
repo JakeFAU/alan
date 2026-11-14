@@ -32,6 +32,8 @@ Declare a finite sequence with `author.BoundedSeries(observation, author.SeriesO
 
 [Full report scaling](docs/evidence/report-scaling/results.md) measures report-local batching. On the frozen 256-operation series, median Execute elapsed fell from 7.031 s to 4.613 s with complete reports. The results include SQL work, allocation, peak RSS, and compatibility and recovery qualification.
 
+[Execution progress scaling](docs/evidence/progress-scaling/results.md) measures the opt-in progress call on the same frozen candidate as full Run. On the controlled 256-operation series, median execution-window time fell from 4.585 s to 1.298 s. The lifecycle still included a final full report, inspection, reopen and Replay.
+
 ## Run a computation
 
 Use Go 1.27.3, CGO, a C compiler and a local Unix filesystem. In your application module, run `go get github.com/JakeFAU/alan/runtime`. Import `github.com/JakeFAU/alan/author` to define a program and `github.com/JakeFAU/alan/runtime` to run it. From a checkout, run the [quickstart](examples/quickstart/main.go).

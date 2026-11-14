@@ -1,0 +1,538 @@
+{
+  "allocation_attribution": {
+    "full-alloc-all": [
+      "Showing nodes accounting for 4711.87MB, 100% of 4711.87MB total",
+      "   11.52MB  0.24%  0.48%  2599.18MB 55.16%  github.com/JakeFAU/alan/internal/executor.(*Store).finishRun",
+      "   79.20MB  1.68%  2.16%  1733.96MB 36.80%  github.com/JakeFAU/alan/internal/executor.readRootCompletionsWithReader",
+      "       1MB 0.021%  3.09%   923.54MB 19.60%  github.com/JakeFAU/alan/internal/executor.validateCompositionStore"
+    ],
+    "progress-alloc-all": [
+      "Showing nodes accounting for 2107.90MB, 100% of 2107.90MB total",
+      "         0     0%  0.12%   935.10MB 44.36%  github.com/JakeFAU/alan/internal/executor.validateCompositionStore",
+      "    1.05MB  0.05% 78.85%    37.09MB  1.76%  github.com/JakeFAU/alan/internal/executor.readRootCompletionsWithReader",
+      "         0     0% 80.94%    31.54MB  1.50%  github.com/JakeFAU/alan/internal/executor.(*Store).finishRun"
+    ]
+  },
+  "allocation_attribution_inputs": {
+    "origin": "/Users/jacob/.codex/worktrees/recoverable-investigator/alan/.superpowers/sdd/plan-progress-scaling/task3-profile-analysis-2/profile-inputs.json",
+    "origin_sha256": "ca3bfc11695bba968d1cde799a1169a90aaaadff56feaa9561ec95a35eeb3a0f",
+    "snapshot": {
+      "sources": {},
+      "tools": {
+        "/Users/jacob/.codex/worktrees/recoverable-investigator/alan/.superpowers/sdd/plan-progress-scaling/pprof": "c5196ad517292a17014e7151b8e901c3365851486b6d39ef282541f49b4c5113",
+        "/Users/jacob/.codex/worktrees/recoverable-investigator/alan/.superpowers/sdd/plan-progress-scaling/task3-profile-full/candidate-full/driver.bin": "a12b0612a73e620076fd2aa3b8aaf2e2ec5cc0de13a89a6439aaacf9f6e416f7",
+        "/Users/jacob/.codex/worktrees/recoverable-investigator/alan/.superpowers/sdd/plan-progress-scaling/task3-profile-full/samples/profile-b256-candidate-full/allocs.pprof": "26c65dfb47072af5bedee6df51bd9de5b4d7df309dba7326816e6dec0eb5acbd",
+        "/Users/jacob/.codex/worktrees/recoverable-investigator/alan/.superpowers/sdd/plan-progress-scaling/task3-profile-full/samples/profile-b256-candidate-full/cpu.pprof": "33aacf7b1132564e9d59e77467803bccafec2dd76a35f0dfef47a7e6b66ab196",
+        "/Users/jacob/.codex/worktrees/recoverable-investigator/alan/.superpowers/sdd/plan-progress-scaling/task3-profile-progress/candidate-progress/driver.bin": "4c2c792732bd571169b42456aa62e0509478f9aa0af163ebdb297b3e43ff376d",
+        "/Users/jacob/.codex/worktrees/recoverable-investigator/alan/.superpowers/sdd/plan-progress-scaling/task3-profile-progress/samples/profile-b256-candidate-progress/allocs.pprof": "43580e1eeb4aaf60101c08bc7964a25fc34a022157a3cecfb7d51c8689365fef",
+        "/Users/jacob/.codex/worktrees/recoverable-investigator/alan/.superpowers/sdd/plan-progress-scaling/task3-profile-progress/samples/profile-b256-candidate-progress/cpu.pprof": "bbff806722b0ee07a74b05e60642f91fda21d8b0680f8a6a8e58a0746995ec02"
+      }
+    }
+  },
+  "inputs": {
+    "baseline": {
+      "/Users/jacob/.codex/worktrees/recoverable-investigator/alan/.superpowers/sdd/plan-progress-scaling/pprof": {
+        "bytes": 19605170,
+        "sha256": "c5196ad517292a17014e7151b8e901c3365851486b6d39ef282541f49b4c5113"
+      },
+      "/Users/jacob/.codex/worktrees/recoverable-investigator/alan/.superpowers/sdd/plan-progress-scaling/task1-profile/base-full/driver.bin": {
+        "bytes": 17779826,
+        "sha256": "4ca872e55b1baec9d30b4462b1b978e1d89387db2dbdac4fe4a2f4e03b3cc016"
+      },
+      "/Users/jacob/.codex/worktrees/recoverable-investigator/alan/.superpowers/sdd/plan-progress-scaling/task1-profile/manifest.json": {
+        "bytes": 4464,
+        "sha256": "e0f9af32d4007c7284330146681ec51e131559f17d3b14a4f811d2993c896c00"
+      },
+      "/Users/jacob/.codex/worktrees/recoverable-investigator/alan/.superpowers/sdd/plan-progress-scaling/task1-profile/samples/profile-b256-base-full/allocs.pprof": {
+        "bytes": 89884,
+        "sha256": "001d548cee30d1d1e9e48d9bfc370d7d836f37912e1f1a226312080eedaa2e50"
+      },
+      "/Users/jacob/.codex/worktrees/recoverable-investigator/alan/.superpowers/sdd/plan-progress-scaling/task1-profile/samples/profile-b256-base-full/cpu.pprof": {
+        "bytes": 21712,
+        "sha256": "ee33c41f871126a3ee69c1014ba8c7bcedd2c1a929c9f58f968dd2dbce5d54c3"
+      }
+    },
+    "candidate": {
+      "sources": {},
+      "tools": {
+        "/Users/jacob/.codex/worktrees/recoverable-investigator/alan/.superpowers/sdd/plan-progress-scaling/pprof": "c5196ad517292a17014e7151b8e901c3365851486b6d39ef282541f49b4c5113",
+        "/Users/jacob/.codex/worktrees/recoverable-investigator/alan/.superpowers/sdd/plan-progress-scaling/task3-profile-full/candidate-full/driver.bin": "a12b0612a73e620076fd2aa3b8aaf2e2ec5cc0de13a89a6439aaacf9f6e416f7",
+        "/Users/jacob/.codex/worktrees/recoverable-investigator/alan/.superpowers/sdd/plan-progress-scaling/task3-profile-full/samples/profile-b256-candidate-full/allocs.pprof": "26c65dfb47072af5bedee6df51bd9de5b4d7df309dba7326816e6dec0eb5acbd",
+        "/Users/jacob/.codex/worktrees/recoverable-investigator/alan/.superpowers/sdd/plan-progress-scaling/task3-profile-full/samples/profile-b256-candidate-full/cpu.pprof": "33aacf7b1132564e9d59e77467803bccafec2dd76a35f0dfef47a7e6b66ab196",
+        "/Users/jacob/.codex/worktrees/recoverable-investigator/alan/.superpowers/sdd/plan-progress-scaling/task3-profile-progress/candidate-progress/driver.bin": "4c2c792732bd571169b42456aa62e0509478f9aa0af163ebdb297b3e43ff376d",
+        "/Users/jacob/.codex/worktrees/recoverable-investigator/alan/.superpowers/sdd/plan-progress-scaling/task3-profile-progress/samples/profile-b256-candidate-progress/allocs.pprof": "43580e1eeb4aaf60101c08bc7964a25fc34a022157a3cecfb7d51c8689365fef",
+        "/Users/jacob/.codex/worktrees/recoverable-investigator/alan/.superpowers/sdd/plan-progress-scaling/task3-profile-progress/samples/profile-b256-candidate-progress/cpu.pprof": "bbff806722b0ee07a74b05e60642f91fda21d8b0680f8a6a8e58a0746995ec02"
+      }
+    }
+  },
+  "profile_rows": {
+    "task1-profile": [
+      {
+        "binary_sha256": "4ca872e55b1baec9d30b4462b1b978e1d89387db2dbdac4fe4a2f4e03b3cc016",
+        "command_sha256": "d8dde7da491046a54debefbc8c0aa73720d0f629893e51ac7f820446c9567955",
+        "contact_count": 256,
+        "design": {
+          "arm": "base-full",
+          "block": 0,
+          "bound": 256,
+          "kind": "profile",
+          "name": "profile-b256-base-full"
+        },
+        "driver_wall_ns_before_json": 6826370875,
+        "execute_end_maxrss_bytes": 35520512,
+        "exit": 0,
+        "mode": "full",
+        "operation_wall_ns": {
+          "approval_establishment": 124252537,
+          "approval_targeted_basis": 160900830,
+          "run": 4479115178
+        },
+        "outcome_sha256": "c88f04f63814c06216e672126a0b95cb20cb80bf329dcb82aa40edb390e6321c",
+        "process_exit_maxrss_bytes": 84066304,
+        "process_wrapper_seconds": 7.113826036453247,
+        "profiles": {
+          "allocs.pprof": "001d548cee30d1d1e9e48d9bfc370d7d836f37912e1f1a226312080eedaa2e50",
+          "cpu.pprof": "ee33c41f871126a3ee69c1014ba8c7bcedd2c1a929c9f58f968dd2dbce5d54c3"
+        },
+        "resources": {
+          "close": {
+            "mallocs": 11,
+            "system_cpu_ns": 144000,
+            "total_alloc_bytes": 1088,
+            "user_cpu_ns": 90000,
+            "wall_ns": 216000
+          },
+          "close_before_reopen": {
+            "mallocs": 11,
+            "system_cpu_ns": 1439000,
+            "total_alloc_bytes": 1088,
+            "user_cpu_ns": 140000,
+            "wall_ns": 2663958
+          },
+          "construct_provision": {
+            "mallocs": 111852,
+            "system_cpu_ns": 2744000,
+            "total_alloc_bytes": 12867568,
+            "user_cpu_ns": 20520000,
+            "wall_ns": 18773750
+          },
+          "create": {
+            "mallocs": 2266475,
+            "system_cpu_ns": 58131000,
+            "total_alloc_bytes": 234678696,
+            "user_cpu_ns": 337808000,
+            "wall_ns": 285659791
+          },
+          "execute_window": {
+            "mallocs": 43986111,
+            "system_cpu_ns": 1527301000,
+            "total_alloc_bytes": 3382449104,
+            "user_cpu_ns": 5420239000,
+            "wall_ns": 4764411542
+          },
+          "final_full_report": {
+            "mallocs": 235810,
+            "system_cpu_ns": 6488000,
+            "total_alloc_bytes": 17661968,
+            "user_cpu_ns": 28216000,
+            "wall_ns": 24171250
+          },
+          "final_inspection": {
+            "mallocs": 1389034,
+            "system_cpu_ns": 6611000,
+            "total_alloc_bytes": 137796216,
+            "user_cpu_ns": 130892000,
+            "wall_ns": 107709125
+          },
+          "final_series_proof": {
+            "mallocs": 6747,
+            "system_cpu_ns": 37000,
+            "total_alloc_bytes": 1108792,
+            "user_cpu_ns": 1075000,
+            "wall_ns": 1119541
+          },
+          "final_series_view": {
+            "mallocs": 8629,
+            "system_cpu_ns": 11000,
+            "total_alloc_bytes": 1213048,
+            "user_cpu_ns": 775000,
+            "wall_ns": 776625
+          },
+          "lifecycle": {
+            "mallocs": 60755786,
+            "system_cpu_ns": 1885811000,
+            "total_alloc_bytes": 4973409224,
+            "user_cpu_ns": 7753643000,
+            "wall_ns": 6692071667
+          },
+          "open_completed": {
+            "mallocs": 6042661,
+            "system_cpu_ns": 143721000,
+            "total_alloc_bytes": 563705000,
+            "user_cpu_ns": 904261000,
+            "wall_ns": 748184792
+          },
+          "original_state_verification": {
+            "mallocs": 111598,
+            "system_cpu_ns": 1775000,
+            "total_alloc_bytes": 15065744,
+            "user_cpu_ns": 12957000,
+            "wall_ns": 11191042
+          },
+          "replay": {
+            "mallocs": 4867605,
+            "system_cpu_ns": 117628000,
+            "total_alloc_bytes": 442773792,
+            "user_cpu_ns": 716298000,
+            "wall_ns": 576217375
+          },
+          "resume_inspection_view": {
+            "mallocs": 1397658,
+            "system_cpu_ns": 5251000,
+            "total_alloc_bytes": 138600336,
+            "user_cpu_ns": 133072000,
+            "wall_ns": 108397125
+          },
+          "run_after_reopen": {
+            "mallocs": 321306,
+            "system_cpu_ns": 13823000,
+            "total_alloc_bytes": 23095792,
+            "user_cpu_ns": 44883000,
+            "wall_ns": 39271083
+          }
+        },
+        "revision": "e43e4f6be4500d177b50caf29181608d09b99c62",
+        "spawn_error": null,
+        "stderr_sha256": "6a3db01d05c765b76d9c8807bfc0a0e67fad467a9764e43d5b0ac33b98af93c2",
+        "stdout_sha256": "6ebf6b892a26aaf0491d430201ef3f7327e7dfe613b3cd621487f636086dd679",
+        "timeout": false,
+        "workload": {
+          "completed": 256,
+          "protected_approvals": 255,
+          "reductions": 1023,
+          "replay_history": 1023,
+          "replay_intents": 256,
+          "selected": 256,
+          "spent": 256
+        }
+      }
+    ],
+    "task3-profile-full": [
+      {
+        "binary_sha256": "a12b0612a73e620076fd2aa3b8aaf2e2ec5cc0de13a89a6439aaacf9f6e416f7",
+        "command_sha256": "115c5807361e4e36a816e169fc860ea7e3addeacd3a711f5acf58d7709823192",
+        "contact_count": 256,
+        "design": {
+          "arm": "candidate-full",
+          "block": 0,
+          "bound": 256,
+          "kind": "profile",
+          "name": "profile-b256-candidate-full"
+        },
+        "driver_wall_ns_before_json": 6627521291,
+        "execute_end_maxrss_bytes": 34996224,
+        "exit": 0,
+        "mode": "full",
+        "operation_wall_ns": {
+          "approval_establishment": 114513373,
+          "approval_targeted_basis": 150187418,
+          "run": 4312020956
+        },
+        "outcome_sha256": "f0259ffbd5bc1918f8ddbbea515946d0f63d933065500cfcccf40c6fee1ca9e0",
+        "process_exit_maxrss_bytes": 84869120,
+        "process_wrapper_seconds": 6.898423194885254,
+        "profiles": {
+          "allocs.pprof": "26c65dfb47072af5bedee6df51bd9de5b4d7df309dba7326816e6dec0eb5acbd",
+          "cpu.pprof": "33aacf7b1132564e9d59e77467803bccafec2dd76a35f0dfef47a7e6b66ab196"
+        },
+        "resources": {
+          "close": {
+            "mallocs": 11,
+            "system_cpu_ns": 251000,
+            "total_alloc_bytes": 1088,
+            "user_cpu_ns": 113000,
+            "wall_ns": 571625
+          },
+          "close_before_reopen": {
+            "mallocs": 11,
+            "system_cpu_ns": 1674000,
+            "total_alloc_bytes": 1088,
+            "user_cpu_ns": 137000,
+            "wall_ns": 4385042
+          },
+          "construct_provision": {
+            "mallocs": 111870,
+            "system_cpu_ns": 3297000,
+            "total_alloc_bytes": 12872960,
+            "user_cpu_ns": 24646000,
+            "wall_ns": 22904666
+          },
+          "create": {
+            "mallocs": 2265731,
+            "system_cpu_ns": 56184000,
+            "total_alloc_bytes": 234540944,
+            "user_cpu_ns": 331295000,
+            "wall_ns": 283298541
+          },
+          "execute_window": {
+            "mallocs": 43976115,
+            "system_cpu_ns": 1412045000,
+            "total_alloc_bytes": 3381334480,
+            "user_cpu_ns": 5211027000,
+            "wall_ns": 4576803458
+          },
+          "final_full_report": {
+            "mallocs": 235934,
+            "system_cpu_ns": 6757000,
+            "total_alloc_bytes": 17668000,
+            "user_cpu_ns": 27353000,
+            "wall_ns": 23028375
+          },
+          "final_inspection": {
+            "mallocs": 1389341,
+            "system_cpu_ns": 6361000,
+            "total_alloc_bytes": 137436672,
+            "user_cpu_ns": 132024000,
+            "wall_ns": 111676708
+          },
+          "final_series_proof": {
+            "mallocs": 6747,
+            "system_cpu_ns": 7000,
+            "total_alloc_bytes": 1108792,
+            "user_cpu_ns": 897000,
+            "wall_ns": 893458
+          },
+          "final_series_view": {
+            "mallocs": 8629,
+            "system_cpu_ns": 7000,
+            "total_alloc_bytes": 1213048,
+            "user_cpu_ns": 757000,
+            "wall_ns": 750750
+          },
+          "lifecycle": {
+            "mallocs": 60746176,
+            "system_cpu_ns": 1748346000,
+            "total_alloc_bytes": 4971815176,
+            "user_cpu_ns": 7467628000,
+            "wall_ns": 6457002916
+          },
+          "open_completed": {
+            "mallocs": 6042805,
+            "system_cpu_ns": 132217000,
+            "total_alloc_bytes": 563664888,
+            "user_cpu_ns": 854444000,
+            "wall_ns": 702216709
+          },
+          "original_state_verification": {
+            "mallocs": 111665,
+            "system_cpu_ns": 1359000,
+            "total_alloc_bytes": 15079200,
+            "user_cpu_ns": 12547000,
+            "wall_ns": 10850208
+          },
+          "replay": {
+            "mallocs": 4867880,
+            "system_cpu_ns": 108686000,
+            "total_alloc_bytes": 442798272,
+            "user_cpu_ns": 693589000,
+            "wall_ns": 565861125
+          },
+          "resume_inspection_view": {
+            "mallocs": 1397784,
+            "system_cpu_ns": 5258000,
+            "total_alloc_bytes": 138598360,
+            "user_cpu_ns": 132362000,
+            "wall_ns": 111335583
+          },
+          "run_after_reopen": {
+            "mallocs": 321371,
+            "system_cpu_ns": 13532000,
+            "total_alloc_bytes": 23104592,
+            "user_cpu_ns": 44015000,
+            "wall_ns": 39181458
+          }
+        },
+        "revision": "f8ecf081867b29012bbf1688eddfa067abbc1e43",
+        "spawn_error": null,
+        "stderr_sha256": "ba1ca2f5939c0c1c7456a7ac6d2b9614b5cbf1440fe1c1babed33cf9d50980db",
+        "stdout_sha256": "cd853696f81f369df54dd0d9fbb78f1325341eb2f1b44c9d2ab478b16a25a519",
+        "timeout": false,
+        "workload": {
+          "completed": 256,
+          "protected_approvals": 255,
+          "reductions": 1023,
+          "replay_history": 1023,
+          "replay_intents": 256,
+          "selected": 256,
+          "spent": 256
+        }
+      }
+    ],
+    "task3-profile-progress": [
+      {
+        "binary_sha256": "4c2c792732bd571169b42456aa62e0509478f9aa0af163ebdb297b3e43ff376d",
+        "command_sha256": "156479946fdd3d05a9336279f55bc730cf7c0dc401d336cd7c17f64ab0f429e1",
+        "contact_count": 256,
+        "design": {
+          "arm": "candidate-progress",
+          "block": 0,
+          "bound": 256,
+          "kind": "profile",
+          "name": "profile-b256-candidate-progress"
+        },
+        "driver_wall_ns_before_json": 3432360542,
+        "execute_end_maxrss_bytes": 35127296,
+        "exit": 0,
+        "mode": "progress",
+        "operation_wall_ns": {
+          "approval_establishment": 104687122,
+          "approval_targeted_basis": 126041670,
+          "run": 1133722044
+        },
+        "outcome_sha256": "3a54bf7076b023567a2e5001075ac497d1d3b09a03dc18bab30b8b55e1a17b55",
+        "process_exit_maxrss_bytes": 85377024,
+        "process_wrapper_seconds": 3.7140657901763916,
+        "profiles": {
+          "allocs.pprof": "43580e1eeb4aaf60101c08bc7964a25fc34a022157a3cecfb7d51c8689365fef",
+          "cpu.pprof": "bbff806722b0ee07a74b05e60642f91fda21d8b0680f8a6a8e58a0746995ec02"
+        },
+        "resources": {
+          "close": {
+            "mallocs": 11,
+            "system_cpu_ns": 230000,
+            "total_alloc_bytes": 1088,
+            "user_cpu_ns": 107000,
+            "wall_ns": 553042
+          },
+          "close_before_reopen": {
+            "mallocs": 11,
+            "system_cpu_ns": 1429000,
+            "total_alloc_bytes": 1088,
+            "user_cpu_ns": 133000,
+            "wall_ns": 2929792
+          },
+          "construct_provision": {
+            "mallocs": 111849,
+            "system_cpu_ns": 3386000,
+            "total_alloc_bytes": 12862024,
+            "user_cpu_ns": 24629000,
+            "wall_ns": 23112417
+          },
+          "create": {
+            "mallocs": 2266702,
+            "system_cpu_ns": 55249000,
+            "total_alloc_bytes": 234681144,
+            "user_cpu_ns": 331787000,
+            "wall_ns": 281522292
+          },
+          "execute_window": {
+            "mallocs": 8706184,
+            "system_cpu_ns": 513500000,
+            "total_alloc_bytes": 667506968,
+            "user_cpu_ns": 1389972000,
+            "wall_ns": 1364515750
+          },
+          "final_full_report": {
+            "mallocs": 235986,
+            "system_cpu_ns": 6987000,
+            "total_alloc_bytes": 17688504,
+            "user_cpu_ns": 26274000,
+            "wall_ns": 22871709
+          },
+          "final_inspection": {
+            "mallocs": 1388909,
+            "system_cpu_ns": 6083000,
+            "total_alloc_bytes": 137402720,
+            "user_cpu_ns": 126567000,
+            "wall_ns": 109006542
+          },
+          "final_series_proof": {
+            "mallocs": 6746,
+            "system_cpu_ns": 23000,
+            "total_alloc_bytes": 1108728,
+            "user_cpu_ns": 903000,
+            "wall_ns": 916750
+          },
+          "final_series_view": {
+            "mallocs": 8629,
+            "system_cpu_ns": 35000,
+            "total_alloc_bytes": 1213048,
+            "user_cpu_ns": 770000,
+            "wall_ns": 795958
+          },
+          "lifecycle": {
+            "mallocs": 25476391,
+            "system_cpu_ns": 850987000,
+            "total_alloc_bytes": 2258171792,
+            "user_cpu_ns": 3631846000,
+            "wall_ns": 3230660667
+          },
+          "open_completed": {
+            "mallocs": 6042726,
+            "system_cpu_ns": 132371000,
+            "total_alloc_bytes": 563701920,
+            "user_cpu_ns": 849916000,
+            "wall_ns": 697145667
+          },
+          "original_state_verification": {
+            "mallocs": 111721,
+            "system_cpu_ns": 1466000,
+            "total_alloc_bytes": 15085960,
+            "user_cpu_ns": 13538000,
+            "wall_ns": 11178709
+          },
+          "replay": {
+            "mallocs": 4868005,
+            "system_cpu_ns": 111619000,
+            "total_alloc_bytes": 442841376,
+            "user_cpu_ns": 688477000,
+            "wall_ns": 563759917
+          },
+          "resume_inspection_view": {
+            "mallocs": 1397486,
+            "system_cpu_ns": 4996000,
+            "total_alloc_bytes": 138600048,
+            "user_cpu_ns": 132933000,
+            "wall_ns": 110595959
+          },
+          "run_after_reopen": {
+            "mallocs": 321153,
+            "system_cpu_ns": 12984000,
+            "total_alloc_bytes": 23085944,
+            "user_cpu_ns": 43574000,
+            "wall_ns": 38634916
+          }
+        },
+        "revision": "f8ecf081867b29012bbf1688eddfa067abbc1e43",
+        "spawn_error": null,
+        "stderr_sha256": "782d19004c847dab22cd3ad93dc7331bc2cbfad53cdfabe844c953b8c6a2f41b",
+        "stdout_sha256": "6bddbc0e461c0a29011c8b7fba81639a8dc317f5961071ff2d77e19b929d4db0",
+        "timeout": false,
+        "workload": {
+          "completed": 256,
+          "protected_approvals": 255,
+          "reductions": 1023,
+          "replay_history": 1023,
+          "replay_intents": 256,
+          "selected": 256,
+          "spent": 256
+        }
+      }
+    ]
+  },
+  "rendered": {
+    "baseline-profile-analysis": {
+      "alloc-cumulative": "File: driver.bin\nType: alloc_space\nTime: 2026-11-13 20:19:20 EST\nShowing nodes accounting for 1744.79MB, 36.85% of 4734.98MB total\nDropped 274 nodes (cum <= 23.67MB)\nShowing top 30 nodes out of 204\n      flat  flat%   sum%        cum   cum%\n         0     0%     0%  4696.94MB 99.20%  main.main\n         0     0%     0%  4696.94MB 99.20%  runtime.main\n         0     0%     0%  4695.21MB 99.16%  main.(*report).measure\n         0     0%     0%  4695.21MB 99.16%  main.(*report).measure.func1\n         0     0%     0%  4695.21MB 99.16%  main.main.func2\n         0     0%     0%  4695.21MB 99.16%  main.run\n         0     0%     0%  4695.21MB 99.16%  runtime/pprof.Do\n         0     0%     0%  3236.30MB 68.35%  main.run.func6\n         0     0%     0%  3169.79MB 66.94%  github.com/JakeFAU/alan/internal/executor.(*Store).Run\n         0     0%     0%  3132.74MB 66.16%  main.runObservation (inline)\n       8MB  0.17%  0.17%  2725.49MB 57.56%  github.com/JakeFAU/alan/internal/executor.decode\n         0     0%  0.17%  2649.46MB 55.95%  github.com/JakeFAU/alan/internal/executor.(*Store).Run.func2\n   14.01MB   0.3%  0.46%  2649.46MB 55.95%  github.com/JakeFAU/alan/internal/executor.(*Store).finishRun\n         0     0%  0.46%  2300.40MB 48.58%  encoding/json.(*Decoder).Decode\n   78.21MB  1.65%  2.12%  1782.24MB 37.64%  github.com/JakeFAU/alan/internal/executor.readRootCompletionsWithReader\n         0     0%  2.12%  1714.61MB 36.21%  encoding/json/v2.Unmarshal\n         0     0%  2.12%  1712.61MB 36.17%  encoding/json/v2.unmarshalDecode\n         0     0%  2.12%  1710.57MB 36.13%  encoding/json/v2.makeStructArshaler.func3\n         0     0%  2.12%  1463.44MB 30.91%  encoding/json/v2.makeMapArshaler.func3\n         0     0%  2.12%  1158.22MB 24.46%  encoding/json/v2.makeMethodArshaler.func6\n      53MB  1.12%  3.24%  1158.22MB 24.46%  github.com/JakeFAU/alan/schema.(*Value).UnmarshalJSON\n    0.50MB 0.011%  3.25%   919.59MB 19.42%  github.com/JakeFAU/alan/internal/executor.validateCompositionStore\n  110.51MB  2.33%  5.58%   873.74MB 18.45%  encoding/json.NewDecoder\n         0     0%  5.58%   813.03MB 17.17%  github.com/JakeFAU/alan/internal/executor.validateLedger\n  763.23MB 16.12% 21.70%   763.23MB 16.12%  encoding/json/jsontext.NewDecoder (inline)\n      10MB  0.21% 21.91%   712.79MB 15.05%  github.com/JakeFAU/alan/internal/executor.(*reportReader).run\n  707.32MB 14.94% 36.85%   707.82MB 14.95%  encoding/json/jsontext.(*decoderState).fetch\n         0     0% 36.85%   673.32MB 14.22%  encoding/json/jsontext.(*Decoder).ReadValue (inline)\n         0     0% 36.85%   673.32MB 14.22%  encoding/json/jsontext.(*decoderState).ReadValue\n         0     0% 36.85%   671.72MB 14.19%  github.com/JakeFAU/alan/internal/executor.compositionExternalKnown\n",
+      "cpu-cumulative": "File: driver.bin\nType: cpu\nTime: 2026-11-13 20:19:13 EST\nDuration: 6.81s, Total samples = 8.67s (127.29%)\nShowing nodes accounting for 5.34s, 61.59% of 8.67s total\nDropped 232 nodes (cum <= 0.04s)\nShowing top 30 nodes out of 153\n      flat  flat%   sum%        cum   cum%\n         0     0%     0%      4.39s 50.63%  runtime.systemstack\n     3.53s 40.72% 40.72%      3.53s 40.72%  runtime.pthread_cond_signal\n         0     0% 40.72%      3.53s 40.72%  runtime.semawakeup\n         0     0% 40.72%      3.52s 40.60%  runtime.notewakeup\n         0     0% 40.72%      3.48s 40.14%  runtime.startm\n         0     0% 40.72%      3.47s 40.02%  runtime.wakep\n         0     0% 40.72%      2.90s 33.45%  runtime.newproc.func1\n         0     0% 40.72%      2.13s 24.57%  main.(*report).measure\n         0     0% 40.72%      2.13s 24.57%  main.(*report).measure.func1\n         0     0% 40.72%      2.13s 24.57%  main.main\n         0     0% 40.72%      2.13s 24.57%  main.main.func2\n         0     0% 40.72%      2.13s 24.57%  main.run\n         0     0% 40.72%      2.13s 24.57%  runtime.main\n         0     0% 40.72%      2.13s 24.57%  runtime/pprof.Do\n         0     0% 40.72%      2.06s 23.76%  runtime.schedule\n         0     0% 40.72%      2.03s 23.41%  runtime.mcall\n         0     0% 40.72%      1.91s 22.03%  runtime.findRunnable\n     1.81s 20.88% 61.59%      1.83s 21.11%  runtime.cgocall\n         0     0% 61.59%      1.74s 20.07%  main.run.func6\n         0     0% 61.59%      1.72s 19.84%  github.com/JakeFAU/alan/internal/executor.(*Store).Run\n         0     0% 61.59%      1.70s 19.61%  main.runObservation (inline)\n         0     0% 61.59%      1.36s 15.69%  database/sql.(*Rows).Next\n         0     0% 61.59%      1.36s 15.69%  database/sql.(*Rows).Next.func1\n         0     0% 61.59%      1.36s 15.69%  database/sql.(*Rows).nextLocked\n         0     0% 61.59%      1.36s 15.69%  github.com/JakeFAU/alan/internal/executor.(*Store).Run.func2\n         0     0% 61.59%      1.36s 15.69%  github.com/JakeFAU/alan/internal/executor.(*Store).finishRun\n         0     0% 61.59%      1.36s 15.69%  github.com/mattn/go-sqlite3.(*SQLiteRows).Next\n         0     0% 61.59%      1.35s 15.57%  github.com/mattn/go-sqlite3.(*SQLiteRows).stepCancellableLocked\n         0     0% 61.59%      1.35s 15.57%  github.com/mattn/go-sqlite3.(*SQLiteRows).stepCancellableLocked.func1 (inline)\n         0     0% 61.59%      1.35s 15.57%  github.com/mattn/go-sqlite3._Cfunc__sqlite3_step_internal\n",
+      "cpu-flat": "File: driver.bin\nType: cpu\nTime: 2026-11-13 20:19:13 EST\nDuration: 6.81s, Total samples = 8.67s (127.29%)\nShowing nodes accounting for 8.27s, 95.39% of 8.67s total\nDropped 232 nodes (cum <= 0.04s)\nShowing top 30 nodes out of 153\n      flat  flat%   sum%        cum   cum%\n     3.53s 40.72% 40.72%      3.53s 40.72%  runtime.pthread_cond_signal\n     1.81s 20.88% 61.59%      1.83s 21.11%  runtime.cgocall\n     1.24s 14.30% 75.89%      1.24s 14.30%  runtime.pthread_cond_wait\n     0.75s  8.65% 84.54%      0.75s  8.65%  runtime.usleep\n     0.55s  6.34% 90.89%      0.55s  6.34%  runtime.madvise\n     0.16s  1.85% 92.73%      0.16s  1.85%  runtime.pthread_kill\n     0.09s  1.04% 93.77%      0.09s  1.04%  runtime.kevent\n     0.05s  0.58% 94.35%      0.05s  0.58%  runtime.pthread_cond_timedwait_relative_np\n     0.02s  0.23% 94.58%      0.06s  0.69%  runtime.markroot.func1\n     0.02s  0.23% 94.81%      0.05s  0.58%  runtime.scanObject\n     0.01s  0.12% 94.93%      0.06s  0.69%  encoding/json/jsontext.(*decoderState).consumeValue\n     0.01s  0.12% 95.04%      0.14s  1.61%  encoding/json/v2.makeStructArshaler.func3\n     0.01s  0.12% 95.16%      0.07s  0.81%  github.com/JakeFAU/alan/internal/executor.validateOrdinaryLedger\n     0.01s  0.12% 95.27%      0.42s  4.84%  runtime.gcDrain\n     0.01s  0.12% 95.39%      0.63s  7.27%  runtime.stealWork\n         0     0% 95.39%      0.20s  2.31%  _.goready.func1\n         0     0% 95.39%      1.13s 13.03%  database/sql.(*Row).Scan\n         0     0% 95.39%      0.32s  3.69%  database/sql.(*Rows).Close\n         0     0% 95.39%      1.36s 15.69%  database/sql.(*Rows).Next\n         0     0% 95.39%      1.36s 15.69%  database/sql.(*Rows).Next.func1\n         0     0% 95.39%      0.32s  3.69%  database/sql.(*Rows).close\n         0     0% 95.39%      0.32s  3.69%  database/sql.(*Rows).close.func1\n         0     0% 95.39%      1.36s 15.69%  database/sql.(*Rows).nextLocked\n         0     0% 95.39%      0.12s  1.38%  database/sql.(*Tx).Commit\n         0     0% 95.39%      0.12s  1.38%  database/sql.(*Tx).Commit.func1\n         0     0% 95.39%      0.48s  5.54%  database/sql.withLock\n         0     0% 95.39%      0.17s  1.96%  encoding/json.(*Decoder).Decode\n         0     0% 95.39%      0.05s  0.58%  encoding/json.NewDecoder\n         0     0% 95.39%      0.06s  0.69%  encoding/json/jsontext.(*decoderState).ReadValue\n         0     0% 95.39%      0.14s  1.61%  encoding/json/v2.Unmarshal\n"
+    },
+    "task3-profile-analysis-2": {
+      "full-alloc-cumulative": "File: driver.bin\nType: alloc_space\nTime: 2026-11-13 21:12:10 EST\nShowing nodes accounting for 1744.90MB, 37.03% of 4711.87MB total\nDropped 263 nodes (cum <= 23.56MB)\nShowing top 30 nodes out of 204\n      flat  flat%   sum%        cum   cum%\n         0     0%     0%  4676.34MB 99.25%  main.main\n         0     0%     0%  4676.34MB 99.25%  runtime.main\n         0     0%     0%  4674.62MB 99.21%  main.(*report).measure\n         0     0%     0%  4674.62MB 99.21%  main.(*report).measure.func1\n         0     0%     0%  4674.62MB 99.21%  main.main.func2\n         0     0%     0%  4674.62MB 99.21%  main.run\n         0     0%     0%  4674.62MB 99.21%  runtime/pprof.Do\n         0     0%     0%  3199.04MB 67.89%  main.run.func6\n         0     0%     0%  3119.03MB 66.20%  github.com/JakeFAU/alan/internal/executor.(*Store).Run\n         0     0%     0%  3119.03MB 66.20%  github.com/JakeFAU/alan/internal/executor.(*Store).run\n         0     0%     0%  3079.98MB 65.37%  main.runObservation (inline)\n      11MB  0.23%  0.23%  2745.18MB 58.26%  github.com/JakeFAU/alan/internal/executor.decode\n   11.52MB  0.24%  0.48%  2599.18MB 55.16%  github.com/JakeFAU/alan/internal/executor.(*Store).finishRun\n         0     0%  0.48%  2599.18MB 55.16%  github.com/JakeFAU/alan/internal/executor.(*Store).run.func2\n         0     0%  0.48%  2345.60MB 49.78%  encoding/json.(*Decoder).Decode\n   79.20MB  1.68%  2.16%  1733.96MB 36.80%  github.com/JakeFAU/alan/internal/executor.readRootCompletionsWithReader\n         0     0%  2.16%  1709.16MB 36.27%  encoding/json/v2.Unmarshal\n         0     0%  2.16%  1707.16MB 36.23%  encoding/json/v2.unmarshalDecode\n         0     0%  2.16%  1704.63MB 36.18%  encoding/json/v2.makeStructArshaler.func3\n         0     0%  2.16%  1450.97MB 30.79%  encoding/json/v2.makeMapArshaler.func3\n         0     0%  2.16%  1139.24MB 24.18%  encoding/json/v2.makeMethodArshaler.func6\n      43MB  0.91%  3.07%  1139.24MB 24.18%  github.com/JakeFAU/alan/schema.(*Value).UnmarshalJSON\n       1MB 0.021%  3.09%   923.54MB 19.60%  github.com/JakeFAU/alan/internal/executor.validateCompositionStore\n  102.50MB  2.18%  5.27%   818.22MB 17.37%  encoding/json.NewDecoder\n         0     0%  5.27%   817.85MB 17.36%  github.com/JakeFAU/alan/internal/executor.validateLedger\n  766.95MB 16.28% 21.55%   766.95MB 16.28%  encoding/json/jsontext.(*decoderState).fetch\n         0     0% 21.55%   731.45MB 15.52%  encoding/json/jsontext.(*Decoder).ReadValue (inline)\n         0     0% 21.55%   731.45MB 15.52%  encoding/json/jsontext.(*decoderState).ReadValue\n      14MB   0.3% 21.84%   717.26MB 15.22%  github.com/JakeFAU/alan/internal/executor.(*reportReader).run\n  715.72MB 15.19% 37.03%   715.72MB 15.19%  encoding/json/jsontext.NewDecoder (inline)\n",
+      "full-cpu-cumulative": "File: driver.bin\nType: cpu\nTime: 2026-11-13 21:12:04 EST\nDuration: 6.61s, Total samples = 8.29s (125.35%)\nShowing nodes accounting for 5.29s, 63.81% of 8.29s total\nDropped 229 nodes (cum <= 0.04s)\nShowing top 30 nodes out of 140\n      flat  flat%   sum%        cum   cum%\n         0     0%     0%      4.06s 48.97%  runtime.systemstack\n         0     0%     0%      3.30s 39.81%  runtime.notewakeup\n     3.30s 39.81% 39.81%      3.30s 39.81%  runtime.pthread_cond_signal\n         0     0% 39.81%      3.30s 39.81%  runtime.semawakeup\n         0     0% 39.81%      3.29s 39.69%  runtime.startm\n         0     0% 39.81%      3.28s 39.57%  runtime.wakep\n         0     0% 39.81%      2.70s 32.57%  runtime.newproc.func1\n         0     0% 39.81%      2.12s 25.57%  main.(*report).measure\n         0     0% 39.81%      2.12s 25.57%  main.(*report).measure.func1\n         0     0% 39.81%      2.12s 25.57%  main.main\n         0     0% 39.81%      2.12s 25.57%  main.main.func2\n         0     0% 39.81%      2.12s 25.57%  main.run\n         0     0% 39.81%      2.12s 25.57%  runtime.main\n         0     0% 39.81%      2.12s 25.57%  runtime/pprof.Do\n     1.99s 24.00% 63.81%      1.99s 24.00%  runtime.cgocall\n         0     0% 63.81%      1.97s 23.76%  runtime.schedule\n         0     0% 63.81%      1.96s 23.64%  runtime.mcall\n         0     0% 63.81%      1.80s 21.71%  runtime.findRunnable\n         0     0% 63.81%      1.73s 20.87%  main.run.func6\n         0     0% 63.81%      1.70s 20.51%  github.com/JakeFAU/alan/internal/executor.(*Store).Run\n         0     0% 63.81%      1.70s 20.51%  github.com/JakeFAU/alan/internal/executor.(*Store).run\n         0     0% 63.81%      1.65s 19.90%  main.runObservation (inline)\n         0     0% 63.81%      1.55s 18.70%  database/sql.(*Rows).Next\n         0     0% 63.81%      1.55s 18.70%  database/sql.(*Rows).Next.func1\n         0     0% 63.81%      1.55s 18.70%  database/sql.(*Rows).nextLocked\n         0     0% 63.81%      1.55s 18.70%  github.com/mattn/go-sqlite3.(*SQLiteRows).Next\n         0     0% 63.81%      1.55s 18.70%  github.com/mattn/go-sqlite3.(*SQLiteRows).stepCancellableLocked\n         0     0% 63.81%      1.55s 18.70%  github.com/mattn/go-sqlite3.(*SQLiteRows).stepCancellableLocked.func1 (inline)\n         0     0% 63.81%      1.55s 18.70%  github.com/mattn/go-sqlite3._Cfunc__sqlite3_step_internal\n         0     0% 63.81%      1.31s 15.80%  github.com/JakeFAU/alan/internal/executor.(*Store).finishRun\n",
+      "full-cpu-flat": "File: driver.bin\nType: cpu\nTime: 2026-11-13 21:12:04 EST\nDuration: 6.61s, Total samples = 8.29s (125.35%)\nShowing nodes accounting for 8.10s, 97.71% of 8.29s total\nDropped 229 nodes (cum <= 0.04s)\nShowing top 30 nodes out of 140\n      flat  flat%   sum%        cum   cum%\n     3.30s 39.81% 39.81%      3.30s 39.81%  runtime.pthread_cond_signal\n     1.99s 24.00% 63.81%      1.99s 24.00%  runtime.cgocall\n     1.13s 13.63% 77.44%      1.13s 13.63%  runtime.pthread_cond_wait\n     0.78s  9.41% 86.85%      0.78s  9.41%  runtime.usleep\n     0.54s  6.51% 93.37%      0.54s  6.51%  runtime.madvise\n     0.20s  2.41% 95.78%      0.20s  2.41%  runtime.pthread_kill\n     0.14s  1.69% 97.47%      0.14s  1.69%  runtime.kevent\n     0.01s  0.12% 97.59%      0.17s  2.05%  runtime.lock2\n     0.01s  0.12% 97.71%      0.64s  7.72%  runtime.stealWork\n         0     0% 97.71%      0.17s  2.05%  _.goready.func1\n         0     0% 97.71%      1.21s 14.60%  database/sql.(*Row).Scan\n         0     0% 97.71%      0.27s  3.26%  database/sql.(*Rows).Close\n         0     0% 97.71%      1.55s 18.70%  database/sql.(*Rows).Next\n         0     0% 97.71%      1.55s 18.70%  database/sql.(*Rows).Next.func1\n         0     0% 97.71%      0.27s  3.26%  database/sql.(*Rows).close\n         0     0% 97.71%      0.26s  3.14%  database/sql.(*Rows).close.func1\n         0     0% 97.71%      1.55s 18.70%  database/sql.(*Rows).nextLocked\n         0     0% 97.71%      0.15s  1.81%  database/sql.(*Tx).Commit\n         0     0% 97.71%      0.15s  1.81%  database/sql.(*Tx).Commit.func1\n         0     0% 97.71%      0.43s  5.19%  database/sql.withLock\n         0     0% 97.71%      0.06s  0.72%  encoding/json.(*Decoder).Decode\n         0     0% 97.71%      0.05s   0.6%  encoding/json/v2.Unmarshal\n         0     0% 97.71%      0.05s   0.6%  encoding/json/v2.makeStructArshaler.func3\n         0     0% 97.71%      0.05s   0.6%  encoding/json/v2.unmarshalDecode\n         0     0% 97.71%      0.05s   0.6%  github.com/JakeFAU/alan/internal/executor.(*Store).ApproveContinuation\n         0     0% 97.71%      0.08s  0.97%  github.com/JakeFAU/alan/internal/executor.(*Store).Commit\n         0     0% 97.71%      1.70s 20.51%  github.com/JakeFAU/alan/internal/executor.(*Store).Run\n         0     0% 97.71%      0.05s   0.6%  github.com/JakeFAU/alan/internal/executor.(*Store).accountAdapter\n         0     0% 97.71%      0.05s   0.6%  github.com/JakeFAU/alan/internal/executor.(*Store).accountExternal\n         0     0% 97.71%      0.05s   0.6%  github.com/JakeFAU/alan/internal/executor.(*Store).accountReceived\n",
+      "progress-alloc-cumulative": "File: driver.bin\nType: alloc_space\nTime: 2026-11-13 21:12:21 EST\nShowing nodes accounting for 24.66MB, 1.17% of 2107.90MB total\nDropped 241 nodes (cum <= 10.54MB)\nShowing top 30 nodes out of 238\n      flat  flat%   sum%        cum   cum%\n         0     0%     0%  2089.87MB 99.14%  main.main\n         0     0%     0%  2089.87MB 99.14%  runtime.main\n         0     0%     0%  2088.71MB 99.09%  main.(*report).measure\n         0     0%     0%  2088.71MB 99.09%  main.(*report).measure.func1\n         0     0%     0%  2088.71MB 99.09%  main.main.func2\n         0     0%     0%  2088.71MB 99.09%  main.run\n         0     0%     0%  2088.71MB 99.09%  runtime/pprof.Do\n    2.50MB  0.12%  0.12%   992.81MB 47.10%  github.com/JakeFAU/alan/internal/executor.decode\n         0     0%  0.12%   935.10MB 44.36%  github.com/JakeFAU/alan/internal/executor.validateCompositionStore\n         0     0%  0.12%   902.79MB 42.83%  encoding/json.(*Decoder).Decode\n         0     0%  0.12%   836.86MB 39.70%  github.com/JakeFAU/alan/internal/executor.validateLedger\n         0     0%  0.12%   678.47MB 32.19%  encoding/json/v2.Unmarshal\n         0     0%  0.12%   677.47MB 32.14%  encoding/json/v2.unmarshalDecode\n         0     0%  0.12%   675.92MB 32.07%  encoding/json/v2.makeStructArshaler.func3\n       1MB 0.047%  0.17%   652.77MB 30.97%  github.com/JakeFAU/alan/internal/executor.loadProgram\n         0     0%  0.17%   633.88MB 30.07%  main.run.func6\n         0     0%  0.17%   547.35MB 25.97%  github.com/JakeFAU/alan/internal/executor.(*Store).run\n         0     0%  0.17%   523.40MB 24.83%  github.com/JakeFAU/alan/internal/executor.Open (inline)\n         0     0%  0.17%   523.40MB 24.83%  github.com/JakeFAU/alan/internal/executor.openStore\n         0     0%  0.17%   523.40MB 24.83%  github.com/JakeFAU/alan/runtime.Open\n         0     0%  0.17%   523.40MB 24.83%  main.run.func12\n         0     0%  0.17%   510.31MB 24.21%  github.com/JakeFAU/alan/internal/executor.(*Store).RunProgress\n         0     0%  0.17%   510.31MB 24.21%  main.runObservation (inline)\n         0     0%  0.17%   466.17MB 22.12%  encoding/json/v2.makeMapArshaler.func3\n         0     0%  0.17%   438.09MB 20.78%  encoding/json/v2.makeMethodArshaler.func6\n      19MB   0.9%  1.07%   438.09MB 20.78%  github.com/JakeFAU/alan/schema.(*Value).UnmarshalJSON\n         0     0%  1.07%   417.57MB 19.81%  github.com/JakeFAU/alan/internal/executor.Replay\n         0     0%  1.07%   417.57MB 19.81%  github.com/JakeFAU/alan/runtime.Replay (inline)\n         0     0%  1.07%   417.57MB 19.81%  main.run.func16\n    2.15MB   0.1%  1.17%   408.89MB 19.40%  github.com/JakeFAU/alan/internal/executor.retainCompositionProfile\n",
+      "progress-cpu-cumulative": "File: driver.bin\nType: cpu\nTime: 2026-11-13 21:12:17 EST\nDuration: 3.41s, Total samples = 4060ms (119.02%)\nShowing nodes accounting for 3140ms, 77.34% of 4060ms total\nDropped 176 nodes (cum <= 20.30ms)\nShowing top 30 nodes out of 159\n      flat  flat%   sum%        cum   cum%\n         0     0%     0%     2480ms 61.08%  runtime.systemstack\n    2080ms 51.23% 51.23%     2080ms 51.23%  runtime.pthread_cond_signal\n         0     0% 51.23%     2080ms 51.23%  runtime.semawakeup\n         0     0% 51.23%     2050ms 50.49%  runtime.notewakeup\n         0     0% 51.23%     2050ms 50.49%  runtime.startm\n         0     0% 51.23%     2040ms 50.25%  runtime.wakep\n         0     0% 51.23%     1750ms 43.10%  runtime.newproc.func1\n         0     0% 51.23%      820ms 20.20%  runtime.mcall\n         0     0% 51.23%      820ms 20.20%  runtime.schedule\n         0     0% 51.23%      790ms 19.46%  runtime.findRunnable\n         0     0% 51.23%      710ms 17.49%  main.(*report).measure\n         0     0% 51.23%      710ms 17.49%  main.(*report).measure.func1\n         0     0% 51.23%      710ms 17.49%  main.main\n         0     0% 51.23%      710ms 17.49%  main.main.func2\n         0     0% 51.23%      710ms 17.49%  main.run\n         0     0% 51.23%      710ms 17.49%  runtime.main\n         0     0% 51.23%      710ms 17.49%  runtime/pprof.Do\n     560ms 13.79% 65.02%      560ms 13.79%  runtime.cgocall\n         0     0% 65.02%      520ms 12.81%  runtime.semasleep\n         0     0% 65.02%      510ms 12.56%  runtime.stopm\n         0     0% 65.02%      500ms 12.32%  runtime.mPark (inline)\n         0     0% 65.02%      500ms 12.32%  runtime.notesleep\n     500ms 12.32% 77.34%      500ms 12.32%  runtime.pthread_cond_wait\n         0     0% 77.34%      450ms 11.08%  runtime.goexit0\n         0     0% 77.34%      420ms 10.34%  github.com/JakeFAU/alan/internal/executor.(*Store).run\n         0     0% 77.34%      410ms 10.10%  main.run.func6\n         0     0% 77.34%      380ms  9.36%  github.com/JakeFAU/alan/internal/executor.(*Store).RunProgress\n         0     0% 77.34%      380ms  9.36%  main.runObservation (inline)\n         0     0% 77.34%      370ms  9.11%  runtime.park_m\n         0     0% 77.34%      330ms  8.13%  database/sql.(*Rows).Next\n",
+      "progress-cpu-flat": "File: driver.bin\nType: cpu\nTime: 2026-11-13 21:12:17 EST\nDuration: 3.41s, Total samples = 4.06s (119.02%)\nShowing nodes accounting for 3.82s, 94.09% of 4.06s total\nDropped 176 nodes (cum <= 0.02s)\nShowing top 30 nodes out of 159\n      flat  flat%   sum%        cum   cum%\n     2.08s 51.23% 51.23%      2.08s 51.23%  runtime.pthread_cond_signal\n     0.56s 13.79% 65.02%      0.56s 13.79%  runtime.cgocall\n     0.50s 12.32% 77.34%      0.50s 12.32%  runtime.pthread_cond_wait\n     0.30s  7.39% 84.73%      0.30s  7.39%  runtime.usleep\n     0.23s  5.67% 90.39%      0.23s  5.67%  runtime.madvise\n     0.12s  2.96% 93.35%      0.12s  2.96%  runtime.pthread_kill\n     0.02s  0.49% 93.84%      0.03s  0.74%  runtime.tryDeferToSpanScan\n     0.01s  0.25% 94.09%      0.03s  0.74%  runtime.scanObject\n         0     0% 94.09%      0.14s  3.45%  _.goready.func1\n         0     0% 94.09%      0.31s  7.64%  database/sql.(*Row).Scan\n         0     0% 94.09%      0.04s  0.99%  database/sql.(*Rows).Close\n         0     0% 94.09%      0.33s  8.13%  database/sql.(*Rows).Next\n         0     0% 94.09%      0.33s  8.13%  database/sql.(*Rows).Next.func1\n         0     0% 94.09%      0.04s  0.99%  database/sql.(*Rows).close\n         0     0% 94.09%      0.04s  0.99%  database/sql.(*Rows).close.func1\n         0     0% 94.09%      0.33s  8.13%  database/sql.(*Rows).nextLocked\n         0     0% 94.09%      0.15s  3.69%  database/sql.(*Tx).Commit\n         0     0% 94.09%      0.15s  3.69%  database/sql.(*Tx).Commit.func1\n         0     0% 94.09%      0.21s  5.17%  database/sql.withLock\n         0     0% 94.09%      0.05s  1.23%  encoding/json.(*Decoder).Decode\n         0     0% 94.09%      0.06s  1.48%  encoding/json.Marshal (inline)\n         0     0% 94.09%      0.04s  0.99%  encoding/json/jsontext.(*Decoder).ReadValue (inline)\n         0     0% 94.09%      0.04s  0.99%  encoding/json/jsontext.(*decoderState).ReadValue\n         0     0% 94.09%      0.03s  0.74%  encoding/json/jsontext.(*decoderState).consumeWhitespace\n         0     0% 94.09%      0.04s  0.99%  encoding/json/jsontext.(*decoderState).fetch\n         0     0% 94.09%      0.06s  1.48%  encoding/json/v2.Marshal\n         0     0% 94.09%      0.03s  0.74%  encoding/json/v2.makeStructArshaler.func2\n         0     0% 94.09%      0.05s  1.23%  encoding/json/v2.marshalEncode\n         0     0% 94.09%      0.06s  1.48%  github.com/JakeFAU/alan/internal/executor.(*Store).Commit\n         0     0% 94.09%      0.04s  0.99%  github.com/JakeFAU/alan/internal/executor.(*Store).Run\n"
+    }
+  }
+}
