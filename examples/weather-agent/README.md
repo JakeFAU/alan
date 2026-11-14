@@ -80,6 +80,9 @@ predecessor evidence, selected input and successor operation. For series,
 `bound_exhausted` reports expenditure. Historical deployments retain their
 original programs and report fields. [Authoring walkthrough](../../docs/weather-agent.md) · [Continuation contract](../../docs/continuations.md#using-a-continuation)
 
+<a name="kill-and-resume"></a>
+<a name="controlled-example"></a>
+
 ## Reproduce a controlled interruption
 
 An arbitrary process kill can land before dispatch, while the provider is
@@ -98,6 +101,8 @@ request and reports the fixture reading of **76.1 °F and 77% relative humidity*
 at **2026-11-03 10:00 UTC**. The full
 [`TestWeatherProcessRecovery`](process_test.go) also exercises local cuts using
 test-only acknowledgments. [Retained contact IDs and causal cuts](testdata/controlled-process.jsonl)
+
+<a name="live-run-and-offline-reproduction"></a>
 
 ## Reproduce the archived reading offline
 
