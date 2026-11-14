@@ -1,10 +1,17 @@
 # Weather agent
 
-This example reads modeled current air temperature at 2 metres and relative humidity for explicit WGS84 coordinates. The provider supplies the time when its model values apply and the grid cell used. Requested coordinates and grid coordinates can differ. The free Open-Meteo endpoint is for noncommercial use and needs no key. Weather data by [Open-Meteo](https://open-meteo.com/) under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The example formats the provider time in UTC. [Forecast API](https://open-meteo.com/en/docs) · [Usage terms](https://open-meteo.com/en/terms)
+This example reads modeled current air temperature at 2 metres and relative
+humidity for WGS84 coordinates. It retains the provider's valid time, formatted
+in UTC, and the grid cell used for the reading. The grid coordinates can differ
+from the requested coordinates. Weather data by Open-Meteo under CC BY 4.0.
+[Forecast API](https://open-meteo.com/en/docs) · [Usage terms](https://open-meteo.com/en/terms) · [Data license](https://creativecommons.org/licenses/by/4.0/)
 
-## Run it
+## Run one reading
 
-Run these commands from the repository root with Go 1.27.3, CGO and a local Unix filesystem.
+Use Go 1.27.3 or later, CGO, a C compiler and a local Unix filesystem. Run these
+commands from the repository root. The `run` command below can contact
+Open-Meteo. To use a saved reading, go straight to
+[offline reproduction](#reproduce-the-archived-reading-offline).
 
 ```sh
 work=$(mktemp -d)
@@ -12,93 +19,103 @@ go build -o "$work/weather-agent" ./examples/weather-agent
 agent="$work/weather-agent"
 db="$work/weather.sqlite"
 "$agent" start --db "$db" --lat 26.93 --lon -80.08 --units fahrenheit \
-  --endpoint https://api.open-meteo.com/v1/forecast --allowance 2
+  --endpoint https://api.open-meteo.com/v1/forecast --allowance 1
 "$agent" run --db "$db"
-"$agent" inspect --db "$db"
-"$agent" replay --db "$db"
+"$agent" status --db "$db"
 ```
 
-`start` provisions the original authorized read and its finite allowance in one Store creation. It makes no GET. Repeating it with the same parameters recognizes the existing deployment. A conflicting configuration is refused. Allowances range from 0 to 8. Units are `celsius` or `fahrenheit`. For controlled tests, the only alternative endpoint is a literal HTTP loopback address and port ending in `/v1/forecast`.
+`start` provisions the store without a GET. Repeating it with the same parameters
+recognizes the existing deployment. Conflicting parameters are refused. Use
+`celsius` or `fahrenheit`. The only alternative to the official endpoint is HTTP
+on a literal loopback address and explicit port with the path `/v1/forecast`.
 
-`run` and `resume` execute the authored program in the existing database. Add `--json` for the structured report. `inspect` returns the original operation and frozen URL, authorization, paid reservation, local dispatch admission, native response, selected observation, pending work and history. `replay` checks the retained reductions offline. The provider supplies no usage or price counter for this request, so the report leaves cost unknown.
+## Read status and continue after a restart
 
-## Declare one observation or eight
+`status` shows the original operation ID once committed, whether a response
+was retained and selected, how many opportunities were spent, and available
+next commands at that read-only snapshot. If `weather-agent` is outside your
+`PATH`, replace that name in the suggested command with `"$agent"` or the quoted
+path to your executable. Run `"$agent" --help` for the command list.
 
-The application supplies its ordinary request/await/validation program once:
+| What the store shows | What can happen next |
+| --- | --- |
+| Original work or a separate read already approved | `resume` can advance it and may contact the provider. |
+| Retained response with settlement, selection or publication pending | `resume` can finish that work locally using the retained response. Any other already approved work can still contact the provider. |
+| Spent opportunity before local dispatch admission | The dispatch gate admitted no transmission for that operation. The opportunity is spent. |
+| Local dispatch admitted and response missing | The provider response remains unknown. Reopening preserves the original operation without sending it again. |
+| Completed reading | `status` shows the original time and measurements. |
+| Eligible for separate approval | Optionally authorize the indicated numbered read, then `resume` to perform its own lookup. |
 
-```go
-series, err := author.BoundedSeries(weatherDefinition(), author.SeriesOptions{
-    ID: "weather", Count: 8, Inputs: inputs,
-    First: author.ApproveAtProvision,
-    ApprovalReasons: []string{
-        "new_read_after_undispatched_reservation",
-        "new_read_after_unknown_response",
-        "new_read_after_unavailable_result", "refresh_after_report",
-    },
-})
-if err != nil { return err }
-provision, err := series.Provision()
-if err != nil { return err }
-```
+A successful command exit means the CLI completed the requested action. A
+reading may still be pending, unavailable or unresolved. Look for the
+reported measurements in `status`, or check the read's `state` and
+`local_status` in JSON. `inspect`, `inspect --json` and `status --json` return the
+same detailed report for the same retained state. It includes the frozen
+request, authorization, reservation, dispatch evidence, retained response and
+selection, pending work and history. Local contact bounds describe what the
+retained cut supports. This request supplies no provider cost counter.
+`replay` verifies committed reductions locally. Both reader commands and
+replay work without a provider connection.
 
-`Count: 1` uses the original single-observation program. `Count: 8` derives eight original identities, eight one-opportunity resource scopes and seven protected approval waits. The author does not construct those records. The first approval is explicit in `ApproveAtProvision`; the count only establishes capacity for later observations. [Public authoring guide](../../docs/bounded-series.md)
+### Authorize a separate observation
 
-For the CLI, start a new database with `--allowance 1` or `--allowance 8`. After the first `run`, positions 2–8 remain unapproved. `refresh --read 2` followed by `resume` authorizes and executes only position 2. Approve later positions individually when another observation is wanted. Position 9 is unavailable. The example CLI keeps its existing 0–8 limit; the public authoring API also qualifies larger bounds.
-
-For a new series, `inspect --json` includes an ordered `series_state` for every position and a `series` summary of selected, completed, failed, pending and unresolved positions. Unknown effects are counted separately from local completion. `bound_exhausted` reports expenditure, not success. Every selected report retains its own provider timestamp; an earlier reading is never refreshed by reopening the Store. Historical deployments continue using their original programs and report fields.
-
-## Kill and resume
-
-To interrupt a real run, launch it in the background, then signal its PID while it is running. A fast provider may already have answered. The retained cut determines what happens next.
-
-```sh
-"$agent" run --db "$db" &
-pid=$!
-kill -KILL "$pid"
-wait "$pid" || true
-"$agent" inspect --db "$db"
-"$agent" resume --db "$db"
-```
-
-Before a paid reservation, the original operation may still progress. After a paid reservation with no gate, no transmission was admitted and the opportunity is spent. After the gate, a missing response remains unresolved even if the endpoint accepted the GET. A retained result can be settled and selected without a network call. Reopening a terminal report returns its original timestamp and measurements.
-
-For another physical read, approve the **numbered next observation**. Repeating the same approval is idempotent. The command records approval only. A subsequent run performs the separately charged lookup. An exhausted allowance refuses a request for another slot.
+Start a fresh store with `--allowance 2` or another explicit bound up to 8 if
+you want capacity for later readings. The first is approved at provisioning.
+The zero-allowance form keeps the refusal path. When `status` shows that read 2
+is eligible, you can approve it explicitly.
 
 ```sh
 "$agent" refresh --db "$db" --read 2
 "$agent" resume --db "$db"
+"$agent" status --db "$db"
 ```
 
-The first read issues an ordinary weather request. Each later read starts by selecting its protected operator approval, then issues its own request and awaits its own response. The application chooses when another observation is useful. ALAN checks the predecessor, the evidence the operator saw, the local grant and the scope of the prepared GET. Each read has one finite allowance. The first operation can remain unresolved after its successor completes. `inspect --json` exposes the decision order, original operation, approved scope, selected input and successor operation in the read's `continuation` field. [Authored steps](program.go) · [Public continuation contract](../../docs/continuations.md#using-a-continuation)
+`refresh` records approval without making a GET. Repeating the same approval
+is idempotent. Each later read has a separate approval, operation identity and
+charge. The next read must qualify under the weather policy, including finishing
+pending local work on a predecessor with a retained result. A successful
+successor leaves any earlier unresolved operation attached to its own request.
+In detailed JSON, a protected read's `continuation` links its approval,
+predecessor evidence, selected input and successor operation. For series,
+`bound_exhausted` reports expenditure. Historical deployments retain their
+original programs and report fields. [Authoring walkthrough](../../docs/weather-agent.md) · [Continuation contract](../../docs/continuations.md#using-a-continuation)
 
-Recovery assumes one executor at a time on a host with working filesystem locks and SQLite WAL durability. A caller with the owning Store and the application's permission can explicitly authorize a new read. Ordinary input cannot substitute for that authorization on a protected slot. Multi-read databases created by the earlier weather example retain their original CLI-verified inputs and handoff programs. [Dispatch evidence](../../docs/dispatch-admissions.md)
+## Reproduce a controlled interruption
 
-## Controlled example
-
-A synthetic loopback provider accepted read 1 and withheld its response. The test killed the ordinary weather executable after the server acknowledged that GET. Two fresh owners resumed the store and made no further contact. After explicit approval, read 2 returned **76.1 °F and 77% relative humidity** at the fixture time **2026-11-03 10:00 UTC**. The first operation remained open. Two distinct requests had used both permitted opportunities. [Recorded contact IDs, response hashes and causal cuts](testdata/controlled-process.jsonl)
-
-The following command reproduces the campaign using only the local provider.
+An arbitrary process kill can land before dispatch, while the provider is
+responding or after local retention. Check the retained state to see what work
+remains. To reproduce an exact interruption, run the loopback test. Its fixture
+acknowledges the first GET and withholds the response before the test sends
+SIGKILL to the ordinary weather executable.
 
 ```sh
-go test -count=1 -tags integration -run '^TestWeatherProcessRecovery$' -v ./examples/weather-agent
+go test -count=1 -tags integration -run '^TestWeatherProcessRecovery$/^accepted_and_lost_then_explicitly_reobserved$' -v ./examples/weather-agent
 ```
 
-The campaign builds the application as a separate public Go module. A test-only owner attaches inherited-pipe acknowledgments to otherwise invisible runtime boundaries. The provider-acceptance cut and ordinary recoveries use the uninstrumented public executable.
+Fresh readers and two fresh owner resumes preserve the unknown first response
+without another contact. After explicit approval, read 2 makes a distinct
+request and reports the fixture reading of **76.1 °F and 77% relative humidity**
+at **2026-11-03 10:00 UTC**. The full
+[`TestWeatherProcessRecovery`](process_test.go) also exercises local cuts using
+test-only acknowledgments. [Retained contact IDs and causal cuts](testdata/controlled-process.jsonl)
 
-## Live run and offline reproduction
+## Reproduce the archived reading offline
 
-The production executable made one authorized GET for **26.93, −80.08** on November 3, 2026. The following lines are from replaying that saved execution. Weather data by [Open-Meteo](https://open-meteo.com/) under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The measurements are as supplied and the valid time is formatted in UTC.
-
-```text
-Read 1. Previously retained. At 2026-11-03T20:15:00Z, Open-Meteo reports 80.3 °F with 77% relative humidity for (26.93, -80.08), using grid (26.93391, -80.07091).
-Location 26.93, -80.08. Units fahrenheit. Opportunities spent 1 of 1. Provider cost unknown.
-Replay verified 15 committed reductions.
-```
-
-To see the original URL, HTTP body and selection without making a new request, unpack a private copy of the [live Store](testdata/live.sqlite.gz). The [evidence manifest](testdata/live.json) identifies its producer revision and the SHA-256 digests of the database, prepared request and response.
+Run from the repository root. Unpack a private copy of the [live Store](testdata/live.sqlite.gz)
+and use the read-only commands.
 
 ```sh
+work=$(mktemp -d)
+go build -o "$work/weather-agent" ./examples/weather-agent
+agent="$work/weather-agent"
 gzip -dc examples/weather-agent/testdata/live.sqlite.gz > "$work/saved.sqlite"
-"$agent" inspect --db "$work/saved.sqlite"
+"$agent" status --db "$work/saved.sqlite"
+"$agent" inspect --json --db "$work/saved.sqlite"
 "$agent" replay --db "$work/saved.sqlite"
 ```
+
+The archive comes from one authorized production GET for **26.93, −80.08** on
+November 3, 2026. It records **80.3 °F and 77% relative humidity** at
+**2026-11-03 20:15 UTC**, using grid **26.93391, −80.07091**. Replay verifies
+15 committed reductions. Weather data by Open-Meteo under CC BY 4.0.
+[Producer revision and evidence digests](testdata/live.json) · [Data license](https://creativecommons.org/licenses/by/4.0/)
