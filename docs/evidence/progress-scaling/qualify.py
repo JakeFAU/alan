@@ -11,7 +11,7 @@ sys.dont_write_bytecode = True
 from measure import (BASE, EVIDENCE, HERE, REPO, WORKSPACE, TaskRecorder, build, design,
                      environment, execute, freeze, inventory, read, sha, write)
 from controller import bind_toolchain
-from custody import expect_tests, extract_source, require_copy
+from custody import expect_tests, extract_source, members, require_copy
 from external_inputs import ExternalInputs
 from qualification import MODULES, READERS, go_tests, integration_env, nested_modules, old_controls, run_external, verify_reciprocal
 from recovery import build_weather, verify_weather_stops, weather_expected
@@ -152,6 +152,40 @@ def quality(rec, attempt):
         raise ValueError('additional fuzz qualification required')
 
 
+def compare_weather_readers(inspect, replay):
+    detailed = ('history', 'pending', 'refused_local_inputs')
+    if (type(replay.get('replayed_commits')) is not int or
+            replay['replayed_commits'] != len(inspect.get('history', ())) or
+            any(key in replay for key in detailed) or 'replayed_commits' in inspect):
+        raise ValueError('weather Replay did not verify the inspected history')
+    if not isinstance(inspect.get('reads'), list) or not isinstance(replay.get('reads'), list):
+        raise ValueError('weather reader omitted original reads')
+    projected = {key: value for key, value in inspect.items() if key not in detailed}
+    projected['reads'] = [{key: value for key, value in row.items() if key != 'retained_response'}
+                          for row in inspect['reads']]
+    if projected != {key: value for key, value in replay.items() if key != 'replayed_commits'}:
+        raise ValueError('independent readers disagree on the shared weather projection')
+
+
+def read_weather_stops(rec, label, stopped, binary, output):
+    for index, db in enumerate(stopped):
+        clone = output / 'readers' / str(index) / 'store.sqlite'
+        proof = clone.parent / 'copy.json'
+        require_copy(db, clone, proof, stopped=True)
+        before = members(clone)
+        logs, reader_members = [], {}
+        for action in ('inspect', 'replay'):
+            logs.append(rec.run(f'weather-{label}-{index}-{action}', [binary, action, '--db', clone, '--json']))
+            after = members(clone)
+            reader_members[action] = after
+            # SQLite may update its shared-memory index for a reader. The
+            # original archive is bound separately, including its SHM.
+            if any(after.get(suffix) != before[suffix] for suffix in ('', '-wal')):
+                raise ValueError('read-only weather command changed main database or WAL')
+        compare_weather_readers(*map(read, logs))
+        write(clone.parent / 'read-only-members.json', {'before': before, 'after': reader_members})
+
+
 def weather_gates(rec, directory, attempt, parity_only=False):
     src = rec.sources['candidate']
     build_weather(rec, 'candidate', directory)
@@ -196,18 +230,7 @@ def weather_gates(rec, directory, attempt, parity_only=False):
         rec.bind('weather-consumer-' + label, consumers)
         sealed = inventory(archives)
         if not parity:
-            # Both read-only CLI entry points operate only on verified copies.
-            # Assertions inside the actual process tests also bind contacts and
-            # compare the typed runtime report and weather CLI projections.
-            for index, db in enumerate(stopped):
-                clone = output / 'readers' / str(index) / 'store.sqlite'
-                require_copy(db, clone, clone.parent / 'copy.json', stopped=True)
-                for action in ('inspect', 'replay'):
-                    rec.run(f'weather-{label}-{index}-{action}', [retained[0], action, '--db', clone, '--json'])
-                inspect = read(rec.gates / f'weather-{label}-{index}-inspect/stdout.log')
-                replay = read(rec.gates / f'weather-{label}-{index}-replay/stdout.log')
-                if any(inspect.get(k) != replay.get(k) for k in ('namespace', 'opportunities_spent', 'reads', 'history')):
-                    raise ValueError('independent readers disagree on copied crash cut')
+            read_weather_stops(rec, label, stopped, retained[0], output)
         if inventory(archives) != sealed:
             raise ValueError('sealed weather archive changed')
         write(output / 'raw-inventory.json', inventory(output))
@@ -221,6 +244,52 @@ def weather_gates(rec, directory, attempt, parity_only=False):
     parity_required = tuple('TestP6SameSeedParity/' + name for name in ('success', 'refusal', 'unknown'))
     attempt('weather-parity', lambda: run('parity', parity_binary, '^TestP6(SameSeedParity|OppositeMethodRecovery)$',
             (*parity_required, 'TestP6OppositeMethodRecovery'), 1, 'opposite', parity=True))
+
+
+def recheck_weather_readers(rec, previous, previous_digest, plan):
+    """Resume only the failed standalone reader comparison on sealed original cuts."""
+    original_result = previous / 'qualification-result.json'
+    if sha(original_result) != previous_digest:
+        raise ValueError('original qualification outcome digest differs')
+    original = read(original_result)
+    rec.bind_tool(original_result)
+    original_freeze = previous / 'source-freeze.json'
+    if sha(original_freeze) != original['source_freeze_sha256']:
+        raise ValueError('original qualification freeze digest differs')
+    old = read(original_freeze)['sources']['candidate']
+    rec.bind_tool(original_freeze)
+    new = plan['sources']['candidate']
+    changed = rec.run('reader-correction-bridge', ['git', 'diff', '--name-only', old['commit'], new['commit']],
+                      REPO).read_text().splitlines()
+    allowed = {str(HERE.relative_to(REPO) / name) for name in ('qualify.py', 'test_qualify.py')}
+    if set(changed) != allowed:
+        raise ValueError('reader correction must preserve all measured and tested Go sources and harnesses')
+    failed = {f['gate'] for f in original['failures']}
+    if failed != {'weather-series', 'weather-recovery'}:
+        raise ValueError('reader-only recheck cannot close other failed qualifications')
+    for label, count in (('series', 10), ('recovery', 3)):
+        archived = previous / ('weather-' + label)
+        gate = previous / 'gates' / ('weather-' + label)
+        outcome = read(gate / 'outcome.json')
+        if outcome['exit'] != 0 or outcome['timeout'] or outcome['spawn_error']:
+            raise ValueError('original process test did not pass')
+        for artifact in ('command.json', 'outcome.json', 'stdout.log'):
+            rec.bind_tool(gate / artifact)
+        archives, consumers = archived / 'archives', archived / 'consumers'
+        if inventory(consumers) != original['inputs_after']['sources']['weather-consumer-' + label]:
+            raise ValueError('original weather consumer bytes differ')
+        rec.bind(label + '-archives', archives)
+        rec.bind(label + '-consumers', consumers)
+        stopped = sorted(archives.glob('*-raw-stop-*.sqlite'))
+        required = (weather_expected(rec.sources['candidate'], label) if label == 'series' else
+                    ('TestWeatherProcessRecovery/two_interrupted_recoveries',))
+        if len(stopped) != count:
+            raise ValueError('expected all original reaped Stores')
+        verify_weather_stops(archives, required, label)
+        binary = next(iter(sorted(consumers.rglob('weather-agent'))))
+        read_weather_stops(rec, label, stopped, binary, rec.root / ('weather-' + label))
+    write(rec.root / 'reader-recheck.json', {'previous_result_sha256': previous_digest,
+          'tested_candidate': old, 'reader_correction': new, 'rechecked': sorted(failed)})
 
 
 def reproduce(rec, revision, outside):
@@ -269,7 +338,12 @@ def campaign(args, root):
             print(f'FAILED {name}: {error!r}', flush=True)
             return None
 
-    if not args.parity_only:
+    if args.recheck:
+        attempt('reader-controls', lambda: rec.run('reader-controls', [sys.executable, '-B', '-m', 'unittest',
+                  'discover', '-s', rec.sources['candidate'] / HERE.relative_to(REPO), '-p', 'test_*.py']))
+        attempt('reader-recheck', lambda: recheck_weather_readers(rec, args.recheck.resolve(),
+                                                                  args.previous_digest, plan))
+    elif not args.parity_only:
         build_readers(rec, directory)
         parents = attempt('historical-controls', lambda: old_controls(rec, plan))
         if parents:
@@ -285,7 +359,8 @@ def campaign(args, root):
                 for tool in (['staticcheck', '-f', 'json'], ['go', 'vet', '-mod=readonly']):
                     attempt(name + '-' + tool[0], lambda: rec.run(name + '-' + '-'.join(tool[:2]), [*tool, *flags, './...'],
                                                                   rec.sources[name]))
-    attempt('weather', lambda: weather_gates(rec, directory, attempt, args.parity_only))
+    if not args.recheck:
+        attempt('weather', lambda: weather_gates(rec, directory, attempt, args.parity_only))
     if args.outside:
         attempt('outside-reproduction', lambda: reproduce(rec, args.revision, args.outside.resolve()))
     write(root / 'qualification-result.json', {'failures': failures, 'inputs_after': rec.snapshot(),
@@ -302,7 +377,12 @@ def main():
     parser.add_argument('--gocache', type=Path)
     parser.add_argument('--parity-only', action='store_true')
     parser.add_argument('--outside', type=Path, help='fresh direct child of /private/tmp for B8 reproduction')
+    parser.add_argument('--recheck', type=Path, help='previous qualification root with only reader projection failures')
+    parser.add_argument('--previous-digest', help='SHA-256 of the previous qualification result')
     args = parser.parse_args()
+    if args.recheck and (not re.fullmatch('[0-9a-f]{64}', args.previous_digest or '') or
+                         args.parity_only or args.outside):
+        parser.error('reader-only recheck requires the previous digest and no other qualification options')
     if not re.fullmatch('[0-9a-f]{40}', args.revision):
         parser.error('expected an exact Git commit')
     from measure import reserve_output
