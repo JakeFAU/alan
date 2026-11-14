@@ -63,7 +63,7 @@ their run boundaries.
 | `go test -count=1 -json -run='^Test(P7\|Measurement\|ScalingCompact)' .` in generated SQLite | 0, 35 passing test events, one passing package, zero skips or failures |
 | `measure.py --lane smoke` | 0, four fresh stock rows at bounds 1 and 8 in both arms |
 | `go build ./...`, `go vet ./...`, `go mod verify` | 0 for each at the root module |
-| `staticcheck -f json ./...`, `staticcheck -f json -tags=integration ./...` | Initially 1 for each because the sandbox denied writes to the default cache. Repeated with a writable checkout-local cache, both exited 0 with zero diagnostics |
+| `staticcheck -f json ./...`, `staticcheck -f json -tags=integration ./...` | Initially 1 for each because the sandbox denied writes to the default cache. Repeated with a writable reproduction-local cache, both exited 0 with zero diagnostics |
 | `gofmt -l` on the generated files formatted by preflight and all 354 tracked Go files | 0, empty output for both |
 
 Both stock arms passed retained results, charge, contact, reopen and Replay
@@ -100,3 +100,6 @@ and approved the evidence. It reported no rejected findings or requested
 implementation changes. Some early controller and packaging corrections
 lack separate terminal-outcome logs, and the gate ledger covers recorded
 campaign work. [Independent Task 1 review](reviews/task-1.md)
+
+Task 3 delivery review also passed and approved the evidence. Its sole minor
+cache-location wording finding is corrected above. [Review records](reviews/README.md)
