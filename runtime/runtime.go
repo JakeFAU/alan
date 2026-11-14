@@ -28,6 +28,10 @@ type Input = executor.Input
 type AdmissionResult = executor.AdmissionResult
 type RunOptions = executor.RunOptions
 type RunReport = executor.RunReport
+
+// RunProgress contains the per-call execution counts and quiescence flag.
+type RunProgress = executor.RunProgress
+
 type Inspection = executor.Inspection
 type ReplayReport = executor.ReplayReport
 type ReceiptEvidence = executor.ReceiptEvidence

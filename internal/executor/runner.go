@@ -24,6 +24,19 @@ type RunOptions struct {
 	MaxInFlight           int
 	ExternalTimeout       time.Duration
 }
+
+// RunProgress describes one call to Store.RunProgress.
+type RunProgress struct {
+	// Steps counts committed reductions. Dispatches counts work charged
+	// against MaxDispatch, which includes local delivery and settlement.
+	// Use retained effect evidence for dispatch admissions and effect debits.
+	Steps, Dispatches int
+	// Quiescent records that no supported eligible work remained at the
+	// observed boundary and accounting succeeded. Open runs and unresolved
+	// effects can remain.
+	Quiescent bool
+}
+
 type RunReport struct {
 	Steps, Dispatches  int
 	Quiescent          bool
@@ -48,7 +61,21 @@ type pendingDelivery struct {
 
 // Run automatically schedules finite ordinary commits and committed deliveries.
 // Quiescence means no supported eligible work now, not completion or liveness.
-func (s *Store) Run(ctx context.Context, options RunOptions) (report RunReport, runErr error) {
+func (s *Store) Run(ctx context.Context, options RunOptions) (RunReport, error) {
+	return s.run(ctx, options, true)
+}
+
+// RunProgress advances execution and returns per-call counts and quiescence.
+// It skips Run's final report and its historical diagnostics. Returned errors
+// reflect entry, execution and cleanup. Use InspectExecution for retained state
+// and Replay for history validation. Quiescence gives no assurance of
+// computation completion or remote finality.
+func (s *Store) RunProgress(ctx context.Context, options RunOptions) (RunProgress, error) {
+	report, err := s.run(ctx, options, false)
+	return RunProgress{Steps: report.Steps, Dispatches: report.Dispatches, Quiescent: report.Quiescent}, err
+}
+
+func (s *Store) run(ctx context.Context, options RunOptions, fullReport bool) (report RunReport, runErr error) {
 	if options.MaxInFlight == 0 {
 		options.MaxInFlight = DefaultMaxInFlight
 	}
@@ -102,7 +129,10 @@ func (s *Store) Run(ctx context.Context, options RunOptions) (report RunReport, 
 			releaseSlot(result)
 			runErr = errors.Join(runErr, s.accountExternal(cleanup, result))
 		}
-		report, runErr = s.finishRun(cleanup, report, quiescent && runErr == nil, runErr)
+		report.Quiescent = quiescent && runErr == nil
+		if fullReport {
+			report, runErr = s.finishRun(cleanup, report, report.Quiescent, runErr)
+		}
 		s.ownerMu.Lock()
 		s.runDone = nil
 		s.runWake = nil

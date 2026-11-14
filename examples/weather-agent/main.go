@@ -174,7 +174,7 @@ func operate(ctx context.Context, path, namespace string, c configuration, actio
 		if err != nil {
 			return nil, nil, err
 		}
-		_, err = owner.Run(ctx, runtime.RunOptions{
+		_, err = owner.RunProgress(ctx, runtime.RunOptions{
 			Adapters: map[string]effects.Adapter{capability: adapter},
 			MaxSteps: 512, MaxDispatch: 128, MaxInFlight: 1, ExternalTimeout: 30 * time.Second,
 		})

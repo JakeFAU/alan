@@ -58,6 +58,10 @@ cannot spend twice. To recover, use `runtime.Open` on the original database and
 response can finish locally; a paid operation with a missing response keeps its
 original uncertainty. A new owner never approves the next position.
 
+Use `owner.RunProgress(ctx, options)` in a loop that only needs per-call
+counts and quiescence. Call `owner.Run` when the loop needs the full report.
+[Execution progress and reporting](execution-progress.md)
+
 ## Inspect the whole declaration
 
 Take a new snapshot after later operations have committed. Detached snapshots do

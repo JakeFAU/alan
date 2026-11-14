@@ -50,6 +50,11 @@ go build -o "$work/quickstart" ./examples/quickstart
 3. `resume` uses `runtime.Open` to validate the ledger and renew the open run's activation epoch. It supplies a `continue` event with `Store.AdmitInput` and calls `Store.Run` with a lookup adapter. The program consumes the correlated result and takes its success branch.
 4. `replay` uses `runtime.Replay` to reconstruct the six commits and one intent in a read-only transaction. It prints `reader succeeded line="SQLite retains its state."`. Both read APIs work without a registered adapter. Run `inspect` again to see the settled projection and the single attempt and result.
 
+Use `Store.RunProgress` when the application needs per-call step and dispatch
+counts and a quiescence flag. Call `Store.Run` for the full report, or
+`runtime.InspectExecution` for a typed view of retained state and outstanding
+work. [Execution progress and reporting](docs/execution-progress.md)
+
 ## Run a document investigation
 
 The [investigator example](examples/investigator/README.md) starts two retained workers, verifies their model-proposed quotations against local documents, and preserves agreement, disagreement or an unresolved call across process restarts. Run the bundled loopback provider in one terminal with `python3 examples/investigator/testdata/responses.py`, then use a second terminal.
