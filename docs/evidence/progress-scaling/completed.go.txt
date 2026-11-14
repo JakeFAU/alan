@@ -1,0 +1,47 @@
+package main
+
+import (
+	"errors"
+	"reflect"
+	"time"
+
+	aruntime "github.com/JakeFAU/alan/runtime"
+)
+
+var counterRegistry func() map[string]uint64
+
+type operation struct {
+	Name     string `json:"name"`
+	Position int    `json:"position"`
+	WallNS   int64  `json:"wall_ns"`
+	Error    string `json:"error,omitempty"`
+}
+
+func (r *report) recordOperation(name string, position int, started time.Time, err error) {
+	op := operation{Name: name, Position: position, WallNS: time.Since(started).Nanoseconds()}
+	if err != nil {
+		op.Error = err.Error()
+	}
+	r.Operations = append(r.Operations, op)
+}
+
+func (m *meter) contactCount() int {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	return len(m.contacts)
+}
+
+func verifyCompletedReport(rr aruntime.RunReport, roots []aruntime.RootCompletion, contacts, bound int) error {
+	if rr.Steps != 0 || rr.Dispatches != 0 || !rr.Quiescent || contacts != bound ||
+		rr.RejectedAdmissions != 0 || rr.OpenRuns == nil || len(rr.OpenRuns) != 0 ||
+		rr.UnresolvedIntents == nil || len(rr.UnresolvedIntents) != 0 ||
+		rr.PendingDeliveries == nil || len(rr.PendingDeliveries) != 0 ||
+		rr.UnknownExternal == nil || len(rr.UnknownExternal) != 0 ||
+		rr.UnknownAdapters == nil || len(rr.UnknownAdapters) != 0 {
+		return errors.New("completed full Run changed progress, contacts, or returned obligations")
+	}
+	if !reflect.DeepEqual(rr.Roots, roots) {
+		return errors.New("completed full report roots differ from typed inspection")
+	}
+	return nil
+}
