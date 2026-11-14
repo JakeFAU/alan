@@ -1,0 +1,84 @@
+package sqlite3
+
+import (
+	"context"
+	"database/sql"
+	"testing"
+)
+
+// Two matching rows mean exactly three actual steps. The pinned statement
+// cache steps before Next, and Next must not time the buffered first row.
+func TestP7StepClock(t *testing.T) {
+	db, err := sql.Open("sqlite3", ":memory:?_stmt_cache_size=8")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	db.SetMaxOpenConns(1)
+	exec := func(q string, args ...any) {
+		t.Helper()
+		if _, err := db.Exec(q, args...); err != nil {
+			t.Fatal(err)
+		}
+	}
+	exec("CREATE TABLE attempts (intent_id TEXT, result TEXT)")
+	exec("CREATE TABLE history (a,b,c,d,e,f,g,h)")
+	exec("INSERT INTO attempts VALUES ('a','first'), ('a','second'), ('b','third')")
+	previous := p7Clock
+	defer func() { p7Clock = previous }()
+	for _, mode := range []string{"on", "empty", "off"} {
+		p7Clock = mode
+		before := MeasurementSnapshot()
+		P7StartClock()
+		rows, err := db.QueryContext(context.Background(), p7Attempt, "a")
+		if err != nil {
+			t.Fatal(err)
+		}
+		eager := p7Aggregate[2].steps.Load()
+		if !rows.Next() {
+			t.Fatal("missing buffered row")
+		}
+		var first string
+		if err := rows.Scan(&first); err != nil || first != "first" {
+			t.Fatal(first, err)
+		}
+		if got := p7Aggregate[2].steps.Load(); got != eager {
+			t.Fatal("buffered row was timed", got, eager)
+		}
+		if !rows.Next() || rows.Next() || rows.Err() != nil {
+			t.Fatal("unexpected cursor result")
+		}
+		rows.Close()
+		exec(p7History, 1, 2, 3, 4, 5, 6, 7, 8)
+		exec("INSERT INTO history VALUES (1,2,3,4,5,6,7,8)")
+		got := P7StopClock()
+		after := MeasurementSnapshot()
+		key := "sql.template." + p7Attempt + ".step_calls"
+		if after[key]-before[key] != 3 {
+			t.Fatal("pinned step delta", after[key], before[key])
+		}
+		if mode == "off" {
+			if eager != 0 || got["attempt"] != (P7StepTime{}) || got["history"] != (P7StepTime{}) {
+				t.Fatal("clock-off recorded observations", got)
+			}
+		} else if eager != 1 || got["attempt"].Steps != 3 || got["history"].Steps != 1 {
+			t.Fatal("actual prepared query/exec steps", mode, eager, got)
+		}
+		if got["charge"] != (P7StepTime{}) {
+			t.Fatal("unvisited family had observations")
+		}
+		outside, err := db.Query(p7Attempt, "a")
+		if err != nil {
+			t.Fatal(err)
+		}
+		for outside.Next() {
+		}
+		if err := outside.Err(); err != nil {
+			t.Fatal(err)
+		}
+		outside.Close()
+		if p7Aggregate[2].steps.Load() != got["attempt"].Steps {
+			t.Fatal("clock leaked outside window")
+		}
+	}
+}

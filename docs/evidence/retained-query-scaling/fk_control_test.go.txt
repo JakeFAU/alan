@@ -1,0 +1,253 @@
+package sqlite3
+
+import (
+	"database/sql"
+	"encoding/json"
+	"fmt"
+	"reflect"
+	"strconv"
+	"strings"
+	"testing"
+)
+
+type p7SQLReader interface {
+	Query(string, ...any) (*sql.Rows, error)
+}
+
+func p7Rows(t *testing.T, q p7SQLReader, query string, args ...any) [][]any {
+	t.Helper()
+	rows, err := q.Query(query, args...)
+	if err != nil {
+		t.Fatal(query, err)
+	}
+	defer rows.Close()
+	cols, err := rows.Columns()
+	if err != nil {
+		t.Fatal(err)
+	}
+	var result [][]any
+	for rows.Next() {
+		row := make([]any, len(cols))
+		ptr := make([]any, len(cols))
+		for i := range row {
+			ptr[i] = &row[i]
+		}
+		if err := rows.Scan(ptr...); err != nil {
+			t.Fatal(err)
+		}
+		result = append(result, row)
+	}
+	if err := rows.Err(); err != nil {
+		t.Fatal(err)
+	}
+	return result
+}
+
+func p7Exec(t *testing.T, db interface {
+	Exec(string, ...any) (sql.Result, error)
+}, q string, args ...any) {
+	t.Helper()
+	if _, err := db.Exec(q, args...); err != nil {
+		t.Fatal(q, err)
+	}
+}
+
+func p7Tx(t *testing.T, db *sql.DB) *sql.Tx {
+	t.Helper()
+	tx, err := db.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	return tx
+}
+
+func p7FKMetrics(before, after map[string]uint64, q string) map[string]uint64 {
+	out := map[string]uint64{}
+	for _, metric := range []string{"fullscan_steps", "vm_steps", "executions", "step_calls"} {
+		key := "sql.template." + q + "." + metric
+		out[metric] = after[key] - before[key]
+	}
+	return out
+}
+
+func TestP7PinnedForeignKeyOrder(t *testing.T) {
+	const update = "UPDATE observations SET consumed_sequence=? WHERE id=?"
+	const mode = "?_foreign_keys=on&_stmt_cache_size=8"
+	explain := func(t *testing.T, db *sql.DB, root int64, insertArgs []any) {
+		insert := p7Rows(t, db, "EXPLAIN "+p7History, insertArgs...)
+		updateOps := p7Rows(t, db, "EXPLAIN "+update, 1, "o0")
+		var cursor int64 = -1
+		var opened, fkBranch, rewind, next, decrement int64 = -1, -1, -1, -1, -1
+		var jump int64
+		for _, op := range insert {
+			addr, p1, p2 := op[0].(int64), op[2].(int64), op[3].(int64)
+			switch op[1] {
+			case "OpenRead":
+				if p2 == root {
+					cursor, opened = p1, addr
+				}
+			case "FkIfZero":
+				if p1 == 1 {
+					fkBranch, jump = addr, p2
+				}
+			case "Rewind":
+				if p1 == cursor {
+					rewind = addr
+				}
+			case "Next":
+				if p1 == cursor {
+					next = addr
+				}
+			case "FkCounter":
+				if p1 == 1 && p2 == -1 {
+					decrement = addr
+				}
+			}
+		}
+		if cursor < 0 || !(fkBranch < opened && opened < rewind && rewind < decrement && decrement < next && next < jump) || fkBranch < 0 {
+			t.Fatal("observation scan not guarded", cursor, opened, fkBranch, rewind, next, decrement, jump, insert)
+		}
+		historyKey := p7Rows(t, db, "SELECT rootpage FROM sqlite_schema WHERE name='sqlite_autoindex_history_1'")[0][0].(int64)
+		historyCursor, found, increment := int64(-1), false, false
+		for _, op := range updateOps {
+			p1, p2 := op[2].(int64), op[3].(int64)
+			if op[1] == "OpenRead" && p2 == historyKey {
+				historyCursor = p1
+			}
+			if op[1] == "Found" && p1 == historyCursor {
+				found = true
+			}
+			if op[1] == "FkCounter" && p1 == 1 && p2 == 1 {
+				increment = true
+			}
+		}
+		if !found || !increment {
+			t.Fatal("update lacks parent lookup/deferred increment", updateOps)
+		}
+		t.Logf("observations root=%d cursor=%d FkIfZero=%d target=%d scan=%d..%d decrement=%d history index root=%d cursor=%d", root, cursor, fkBranch, jump, rewind, next, decrement, historyKey, historyCursor)
+		raw, err := json.Marshal(map[string]any{"insert": insert, "update": updateOps})
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Logf("EXPLAIN %s", raw)
+	}
+	for _, n := range []int{1, 8, 64, 256} {
+		t.Run(strconv.Itoa(n), func(t *testing.T) {
+			var baseline [][]any
+			for _, order := range []string{"original", "reordered", "autonomous", "failed"} {
+				path := "file:" + t.TempDir() + "/control.sqlite"
+				db, err := sql.Open("sqlite3", path+mode)
+				if err != nil {
+					t.Fatal(err)
+				}
+				db.SetMaxOpenConns(1)
+				defer db.Close()
+				p7Exec(t, db, p7Schema)
+				p7Exec(t, db, "INSERT INTO subjects VALUES ('a',1,'o',1,0,0),('b',1,'o',1,0,0)")
+				p7Exec(t, db, "INSERT INTO programs VALUES ('p','s','x')")
+				p7Exec(t, db, "INSERT INTO runs VALUES ('a',1,'p','x',1,0,'x'),('a',2,'p','x',1,0,'x'),('b',1,'p','x',1,0,'x')")
+				for i := 0; i < n; i++ {
+					subject, generation := "a", 1
+					switch i % 3 {
+					case 1:
+						generation = 2
+					case 2:
+						subject = "b"
+					}
+					p7Exec(t, db, "INSERT INTO observations VALUES (?,?,?,'x',NULL)", fmt.Sprintf("o%d", i), subject, generation)
+				}
+				args := []any{"a", 1, 1, 1, 1, "o0", "next", "[]"}
+				if n == 1 && order == "original" {
+					root := p7Rows(t, db, "SELECT rootpage FROM sqlite_schema WHERE name='observations'")[0][0].(int64)
+					explain(t, db, root, args)
+					rootInventory := p7Rows(t, db, "SELECT type,name,tbl_name,rootpage,sql FROM sqlite_schema ORDER BY name")
+					t.Logf("baseline DDL/index inventory=%v SQLite identity=%v compile options=%v", rootInventory, p7Rows(t, db, "SELECT sqlite_version(), sqlite_source_id()"), p7Rows(t, db, "PRAGMA compile_options"))
+				}
+				tx := p7Tx(t, db)
+				fk := p7Rows(t, tx, "PRAGMA foreign_keys")
+				deferFK := p7Rows(t, tx, "PRAGMA defer_foreign_keys")
+				if !reflect.DeepEqual(fk, [][]any{{int64(1)}}) || !reflect.DeepEqual(deferFK, [][]any{{int64(0)}}) {
+					t.Fatal(fk, deferFK)
+				}
+				if order == "autonomous" {
+					args[5] = nil
+				}
+				before := MeasurementSnapshot()
+				if order == "original" {
+					p7Exec(t, tx, update, 1, "o0")
+				}
+				p7Exec(t, tx, p7History, args...)
+				if order == "reordered" {
+					p7Exec(t, tx, update, 1, "o0")
+				}
+				after := MeasurementSnapshot()
+				im, um := p7FKMetrics(before, after, p7History), p7FKMetrics(before, after, update)
+				want := uint64(0)
+				if order == "original" {
+					want = uint64(n - 1)
+				}
+				if im["fullscan_steps"] != want || um["fullscan_steps"] != 0 || im["executions"] != 1 || im["step_calls"] != 1 {
+					t.Fatal(order, im, um)
+				}
+				t.Logf("seed=%d order=%s fk=%v defer_fk=%v insert=%v update=%v", n, order, fk, deferFK, im, um)
+				if order == "failed" {
+					if _, err := tx.Exec("UPDATE observations SET id=NULL, subject=NULL, consumed_sequence=? WHERE id=?", 1, "o0"); err == nil {
+						t.Fatal("expected failed update")
+					}
+					if err := tx.Rollback(); err != nil {
+						t.Fatal(err)
+					}
+				} else {
+					if order != "autonomous" {
+						want := [][]any{{"o0", "o0", int64(1)}}
+						got := p7Rows(t, tx, "SELECT h.selected_observation,o.id,o.consumed_sequence FROM history h JOIN observations o ON o.id=h.selected_observation")
+						if !reflect.DeepEqual(got, want) {
+							t.Fatal(got, want)
+						}
+					}
+					if err := tx.Commit(); err != nil {
+						t.Fatal(err)
+					}
+				}
+				reader, err := sql.Open("sqlite3", path+"?mode=ro&_foreign_keys=on")
+				if err != nil {
+					t.Fatal(err)
+				}
+				defer reader.Close()
+				obs := p7Rows(t, reader, "SELECT id,subject,generation,descriptor,consumed_sequence FROM observations ORDER BY id")
+				history := p7Rows(t, reader, "SELECT * FROM history ORDER BY subject,generation,sequence")
+				if len(obs) != n || len(p7Rows(t, reader, "PRAGMA foreign_key_check")) != 0 {
+					t.Fatal("reader audit")
+				}
+				seen := 0
+				for _, row := range obs {
+					if row[4] != nil {
+						seen++
+						if row[0] != "o0" || row[4] != int64(1) {
+							t.Fatal(row)
+						}
+					}
+				}
+				if order == "failed" {
+					if len(history) != 0 || seen != 0 {
+						t.Fatal("rollback leaked staged writes")
+					}
+				} else if order == "autonomous" {
+					if len(history) != 1 || history[0][5] != nil || seen != 0 {
+						t.Fatal(history, seen)
+					}
+				} else {
+					if len(history) != 1 || seen != 1 || !strings.EqualFold(fmt.Sprint(history[0][5]), "o0") {
+						t.Fatal(history, seen)
+					}
+					all := append(obs, history...)
+					if order == "original" {
+						baseline = all
+					} else if !reflect.DeepEqual(all, baseline) {
+						t.Fatal("retained rows differ")
+					}
+				}
+			}
+		})
+	}
+}

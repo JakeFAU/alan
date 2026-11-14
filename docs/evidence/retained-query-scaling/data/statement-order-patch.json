@@ -1,0 +1,5 @@
+{
+  "encoding": "utf-8",
+  "patch": "--- before/internal/executor/store.go\n+++ after/internal/executor/store.go\n@@ -903,13 +903,13 @@\n \tif selected != \"\" {\n \t\tselectedArg = selected\n \t}\n+\tif _, err = tx.ExecContext(ctx, \"INSERT INTO history VALUES(?,?,?,?,?,?,?,?)\", r.ID.Subject, r.ID.Generation, r.Sequence, r.Epoch, r.Revision, selectedArg, successor, intents); err != nil {\n+\t\treturn RunState{}, err\n+\t}\n \tif selected != \"\" {\n \t\tif _, err = tx.ExecContext(ctx, \"UPDATE observations SET consumed_sequence=? WHERE id=?\", r.Sequence, selected); err != nil {\n \t\t\treturn RunState{}, err\n \t\t}\n-\t}\n-\tif _, err = tx.ExecContext(ctx, \"INSERT INTO history VALUES(?,?,?,?,?,?,?,?)\", r.ID.Subject, r.ID.Generation, r.Sequence, r.Epoch, r.Revision, selectedArg, successor, intents); err != nil {\n-\t\treturn RunState{}, err\n \t}\n \tfor _, intent := range reduction.Intents {\n \t\tif err = validateRequestAuthorityIntent(ctx, tx, intent, r.Revision); err != nil {\n",
+  "sha256": "b343f561fe77970a062f79dc3428d719227308f392fcbefcd35525b5dd7cd388"
+}
