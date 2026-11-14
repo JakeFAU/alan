@@ -106,8 +106,11 @@ test-only acknowledgments. [Retained contact IDs and causal cuts](testdata/contr
 
 ## Reproduce the archived reading offline
 
-Run from the repository root. Unpack a private copy of the [live Store](testdata/live.sqlite.gz)
-and use the read-only commands.
+Run from the repository root. Use an existing weather-agent binary or build
+one with the required Go toolchain and module dependencies already cached for
+offline use. Set `agent` to the existing binary's path if you skip the build.
+Unpack a private copy of the [live Store](testdata/live.sqlite.gz) and use the
+offline, read-only commands.
 
 ```sh
 work=$(mktemp -d)

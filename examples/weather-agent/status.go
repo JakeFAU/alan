@@ -90,6 +90,8 @@ func (s summary) nextAction(cut *runtime.ExecutionSnapshot, r readSummary) nextA
 		switch {
 		case r.Read == 1 && s.Allowance > 0, r.ApprovalObservationID != "":
 			return resumeProvider
+		case r.Read == 1:
+			return resumeLocal
 		case r.Read > 1:
 			return nextApprovalAction(cut, r.Read)
 		}

@@ -75,11 +75,12 @@ _, err = owner.RunProgress(ctx, runtime.RunOptions{
 })
 ```
 
-The options limit this call's local steps, dispatch work, concurrency and
-waiting. The opportunity is a lifetime limit in the Store. Opening again or
-calling `RunProgress` again leaves prior charges in place. The application
-closes the owner and can reopen from a fresh process on the same host, using
-working filesystem locks and SQLite WAL durability.
+`MaxSteps`, `MaxDispatch` and `MaxInFlight` bound local steps, dispatch work
+and concurrency for this `RunProgress` invocation. `ExternalTimeout` applies
+to each external dispatch. The opportunity is a lifetime limit in the Store.
+Opening again or calling `RunProgress` again leaves prior charges in place.
+The application closes the owner and can reopen from a fresh process on the
+same host, using working filesystem locks and SQLite WAL durability.
 [Execution progress and reporting](execution-progress.md)
 
 ## Read the typed evidence
