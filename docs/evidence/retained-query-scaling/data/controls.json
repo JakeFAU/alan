@@ -1,0 +1,34 @@
+{
+  "events": {
+    "no_test_packages": [],
+    "package_fail": [],
+    "package_pass": [
+      "github.com/mattn/go-sqlite3"
+    ],
+    "test_fail": [],
+    "test_pass": 35,
+    "test_skip": []
+  },
+  "foreign_key_observations": [
+    "p7_fk_test.go:127: observations root=13 cursor=4 FkIfZero=51 target=62 scan=53..61 decrement=60 history index root=12 cursor=4",
+    "p7_fk_test.go:132: EXPLAIN {\"insert\":[[0,\"Init\",0,65,0,null,0,null],[1,\"OpenWrite\",0,11,0,\"8\",0,null],[2,\"OpenWrite\",1,12,0,\"k(3,,,)\",0,null],[3,\"Variable\",1,2,0,null,0,null],[4,\"Variable\",2,3,0,null,0,null],[5,\"Variable\",3,4,0,null,0,null],[6,\"Variable\",4,5,0,null,0,null],[7,\"Variable\",5,6,0,null,0,null],[8,\"Variable\",6,7,0,null,0,null],[9,\"Variable\",7,8,0,null,0,null],[10,\"Variable\",8,9,0,null,0,null],[11,\"NewRowid\",0,1,0,null,0,null],[12,\"HaltIfNull\",1299,2,2,\"history.subject\",1,null],[13,\"HaltIfNull\",1299,2,3,\"history.generation\",1,null],[14,\"HaltIfNull\",1299,2,4,\"history.sequence\",1,null],[15,\"HaltIfNull\",1299,2,5,\"history.epoch\",1,null],[16,\"HaltIfNull\",1299,2,6,\"history.source_revision\",1,null],[17,\"HaltIfNull\",1299,2,8,\"history.successor\",1,null],[18,\"HaltIfNull\",1299,2,9,\"history.intents\",1,null],[19,\"Affinity\",2,6,0,\"BDDDDB\",0,null],[20,\"Gt\",17,22,4,\"BINARY-8\",84,null],[21,\"Halt\",275,2,0,\"sequence\\u003e0\",3,null],[22,\"Gt\",17,24,5,\"BINARY-8\",84,null],[23,\"Halt\",275,2,0,\"epoch\\u003e0\",3,null],[24,",
+    "L CHECK(generation>0), owner TEXT NOT NULL, revision INTEGER NOT NULL CHECK(revision>0), retired INTEGER NOT NULL CHECK(retired IN (0,1)), retry_cancelled INTEGER NOT NULL CHECK(retry_cancelled IN (0,1)))] [table terminal_obligations terminal_obligations 18 CREATE TABLE terminal_obligations (subject TEXT NOT NULL, generation INTEGER NOT NULL, sequence INTEGER NOT NULL, outcome BLOB NOT NULL, destinations BLOB NOT NULL, delivery_status BLOB NOT NULL, operation_id TEXT REFERENCES lifecycle_results(id) DEFERRABLE INITIALLY DEFERRED, source_revision INTEGER NOT NULL CHECK(source_revision>0), PRIMARY KEY(subject,generation), FOREIGN KEY(subject,generation) REFERENCES runs(subject,generation))]] SQLite identity=[[3.53.4 2026-07-24 19:02:57 bf7c7f30031888f4e796e429ab3978879485813aaca6f641c7b33e4e09459bcc]] compile options=[[ATOMIC_INTRINSICS=1] [COMPILER=clang-21.0.0] [DEFAULT_AUTOVACUUM] [DEFAULT_CACHE_SIZE=-2000] [DEFAULT_FILE_FORMAT=4] [DEFAULT_JOURNAL_SIZE_LIMIT=-1] [DEFAULT_MMAP_SIZE=0] [DEFAULT_PAGE_SIZE=4096]",
+    "p7_fk_test.go:192: seed=1 order=original fk=[[1]] defer_fk=[[0]] insert=map[executions:1 fullscan_steps:0 step_calls:1 vm_steps:62] update=map[executions:1 fullscan_steps:0 step_calls:1 vm_steps:42]",
+    "p7_fk_test.go:192: seed=1 order=reordered fk=[[1]] defer_fk=[[0]] insert=map[executions:1 fullscan_steps:0 step_calls:1 vm_steps:52] update=map[executions:1 fullscan_steps:0 step_calls:1 vm_steps:41]",
+    "p7_fk_test.go:192: seed=1 order=autonomous fk=[[1]] defer_fk=[[0]] insert=map[executions:1 fullscan_steps:0 step_calls:1 vm_steps:48] update=map[executions:0 fullscan_steps:0 step_calls:0 vm_steps:0]",
+    "p7_fk_test.go:192: seed=1 order=failed fk=[[1]] defer_fk=[[0]] insert=map[executions:1 fullscan_steps:0 step_calls:1 vm_steps:52] update=map[executions:0 fullscan_steps:0 step_calls:0 vm_steps:0]",
+    "p7_fk_test.go:192: seed=8 order=original fk=[[1]] defer_fk=[[0]] insert=map[executions:1 fullscan_steps:7 step_calls:1 vm_steps:97] update=map[executions:1 fullscan_steps:0 step_calls:1 vm_steps:42]",
+    "p7_fk_test.go:192: seed=8 order=reordered fk=[[1]] defer_fk=[[0]] insert=map[executions:1 fullscan_steps:0 step_calls:1 vm_steps:52] update=map[executions:1 fullscan_steps:0 step_calls:1 vm_steps:41]",
+    "p7_fk_test.go:192: seed=8 order=autonomous fk=[[1]] defer_fk=[[0]] insert=map[executions:1 fullscan_steps:0 step_calls:1 vm_steps:48] update=map[executions:0 fullscan_steps:0 step_calls:0 vm_steps:0]",
+    "p7_fk_test.go:192: seed=8 order=failed fk=[[1]] defer_fk=[[0]] insert=map[executions:1 fullscan_steps:0 step_calls:1 vm_steps:52] update=map[executions:0 fullscan_steps:0 step_calls:0 vm_steps:0]",
+    "p7_fk_test.go:192: seed=64 order=original fk=[[1]] defer_fk=[[0]] insert=map[executions:1 fullscan_steps:63 step_calls:1 vm_steps:377] update=map[executions:1 fullscan_steps:0 step_calls:1 vm_steps:42]",
+    "p7_fk_test.go:192: seed=64 order=reordered fk=[[1]] defer_fk=[[0]] insert=map[executions:1 fullscan_steps:0 step_calls:1 vm_steps:52] update=map[executions:1 fullscan_steps:0 step_calls:1 vm_steps:41]",
+    "p7_fk_test.go:192: seed=64 order=autonomous fk=[[1]] defer_fk=[[0]] insert=map[executions:1 fullscan_steps:0 step_calls:1 vm_steps:48] update=map[executions:0 fullscan_steps:0 step_calls:0 vm_steps:0]",
+    "p7_fk_test.go:192: seed=64 order=failed fk=[[1]] defer_fk=[[0]] insert=map[executions:1 fullscan_steps:0 step_calls:1 vm_steps:52] update=map[executions:0 fullscan_steps:0 step_calls:0 vm_steps:0]",
+    "p7_fk_test.go:192: seed=256 order=original fk=[[1]] defer_fk=[[0]] insert=map[executions:1 fullscan_steps:255 step_calls:1 vm_steps:1337] update=map[executions:1 fullscan_steps:0 step_calls:1 vm_steps:42]",
+    "p7_fk_test.go:192: seed=256 order=reordered fk=[[1]] defer_fk=[[0]] insert=map[executions:1 fullscan_steps:0 step_calls:1 vm_steps:52] update=map[executions:1 fullscan_steps:0 step_calls:1 vm_steps:41]",
+    "p7_fk_test.go:192: seed=256 order=autonomous fk=[[1]] defer_fk=[[0]] insert=map[executions:1 fullscan_steps:0 step_calls:1 vm_steps:48] update=map[executions:0 fullscan_steps:0 step_calls:0 vm_steps:0]",
+    "p7_fk_test.go:192: seed=256 order=failed fk=[[1]] defer_fk=[[0]] insert=map[executions:1 fullscan_steps:0 step_calls:1 vm_steps:52] update=map[executions:0 fullscan_steps:0 step_calls:0 vm_steps:0]"
+  ],
+  "raw_sha256": "93e6298b771623fc4c99a0905fcdf866555f94952a542378e5954839b00f1f92"
+}
