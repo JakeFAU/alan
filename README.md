@@ -34,6 +34,8 @@ Declare a finite sequence with `author.BoundedSeries(observation, author.SeriesO
 
 [Execution progress scaling](docs/evidence/progress-scaling/results.md) measures the opt-in progress call on the same frozen candidate as full Run. On the controlled 256-operation series, median execution-window time fell from 4.585 s to 1.298 s. The lifecycle still included a final full report, inspection, reopen and Replay.
 
+The P7 history-insertion pilot missed its latency threshold at 256 operations. Production runtime is unchanged. [Retained-query scaling results](docs/evidence/retained-query-scaling/results.md)
+
 ## Run a computation
 
 Use Go 1.27.3, CGO, a C compiler and a local Unix filesystem. In your application module, run `go get github.com/JakeFAU/alan/runtime`. Import `github.com/JakeFAU/alan/author` to define a program and `github.com/JakeFAU/alan/runtime` to run it. From a checkout, run the [quickstart](examples/quickstart/main.go).

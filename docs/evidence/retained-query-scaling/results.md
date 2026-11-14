@@ -1,11 +1,13 @@
-# P7 Task 1: retained-query diagnosis
+# P7 retained-query scaling
 
 **Decision: stop before the production change.** The history-first order
 removed 130,305 SQLite scan steps at B256, but the stock paired pilot found
 a median Execute reduction of **−0.326%**, with only **3 of 6** pairs faster.
 The pilot did not meet any of the three frozen advance conditions. No
 production source was changed and no Task 2 work began. The order-only
-counterfactual exists in disposable copies of the exact baseline.
+counterfactual exists in disposable copies of the exact baseline. See the
+[qualification record](qualification.md) for the source bridge and reproduction
+checks.
 
 ## Inputs and ordinary baseline
 
@@ -58,11 +60,14 @@ one new contact; final full `Run`, typed inspection/series proof,
 close, reopen, another full `Run`, resumed inspection and independent
 `Replay` checked retained original IDs, selections, approval links,
 result digests, one charge per position and unchanged completion and
-contact counts within each sample. At B256 each valid row must show 256
-completed, selected, spent and contacted positions, 255 protected
-approvals and 1,023 reductions. Independent Create processes have
-independent namespaces; these comparisons do not assert equal raw IDs
-or database bytes across processes.
+contact counts within each sample. Every B256 row in both pilot arms reported
+256 completed positions, 256 original observations selected, 256 original
+results retained, 256 independently charged effects and 256 direct adapter
+contacts. Replay found 256 intents and 1,023 history entries. The driver
+checked 255 protected approvals, 256 distinct roots, one effect charge on
+each root and zero pending, failed or unresolved series positions. Each fresh
+Create used its own namespace. The driver compared identities and evidence
+within that Store through reopen and Replay.
 
 Fresh SQLite controls ran against the extracted baseline DDL using
 the pinned bundled driver. At X=1,8,64,256 seeded observations (mixed
@@ -93,8 +98,11 @@ steps for consumption updates. Each arm executed 31/1,023 history
 inserts and 15/511 consumption updates at B8/B256. There were no
 consumption scans, no new scan family, no migration to another
 lifecycle stage, and unchanged result-lookup (56/65,280) and
-charge-count (21/32,385) scans. Their persistence is a bounded
-structural result and does not establish a general complexity claim.
+charge-count (21/32,385) scans. The retained-position sums for those two
+families on the tested fixture are B(B−1) and (B−1)(B−2)/2. This accounts
+for all 97,665 remaining Execute full-scan steps in the B256 overlay. The
+observed quadratic scan work survives the write-order change. These counts
+describe this workload and pinned SQLite access paths.
 
 The derivative binds three exact prepared SQL strings at prepare.
 Its fixed aggregate clock wraps only the pinned C step calls: row
@@ -137,26 +145,28 @@ and their four flat/cumulative renders are independently hash-bound.
 ## Uninstrumented paired pilot
 
 Each child created a fresh Store. Both stock binaries were built before
-serial samples began; no builds, tests, profiles or counters overlapped
-the timing window. Per bound there was one excluded warmup per arm and
-six adjacent pairs, alternating AB and BA. All 98 rows passed (14
+serial samples began. The recorded campaign builds, tests, profiles and
+counter runs did not overlap primary timing. The ledger does not observe
+unrelated host background work. Per bound there was one excluded warmup per
+arm and six adjacent pairs, alternating AB and BA. All 98 rows passed (14
 warmups, 84 primary). Positive paired percentages favor the overlay;
 each is the median of the per-pair normalized differences. The time
 columns are the separate medians for each arm.
 
-| Bound | Baseline Execute, ms | Overlay Execute, ms | Paired Execute | Faster pairs | AB | BA | Paired lifecycle |
-|---:|---:|---:|---:|---:|---:|---:|---:|
-| 1 | 3.992 | 3.997 | −0.152% | 3/6 | −0.706% | +0.402% | +0.469% |
-| 8 | 40.743 | 40.719 | +0.152% | 3/6 | −0.317% | +0.621% | −0.029% |
-| 16 | 81.639 | 81.519 | −0.194% | 2/6 | −0.204% | −0.184% | −0.428% |
-| 32 | 159.236 | 157.925 | +0.309% | 4/6 | +0.085% | +1.675% | +0.408% |
-| 64 | 314.590 | 312.810 | +0.900% | 5/6 | +0.709% | +1.842% | +0.563% |
-| 128 | 628.283 | 628.322 | +0.004% | 3/6 | −0.294% | +0.150% | +0.085% |
-| 256 | 1,290.647 | 1,294.152 | −0.326% | 3/6 | +1.828% | −1.132% | −0.157% |
+| Bound | Baseline Execute, ms | Overlay Execute, ms | Paired Execute | Faster pairs | Savings MAD, ms | AB | BA | Paired lifecycle |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 1 | 3.992 | 3.997 | −0.152% | 3/6 | 0.259 | −0.706% | +0.402% | +0.469% |
+| 8 | 40.743 | 40.719 | +0.152% | 3/6 | 0.227 | −0.317% | +0.621% | −0.029% |
+| 16 | 81.639 | 81.519 | −0.194% | 2/6 | 0.786 | −0.204% | −0.184% | −0.428% |
+| 32 | 159.236 | 157.925 | +0.309% | 4/6 | 0.931 | +0.085% | +1.675% | +0.408% |
+| 64 | 314.590 | 312.810 | +0.900% | 5/6 | 2.267 | +0.709% | +1.842% | +0.563% |
+| 128 | 628.283 | 628.322 | +0.004% | 3/6 | 1.288 | −0.294% | +0.150% | +0.085% |
+| 256 | 1,290.647 | 1,294.152 | −0.326% | 3/6 | 17.415 | +1.828% | −1.132% | −0.157% |
 
 B256 paired Execute differences in order (baseline minus overlay, ms)
-were +35.268, +1.712, +23.849, −14.598, −10.144 and −28.665. Median
-saving was −4.216 ms, below its 17.415 ms median absolute deviation.
+were +35.268250, +1.711749, +23.848917, −14.597666, −10.144458 and
+−28.664668. Median saving was −4.2163545 ms, below its 17.4148125 ms
+median absolute deviation (MAD).
 The frozen screen required at least +1%, at least five faster pairs
 and savings strictly above MAD. The opposing order strata and near
 zero B128 contrast limit the interpretation; the small bounds show no
@@ -176,12 +186,16 @@ not a strict bound or a substitute for the measured pilot.
 | Post-exit peak RSS, MiB | 77.969 | 78.648 |
 | Final full report, ms | 22.123 | 22.101 |
 | Final typed inspection, ms | 108.177 | 107.994 |
+| Final series view, ms | 0.768 | 0.748 |
+| Final series proof, ms | 0.884 | 0.878 |
 | Fresh Open, ms | 695.102 | 695.465 |
 | Full Run after Open, ms | 37.455 | 37.280 |
+| Resumed inspection and series view, ms | 109.786 | 109.695 |
 | Replay, ms | 564.696 | 564.977 |
 | Full lifecycle, ms | 3,133.527 | 3,136.067 |
 | Lifecycle CPU (user + system), ms | 4,407.033 | 4,403.279 |
 | Lifecycle allocation volume, MiB | 2,155.149 | 2,154.914 |
+| Lifecycle allocation count, millions | 25.4826 | 25.4808 |
 
 The small CPU and allocation differences do not establish meaningful
 savings; the high-water RSS ranges overlap (31.31–32.63 versus
@@ -190,9 +204,10 @@ at process exit). Peak gauges are cumulative and allocations are volume,
 not live bytes. The lifecycle evidence does not rescue the failed Execute
 screen. This is a single-host bounded engineering decision, without an
 inference of statistical significance or a claim of zero possible gain.
-No production qualification, selected-write crash tests or full candidate
-integration/race campaign was performed. The two remaining query families
-were measured but not altered or selected for another optimization.
+The scan reduction is reproducible on the pinned diagnostic builds. The
+stock latency contrast misses the threshold in this workload, so the frozen
+decision is to stop here. The two remaining query families were measured and
+are unchanged.
 
 The durable evidence artifacts are under
 `docs/evidence/retained-query-scaling/data/`. The row files retain every
@@ -202,19 +217,22 @@ skips and hashes. The evidence bridge identifies every changed file
 after the corrected harness freeze and checks against a byte-for-byte
 unchanged baseline application runtime.
 
-To rerun a lane from a clean checkout, set `P7` to the local plan
-workspace `.superpowers/sdd/plan-retained-query-scaling` (create it if
-needed) and choose a fresh output and cache path for each run:
+To rerun a lane, use a clean checkout of the corrected harness commit and
+exclude the local plan workspace. Choose a fresh output directory for each
+invocation. Add `--gocache PATH` to reuse a writable Go build cache.
 
 ```sh
+git checkout --detach ca65abb857a75f3677ce88a74cbeb94a2251450b
 P7=.superpowers/sdd/plan-retained-query-scaling
+printf '\n/.superpowers/\n' >> "$(git rev-parse --git-path info/exclude)"
 mkdir -p "$P7"
 python3 -B -m unittest discover -s docs/evidence/retained-query-scaling -p test_measure.py
+python3 -B docs/evidence/retained-query-scaling/measure.py --lane clock --preflight --out "$P7/repro-controls"
 python3 -B docs/evidence/retained-query-scaling/measure.py --lane smoke --out "$P7/repro-smoke"
 python3 -B docs/evidence/retained-query-scaling/measure.py --lane counters --out "$P7/repro-counters"
 python3 -B docs/evidence/retained-query-scaling/measure.py --lane clock --out "$P7/repro-clock"
 python3 -B docs/evidence/retained-query-scaling/measure.py --lane profile --out "$P7/repro-profile"
-# Keep the host clear of other builds, tests and diagnostics during this lane.
+# Run serially without overlapping campaign builds, tests or diagnostics.
 python3 -B docs/evidence/retained-query-scaling/measure.py --lane timing --out "$P7/repro-timing"
 ```
 
@@ -243,5 +261,9 @@ servers. This baseline route is independent of the lane controller.
   instead of the binary argument; correcting the argument index produced
   the complete compact evidence from the unchanged raw rows. The evidence
   commit retains compact rows and
-  custody records, not the unpublished raw archives. Task 3 owns the
-  independent reviews and delivery.
+  custody records. The raw archives remain local.
+- Early controller and packaging corrections have narrative and partial
+  artifacts. Separate terminal-outcome logs were unavailable for the
+  initial Python red controls, duplicate-gate exception and packaging
+  correction. The ordinary baseline failure and final frozen control logs
+  are retained in full.
