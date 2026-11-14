@@ -20,9 +20,9 @@ import (
 )
 
 const usage = `weather-agent start --db FILE --lat LAT --lon LON --units UNITS --endpoint URL --allowance N
-weather-agent {run|resume|inspect|replay} --db FILE
+weather-agent {run|resume|status|inspect|replay} --db FILE
 weather-agent refresh --db FILE --read N
-Add --json for structured output. Inspect always includes the retained history.`
+Add --json for structured output. Inspect and status --json include the retained history.`
 
 var errUsage = errors.New("invalid weather-agent command or arguments (run weather-agent --help)")
 
@@ -50,7 +50,7 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 		flags.IntVar(&c.Allowance, "allowance", -1, "maximum lifetime physical opportunities (0–8)")
 	case "refresh":
 		flags.IntVar(&n, "read", 0, "number of the new, separately approved read")
-	case "run", "resume", "inspect", "replay":
+	case "run", "resume", "status", "inspect", "replay":
 	default:
 		return errUsage
 	}
@@ -118,13 +118,14 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 		}
 		initial, earlier = final, before
 	}
-	result, err := summarize(initial, earlier, saved, action == "inspect")
+	detailed := action == "inspect" || action == "status" && *jsonOutput
+	result, err := summarize(initial, earlier, saved, detailed)
 	if err != nil {
 		return err
 	}
 	result.ReplayedCommits = commits
 	if !*jsonOutput && action != "inspect" {
-		return result.writeReport(out)
+		return result.writeReport(out, initial, *path, action == "status")
 	}
 	enc := json.NewEncoder(out)
 	enc.SetIndent("", "  ")
@@ -195,19 +196,32 @@ func approve(ctx context.Context, s *runtime.Store, cut *runtime.ExecutionSnapsh
 	if n > allowance {
 		return fmt.Errorf("read %d exceeds the original allowance of %d", n, allowance)
 	}
+	var err error
 	if len(cut.Composition.Continuations) == 0 {
-		return admitLegacyApproval(ctx, s, cut, n)
+		err = admitLegacyApproval(ctx, s, cut, n)
+	} else {
+		var basis runtime.ContinuationBasis
+		var reason string
+		basis, reason, err = weatherApprovalBasis(cut, n)
+		if err == nil {
+			_, err = s.ApproveContinuation(ctx, basis, reason)
+		}
 	}
-	basis, err := cut.ContinuationBasis(readID(n))
 	if err != nil {
-		return err
+		predecessor, _ := cut.Run(readID(n - 1))
+		action := fmt.Sprintf("approve read %d (%s) after predecessor read %d (%s)", n, readID(n).Subject, n-1, predecessor.ID.Subject)
+		if len(predecessor.EffectIDs) == 1 {
+			op, _ := cut.Effect(predecessor.EffectIDs[0])
+			action += fmt.Sprintf(", original operation %s", op.OperationID)
+			if op.AdapterAttempt == nil || !op.AdapterAttempt.Allowed {
+				action += " has no paid reservation"
+			}
+		} else {
+			action += ", which has no original operation"
+		}
+		return fmt.Errorf("%s: %w", action, err)
 	}
-	reason, err := weatherReason(cut, basis, n)
-	if err != nil {
-		return err
-	}
-	_, err = s.ApproveContinuation(ctx, basis, reason)
-	return err
+	return nil
 }
 
 func main() {

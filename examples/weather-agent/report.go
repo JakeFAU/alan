@@ -2,51 +2,11 @@ package main
 
 import (
 	"fmt"
-	"io"
-	"strings"
 
 	"github.com/JakeFAU/alan/adapters/openmeteo"
 	"github.com/JakeFAU/alan/author"
 	"github.com/JakeFAU/alan/runtime"
 )
-
-func (s summary) writeReport(out io.Writer) error {
-	var buf strings.Builder
-	for _, r := range s.Reads {
-		fmt.Fprintf(&buf, "Read %d. ", r.Read)
-		switch r.State {
-		case "reported":
-			if r.ResultOrigin == "previously_retained" {
-				buf.WriteString("Previously retained. ")
-			} else {
-				buf.WriteString("Read during this run. ")
-			}
-			buf.WriteString(r.Report)
-		case "unresolved":
-			buf.WriteString("The local dispatch gate admitted this lookup. Its provider response is unknown.")
-		case "spent_before_dispatch":
-			buf.WriteString("The opportunity was spent before local dispatch. The provider was not contacted.")
-		case "awaiting_refresh_approval":
-			buf.WriteString("Waiting for explicit approval of a new observation.")
-		case "refresh_approved":
-			buf.WriteString("Approved. Run or resume to request the new observation.")
-		case "refresh_input_rejected":
-			buf.WriteString(r.RefreshInputIssue)
-		case "unavailable":
-			fmt.Fprintf(&buf, "Weather unavailable (%s).", r.Disposition)
-		default:
-			buf.WriteString(strings.ReplaceAll(r.State, "_", " "))
-		}
-		buf.WriteByte('\n')
-	}
-	fmt.Fprintf(&buf, "Location %s, %s. Units %s. Opportunities spent %d of %d. Provider cost unknown.\n", s.Latitude, s.Longitude, s.Units, s.OpportunitiesSpent, s.Allowance)
-	if s.ReplayedCommits != nil {
-		fmt.Fprintf(&buf, "Replay verified %d committed reductions.\n", *s.ReplayedCommits)
-	}
-	fmt.Fprintln(&buf, s.Attribution)
-	_, err := io.WriteString(out, buf.String())
-	return err
-}
 
 type seriesSummary struct {
 	ID             string `json:"id"`

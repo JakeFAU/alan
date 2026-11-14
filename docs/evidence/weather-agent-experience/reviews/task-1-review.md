@@ -1,0 +1,25 @@
+### Spec compliance
+
+- ❌ Issues found at `ca3cf16926954cfe45c2137cbd0823c950757802` against `056cf9a`. A legacy status report can advertise an inapplicable refresh when a retained admission already occupies the required transport identity. See the Important finding.
+- ⚠️ Repository-wide suites, final branch review, and draft PR delivery are outside this task diff. The task report records the weather suite, selected race tests, formatting, and scoped Staticcheck at this head.
+
+### Strengths
+
+- Status shares detached inspection and evidence validation with inspect, and enters neither the owner nor the replay branch. Both detailed commands use the same summarization and encoder. I also compared the 12 saved candidate JSON outputs directly with their corresponding frozen baseline bytes across four histories. The comparison manifest records unchanged main/WAL bytes for all 16 candidate commands. See `examples/weather-agent/main.go:83`, `:114–144`, `internal/executor/inspection_execution.go:226–245`, and `.superpowers/sdd/plan-weather-agent-experience/json-compatibility/comparison.json`.
+- The guidance uses the same protected approval basis and weather reason as the mutating command. The protected basis requires an actual paid predecessor, and the weather policy then waits for local completion when a response is already retained. The existing legacy payload policy distinguishes reserved originals from completed results without moving the grant boundary. An accepted malformed legacy approval suppresses advancement consistently with the owner's existing preflight. See `examples/weather-agent/approval.go:11–39`, `main.go:161–171`, `:199–222`, `legacy_approval.go:19–71`, `status.go:12–37`, and `internal/executor/continuation_history.go:30–67`.
+- Human status distinguishes paid but undispatched work, original response uncertainty, approved provider work, and local recovery. It retains the original operation ID, response and selection flags, and charged opportunity even after a successor completes. The process checks assert the ordinary executable receives SIGKILL after loopback acceptance, then verify repeated fresh status, fresh resume, an explicitly approved distinct successor, and preservation of the original effect. See `examples/weather-agent/status.go:76–105`, `:117–187`, `process_test.go:359–427`, and `barrier_process_test.go:62–77`, `:154–165`.
+- The POSIX quoting helper round-trips the copied argv through `sh` with apostrophes, whitespace, and substitution-looking text. The tests cover JSON equality, durable hashes, contacts, early and skipped approvals and their wrapped errors, exhausted bounds, M4 and M5 deployments, and impossible evidence. See `examples/weather-agent/status.go:191–193`, `status_test.go:36–117`, `continuation_predecessors_test.go:60–98`, `approval_integrity_test.go:55–105`, `series_application_test.go:137–159`, `response_integrity_test.go:86–99`, and `series_corruption_test.go:52–67`.
+
+### Issues
+
+#### Important
+
+- **Legacy approval can be advertised when its fixed transport ID is already occupied.** At `examples/weather-agent/status.go:87–93` and `:107–111`, the status classifier treats a successful `legacyApprovalPayload` as sufficient. `legacyApproval` ignores refused rows and rows on other routes at `examples/weather-agent/legacy_approval.go:48–54`. Actual refresh writes with `approvalID(n)` at `examples/weather-agent/legacy_approval.go:74–88`, and admission keys are global within their domain. The stored decision is reused for an exact descriptor match, and a different descriptor with the same key returns `ErrConflict` before admitting anything. See `internal/executor/messages.go:365–368`, `:435–442`, `:485–488`, and `:501–518`.
+
+  Minimal retained history follows the existing M4 setup at `examples/weather-agent/approval_integrity_test.go:55–67`. Complete read 1 with the loopback success, then use public `runtime.Open` and `Store.AdmitInput` with transport and logical IDs `approvalID(2)`, target `weather-2`, generation 1, obligation `approval`, and payload `map[string]schema.Value{"previous_operation_id": schema.Text("incomplete")}`. The missing required fields cause a retained `schema_invalid` refusal. After closing the owner, the terminal predecessor still qualifies under `legacyApprovalPayload`, so human status offers `refresh --read 2`. That command must return wrapped `runtime.ErrConflict` for the existing canonical input key. Suppress this impossible recommendation and explain the retained conflict using the validated input-domain transport evidence. Cover the refused canonical row and preserve the valid M4 approval path. The same key check also covers an unrelated route occupying the input transport ID.
+
+### Assessment
+
+**Task quality:** Needs fixes.
+
+The reader and JSON interfaces preserve the validated snapshot and the existing structured output. Task acceptance depends on correcting the legacy guidance for immutable transport-ID conflicts. The conflict finding follows from the public admission path and retained snapshot semantics. I reviewed the existing exact-source test evidence and did not rerun the suites.

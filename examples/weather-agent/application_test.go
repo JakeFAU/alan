@@ -162,7 +162,7 @@ func TestWeatherApplicationRejectsSubstitutedEvidence(t *testing.T) {
 			if err != nil || cut.Effects[0].ResultDisposition != "validated" {
 				t.Fatalf("expected a valid ALAN result from substituted adapter: %v", err)
 			}
-			for _, action := range []string{"inspect", "replay", "resume"} {
+			for _, action := range []string{"inspect", "status", "replay", "resume"} {
 				var output bytes.Buffer
 				err := run(t.Context(), []string{action, "--db", db}, &output)
 				if err == nil || output.Len() != 0 || contacts.Load() != before+1 {
@@ -176,13 +176,48 @@ func TestWeatherApplicationRejectsSubstitutedEvidence(t *testing.T) {
 func TestWeatherApplicationZeroAllowanceAndProvisioningConflicts(t *testing.T) {
 	dir := t.TempDir()
 	db := filepath.Join(dir, "weather.sqlite")
-	endpoint := "http://127.0.0.1:1/v1/forecast"
+	provider := newWeatherProvider(t)
+	endpoint := provider.endpoint()
 	start := provisioning(db, endpoint, 0)
 	created := appCommand(t, start...)
-	blocked := appCommand(t, "run", "--db", db)
-	if blocked.OpportunitiesSpent != 0 || blocked.Reads[0].Report != "" || blocked.Reads[0].State != "unavailable" {
+	initial := weatherSnapshot(t, db)
+	if len(initial.Effects) != 0 {
+		t.Fatal("start unexpectedly produced an effect")
+	}
+	compareWeatherContacts(t, initial, provider, 0, 0)
+	status := func() string {
+		t.Helper()
+		before := weatherDBBytes(t, db)
+		got := humanWeatherCommand(t, "status", "--db", db)
+		if before != weatherDBBytes(t, db) {
+			t.Fatal("status changed the database/WAL bytes")
+		}
+		provider.requireContacts(t, 0)
+		return got
+	}
+	first := status()
+	requireWeatherText(t, first,
+		[]string{"Local work remains.", "Opportunities spent 0 of 0", "No remaining read slot"},
+		[]string{"Resume may contact the provider", "weather-agent refresh", "Optional separate approval"})
+	checkWeatherShellCommand(t, first, "resume", db)
+	blocked := appCommand(t, "resume", "--db", db)
+	read := blocked.Reads[0]
+	if blocked.OpportunitiesSpent != 0 || read.Report != "" || read.State != "unavailable" ||
+		read.LocalStatus != "failed" || read.Disposition != "source_denied" || read.ProviderContacts != (contactBounds{}) {
 		t.Fatalf("zero allowance: %+v", blocked)
 	}
+	completed := weatherSnapshot(t, db)
+	compareWeatherContacts(t, completed, provider, 0, 0)
+	effect := weatherEffect(t, completed, "weather-1")
+	if effect.OperationID != read.OperationID || effect.State != runtime.EffectSettled ||
+		effect.AdapterAttempt == nil || effect.AdapterAttempt.Reason != "effect_limit" || effect.DispatchAdmission != nil ||
+		effect.Dispatch.Minimum != 0 || effect.Dispatch.Maximum == nil || *effect.Dispatch.Maximum != 0 ||
+		selectedWeather(t, completed, effect) == nil {
+		t.Fatalf("missing completed local refusal: %+v", effect)
+	}
+	requireWeatherText(t, status(),
+		[]string{"Weather unavailable (source_denied)", "Observation selected.", "Opportunities spent 0 of 0", "No remaining read slot"},
+		[]string{"weather-agent resume", "Resume may contact the provider", "weather-agent refresh", "Optional separate approval"})
 	if err := run(t.Context(), provisioning(db, endpoint, 1), io.Discard); err == nil {
 		t.Fatal("different allowance replaced the deployment")
 	}
@@ -244,6 +279,8 @@ func TestWeatherApplicationRejectsUnrelatedPeerHandle(t *testing.T) {
 		t.Fatalf("run: %v, close: %v", err, closeErr)
 	}
 	got := appCommand(t, "inspect", "--db", db)
+	requireWeatherText(t, humanWeatherCommand(t, "status", "--db", db),
+		[]string{"unexpected local refresh input", "Response retained (HTTP 429)"}, []string{"weather-agent refresh", "Eligible for separate approval"})
 	if len(got.RefusedInputs) != 1 || got.RefusedInputs[0].TransportID != refused.TransportID {
 		t.Fatalf("missing declined local input: %+v", got.RefusedInputs)
 	}

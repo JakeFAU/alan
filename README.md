@@ -4,37 +4,27 @@ ALAN (Agentic Lambda Abstraction Network) is a Go library for computations that 
 
 ## Hello World: A Durable Weather Agent
 
-The [weather agent](examples/weather-agent/README.md) requests current temperature and humidity for a location you supply. The authored program waits for its own weather response and retains the provider's time and reported grid coordinates. Open-Meteo supplies modeled current conditions. [Provider documentation](https://open-meteo.com/en/docs)
+The [weather agent](examples/weather-agent/README.md) asks Open-Meteo for modeled
+current temperature and humidity. Start with one authorized reading. The
+program waits for its own response, validates it and retains the provider's
+time and grid coordinates in SQLite. [Provider documentation](https://open-meteo.com/en/docs)
 
 ```sh
 work=$(mktemp -d)
 go build -o "$work/weather-agent" ./examples/weather-agent
 "$work/weather-agent" start --db "$work/weather.sqlite" --lat 26.93 --lon -80.08 \
-  --units fahrenheit --endpoint https://api.open-meteo.com/v1/forecast --allowance 2
+  --units fahrenheit --endpoint https://api.open-meteo.com/v1/forecast --allowance 1
 "$work/weather-agent" run --db "$work/weather.sqlite"
-"$work/weather-agent" inspect --db "$work/weather.sqlite"
-"$work/weather-agent" replay --db "$work/weather.sqlite"
+"$work/weather-agent" status --db "$work/weather.sqlite"
 ```
 
-If you kill the running process, use `resume --db "$work/weather.sqlite"`. A retained response can finish the report locally. A spent opportunity with a missing response remains attached to the original request. To authorize one more lookup, use `refresh --db "$work/weather.sqlite" --read 2`, then `resume`. Inspect and replay need no provider connection. The successor selects one protected local approval. ALAN binds that decision to the original request and charges the new operation separately. [Authorize and inspect a continuation](docs/continuations.md#using-a-continuation)
-
-Declare a finite sequence with `author.BoundedSeries(observation, author.SeriesOptions{ID: "weather", Count: 8, Inputs: inputs, First: author.ApproveAtProvision})`. ALAN derives the individual runs, grants, resource scopes and continuation relationships. Only the first observation is approved at provisioning; each later one still needs its own explicit approval. `series.Inspect(cut)` presents the ordered original results, selections, spending and unresolved work. [Bounded observation series](docs/bounded-series.md)
-
-[Series qualification](docs/bounded-series-qualification.md) records the eight-observation run, process recovery, independent review and measured scaling.
-
-[Execution scaling](docs/series-scaling.md) records a later optimization of repeated profile decoding: the controlled 256-operation median falls from 347.99s to 105.52s, with unchanged authorization and recovery checks. The report includes raw-evidence provenance, allocation and memory results, and the limits of the measurement.
-
-[Marginal execution cost](docs/evidence/performance-p2/results.md) measures a separate paired campaign: reusing membership lookups within each root report reduces the 256-operation median from 104.63s to 57.75s and SQL statements from 11.77 million to 3.38 million. Cumulative allocation falls while peak process memory rises slightly. The report preserves the exact evidence, recovery checks and limits of this single-host result.
-
-[Readiness program reuse](docs/evidence/performance-p3/decision.md) records a separate integrated-baseline comparison: the 256-operation median falls from 60.56s to 47.19s by reusing validated unbound programs within one readiness call. Per-run binding, authorization and observation checks remain. The report distinguishes allocation savings, slightly higher peak memory, exact source qualification and scope limits.
-
-[Bounded execution scaling](docs/evidence/execution-scaling/results.md) measures guarded owner discovery, grouped full reports and a separately tested targeted continuation-basis read. The results include recovery qualification and the remaining full-report costs.
-
-[Full report scaling](docs/evidence/report-scaling/results.md) measures report-local batching. On the frozen 256-operation series, median Execute elapsed fell from 7.031 s to 4.613 s with complete reports. The results include SQL work, allocation, peak RSS, and compatibility and recovery qualification.
-
-[Execution progress scaling](docs/evidence/progress-scaling/results.md) measures the opt-in progress call on the same frozen candidate as full Run. On the controlled 256-operation series, median execution-window time fell from 4.585 s to 1.298 s. The lifecycle still included a final full report, inspection, reopen and Replay.
-
-The P7 history-insertion pilot missed its latency threshold at 256 operations. Production runtime is unchanged. [Retained-query scaling results](docs/evidence/retained-query-scaling/results.md)
+After a restart, use `status` to see the retained result or unresolved
+operation and the available next commands. `inspect --json` shows the
+detailed evidence and `replay` checks the committed reductions offline.
+Use the [archived reading](examples/weather-agent/README.md#reproduce-the-archived-reading-offline)
+to try these commands without a provider connection. The
+[authoring walkthrough](docs/weather-agent.md) follows the same Go program
+from its request to the typed evidence.
 
 ## Run a computation
 
@@ -94,9 +84,12 @@ At execution time the host sets `Adapters: map[string]effects.Adapter{"corpus": 
 - Revocation closes admission for covered dispatches. An already admitted call can still reach the endpoint. `Store.AwaitDispatchQuiescence` waits for covered local work and its accounting after revocation. An earlier remote mutation can still be unresolved.
 - A missing ordinary adapter result stays unknown across recovery. The built-in external protocol can retry its idempotent profile with the original key when the endpoint honors it. An unknown non-idempotent request stays unresolved. The controlled reconciliation profile separates permission to read an original receipt from permission to adopt it. A published historical outcome stays fixed.
 - Finite composition invokes retained templates under shared root bounds for depth, invocations, created runs and effects. The runner limits its own in-flight calls. A quiescent runner can have open runs waiting for input, a receipt or service. Distributed ownership, general dynamic spawning, PostgreSQL, history compaction and a managed provider or tool catalog remain unimplemented.
-- Supported SQLite formats are 3 (ordinary), 4 (complete composition) and 5 (reconciliation), plus 6, 7 and 8 after the corresponding store retains conflicting receipt evidence. A composition created with local dispatch-admission evidence uses 9, or 10 after a conflicting receipt. Opening or replaying preserves the format. The original result and version-2 external key survive promotion. Program semantics remain `alan/1d/v1`, `alan/1e/v1` and `alan/1g/v1`. Authored scalar and collection/invocation programs retain compiler versions `alan/author/v1` and `alan/author/v2`, respectively. [Local dispatch admission](docs/dispatch-admissions.md)
+- Supported SQLite formats are 3 (ordinary), 4 (complete composition) and 5 (reconciliation), plus 6, 7 and 8 after the corresponding store retains conflicting receipt evidence. Compositions with local dispatch evidence use 9/10. Protected continuations use 11/12. Request authority v1 uses 13/14 and exact request binding v2 uses 15/16. In each pair, the second format retains conflicting receipt evidence. Opening or replaying preserves the format. The original result and version-2 external key survive promotion. Program semantics remain `alan/1d/v1`, `alan/1e/v1` and `alan/1g/v1`. Authored scalar and collection/invocation programs retain compiler versions `alan/author/v1` and `alan/author/v2`, respectively. [Local dispatch admission](docs/dispatch-admissions.md) · [Protected continuations](docs/continuations.md) · [Request authority and exact request binding](examples/delegation/README.md)
 
 ## Development
+
+The [performance evidence index](docs/performance.md) links the measured scaling
+results, recovery checks and the pilot that missed its threshold.
 
 This runtime was extracted from [research commit `003dc9c4`](https://github.com/JakeFAU/alan-research/commit/003dc9c45ac9b0c1f48565632f5be80f0f05beed). The research repository keeps the monograph, historical campaigns and their source-bound qualifications. See the [extraction inventory and verification commands](docs/extraction.md).
 

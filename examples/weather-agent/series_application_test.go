@@ -151,6 +151,8 @@ func TestWeatherSeriesOriginalAndLegacyPrograms(t *testing.T) {
 		t.Fatal(err)
 	}
 	appCommand(t, "resume", "--db", path)
+	requireWeatherText(t, humanWeatherCommand(t, "status", "--db", path),
+		[]string{"Optional separate approval for read 2", "Observation selected"}, nil)
 	appCommand(t, "refresh", "--db", path, "--read", "2")
 	result := appCommand(t, "resume", "--db", path)
 	if result.Series != nil || result.Reads[1].State != "reported" || result.OpportunitiesSpent != 2 || result.Reads[1].PreviousOperationID != result.Reads[0].OperationID {

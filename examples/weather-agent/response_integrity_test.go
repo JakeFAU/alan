@@ -91,7 +91,7 @@ func TestWeatherReadersRejectImpossibleResponses(t *testing.T) {
 			if _, err := runtime.Replay(t.Context(), db, runtime.DefaultLimits()); err != nil {
 				t.Fatal(err)
 			}
-			for _, action := range []string{"inspect", "replay"} {
+			for _, action := range []string{"inspect", "status", "replay"} {
 				var out bytes.Buffer
 				err := run(t.Context(), []string{action, "--db", db, "--json"}, &out)
 				if err == nil || out.Len() != 0 {
