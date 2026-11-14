@@ -122,3 +122,43 @@ locally under
 `.superpowers/sdd/plan-weather-agent-experience/qualification/`. The
 paired Stores, baseline metadata and byte comparisons are under that plan's
 `json-compatibility/` directory.
+
+## Final correction campaign
+
+On November 14, 2026, a second campaign qualified the zero-allowance status
+guidance and the two guide clarifications. The original campaign above
+remains tied to its original source. The final frozen source is
+`cd18daac429786210a0df6df8fbd238e756c528c`, tree
+`96b31c4ac1329123e4408abe275218b17a07471d`. The Git archive SHA-256 before
+and after the final campaign was
+`7b3944c0b0e867c32984fc399d8fa430334b4c3fa652b3e7de1b8048079c0123`.
+The SHA-256 of the matching 864-path tracked manifests was
+`803c1b8cf3fa274ec06f36c5c1482a7aa23e7dda03d9f7ad3153c0439e86f962`.
+
+The targeted zero-allowance and status tests passed first. On a fresh Store
+the first open read offered local resume with no remaining slot or provider
+or refresh guidance. Resume settled a selected `source_denied` observation
+with zero opportunity charges, zero dispatch admission and zero fixture
+contacts. Completed status omitted resume. Both status cuts preserved
+main/WAL bytes.
+
+The ordinary suite passed with 1,424 passing test events, 18 passing packages
+and four optional historical skips. Integration and integration race each
+passed with 2,703 passing test events, 18 passing packages and six optional
+historical skips. The commands and skip reasons match the original matrix.
+Build, vet, module verification, gofmt inventory, whitespace and the three
+Staticcheck scopes passed with empty stderr using the writable offline module
+cache. The documented controlled SIGKILL check passed.
+
+A single frozen executable ran the offline archive and help commands and
+repeated the paired comparison against the same baseline. All 12 detailed
+JSON reads matched and all 16 reader commands preserved main/WAL bytes.
+The four Store cuts, archived response and SQLite digests, and replayed
+reductions matched the original campaign. The zero-allowance cut was
+qualified separately by the targeted Store test.
+
+Final raw logs and the frozen binary are retained in the plan workspace
+under `final-qualification/`, with the copied paired inputs and new
+comparison results under `final-json-compatibility/`. The final evidence
+commit changes only this Markdown record. Verify the bridge with
+`git diff --name-status cd18daac429786210a0df6df8fbd238e756c528c HEAD`.
