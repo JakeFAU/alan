@@ -1,0 +1,81 @@
+// Disposable diagnostic addition to the pinned SQLite counter copy.
+package sqlite3
+
+import (
+	"os"
+	"sync/atomic"
+	"time"
+)
+
+const (
+	p7History = "INSERT INTO history VALUES(?,?,?,?,?,?,?,?)"
+	p7Attempt = "SELECT result FROM attempts WHERE intent_id=?"
+	p7Charge  = "SELECT count(*) FROM composition_charges WHERE root_id=? AND kind='effect'"
+)
+
+func p7Family(sql string) int {
+	switch sql {
+	case p7History:
+		return 1
+	case p7Attempt:
+		return 2
+	case p7Charge:
+		return 3
+	default:
+		return 0
+	}
+}
+
+var p7Clock = os.Getenv("ALAN_P7_STEP_CLOCK")
+var p7Active atomic.Bool
+var p7Aggregate [4]struct{ steps, ns atomic.Uint64 }
+
+// Only the selected prepared statements incur any clock reads. The empty
+// control reads both clocks before C; the normal bracket includes only C.
+func (s *SQLiteStmt) p7Start() time.Time {
+	if s.p7Family == 0 || !p7Active.Load() || p7Clock == "off" {
+		return time.Time{}
+	}
+	start := time.Now()
+	if p7Clock == "empty" {
+		s.p7Finish(start)
+		return time.Time{}
+	}
+	return start
+}
+
+func (s *SQLiteStmt) p7Finish(start time.Time) {
+	if start.IsZero() {
+		return
+	}
+	elapsed := time.Since(start)
+	p7Aggregate[s.p7Family].ns.Add(uint64(elapsed))
+	p7Aggregate[s.p7Family].steps.Add(1)
+}
+
+type P7StepTime struct {
+	Steps uint64 `json:"step_calls"`
+	NS    uint64 `json:"ns"`
+}
+
+func P7StartClock() {
+	if p7Clock != "on" && p7Clock != "off" && p7Clock != "empty" {
+		panic("explicit P7 step clock mode required")
+	}
+	for i := range p7Aggregate {
+		p7Aggregate[i].steps.Store(0)
+		p7Aggregate[i].ns.Store(0)
+	}
+	p7Active.Store(true)
+}
+
+func P7StopClock() map[string]P7StepTime {
+	p7Active.Store(false)
+	out := make(map[string]P7StepTime, 3)
+	for i, name := range [...]string{"", "history", "attempt", "charge"} {
+		if i != 0 {
+			out[name] = P7StepTime{p7Aggregate[i].steps.Load(), p7Aggregate[i].ns.Load()}
+		}
+	}
+	return out
+}
