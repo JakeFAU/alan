@@ -52,6 +52,15 @@ class MeasureTests(unittest.TestCase):
         self.assertFalse(m.advance([1000]*6, [980, 980, 980, 980, 1020, 1020]))
         self.assertFalse(m.advance([1000]*6, [980, 939, 940, 999, 999, 1100]))
 
+    def test_stock_and_replaced_go_build_info_have_different_line_forms(self):
+        dependency = "\tdep\tgithub.com/mattn/go-sqlite3\tv1.14.52"
+        m.check_sqlite_build(dependency + "\th1:checksum\n", None)
+        m.check_sqlite_build(dependency + "\n\t=>\t/clock/sqlite\t(devel)\t\n", Path("/clock/sqlite"))
+        with self.assertRaises(ValueError):
+            m.check_sqlite_build(dependency + "\n\t=>\t/other/sqlite\t(devel)\t\n", Path("/clock/sqlite"))
+        with self.assertRaises(ValueError):
+            m.check_sqlite_build(dependency + "\th1:checksum\n", Path("/clock/sqlite"))
+
     def test_reserve_refuses_other_plan_and_reuse(self):
         with tempfile.TemporaryDirectory() as d:
             path = Path(d)

@@ -296,6 +296,23 @@ def compare_counter_pair(base, overlay, reg_base, reg_overlay, n):
     return differences
 
 
+def check_sqlite_build(info, sqlite):
+    lines = [line.split('\t')[1:] for line in info.splitlines()
+             if line.startswith(('\tdep\t', '\t=>\t'))]
+    matches = [i for i, fields in enumerate(lines)
+               if fields[:2] == ['dep', 'github.com/mattn/go-sqlite3']]
+    if len(matches) != 1:
+        raise ValueError('missing or duplicate SQLite build dependency')
+    i, = matches
+    dep = lines[i]
+    following = lines[i+1] if i+1 < len(lines) else []
+    replaced = following[:1] == ['=>']
+    if (dep[2:3] != ['v1.14.52'] or replaced != (sqlite is not None) or
+            (replaced and following[1:3] != [str(sqlite), '(devel)']) or
+            (not replaced and not (len(dep) == 4 and dep[3].startswith('h1:')))):
+        raise ValueError('build SQLite does not match selected lane')
+
+
 def campaign(args, root):
     for name in ('tmp', 'samples'):
         (root / name).mkdir()
@@ -345,10 +362,8 @@ def campaign(args, root):
     for a, c in configs.items():
         gate = 'step-clock' if args.lane == 'clock' else a
         build_info = rec.gates / (gate + '-build-info') / 'stdout.log'
-        version = '\tdep\tgithub.com/mattn/go-sqlite3\tv1.14.52\t'
-        info = build_info.read_text()
-        if info.count(version) != 1 or (('/sqlite\t(devel)' in info) != (args.lane in ('counters', 'clock'))):
-            raise ValueError('build SQLite does not match selected lane: ' + gate)
+        check_sqlite_build(build_info.read_text(),
+                           root / gate / 'sqlite' if args.lane in ('counters', 'clock') else None)
         c.update(binary=str(binaries[a]), digest=p6.sha(binaries[a]), build_info_sha256=p6.sha(build_info))
 
     inputs = rec.snapshot()
