@@ -96,9 +96,37 @@ func decodeConfiguration(raw []byte) (configuration, error) {
 	if len(raw) > maxConfiguration {
 		return c, errors.New("outing configuration exceeds its byte bound")
 	}
+	// Decode required numbers as pointers to distinguish explicit zero from
+	// an omitted or null value before constructing the retained inputs.
+	type configurationFields configuration
+	type parkFields park
+	type parkInput struct {
+		parkFields
+		TravelMinutes *int `json:"travel_minutes"`
+	}
+	input := struct {
+		*configurationFields
+		MaxTravelMinutes *int        `json:"max_travel_minutes"`
+		Parks            []parkInput `json:"parks"`
+	}{configurationFields: (*configurationFields)(&c)}
 	// JSON v2 rejects duplicate names, trailing documents and malformed UTF-8.
-	if err := jsonv2.Unmarshal(raw, &c, jsonv2.RejectUnknownMembers(true)); err != nil {
+	if err := jsonv2.Unmarshal(raw, &input, jsonv2.RejectUnknownMembers(true)); err != nil {
 		return c, fmt.Errorf("outing configuration: %w", err)
+	}
+	if input.MaxTravelMinutes == nil {
+		return c, errors.New("outing configuration requires max_travel_minutes")
+	}
+	c.MaxTravelMinutes = *input.MaxTravelMinutes
+	if input.Parks != nil {
+		c.Parks = make([]park, 0, len(input.Parks))
+	}
+	for i, p := range input.Parks {
+		if p.TravelMinutes == nil {
+			return c, fmt.Errorf("outing configuration requires parks[%d].travel_minutes", i)
+		}
+		row := park(p.parkFields)
+		row.TravelMinutes = *p.TravelMinutes
+		c.Parks = append(c.Parks, row)
 	}
 	return c, nil
 }
