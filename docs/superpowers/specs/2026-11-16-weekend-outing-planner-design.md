@@ -1,7 +1,7 @@
 # Weekend outing planner
 
-Status: proposed design; implementation has not started. The recommended scope
-below is an engineering proposal, not a recorded user decision.
+Status: approved for implementation by the user's “Make it so” on November 16,
+2026. The concrete engineering choices below implement the reviewed proposal.
 
 ## Question and intended result
 
