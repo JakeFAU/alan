@@ -105,7 +105,7 @@ func TestPlannerRejectsMismatchedBatch(t *testing.T) {
 				author.Receive(decisionPort, nil),
 				author.Success(),
 			}
-			cut := executeAltered(t, c, weatherSubject, d)
+			cut := executeAltered(t, c, assessFirst, weatherSubject, d)
 			outing, _ := cut.Run(outingRun)
 			if outing.Projection.Status != "failed" {
 				t.Fatalf("Outing accepted the malformed batch: %+v", outing.Projection)
@@ -133,16 +133,62 @@ func TestPlannerWeatherRejectsWrongDecision(t *testing.T) {
 	payload := recordExpressions(decisionSchema, "")
 	payload[outcome] = author.String(recommended)
 	d.Steps[len(d.Steps)-2] = author.Send(decisionPort, payload)
-	cut := executeAltered(t, c, outingSubject, d)
+	cut := executeAltered(t, c, assessFirst, outingSubject, d)
 	weather, _ := cut.Run(weatherRun)
 	if weather.Projection.Status != "failed" {
 		t.Fatalf("Weather accepted forged decision data: %+v", weather.Projection)
 	}
 }
 
-func executeAltered(t *testing.T, c configuration, subject string, def author.Definition) *runtime.ExecutionSnapshot {
+func TestPlannerConfirmationFirstRejectsMismatchesBeforeForecast(t *testing.T) {
+	for _, name := range []string{"wrong proposal", "wrong candidates"} {
+		t.Run(name, func(t *testing.T) {
+			server, calls := fixtureServer(t, "0", "0")
+			c := fixtureConfiguration()
+			c.Endpoint = server.URL + "/v1/forecast"
+			d := outingDefinition()
+			// An alternate peer sends a typed but mismatched decision before
+			// waiting for the assessment. The production owner rejects this peer.
+			payload := map[string]author.Expr{
+				proposalID: author.Var(proposalID), candidates: author.Var(candidates),
+				outcome: author.String(noMatch), selection: author.Value(schema.List()),
+			}
+			if name == "wrong proposal" {
+				payload[proposalID] = author.String("another")
+			} else {
+				payload[candidates] = author.Value(schema.List())
+			}
+			d.Outputs = nil
+			d.Steps = append(d.Steps[:2],
+				author.Send(decisionPort, payload),
+				author.Receive(assessmentPort, nil),
+				author.Success(),
+			)
+			cut := executeAltered(t, c, confirmFirst, outingSubject, d)
+			weather, _ := cut.Run(weatherRun)
+			if weather.Projection.Status != "failed" {
+				t.Fatalf("Weather accepted an incorrect confirmation: %+v", weather.Projection)
+			}
+			var selectedDecision bool
+			for _, o := range cut.Observations {
+				if o.Obligation == decisionPort && o.Run == weatherRun && o.SelectedAt != nil {
+					selectedDecision = true
+				}
+			}
+			if !selectedDecision {
+				t.Fatal("Weather failed before selecting the injected decision")
+			}
+			if calls.Load() != 0 || len(cut.Effects) != 0 {
+				t.Fatalf("mismatched confirmation caused %d committed forecast operations and %d provider contacts",
+					len(cut.Effects), calls.Load())
+			}
+		})
+	}
+}
+
+func executeAltered(t *testing.T, c configuration, variant, subject string, def author.Definition) *runtime.ExecutionSnapshot {
 	t.Helper()
-	p, err := c.provision(assessFirst)
+	p, err := c.provision(variant)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -164,7 +210,14 @@ func executeAltered(t *testing.T, c configuration, subject string, def author.De
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = store.RunProgress(ctx, runtime.RunOptions{MaxSteps: 8000, MaxDispatch: 128, MaxInFlight: 1})
+	adapter, err := openmeteo.NewHourly(c.Endpoint)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = store.RunProgress(ctx, runtime.RunOptions{
+		Adapters: map[string]effects.Adapter{capability: adapter},
+		MaxSteps: 8000, MaxDispatch: 128, MaxInFlight: 1,
+	})
 	if closeErr := store.Close(); closeErr != nil {
 		t.Fatal(closeErr)
 	}

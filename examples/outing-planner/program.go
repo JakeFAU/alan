@@ -62,28 +62,33 @@ func outingDefinition() author.Definition {
 }
 
 func weatherDefinition(variant string) author.Definition {
-	receiveDecision := author.Receive(decisionPort, recordBindings(decisionSchema, "decision_"))
+	receiveDecision := []author.Step{
+		author.Receive(decisionPort, recordBindings(decisionSchema, "decision_")),
+		requireEqual(proposalID, "decision_"+proposalID),
+		requireEqual(candidates, "decision_"+candidates),
+	}
 	steps := []author.Step{
 		author.Receive(proposalPort, map[string]string{proposalID: "received_proposal_id", candidates: candidates}),
 		requireEqual(proposalID, "received_proposal_id"),
 	}
 	if variant == confirmFirst {
-		steps = append(steps, receiveDecision)
+		steps = append(steps, receiveDecision...)
 	}
 	steps = append(steps,
 		assessWeather(),
 		author.Send(assessmentPort, recordExpressions(assessmentSchema, "")),
 	)
 	if variant == assessFirst {
-		steps = append(steps, receiveDecision)
+		steps = append(steps, receiveDecision...)
 	}
-	steps = append(steps, selectAssessment())
-	for _, field := range []string{proposalID, candidates, outcome, selection} {
-		steps = append(steps, requireEqual(field, "decision_"+field))
-	}
-	steps = append(steps, finishDecision())
+	steps = append(steps,
+		selectAssessment(),
+		requireEqual(outcome, "decision_"+outcome),
+		requireEqual(selection, "decision_"+selection),
+		finishDecision(),
+	)
 	return author.Definition{
-		// A single name makes the artifact difference the receive order alone.
+		// Both variants use the same receive and validation steps.
 		Name: "weekend-weather",
 		Inputs: schema.Record{
 			proposalID: idField, openmeteo.Units: hourlyInput[openmeteo.Units], "allowed_weather_codes": weatherCodes,
