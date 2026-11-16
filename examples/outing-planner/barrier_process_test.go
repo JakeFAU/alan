@@ -3,6 +3,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"os"
@@ -25,25 +26,26 @@ func TestOutingBoundaryOwner(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := runCLI(ctx, []string{"run", "--db", path, "--json"}, os.Stdout); err != nil {
+	if err := runCLI(ctx, []string{os.Getenv("ALAN_OUTING_CUT_ACTION"), "--db", path, "--json"}, os.Stdout); err != nil {
 		t.Fatal(err)
 	}
 }
 
 type outingCutOwner struct {
-	cmd  *exec.Cmd
-	done chan error
-	log  string
+	cmd     *exec.Cmd
+	done    chan error
+	log     string
+	release *os.File
 }
 
-func launchOutingOwner(t *testing.T, binary, db string, filter *boundary.Event) (*outingCutOwner, boundary.Event) {
+func launchOutingOwner(t *testing.T, binary, action, db string, filter *boundary.Event) (*outingCutOwner, boundary.Event) {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(t.Context(), outingProcessTimeout)
 	t.Cleanup(cancel)
-	cmd := exec.CommandContext(ctx, binary, "run", "--db", db, "--json")
+	cmd := exec.CommandContext(ctx, binary, action, "--db", db, "--json")
 	cmd.Env = append(os.Environ(), "ALAN_BARRIER=", "GORACE=atexit_sleep_ms=0")
 	dir := t.TempDir()
-	var ack *os.File
+	var ack, release *os.File
 	if filter != nil {
 		filter.Scenario, filter.Store, filter.Token = t.Name(), db, dir
 		raw, err := json.Marshal(filter)
@@ -51,7 +53,7 @@ func launchOutingOwner(t *testing.T, binary, db string, filter *boundary.Event) 
 			t.Fatal(err)
 		}
 		cmd = exec.CommandContext(ctx, os.Args[0], "-test.run=^TestOutingBoundaryOwner$")
-		cmd.Env = append(os.Environ(), "ALAN_OUTING_CUT_DB="+db, "ALAN_BARRIER="+string(raw), "GORACE=atexit_sleep_ms=0")
+		cmd.Env = append(os.Environ(), "ALAN_OUTING_CUT_DB="+db, "ALAN_OUTING_CUT_ACTION="+action, "ALAN_BARRIER="+string(raw), "GORACE=atexit_sleep_ms=0")
 		ackRead, ackWrite, err := os.Pipe()
 		if err != nil {
 			t.Fatal(err)
@@ -64,7 +66,8 @@ func launchOutingOwner(t *testing.T, binary, db string, filter *boundary.Event) 
 			t.Fatal(err)
 		}
 		defer releaseRead.Close()
-		t.Cleanup(func() { _ = releaseWrite.Close() })
+		release = releaseWrite
+		t.Cleanup(func() { _ = release.Close() })
 		cmd.ExtraFiles = []*os.File{ackWrite, releaseRead}
 	}
 	log := filepath.Join(dir, "owner.txt")
@@ -80,7 +83,7 @@ func launchOutingOwner(t *testing.T, binary, db string, filter *boundary.Event) 
 	for _, file := range cmd.ExtraFiles {
 		_ = file.Close()
 	}
-	owner := &outingCutOwner{cmd: cmd, done: make(chan error, 1), log: log}
+	owner := &outingCutOwner{cmd: cmd, done: make(chan error, 1), log: log, release: release}
 	go func() { owner.done <- cmd.Wait() }()
 	t.Cleanup(func() {
 		if owner.done != nil {
@@ -119,4 +122,27 @@ func (owner *outingCutOwner) kill(t *testing.T) {
 		t.Fatalf("wanted SIGKILL, got %v (%v)\n%s", err, status, raw)
 	}
 	t.Logf("SIGKILL pid=%d", owner.cmd.Process.Pid)
+}
+
+// The existing barrier accepts 'c' to continue the staged transaction.
+func (owner *outingCutOwner) continueAndRead(t *testing.T) plannerReport {
+	t.Helper()
+	if _, err := owner.release.Write([]byte{'c'}); err != nil {
+		t.Fatal(err)
+	}
+	waitErr := <-owner.done
+	owner.done = nil
+	raw, err := os.ReadFile(owner.log)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if waitErr != nil {
+		t.Fatalf("released owner failed: %v\n%s", waitErr, raw)
+	}
+	var report plannerReport
+	// The test harness prints its own exit status after the CLI's JSON report.
+	if err := json.NewDecoder(bytes.NewReader(raw)).Decode(&report); err != nil {
+		t.Fatalf("released owner did not report its result: %v\n%s", err, raw)
+	}
+	return report
 }

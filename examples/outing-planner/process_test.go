@@ -280,13 +280,18 @@ func verifyOutingOfflineReaders(t *testing.T, binary, path string, s *runtime.Ex
 	}
 	if report.Namespace != s.Namespace || report.Outcome != want || !reflect.DeepEqual(report.Runs, s.Runs) ||
 		!slices.EqualFunc(report.Operations, s.Operations, func(a, b runtime.Intent) bool {
-			return a.ID == b.ID && a.Run == b.Run && a.Sequence == b.Sequence && a.Ordinal == b.Ordinal &&
-				a.Kind == b.Kind && a.Target == b.Target && a.Obligation == b.Obligation && reflect.DeepEqual(a.Payload, b.Payload)
+			return reflect.DeepEqual(a, b)
 		}) ||
 		!reflect.DeepEqual(report.History, outingHistory(t, s)) {
 		t.Fatalf("fresh inspect does not expose the retained run/operation history or outcome %s", want)
 	}
 	endpoint.requireContacts(t, s, contacts...)
+	if !slices.EqualFunc(report.Effects, s.Effects, func(a, b *runtime.ExecutionEffect) bool { return reflect.DeepEqual(a, b) }) {
+		t.Fatal("fresh inspect changed retained effects")
+	}
+	if !slices.EqualFunc(report.Observations, s.Observations, func(a, b *runtime.ObservationView) bool { return reflect.DeepEqual(a, b) }) {
+		t.Fatal("fresh inspect changed retained observations")
+	}
 	if status := outingProcessJSON(t, binary, "status", path); string(status) != string(inspect) {
 		t.Fatal("fresh status does not match the inspected cut")
 	}
@@ -392,6 +397,10 @@ func TestOutingProcessRecovery(t *testing.T) {
 	baseline := outingSnapshot(t, baselinePath)
 	endpoint.requireContacts(t, baseline, "40.8", "40.7")
 	requireDecision(t, baseline, recommended, "cedar")
+	baseOuting, ok := baseline.Run(outingRun)
+	if !ok {
+		t.Fatal("baseline lacks the original Outing run")
+	}
 	first := outingForecast(t, baseline, "40.8")
 	second := outingForecast(t, baseline, "40.7")
 
@@ -411,7 +420,7 @@ func TestOutingProcessRecovery(t *testing.T) {
 			db := startOutingProcess(t, binary, p.url, assessFirst, tc.decision == noMatch)
 			initial := outingSnapshot(t, db)
 			p.requireContacts(t, initial)
-			owner, event := launchOutingOwner(t, binary, db, &tc.filter)
+			owner, event := launchOutingOwner(t, binary, "run", db, &tc.filter)
 			cut := outingSnapshot(t, db)
 			requireOutingRecovery(t, initial, cut)
 			p.requireContacts(t, cut, tc.before...)
@@ -438,9 +447,14 @@ func TestOutingProcessRecovery(t *testing.T) {
 				}
 			case "decision committed":
 				requireOutingCommit(t, cut, event, outingOperation(t, cut, decisionPort))
+				for _, a := range cut.Admissions {
+					if a.SourceOperationID == event.Intent {
+						t.Fatal("decision was already delivered at acknowledged commit")
+					}
+				}
 				for _, o := range cut.Observations {
-					if o.SourceOperationID == event.Intent && o.SelectedAt != nil {
-						t.Fatal("decision was already consumed at acknowledged commit")
+					if o.SourceOperationID == event.Intent {
+						t.Fatal("decision was already in the inbox at acknowledged commit")
 					}
 				}
 			case "next candidate committed":
@@ -464,8 +478,23 @@ func TestOutingProcessRecovery(t *testing.T) {
 				event.Boundary, event.Phase, event.Subject, event.Generation, event.Epoch, event.Sequence, event.Intent, event.Attempt, len(tc.before))
 			owner.kill(t)
 			verifyOutingOfflineReaders(t, binary, db, cut, p, pendingOutcome, tc.before...)
-			raw := outingProcessJSON(t, binary, "resume", db)
-			plannerOutcome(t, string(raw), tc.decision)
+			var admittedDecision string
+			if tc.name == "decision committed" {
+				original := outingOperation(t, cut, decisionPort)
+				filter := outingCutAt(cut, outingRun, baseOuting.Sequence, "execution.staged", "terminal")
+				filter.Epoch++
+				resumed, staged := launchOutingOwner(t, binary, "resume", db, &filter)
+				beforeTerminal := outingSnapshot(t, db)
+				requireOutingRecovery(t, cut, beforeTerminal)
+				admittedDecision = requireDecisionBeforeOutingTerminal(t, beforeTerminal, staged, original)
+				p.requireContacts(t, beforeTerminal, tc.before...)
+				if report := resumed.continueAndRead(t); report.Outcome != tc.decision {
+					t.Fatalf("released resume reported %q, want %s", report.Outcome, tc.decision)
+				}
+			} else {
+				raw := outingProcessJSON(t, binary, "resume", db)
+				plannerOutcome(t, string(raw), tc.decision)
+			}
 			final := outingSnapshot(t, db)
 			requireOutingRecovery(t, cut, final)
 			park := "cedar"
@@ -475,6 +504,12 @@ func TestOutingProcessRecovery(t *testing.T) {
 			requireDecision(t, final, tc.decision, park)
 			decision := outingOperation(t, final, decisionPort)
 			at := requireOutingSelection(t, final, decision.ID, weatherRun)
+			if admittedDecision != "" {
+				step, ok := final.Reduction(*at)
+				if !ok || step.SelectedObservationID != admittedDecision {
+					t.Fatal("Weather did not select the decision admitted before Outing terminated")
+				}
+			}
 			if retainedResult != nil {
 				got, ok := final.Effect(retainedResult.OperationID)
 				if !ok || got.Settlement == nil || !reflect.DeepEqual(got.AdapterResult, retainedResult.AdapterResult) ||
@@ -493,7 +528,7 @@ func TestOutingProcessRecovery(t *testing.T) {
 		p := newOutingEndpoint(t, true)
 		db := startOutingProcess(t, binary, p.url, assessFirst, false)
 		initial := outingSnapshot(t, db)
-		owner, _ := launchOutingOwner(t, binary, db, nil)
+		owner, _ := launchOutingOwner(t, binary, "run", db, nil)
 		var contact outingContact
 		select {
 		case contact = <-p.accepted:
@@ -536,7 +571,7 @@ func TestOutingProcessRecovery(t *testing.T) {
 
 		path := startOutingProcess(t, binary, p.url, confirmFirst, false)
 		initial := outingSnapshot(t, path)
-		owner, event := launchOutingOwner(t, binary, path, &filter)
+		owner, event := launchOutingOwner(t, binary, "run", path, &filter)
 		cut := outingSnapshot(t, path)
 		requireOutingRecovery(t, initial, cut)
 		requireOutingWaits(t, cut)
@@ -556,6 +591,44 @@ func TestOutingProcessRecovery(t *testing.T) {
 		requireOutingWaits(t, next)
 		verifyOutingOfflineReaders(t, binary, path, next, p, pendingOutcome)
 	})
+}
+
+// A staged terminal reduction is still uncommitted. The accepted admission
+// and inbox observation must already be visible to a separate snapshot reader.
+func requireDecisionBeforeOutingTerminal(t *testing.T, s *runtime.ExecutionSnapshot, event boundary.Event, decision runtime.Intent) string {
+	t.Helper()
+	outing, ok := s.Run(outingRun)
+	terminal := runtime.ReductionRef{Run: outingRun, Sequence: event.Sequence}
+	_, committed := s.Reduction(terminal)
+	if !ok || outing.Projection.Status != "open" || outing.Epoch != event.Epoch ||
+		outing.Sequence+1 != event.Sequence || committed {
+		t.Fatalf("terminal acknowledgement %+v did not witness an open Outing projection: %+v", event, outing)
+	}
+	var accepted *runtime.AdmissionView
+	for _, a := range s.Admissions {
+		if a.SourceOperationID != decision.ID {
+			continue
+		}
+		if accepted != nil || !a.Accepted || a.Domain != "message" || a.Source != outingRun ||
+			a.LogicalID != decision.ID || a.Target != weatherRun.Subject || a.RequestedGeneration != decision.Generation ||
+			a.Obligation != decisionPort || a.Bound == nil || *a.Bound != weatherRun || a.ObservationID == "" {
+			t.Fatalf("wrong admission for original decision %s: %+v", decision.ID, a)
+		}
+		accepted = a
+	}
+	if accepted == nil {
+		t.Fatalf("Outing staged its terminal reduction without delivering decision %s", decision.ID)
+	}
+	obs, ok := s.Observation(accepted.ObservationID)
+	producer := runtime.ReductionRef{Run: decision.Run, Sequence: decision.Sequence}
+	if !ok || obs.Run != weatherRun || obs.Kind != "message" || obs.SourceOperationID != decision.ID ||
+		obs.ProducerReduction == nil || *obs.ProducerReduction != producer || obs.Obligation != decisionPort ||
+		!slices.Contains(obs.Admissions, accepted.ID) || !reflect.DeepEqual(obs.Payload, decision.Payload) {
+		t.Fatalf("accepted decision %s did not create the exact Weather observation: %+v", decision.ID, obs)
+	}
+	t.Logf("acknowledged %s/%s pid=%d outing/1 epoch=%d sequence=%d; Outing open at sequence %d with accepted decision=%s admission=%s observation=%s",
+		event.Boundary, event.Phase, event.PID, event.Epoch, event.Sequence, outing.Sequence, decision.ID, accepted.ID, obs.ID)
+	return obs.ID
 }
 
 func requireUnknownOuting(t *testing.T, s *runtime.ExecutionSnapshot, operationID string) *runtime.ExecutionEffect {

@@ -32,7 +32,7 @@ distinct IDs for different contacts.
 | --- | --- | --- | --- |
 | Outing proposal commit, epoch 2, sequence 18 | Original proposal exists before admission or selection | 0 → 2 | Exhaustive `no_match` under the empty allowed-code policy. Weather selects Outing's decision at sequence 38. |
 | Weather result record before settlement, epoch 2, sequence 9 | Cedar's first result is durable before its observation enters the inbox | 1 → 2 | `recommended`. Recovery settles and selects the same result, then makes the new Hemlock GET. |
-| Outing decision commit, epoch 2, sequence 56 | Exact decision retained before Weather selects it | 2 → 2 | `recommended`. Weather selects the retained decision at sequence 86. |
+| Outing decision commit, epoch 2, sequence 56 | Exact decision retained before admission or selection | 2 → 2 | On resume, Weather's accepted admission and inbox observation are visible while Outing is still open at sequence 57, with its terminal reduction staged at epoch 3, sequence 58. After release, both runs succeed and Weather selects that same observation at sequence 86. |
 | Weather next request commit, epoch 2, sequence 47 | Cedar's forecast is already retained and selected. Hemlock's original intent has no attempt or admission yet. | 1 → 2 | `recommended`. Only the pending Hemlock intent dispatches on resume. |
 | Endpoint accepts and withholds Cedar response for Weather generation 1, sequence 9, ordinal 0 | Dispatch admission and original attempt exist without result, settlement or observation | 1 → 1 → 1 | `unknown_forecast` through two fresh resumes. |
 | Confirmation-first Weather reaches its decision wait, epoch 2, sequence 6 | Weather selected the sole proposal. Neither receive has a matching observation. | 0 → 0 | Both runs remain open with the same reciprocal waits. Ordinary readers report `pending`. |
@@ -66,6 +66,17 @@ and closing boundaries, an early closing, and a return trip falling outside
 availability when departure fits. A counting loopback fixture checks that
 initial, repeated and conflicting starts make zero contacts.
 
+Independent Task 4 review at `0eeb0ec` returned REJECT on spec compliance
+and task quality. Eventual consumption and terminal success could also follow authorization
+before Outing closed and admission after closure, because authorization and
+admission commit separately. The process regression now pauses the resumed
+owner at the staged terminal reduction, independently reads the exact
+accepted admission and Weather inbox observation while Outing is still open,
+then releases the owner and checks consumption of that same observation.
+The review also found that reader-to-reader JSON comparisons could hide a
+shared omission. Each offline reader's complete intents, effects and
+observations now agree with the public snapshot.
+
 The process witnesses preserve observed behavior for these local cuts, native
 fixtures and supported Weather programs. They leave arbitrary schedules,
 distributed ownership, live provider behavior and general substitution
@@ -91,9 +102,15 @@ go test -count=1 -timeout=60m -tags integration ./...
 go test -count=1 -timeout=60m -race -tags integration ./...
 ```
 
-All commands passed on Darwin arm64 with Go 1.27.4 and Staticcheck 2026.2.2.
+For the initial qualification at `0eeb0ec`, all commands passed on Darwin
+arm64 with Go 1.27.4 and Staticcheck 2026.2.2.
 Formatting listed no files. The ordinary, tagged integration, and tagged
 integration race suites took 54.51, 76.32, and 817.52 seconds respectively.
 The focused tagged run took 15.237 seconds and its race run took 246.393
 seconds. The documented inspect and replay commands produced byte-for-byte
 matching JSON after the walkthrough fixture shut down.
+
+The test-only correction for decision admission before termination passed the
+focused six-case integration run in 15.427 seconds and its race run in
+253.877 seconds. Both Staticcheck modes, formatting and the example build
+also passed. No production source changed in that correction.
