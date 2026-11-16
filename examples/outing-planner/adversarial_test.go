@@ -235,9 +235,11 @@ func executeAltered(t *testing.T, c configuration, variant, subject string, def 
 }
 
 func TestPlannerRefusesChangedDeployment(t *testing.T) {
+	server, contacts := fixtureServer(t, "1", "2")
 	for _, name := range []string{"grant", "root allowance", "input"} {
 		t.Run(name, func(t *testing.T) {
 			c := fixtureConfiguration()
+			c.Endpoint = server.URL + fixturePath
 			p, err := c.provision(assessFirst)
 			if err != nil {
 				t.Fatal(err)
@@ -264,6 +266,9 @@ func TestPlannerRefusesChangedDeployment(t *testing.T) {
 				t.Fatal("owner accepted a changed deployment")
 			}
 		})
+	}
+	if contacts.Load() != 0 {
+		t.Fatalf("refused grant, scope or input reached transport %d times", contacts.Load())
 	}
 }
 
@@ -351,6 +356,8 @@ func TestPlannerReopensAtFinalDecisionCommit(t *testing.T) {
 			t.Fatal("decision was delivered before the cut")
 		}
 	}
+	committed := plannerOutput(t, "status", "--db", path, "--json")
+	plannerOutcome(t, committed, pendingOutcome)
 	resumed, _, err := operatePlanner(ctx, path, cut.Namespace, c, assessFirst)
 	if err != nil {
 		t.Fatal(err)

@@ -20,8 +20,9 @@ import (
 )
 
 const usage = `outing-planner start --db FILE --config FILE [--weather assess-first|confirm-first]
-outing-planner {run|resume|status} --db FILE
-Commands return the validated execution snapshot as JSON.`
+outing-planner {run|resume|status|inspect|replay} --db FILE
+outing-planner check-replacement --config FILE --fixture FILE [--weather assess-first|confirm-first] [--output-dir DIR]
+Add --json for a structured outing report. Inspect and check-replacement return JSON.`
 
 var errUsage = errors.New("invalid outing-planner command or arguments (run outing-planner --help)")
 
@@ -30,19 +31,27 @@ func runCLI(ctx context.Context, args []string, out io.Writer) error {
 		return errUsage
 	}
 	action := args[0]
-	flags := flag.NewFlagSet(action, flag.ContinueOnError)
-	flags.SetOutput(io.Discard)
-	path := flags.String("db", "", "persistent SQLite database")
-	flags.Bool("json", true, "write execution snapshot JSON")
-	var configPath, variant string
-	switch action {
-	case "help", "--help", "-h":
+	if action == "help" || action == "--help" || action == "-h" {
 		_, err := fmt.Fprintln(out, usage)
 		return err
-	case "start":
+	}
+	flags := flag.NewFlagSet(action, flag.ContinueOnError)
+	flags.SetOutput(io.Discard)
+	var path, configPath, variant, fixturePath, outputDir string
+	var jsonOutput bool
+	if action != "check-replacement" {
+		flags.StringVar(&path, "db", "", "persistent SQLite database")
+		flags.BoolVar(&jsonOutput, "json", false, "write the structured outing report")
+	}
+	switch action {
+	case "start", "check-replacement":
 		flags.StringVar(&configPath, "config", "", "outing configuration")
 		flags.StringVar(&variant, "weather", assessFirst, "Weather variant")
-	case "run", "resume", "status":
+		if action == "check-replacement" {
+			flags.StringVar(&fixturePath, "fixture", "", "versioned native forecast fixture")
+			flags.StringVar(&outputDir, "output-dir", "", "retain evidence files in this directory")
+		}
+	case "run", "resume", "status", "inspect", "replay":
 	default:
 		return errUsage
 	}
@@ -54,34 +63,109 @@ func runCLI(ctx context.Context, args []string, out io.Writer) error {
 		}
 		return err
 	}
-	if *path == "" || flags.NArg() != 0 {
+	if flags.NArg() != 0 {
 		return errUsage
 	}
-	if action == "start" {
-		if configPath == "" {
+	if action == "check-replacement" {
+		if configPath == "" || fixturePath == "" {
 			return errUsage
 		}
-		c, err := readConfiguration(configPath, time.Now())
-		if err != nil {
-			return err
-		}
-		if err := createPlanner(ctx, *path, c, variant); err != nil {
-			return err
-		}
+		return checkReplacement(ctx, replacementOptions{
+			ConfigPath: configPath, FixturePath: fixturePath, Variant: variant, OutputDir: outputDir,
+		}, out)
 	}
-	cut, c, variant, err := inspectPlanner(ctx, *path)
+	if path == "" || action == "start" && configPath == "" {
+		return errUsage
+	}
+	var cut *runtime.ExecutionSnapshot
+	var c configuration
+	var err error
+	if action == "start" {
+		cut, c, err = startPlanner(ctx, path, configPath, variant, time.Now())
+	} else {
+		cut, c, variant, err = inspectPlanner(ctx, path)
+	}
 	if err != nil {
 		return err
 	}
-	if action == "run" || action == "resume" {
-		cut, _, err = operatePlanner(ctx, *path, cut.Namespace, c, variant)
-		if err != nil {
-			return err
+	var progress *runtime.RunProgress
+	var replay *runtime.ReplayReport
+	switch action {
+	case "run", "resume":
+		var advanced runtime.RunProgress
+		cut, advanced, err = operatePlanner(ctx, path, cut.Namespace, c, variant)
+		progress = &advanced
+	case "replay":
+		replay, err = replayPlanner(ctx, path, cut)
+	}
+	if err != nil {
+		return err
+	}
+	report, err := buildReport(cut, c, variant)
+	if err != nil {
+		return err
+	}
+	report.Progress, report.Replay = progress, replay
+	if jsonOutput || action == "inspect" {
+		enc := json.NewEncoder(out)
+		enc.SetIndent("", "  ")
+		return enc.Encode(report)
+	}
+	return report.writeText(out)
+}
+
+func startPlanner(
+	ctx context.Context,
+	path, configPath, variant string,
+	now time.Time,
+) (*runtime.ExecutionSnapshot, configuration, error) {
+	raw, err := readBoundedFile(configPath, maxConfiguration)
+	if err != nil {
+		return nil, configuration{}, err
+	}
+	cut, saved, savedVariant, err := inspectPlanner(ctx, path)
+	if errors.Is(err, os.ErrNotExist) {
+		c, configErr := configurationAt(raw, now.UTC().Format(time.RFC3339Nano))
+		if configErr != nil {
+			return nil, c, configErr
+		}
+		if err := createPlanner(ctx, path, c, variant); err != nil && !errors.Is(err, os.ErrExist) {
+			return nil, c, err
+		}
+		cut, saved, savedVariant, err = inspectPlanner(ctx, path)
+	}
+	if err != nil {
+		return nil, saved, err
+	}
+	c, err := configurationAt(raw, saved.ReferenceTime)
+	if err != nil {
+		return nil, saved, err
+	}
+	if !reflect.DeepEqual(c, saved) || variant != savedVariant {
+		return nil, saved, errors.New("existing outing deployment differs; use its original configuration and Weather variant or a fresh Store")
+	}
+	return cut, saved, nil
+}
+
+func replayPlanner(ctx context.Context, path string, cut *runtime.ExecutionSnapshot) (*runtime.ReplayReport, error) {
+	replayed, err := runtime.Replay(ctx, path, runtime.DefaultLimits())
+	if err != nil {
+		return nil, err
+	}
+	after, err := runtime.InspectExecution(ctx, path, runtime.DefaultLimits())
+	if err != nil {
+		return nil, err
+	}
+	if replayed.Namespace != cut.Namespace || !reflect.DeepEqual(cut, after) || len(replayed.Runs) != len(cut.Runs) {
+		return nil, errors.New("outing computation changed during replay; repeat replay")
+	}
+	for _, state := range replayed.Runs {
+		r, ok := cut.Run(state.ID)
+		if !ok || !reflect.DeepEqual(r.RunState, state) {
+			return nil, errors.New("inspected outing state differs from replay")
 		}
 	}
-	enc := json.NewEncoder(out)
-	enc.SetIndent("", "  ")
-	return enc.Encode(cut)
+	return &replayed, nil
 }
 
 func createPlanner(ctx context.Context, path string, c configuration, variant string) error {
@@ -108,11 +192,30 @@ func inspectPlanner(ctx context.Context, path string) (*runtime.ExecutionSnapsho
 	return s, c, variant, err
 }
 
+type plannerBounds struct {
+	MaxSteps    int           `json:"max_steps"`
+	MaxDispatch int           `json:"max_dispatch"`
+	MaxInFlight int           `json:"max_in_flight"`
+	Timeout     time.Duration `json:"external_timeout_ns"`
+}
+
+var standardBounds = plannerBounds{MaxSteps: 8000, MaxDispatch: 128, MaxInFlight: 1, Timeout: 30 * time.Second}
+
 func operatePlanner(
 	ctx context.Context,
 	path, namespace string,
 	c configuration,
 	variant string,
+) (*runtime.ExecutionSnapshot, runtime.RunProgress, error) {
+	return operateBoundedPlanner(ctx, path, namespace, c, variant, standardBounds)
+}
+
+func operateBoundedPlanner(
+	ctx context.Context,
+	path, namespace string,
+	c configuration,
+	variant string,
+	bounds plannerBounds,
 ) (final *runtime.ExecutionSnapshot, progress runtime.RunProgress, err error) {
 	owner, err := runtime.Open(ctx, path, runtime.DefaultLimits())
 	if err != nil {
@@ -130,18 +233,22 @@ func operatePlanner(
 	if err != nil {
 		return nil, progress, err
 	}
-	progress, err = owner.RunProgress(ctx, runtime.RunOptions{
+	progress, runErr := owner.RunProgress(ctx, runtime.RunOptions{
 		Adapters: map[string]effects.Adapter{capability: adapter},
-		MaxSteps: 8000, MaxDispatch: 128, MaxInFlight: 1, ExternalTimeout: 30 * time.Second,
+		MaxSteps: bounds.MaxSteps, MaxDispatch: bounds.MaxDispatch,
+		MaxInFlight: bounds.MaxInFlight, ExternalTimeout: bounds.Timeout,
 	})
+	if runErr != nil && !errors.Is(runErr, runtime.ErrLimit) {
+		return nil, progress, runErr
+	}
+	final, finalConfig, finalVariant, err := inspectPlanner(ctx, path)
 	if err != nil {
-		return nil, progress, err
+		return nil, progress, errors.Join(runErr, err)
 	}
-	final, _, _, err = inspectPlanner(ctx, path)
-	if err == nil && final.Namespace != namespace {
-		return nil, progress, errors.New("outing store changed during execution")
+	if final.Namespace != namespace || !reflect.DeepEqual(c, finalConfig) || finalVariant != variant {
+		return nil, progress, errors.Join(runErr, errors.New("outing store changed during execution"))
 	}
-	return final, progress, err
+	return final, progress, runErr
 }
 
 func main() {

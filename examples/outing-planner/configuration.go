@@ -64,31 +64,52 @@ type normalizedPlan struct {
 }
 
 type candidate struct {
-	ID, ParkID, Name, Latitude, Longitude, Start, End string
-	TravelMinutes                                     int
-	Eligible                                          bool
-	Reason                                            string
+	ID            string `json:"id"`
+	ParkID        string `json:"park_id"`
+	Name          string `json:"name"`
+	Latitude      string `json:"latitude"`
+	Longitude     string `json:"longitude"`
+	Start         string `json:"start_hour"`
+	End           string `json:"end_hour"`
+	TravelMinutes int    `json:"travel_minutes"`
+	Eligible      bool   `json:"eligible"`
+	Reason        string `json:"reason"`
 }
 
 func readConfiguration(path string, now time.Time) (configuration, error) {
-	f, err := os.Open(path)
+	raw, err := readBoundedFile(path, maxConfiguration)
 	if err != nil {
 		return configuration{}, err
 	}
-	defer f.Close()
-	raw, err := io.ReadAll(io.LimitReader(f, maxConfiguration+1))
-	if err != nil {
-		return configuration{}, err
-	}
+	return configurationAt(raw, now.UTC().Format(time.RFC3339Nano))
+}
+
+func configurationAt(raw []byte, reference string) (configuration, error) {
 	c, err := decodeConfiguration(raw)
 	if err != nil {
 		return c, err
 	}
 	if c.ReferenceTime == "" {
-		c.ReferenceTime = now.UTC().Format(time.RFC3339Nano)
+		c.ReferenceTime = reference
 	}
 	_, err = c.normalize()
 	return c, err
+}
+
+func readBoundedFile(path string, maxBytes int) ([]byte, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	raw, err := io.ReadAll(io.LimitReader(f, int64(maxBytes)+1))
+	if err != nil {
+		return nil, err
+	}
+	if len(raw) > maxBytes {
+		return nil, fmt.Errorf("%s exceeds the %d-byte input limit", path, maxBytes)
+	}
+	return raw, nil
 }
 
 func decodeConfiguration(raw []byte) (configuration, error) {
