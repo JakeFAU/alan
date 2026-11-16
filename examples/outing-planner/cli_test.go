@@ -177,7 +177,9 @@ func TestPlannerCLIArguments(t *testing.T) {
 }
 
 func TestPlannerCLIStartRecognizesRetainedDeployment(t *testing.T) {
+	server, calls := fixtureServer(t, "1", "0")
 	c := fixtureConfiguration()
+	c.Endpoint = server.URL + fixturePath
 	c.ReferenceTime = ""
 	raw, err := c.serialized()
 	if err != nil {
@@ -218,5 +220,8 @@ func TestPlannerCLIStartRecognizesRetainedDeployment(t *testing.T) {
 	}
 	if err := runCLI(t.Context(), args, new(strings.Builder)); err == nil {
 		t.Fatal("accepted conflicting explicit reference")
+	}
+	if calls.Load() != 0 {
+		t.Fatalf("provisioning contacted forecast endpoint %d times", calls.Load())
 	}
 }

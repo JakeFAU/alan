@@ -13,6 +13,7 @@ import (
 	"github.com/JakeFAU/alan/adapters/openmeteo"
 	"github.com/JakeFAU/alan/effects"
 	"github.com/JakeFAU/alan/runtime"
+	"github.com/JakeFAU/alan/schema"
 )
 
 func fixtureConfiguration() configuration {
@@ -45,6 +46,29 @@ func TestPlannerCalendarBounds(t *testing.T) {
 	plan, err = c.normalize()
 	if err != nil || !plan.Candidates[0].Eligible || plan.Candidates[1].Eligible {
 		t.Fatalf("outbound travel: %+v %v", plan, err)
+	}
+
+	for _, tc := range []struct {
+		name, openingStart, openingEnd, availableEnd, reason string
+	}{
+		{"exact opening and closing boundaries", "11:00", "12:00", "12:08", "eligible"},
+		{"closing before walk ends", "11:00", "11:59", "15:00", "outside_opening_hours"},
+		{"departure fits but return does not", "11:00", "12:00", "12:07", "outside_availability_with_travel"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := fixtureConfiguration()
+			c.Parks = c.Parks[1:]
+			c.Parks[0].Opening = []timeWindow{{Start: tc.openingStart, End: tc.openingEnd}}
+			c.Availability = []timeWindow{{Start: "10:52", End: tc.availableEnd}}
+			plan, err := c.normalize()
+			if err != nil || len(plan.Candidates) != 1 {
+				t.Fatalf("normalize calendar boundary: %+v %v", plan, err)
+			}
+			got := plan.Candidates[0]
+			if got.Eligible != (tc.reason == "eligible") || got.Reason != tc.reason {
+				t.Fatalf("calendar boundary yielded %+v, want %s", got, tc.reason)
+			}
+		})
 	}
 
 	for _, tc := range []struct {
@@ -253,6 +277,42 @@ func TestPlannerRecommendationAndNone(t *testing.T) {
 				t.Fatalf("native contact count %d, want %d", calls.Load(), tc.calls)
 			}
 		})
+	}
+}
+
+func TestPlannerCelsiusOfflineEvidence(t *testing.T) {
+	server, calls := fixtureServer(t, "1", "0")
+	c := fixtureConfiguration()
+	c.Parks = c.Parks[1:]
+	c.Endpoint = server.URL + "/v1/forecast"
+	cut, _ := executeFixture(t, c, assessFirst)
+	requireDecision(t, cut, recommended, "cedar")
+	if len(cut.Effects) != 1 || calls.Load() != 1 {
+		t.Fatalf("expected one original Celsius GET, got %d effects and %d calls", len(cut.Effects), calls.Load())
+	}
+	effect := cut.Effects[0]
+	if effect.AdapterResult == nil || effect.AdapterAttempt == nil {
+		t.Fatalf("missing retained Celsius evidence: %+v", effect)
+	}
+	got := effect.AdapterResult.Candidate
+	for field, want := range map[string]schema.Value{
+		openmeteo.TemperatureUnit:  schema.Text("°C"),
+		openmeteo.StartTemperature: schema.Text("17.2"),
+		openmeteo.EndTemperature:   schema.Text("18.3"),
+		openmeteo.StartWeatherCode: schema.Int(1),
+		openmeteo.EndWeatherCode:   schema.Int(2),
+	} {
+		if got.Payload[field] != want {
+			t.Fatalf("retained Celsius field %s: got %v, want %v", field, got.Payload[field], want)
+		}
+	}
+	// Validate the native response after the only endpoint has gone away.
+	server.Close()
+	if err := openmeteo.VerifyHourlyResponseEvidence(effect.AdapterAttempt.Prepared, got); err != nil {
+		t.Fatal(err)
+	}
+	if calls.Load() != 1 {
+		t.Fatal("offline evidence verification contacted the endpoint")
 	}
 }
 

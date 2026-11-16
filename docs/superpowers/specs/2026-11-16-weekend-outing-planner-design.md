@@ -33,7 +33,7 @@ not a general whole-agent substitution theorem.
   evidence, and honest scope for recovery and composition.
 - [Manuscript, pinned source](https://github.com/JakeFAU/alan-research/blob/3dc2754a95d08cf2a688d6a6a970dfed2b2408b5/paper/alan-dissertation.md):
   §§3.4/4.5 distinguish interface matching, admission, readiness and progress;
-  §6.10 contains the reciprocal control-order trap and same-Store witness;
+  §6.9 contains the reciprocal control-order trap and same-Store witness;
   §§6.18–6.20 qualify finite continuation-monitor results over an unchanged
   plant and leave full-agent substitution/runtime refinement open.
 - Research `examples/communication/mutual` supplies an ordinary two-root
