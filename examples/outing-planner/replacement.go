@@ -315,9 +315,7 @@ func validateReplacementReopen(before replacementRun, after plannerReport, proof
 		proof.Outcome != before.Outcome || !reflect.DeepEqual(before.Cycle, proof.Cycle) ||
 		!reflect.DeepEqual(prior.History, after.History) || !reflect.DeepEqual(prior.Effects, after.Effects) ||
 		!reflect.DeepEqual(prior.Observations, after.Observations) || !reflect.DeepEqual(prior.Admissions, after.Admissions) ||
-		!reflect.DeepEqual(prior.Pending, after.Pending) ||
-		!reflect.DeepEqual(prior.Proposal, after.Proposal) || !reflect.DeepEqual(prior.Assessment, after.Assessment) ||
-		!reflect.DeepEqual(prior.Decision, after.Decision) {
+		!reflect.DeepEqual(prior.Pending, after.Pending) || !reflect.DeepEqual(prior.Operations, after.Operations) {
 		return errors.New("fresh owner did not preserve the settled or blocked replacement cut")
 	}
 	for i, reopened := range after.Runs {

@@ -310,6 +310,75 @@ func TestPlannerUnknownForecastStaysOriginal(t *testing.T) {
 	}
 }
 
+func TestPlannerReportsCommittedForecastRequest(t *testing.T) {
+	ctx := t.Context()
+	c := fixtureConfiguration()
+	c.Endpoint = "http://127.0.0.1:1/v1/forecast"
+	path := filepath.Join(t.TempDir(), "outing.db")
+	if err := createPlanner(ctx, path, c, assessFirst); err != nil {
+		t.Fatal(err)
+	}
+	initial, _, _, err := inspectPlanner(ctx, path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	stop := errors.New("stop after forecast request commitment")
+	var committed runtime.Intent
+	observed := boundary.WithObserver(ctx, func(ctx context.Context, event boundary.Event) error {
+		if event.Boundary != "execution.committed" || event.Subject != weatherSubject {
+			return nil
+		}
+		cut, _, _, err := inspectPlanner(ctx, path)
+		if err != nil {
+			return err
+		}
+		if len(cut.Effects) == 0 {
+			return nil
+		}
+		if len(cut.Effects) != 1 {
+			t.Fatalf("expected one committed forecast, got %d", len(cut.Effects))
+		}
+		forecast := cut.Effects[0]
+		if forecast.AdapterAttempt != nil || forecast.DispatchAdmission != nil || forecast.AdapterResult != nil {
+			t.Fatal("forecast reached adapter preparation or dispatch before the cut")
+		}
+		op, ok := cut.Operation(forecast.OperationID)
+		if !ok || op.Sequence != event.Sequence {
+			t.Fatal("forecast lacks its original operation at the committed sequence")
+		}
+		committed = *op
+		return stop
+	})
+	if _, _, err := operatePlanner(observed, path, initial.Namespace, c, assessFirst); !errors.Is(err, stop) {
+		t.Fatalf("did not stop at the original request commit: %v", err)
+	}
+	output := plannerOutput(t, "inspect", "--db", path, "--json")
+	plannerOutcome(t, output, pendingOutcome)
+	var report struct {
+		Operations []runtime.Intent `json:"operations"`
+	}
+	if err := json.Unmarshal([]byte(output), &report); err != nil {
+		t.Fatal(err)
+	}
+	for _, op := range report.Operations {
+		if op.ID != committed.ID {
+			continue
+		}
+		wantPayload := map[string]schema.Value{
+			"latitude": schema.Text("40.8"), "longitude": schema.Text("-74"),
+			"start_hour": schema.Text("2026-10-11T15:00:00Z"), "end_hour": schema.Text("2026-10-11T16:00:00Z"),
+			"units": schema.Text("celsius"),
+		}
+		if !reflect.DeepEqual(op, committed) || op.Run != weatherRun || op.Ordinal != 0 ||
+			op.Kind != "adapter" || op.Target != capability || op.Obligation != effectName ||
+			!reflect.DeepEqual(op.Payload, wantPayload) {
+			t.Fatalf("report changed the committed forecast request: %+v", op)
+		}
+		return
+	}
+	t.Fatalf("report omits committed forecast operation %s before adapter preparation", committed.ID)
+}
+
 func TestPlannerReopensAtFinalDecisionCommit(t *testing.T) {
 	c := fixtureConfiguration()
 	c.Slots = nil

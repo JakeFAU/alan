@@ -43,6 +43,7 @@ type plannerReport struct {
 	Decision           *runtime.Intent               `json:"decision,omitempty"`
 	DecisionSelectedAt *runtime.ReductionRef         `json:"decision_selected_at,omitempty"`
 	Runs               []*runtime.ExecutionRun       `json:"runs"`
+	Operations         []runtime.Intent              `json:"operations"`
 	Effects            []*runtime.ExecutionEffect    `json:"effects"`
 	Observations       []*runtime.ObservationView    `json:"observations"`
 	Admissions         []*runtime.AdmissionView      `json:"admissions"`
@@ -73,7 +74,8 @@ func buildReport(s *runtime.ExecutionSnapshot, c configuration, variant string) 
 		Outcome: pendingOutcome, Explanation: "The retained plan still has work or a message to receive.",
 		Date: plan.Date, Timezone: c.Timezone, Namespace: s.Namespace, Variant: variant,
 		Configuration: c, Candidates: plan.Candidates, EvidenceGaps: []string{},
-		Runs: s.Runs, Effects: append([]*runtime.ExecutionEffect{}, s.Effects...),
+		Runs: s.Runs, Operations: append([]runtime.Intent{}, s.Operations...),
+		Effects:      append([]*runtime.ExecutionEffect{}, s.Effects...),
 		Observations: append([]*runtime.ObservationView{}, s.Observations...),
 		Admissions:   append([]*runtime.AdmissionView{}, s.Admissions...),
 		Permissions:  s.Permissions, Composition: s.Composition,
@@ -92,8 +94,8 @@ func buildReport(s *runtime.ExecutionSnapshot, c configuration, variant string) 
 		offset = page.Next
 	}
 
-	for i := range s.Operations {
-		op := &s.Operations[i]
+	for i := range r.Operations {
+		op := &r.Operations[i]
 		switch op.Obligation {
 		case proposalPort:
 			r.Proposal = op
