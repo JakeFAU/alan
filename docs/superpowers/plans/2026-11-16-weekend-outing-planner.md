@@ -96,7 +96,10 @@ only for shared transport extraction if needed.
 ### Task 2: Configuration and ordinary retained planning programs
 
 **Files:** Create configuration/protocol/program/deployment and focused tests.
-Do not create a placeholder executable; Task 3 adds the CLI.
+Also add a real minimal `main.go` with `start`, `run`, `resume` and `status`,
+returning the validated runtime snapshot as JSON. Task 3 extends this command
+surface and replaces that initial output with the application report. This
+keeps the intermediate package buildable without a placeholder executable.
 
 **Interfaces:**
 - Consume Task 1 hourly schemas, fields and evidence verifier.
@@ -105,6 +108,10 @@ Do not create a placeholder executable; Task 3 adds the CLI.
   `(c configuration) provision(variant string) (runtime.Provision, error)`,
   `retainedConfiguration(s *runtime.ExecutionSnapshot) (configuration, string, error)`
   and `verifyPlannerEvidence(s *runtime.ExecutionSnapshot, c configuration, variant string) error`.
+- Produce the initial `runCLI(ctx context.Context, args []string, out io.Writer) error`
+  and signal-aware main entry. Start takes `--db`, `--config`, optional
+  `--weather`; other initial commands take `--db`; accept `--json` for the
+  snapshot output. Use the validated owner path before supplying transport.
 - `configuration` retains exported JSON fields `Version`, `ReferenceTime`,
   `Date`, `Timezone`, `Units`, `Endpoint`, `MaxTravelMinutes`,
   `AllowedWeatherCodes []int64`, `Availability []timeWindow`, `Slots []string`,
@@ -153,13 +160,15 @@ Do not create a placeholder executable; Task 3 adds the CLI.
   invalid-only unavailable, mismatched messages, exact final decision selection,
   both variants wiring successfully and different Weather artifact IDs. Test
   unsupported deployment/grant/artifact changes are refused.
+- [ ] Add the initial real CLI commands over the same public APIs and verify
+  `go build -o /private/tmp/alan-outing-core ./examples/outing-planner`.
 - [ ] Run `go test -count=1 ./examples/outing-planner`,
   `go test -race -count=1 ./examples/outing-planner`, and
   `staticcheck ./examples/outing-planner`; record GREEN, review and commit.
 
 ### Task 3: CLI, retained reports and replacement witness
 
-**Files:** Create main/report/replacement/fixture files and their tests; add
+**Files:** Extend main; create report/replacement/fixture files and their tests; add
 initial bounded sample configuration and fixture JSON under testdata.
 
 **Interfaces:**
