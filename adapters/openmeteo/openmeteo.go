@@ -140,8 +140,14 @@ func (a *Adapter) matches(p effects.Prepared) bool {
 }
 
 func (a *Adapter) Execute(ctx context.Context, p effects.Prepared) effects.Candidate {
+	return executeWeather(ctx, p, a.matches(p), observation)
+}
+
+type weatherObservation func(effects.Prepared, string) (map[string]schema.Value, string)
+
+func executeWeather(ctx context.Context, p effects.Prepared, matches bool, observe weatherObservation) effects.Candidate {
 	c := effects.Candidate{ID: p.Request.ID, Key: p.Request.Key, Disposition: "unknown"}
-	if !a.matches(p) {
+	if !matches {
 		c.Disposition = "request_invalid"
 		return c
 	}
@@ -155,7 +161,7 @@ func (a *Adapter) Execute(ctx context.Context, p effects.Prepared) effects.Candi
 	req.Header.Set("Accept-Encoding", "identity")
 	req.Header.Set("User-Agent", "ALAN-weather-agent/1 (+https://github.com/JakeFAU/alan)")
 	req.Header.Set(ClientRequestHeader, ClientRequestID(p.Request.Key))
-	if a.endpoint != DefaultEndpoint {
+	if p.Endpoint != DefaultEndpoint {
 		req.Header.Set(OperationHeader, base64.RawURLEncoding.EncodeToString([]byte(p.Request.ID)))
 	}
 	// RoundTrip cannot follow redirects. A new HTTP/1 transport per operation
@@ -203,7 +209,7 @@ func (a *Adapter) Execute(ctx context.Context, p effects.Prepared) effects.Candi
 		c.Disposition = "protocol_invalid"
 		return c
 	}
-	c.Payload, c.Disposition = observation(p, c.Response)
+	c.Payload, c.Disposition = observe(p, c.Response)
 	return c
 }
 
@@ -225,7 +231,11 @@ func weatherContent(header http.Header) bool {
 // A protocol refusal may therefore have a readable body and unsuitable headers.
 func VerifyResponseEvidence(p effects.Prepared, c effects.Candidate) error {
 	a, err := New(p.Endpoint)
-	if err != nil || !a.matches(p) || c.ID != p.Request.ID || c.Key != p.Request.Key ||
+	return verifyWeatherResponseEvidence(p, c, err == nil && a.matches(p), observation)
+}
+
+func verifyWeatherResponseEvidence(p effects.Prepared, c effects.Candidate, matches bool, observe weatherObservation) error {
+	if !matches || c.ID != p.Request.ID || c.Key != p.Request.Key ||
 		c.HTTPStatus < 200 || c.HTTPStatus > 599 || len(c.Response) > MaxResponseBytes || !utf8.ValidString(c.Response) ||
 		c.Usage != nil || c.RequestID != "" || c.ResponseID != "" || c.ReturnedModel != "" {
 		return errors.New("weather evidence differs from the prepared request or expected response")
@@ -255,7 +265,7 @@ func VerifyResponseEvidence(p effects.Prepared, c effects.Candidate) error {
 	if c.Disposition == "protocol_invalid" {
 		return nil
 	}
-	payload, disposition := observation(p, c.Response)
+	payload, disposition := observe(p, c.Response)
 	if disposition != c.Disposition || !reflect.DeepEqual(payload, c.Payload) {
 		return errors.New("weather fields differ from the retained provider body")
 	}
