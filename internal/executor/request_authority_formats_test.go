@@ -63,26 +63,29 @@ func TestRequestAuthorityFormatsConflictPromotionAndOldReader(t *testing.T) {
 				if old == "" {
 					t.Skip("set ALAN_PHASE3B3_OLD_READER for frozen-reader qualification")
 				}
-				// This is a freshly generated closed Store, not archival evidence. The old
-				// reader receives a disposable complete copy after both owners checkpointed.
-				copied := filepath.Join(t.TempDir(), "old-reader.sqlite")
-				for _, suffix := range []string{"", "-wal", "-shm"} {
-					b, e := os.ReadFile(path + suffix)
-					if errors.Is(e, os.ErrNotExist) && suffix != "" {
-						continue
-					}
-					if e != nil {
-						t.Fatal(e)
-					}
-					if e = os.WriteFile(copied+suffix, b, 0600); e != nil {
-						t.Fatal(e)
-					}
-				}
 				for _, command := range []string{"inspect", "replay"} {
-					out, e := exec.CommandContext(t.Context(), old, command, "--db", copied).CombinedOutput()
-					if e == nil || !strings.Contains(string(out), "unsupported version") {
-						t.Fatalf("old %s exit=%v output=%s", command, e, out)
-					}
+					t.Run(command, func(t *testing.T) {
+						// Each reader receives its own complete copy of the closed Store.
+						copied := filepath.Join(t.TempDir(), "old-reader.sqlite")
+						for _, suffix := range []string{"", "-wal", "-shm"} {
+							data, err := os.ReadFile(path + suffix)
+							if errors.Is(err, os.ErrNotExist) && suffix != "" {
+								continue
+							}
+							if err != nil {
+								t.Fatal(err)
+							}
+							if err := os.WriteFile(copied+suffix, data, 0600); err != nil {
+								t.Fatal(err)
+							}
+						}
+						out, err := exec.CommandContext(t.Context(), old, command, "--db", copied).CombinedOutput()
+						var exitErr *exec.ExitError
+						if !errors.As(err, &exitErr) || exitErr.ExitCode() != 1 || strings.TrimSpace(string(out)) != "unsupported version" {
+							t.Fatalf("old %s exit=%v output=%q, want exit 1 and unsupported version", command, err, out)
+						}
+						t.Logf("old %s exit=%d output=%q", command, exitErr.ExitCode(), out)
+					})
 				}
 			})
 		})

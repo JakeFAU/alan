@@ -34,6 +34,31 @@ immediate-selection model/runtime mismatch.
 | `current-main` | Clean prospective integration with main `76031c34`, including the initial Git-provenance export failure and corrected same-tree qualification; neither branch was merged. |
 | [whole-change-review.md](whole-change-review.md) | Independent specification, quality and overall APPROVE for the bounded Phase 3B.3 slice; explicit unsupported domains and deferred research mutation-CLI diagnostic. |
 
+## Required older-reader check for formats 13 and 14
+
+Run the focused gate from the runtime repository with the candidate committed
+at `HEAD`. It tests committed bytes from a fresh Git archive. The historical
+revision `af6943a5805a9a6c0e8fe77f804264f4765d07ec` must be available locally,
+along with the Go toolchain and dependencies for both builds.
+
+```sh
+evidence_parent=$(mktemp -d /tmp/alan-old-reader.XXXXXX)
+python3 -B docs/qualification/phase3b3/qualify-old-reader.py "$evidence_parent/results"
+```
+
+The gate builds the pinned CLI and checks that it can inspect and replay a
+supported Store it created. The current test creates genuine format 13 and 14
+Stores and checks current-runtime reopen, inspect, and replay. Each historical
+CLI command receives a separate complete copy and must exit 1 with
+`unsupported version`. The gate requires all four command-level pass events.
+Ordinary test runs can still skip the older-reader subtests when
+`ALAN_PHASE3B3_OLD_READER` is unset.
+
+Keep the results directory with the qualification record. It contains source
+commit and tree identities, the historical binary SHA-256 and build info,
+command exits, and raw outputs. `format-rejections.stdout` contains the Go test
+event stream with each historical CLI exit and diagnostic.
+
 ## Extracting and rerunning historical checks
 
 Work in a new scratch directory. Extract archives there, preserving their
