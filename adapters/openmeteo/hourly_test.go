@@ -49,6 +49,7 @@ func hourlyTestAdapter(t *testing.T, endpoint string) (*HourlyAdapter, effects.P
 }
 
 func TestHourlyRequestAndEvidence(t *testing.T) {
+	body := strings.Replace(hourlyFixture, `"weather_code":[0,61]`, `"weather_code":[0,97]`, 1)
 	var contacts atomic.Int32
 	seen := make(chan *http.Request, 1)
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -56,7 +57,7 @@ func TestHourlyRequestAndEvidence(t *testing.T) {
 			seen <- r.Clone(r.Context())
 		}
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		io.WriteString(w, hourlyFixture)
+		io.WriteString(w, body)
 	}))
 	t.Cleanup(srv.Close)
 	a, p := hourlyTestAdapter(t, srv.URL+"/v1/forecast")
@@ -70,7 +71,7 @@ func TestHourlyRequestAndEvidence(t *testing.T) {
 		t.Fatalf("non-deterministic preparation: %+v, %v", again, err)
 	}
 	c := a.Execute(t.Context(), p)
-	if c.Disposition != "validated" || c.ID != p.Request.ID || c.Key != p.Request.Key || c.Response != hourlyFixture ||
+	if c.Disposition != "validated" || c.ID != p.Request.ID || c.Key != p.Request.Key || c.Response != body ||
 		c.HTTPStatus != http.StatusOK || contacts.Load() != 1 {
 		t.Fatalf("unexpected result %+v, contacts %d", c, contacts.Load())
 	}
@@ -84,7 +85,7 @@ func TestHourlyRequestAndEvidence(t *testing.T) {
 	want := map[string]schema.Value{
 		Source: schema.Text("controlled Open-Meteo fixture"), GridLatitude: schema.Text("26.940"), GridLongitude: schema.Text("-80.08"),
 		TemperatureUnit: schema.Text("°F"), StartHour: schema.Text("2026-11-07T23:00:00Z"), EndHour: schema.Text("2026-11-08T00:00:00Z"),
-		StartTemperature: schema.Text("75.40"), EndTemperature: schema.Text("7.2e1"), StartWeatherCode: schema.Int(0), EndWeatherCode: schema.Int(61),
+		StartTemperature: schema.Text("75.40"), EndTemperature: schema.Text("7.2e1"), StartWeatherCode: schema.Int(0), EndWeatherCode: schema.Int(97),
 	}
 	if !reflect.DeepEqual(c.Payload, want) || HourlyOutputSchema().Validate(c.Payload) != nil {
 		t.Fatalf("payload %+v, want %+v", c.Payload, want)
@@ -267,7 +268,7 @@ func TestHourlyWeatherCodeSet(t *testing.T) {
 		51: true, 53: true, 55: true, 56: true, 57: true,
 		61: true, 63: true, 65: true, 66: true, 67: true,
 		71: true, 73: true, 75: true, 77: true, 80: true,
-		81: true, 82: true, 85: true, 86: true, 95: true, 96: true, 99: true,
+		81: true, 82: true, 85: true, 86: true, 95: true, 96: true, 97: true, 99: true,
 	}
 	for i := int64(-1); i <= 100; i++ {
 		if got := ValidWeatherCode(i); got != want[i] {

@@ -316,6 +316,77 @@ func TestPlannerCelsiusOfflineEvidence(t *testing.T) {
 	}
 }
 
+func TestPlannerHeavyThunderstorm(t *testing.T) {
+	for _, tc := range []struct {
+		name, outcome, park, status string
+		allowed                     []int64
+	}{
+		{name: "default policy", outcome: noMatch, status: unsuitable},
+		{name: "explicit policy", outcome: recommended, park: "cedar", status: suitable, allowed: []int64{2, 97}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			server, calls := fixtureServer(t, "97", "97")
+			c := fixtureConfiguration()
+			c.Endpoint = server.URL + "/v1/forecast"
+			c.AllowedWeatherCodes = tc.allowed
+			cut, path := executeFixture(t, c, assessFirst)
+			requireDecision(t, cut, tc.outcome, tc.park)
+
+			server.Close()
+			reopened, retained, variant, err := inspectPlanner(t.Context(), path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			report, err := buildReport(reopened, retained, variant)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if report.Outcome != tc.outcome || report.Assessment == nil {
+				t.Fatalf("offline outcome %q with assessment %v, want %q", report.Outcome, report.Assessment, tc.outcome)
+			}
+			rows, err := report.Assessment.Payload[assessments].Records()
+			if err != nil || len(rows) != len(c.Parks) {
+				t.Fatalf("want an exhaustive assessment, got %v: %v", rows, err)
+			}
+			for _, row := range rows {
+				if row["weather_status"].Text != tc.status {
+					t.Fatalf("assessment for %s = %s, want %s", row["park_id"].Text, row["weather_status"].Text, tc.status)
+				}
+				effect, ok := reopened.Effect(row["forecast_operation"].Text)
+				if !ok || effect.AdapterResult == nil {
+					t.Fatalf("missing retained result for %s", row["park_id"].Text)
+				}
+				result := effect.AdapterResult.Candidate
+				if result.Disposition != "validated" || result.Payload[openmeteo.StartWeatherCode] != schema.Int(97) ||
+					result.Payload[openmeteo.EndWeatherCode] != schema.Int(2) {
+					t.Fatalf("expected validated native samples 97 and 2, got %+v", result)
+				}
+			}
+			if _, err := replayPlanner(t.Context(), path, reopened); err != nil {
+				t.Fatal(err)
+			}
+			if calls.Load() != 2 {
+				t.Fatalf("native contact count %d, want 2", calls.Load())
+			}
+		})
+	}
+}
+
+func TestPlannerWeatherPolicySchemaBound(t *testing.T) {
+	records := make([]map[string]schema.Value, 0, weatherCodes.MaxItems)
+	for code := int64(0); code <= 99; code++ {
+		if openmeteo.ValidWeatherCode(code) {
+			records = append(records, map[string]schema.Value{"code": schema.Int(code)})
+		}
+	}
+	if len(records) != 29 {
+		t.Fatalf("collected %d supported codes, want 29", len(records))
+	}
+	if err := weatherCodes.Validate(schema.List(records...)); err != nil {
+		t.Fatalf("largest allowed-code policy exceeds the retained input schema: %v", err)
+	}
+}
+
 func TestPlannerPartialEvidence(t *testing.T) {
 	for _, tc := range []struct{ later, outcome, park string }{
 		{"2", "recommended", "hemlock"},

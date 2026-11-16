@@ -84,6 +84,46 @@ outside the experiment. The manuscript's reciprocal control-order work is in
 §6.9. Its §§6.18–6.20 concern finite continuation monitors over an unchanged
 plant. [Pinned manuscript at `3dc2754a95d08cf2a688d6a6a970dfed2b2408b5`](https://github.com/JakeFAU/alan-research/blob/3dc2754a95d08cf2a688d6a6a970dfed2b2408b5/paper/alan-dissertation.md#69-reciprocal-obligations-the-phase-3b1-service-boundary)
 
+## Final provider-code review
+
+Independent whole-branch review at `3f78b61118f2c8910a82f8b436044f1f6c3af71a`
+found that the hourly adapter and implementation plan omitted WMO 97 (heavy
+thunderstorm). The omission classified valid hourly responses as unavailable and
+rejected explicit policies containing 97. The correction adds 97 to the supported
+set. The default walking policy allows only codes 0–3. [Open-Meteo forecast API documentation](https://open-meteo.com/en/docs)
+
+```sh
+go test -count=1 -v ./adapters/openmeteo ./examples/outing-planner \
+  -run 'TestHourly(RequestAndEvidence|WeatherCodeSet)$|TestPlanner(HeavyThunderstorm|WeatherPolicySchemaBound)$'
+```
+
+Before the correction this command exited 1. The adapter marked the native-shaped
+HTTP 200 fixture unavailable, the default authored planner returned `unavailable`
+instead of `no_match`, explicit `[2,97]` was rejected, and the code count was 28.
+After the correction the same command exited 0. Under the default policy both
+validated assessments are unsuitable and the planner returns exhaustive
+`no_match`. The explicit policy accepts the same samples and selects Cedar.
+Both cases reopen and replay after the loopback endpoint closes and retain two
+original GETs each. The 29-code policy passes the retained input schema's
+32-item and 2,048-byte limits.
+
+The adapter, current-weather example and planner package tests passed. The
+focused race run passed in 1.286 seconds for the adapter and 121.542 seconds
+for the planner. Scoped Staticcheck and the repository build also passed.
+
+The hourly protocol was unpublished at review. If a pre-correction development
+Store retained an otherwise valid 97 response as unavailable, this revision's
+offline verifier rejects that record when the native body now validates.
+
+The independent reviewer also ran a maximum-input probe at the reviewed commit
+with sixteen eligible candidates and the original 28 codes. Both assess-first
+deployments returned `recommended` with 16 GETs, 2,872 reductions and 19
+dispatches apiece. Both reopened with zero additional reductions or dispatches.
+The probe took about 273.596 seconds. Each Store occupied 111,665,152 bytes and
+the report occupied 4,453,845 bytes. These are uncontrolled observations at the
+reviewed revision. The revised 29-code policy was checked against the input
+schema without rerunning the maximum-input probe.
+
 ## Repository verification
 
 Run from the repository root with the Go cache and loopback fixtures available.

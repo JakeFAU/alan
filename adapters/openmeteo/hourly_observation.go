@@ -12,7 +12,8 @@ import (
 // ValidWeatherCode reports whether code is in Open-Meteo's documented WMO subset.
 func ValidWeatherCode(code int64) bool {
 	switch code {
-	case 0, 1, 2, 3, 45, 48, 51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 71, 73, 75, 77, 80, 81, 82, 85, 86, 95, 96, 99:
+	case 0, 1, 2, 3, 45, 48, 51, 53, 55, 56, 57, 61, 63, 65, 66, 67,
+		71, 73, 75, 77, 80, 81, 82, 85, 86, 95, 96, 97, 99:
 		return true
 	default:
 		return false

@@ -88,7 +88,7 @@ only for shared transport extraction if needed.
   sample time, mismatched array sizes, null values, unsupported WMO codes,
   wrong units/zone/grid, forged successful payload or prepared request,
   redirects, truncated/oversized body and invalid time ranges. Documented WMO
-  codes are `0,1,2,3,45,48,51,53,55,56,57,61,63,65,66,67,71,73,75,77,80,81,82,85,86,95,96,99`.
+  codes are `0,1,2,3,45,48,51,53,55,56,57,61,63,65,66,67,71,73,75,77,80,81,82,85,86,95,96,97,99`.
 - [ ] Run `go test -count=1 ./adapters/openmeteo ./examples/weather-agent`,
   `go test -race -count=1 ./adapters/openmeteo`, and
   `staticcheck ./adapters/openmeteo`; record GREEN, self-review and commit.
