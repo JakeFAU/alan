@@ -81,6 +81,8 @@ Extend, do not relax, the current `retainedConfiguration` and `verifyDeployment`
 
 For delegated mode, validate dynamic membership separately from the initial deployment. Before admission there is no helper. An accepted original invocation has exactly one generation-one member with the prescribed helper artifact and initial data, correct owning invocation/root and exact generated binding/permissions. A refusal has no member or generated grants. Match dynamic IDs through `InvocationView.Admission`, `ExecutionRun.OwningInvocationID`, and binding-derived evidence, never a guessed subject suffix. Require exactly the supported permission union; an arbitrary third run or injected grant is still rejected. All run/operation/effect lists must be fully accounted for, including incomplete and refused operations.
 
+Public snapshot validation covers all exposed referenced artifacts, the template catalogue and the complete runs/grants/operation lists. `ExecutionDeployment` exposes original subjects, runs and permissions but does not enumerate inert unreferenced rows in the raw `programs` table. The independent checker owns that additional raw-table check and must reject an extra unreferenced artifact row against the frozen manifest. Do not claim the application-only public validator enumerates storage that its API does not expose, or add a runtime API solely to blur that boundary.
+
 ## Evidence and causality invariants
 
 Extend application evidence validation in `delegated_evidence.go`, keeping the legacy verifier path unchanged. The new path uses `ExecutionSnapshot` and its original records, not final answer equality.

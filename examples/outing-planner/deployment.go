@@ -18,8 +18,12 @@ var (
 )
 
 func (c configuration) provision(variant string) (runtime.Provision, error) {
-	if variant != assessFirst && variant != confirmFirst {
-		return runtime.Provision{}, fmt.Errorf("unsupported Weather variant %q", variant)
+	return c.provisionDeployment(defaultDeploymentOptions(variant))
+}
+
+func (c configuration) provisionDeployment(options deploymentOptions) (runtime.Provision, error) {
+	if err := options.validate(); err != nil {
+		return runtime.Provision{}, err
 	}
 	plan, err := c.normalize()
 	if err != nil {
@@ -28,14 +32,6 @@ func (c configuration) provision(variant string) (runtime.Provision, error) {
 	raw, err := c.serialized()
 	if err != nil {
 		return runtime.Provision{}, err
-	}
-	outing, err := author.Compile(outingDefinition())
-	if err != nil {
-		return runtime.Provision{}, fmt.Errorf("compile Outing: %w", err)
-	}
-	weather, err := author.Compile(weatherDefinition(variant))
-	if err != nil {
-		return runtime.Provision{}, fmt.Errorf("compile Weather: %w", err)
 	}
 	rows := make([]map[string]schema.Value, 0, len(plan.Candidates))
 	var opportunities int64
@@ -47,6 +43,28 @@ func (c configuration) provision(variant string) (runtime.Provision, error) {
 		if row.Eligible {
 			opportunities++
 		}
+	}
+	if options.Weather == delegatedWeather && opportunities > maxDelegatedCandidates {
+		return runtime.Provision{}, errors.New("delegated Weather supports at most two eligible candidates")
+	}
+	outing, err := author.Compile(outingDefinition())
+	if err != nil {
+		return runtime.Provision{}, fmt.Errorf("compile Outing: %w", err)
+	}
+	var helper author.Template
+	var definition author.Definition
+	if options.Weather == delegatedWeather {
+		helper, err = weatherHelperTemplate()
+		if err != nil {
+			return runtime.Provision{}, fmt.Errorf("retain Weather helper: %w", err)
+		}
+		definition = delegatedWeatherDefinition(helper)
+	} else {
+		definition = weatherDefinition(options.Weather)
+	}
+	weather, err := author.Compile(definition)
+	if err != nil {
+		return runtime.Provision{}, fmt.Errorf("compile Weather: %w", err)
 	}
 	codes := make([]map[string]schema.Value, 0, len(c.allowedCodes()))
 	for _, code := range c.allowedCodes() {
@@ -71,58 +89,43 @@ func (c configuration) provision(variant string) (runtime.Provision, error) {
 	if err != nil {
 		return runtime.Provision{}, err
 	}
-	p.Composition = &runtime.CompositionProvision{
-		RecordDispatchAdmissions: true,
-		Roots: []runtime.ResourceRoot{
-			{Run: outingRun, Members: []runtime.RunID{outingRun}, Limits: runtime.ResourceLimits{MaxInFlight: 1}},
-			{
-				Run: weatherRun, Members: []runtime.RunID{weatherRun}, Capabilities: []string{capability},
-				Limits: runtime.ResourceLimits{MaxInFlight: 1, MaxEffects: opportunities},
-			},
-		},
+	if p.Composition == nil {
+		p.Composition = &runtime.CompositionProvision{}
+	}
+	p.Composition.RecordDispatchAdmissions = true
+	root := runtime.ResourceRoot{
+		Run: weatherRun, Members: []runtime.RunID{weatherRun}, Capabilities: []string{capability},
+		Limits: runtime.ResourceLimits{MaxInFlight: 1, MaxEffects: opportunities},
+	}
+	if options.Weather == delegatedWeather {
+		root.Templates = []string{helper.ID()}
+		root.Limits.MaxInvocations = options.HelperAdmission
+		root.Limits.MaxCreatedRuns = 1
+		root.Limits.MaxDepth = 1
+	}
+	p.Composition.Roots = []runtime.ResourceRoot{
+		{Run: outingRun, Members: []runtime.RunID{outingRun}, Limits: runtime.ResourceLimits{MaxInFlight: 1}},
+		root,
 	}
 	return p, nil
 }
 
-// retainedConfiguration reauthors the exact supported deployment before a
-// process can accept evidence or supply transport. InspectExecution has already
-// verified the content-addressed artifacts and the namespace-bound root IDs.
 func retainedConfiguration(s *runtime.ExecutionSnapshot) (configuration, string, error) {
-	if s == nil || s.Deployment == nil || s.Composition == nil || !s.Composition.RecordDispatchAdmissions ||
-		s.Composition.RequestAuthority != "" || len(s.Composition.Templates) != 0 ||
-		len(s.Composition.Continuations) != 0 || s.Reconciliation != nil || len(s.Assets) != 0 ||
-		len(s.Invocations) != 0 || len(s.LifecycleDecisions) != 0 {
-		return configuration{}, "", errors.New("expected the original static outing deployment")
-	}
-	outing, ok := s.Run(outingRun)
-	if !ok {
-		return configuration{}, "", errors.New("missing original Outing generation")
-	}
-	c, err := decodeConfiguration([]byte(outing.Initial.Data[configInput].Text))
-	if err != nil {
-		return c, "", err
-	}
-	weather, ok := s.Run(weatherRun)
-	if !ok {
-		return c, "", errors.New("missing original Weather generation")
-	}
-	for _, variant := range []string{assessFirst, confirmFirst} {
-		want, err := c.provision(variant)
-		if err != nil {
-			return c, "", fmt.Errorf("invalid retained outing configuration: %w", err)
-		}
-		if weather.ProgramID == want.Runs[1].ProgramID {
-			return c, variant, verifyDeployment(s, want)
-		}
-	}
-	return c, "", errors.New("unsupported retained Weather artifact")
+	info, err := retainedDeployment(s)
+	return info.Configuration, info.Options.Weather, err
 }
 
 func verifyDeployment(s *runtime.ExecutionSnapshot, want runtime.Provision) error {
+	if len(s.Runs) != len(want.Runs) || !samePermissions(s.Permissions, want.Permissions) {
+		return errors.New("retained outing programs, inputs or grants differ")
+	}
+	return verifyInitialDeployment(s, want)
+}
+
+func verifyInitialDeployment(s *runtime.ExecutionSnapshot, want runtime.Provision) error {
 	d := s.Deployment
 	if !slices.Equal(d.Subjects, want.Subjects) || !reflect.DeepEqual(d.Runs, want.Runs) ||
-		!slices.Equal(d.Permissions, want.Permissions) || !samePermissions(s.Permissions, want.Permissions) ||
-		len(s.Runs) != len(want.Runs) || len(s.Composition.Roots) != len(want.Composition.Roots) {
+		!slices.Equal(d.Permissions, want.Permissions) || len(s.Composition.Roots) != len(want.Composition.Roots) {
 		return errors.New("retained outing programs, inputs or grants differ")
 	}
 	for i, expected := range want.Composition.Roots {
@@ -138,7 +141,7 @@ func verifyDeployment(s *runtime.ExecutionSnapshot, want runtime.Provision) erro
 			r.Subject != want.Subjects[i] || r.ProgramID != want.Runs[i].ProgramID ||
 			!reflect.DeepEqual(r.Initial, want.Runs[i].Projection) ||
 			!slices.Equal(root.Members, expected.Members) || !slices.Equal(root.Capabilities, expected.Capabilities) ||
-			len(root.Templates) != 0 || root.Limits != expected.Limits {
+			!slices.Equal(root.Templates, expected.Templates) || root.Limits != expected.Limits {
 			return errors.New("retained outing resource scope differs")
 		}
 	}
