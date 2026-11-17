@@ -850,6 +850,227 @@ class Evidence:
         for row in self.tables['composition_facts']:
             self.cover('composition_facts', row, 'exact source digest and globally ordered fact')
 
+    def operand(self, operand, data):
+        require(operand['Offset'] is None, 'unsupported continuation operand offset')
+        result = data.get(operand['Ref']) if operand['Ref'] else operand['Literal']
+        require(result is not None, 'unresolved continuation operand: ' + operand['Ref'])
+        return result
+
+    def receive_match(self, subject, projection, instruction):
+        match = instruction['Match']
+        result = {'Kind': match['Kind'], 'Provenance': match['Provenance']}
+        for source, target, kind, field in (('Source', 'Source', 'string', 'Text'), ('Generation', 'SourceGeneration', 'int', 'Number'),
+                ('Obligation', 'Obligation', 'string', 'Text'), ('Operation', 'Operation', 'string', 'Text')):
+            resolved = self.operand(match[source], projection['Data'])
+            require(resolved['Kind'] == kind, 'receive operand kind: ' + source)
+            result[target] = resolved[field]
+        if self.actors[subject] == 'helper' and result['Kind'] == 'message' and result['Source'] == 'caller':
+            result.update(Source='weather', Provenance='runtime-invocation-request', Operation=self.call['ID'])
+        return result
+
+    def historical_receives(self):
+        for observation_id, (subject, sequence) in self.selected.items():
+            before = decoded(self.runs[subject]['initial']) if sequence == 1 else decoded(self.history[(subject, sequence - 1)]['successor'])
+            instruction = self.programs[self.runs[subject]['program_id']]['Code'][before['PC']]
+            require(instruction['Op'] == 'receive', 'historical selected receive boundary')
+            match = self.receive_match(subject, before, instruction)
+            observation = self.observations[observation_id]
+            require(observation['Run'] == run_id(subject) and all(observation[k] == v for k, v in match.items()),
+                    'historical receive exact match/original correlation: ' + subject + ':' + str(sequence))
+
+    def next_boundary(self, subject, projection):
+        """Walk only the declared pure opcode subset, stopping before any event.
+
+        This resolves the current continuation, not a general VM replay or proof
+        of historical pure data updates. Bounds and unsupported opcodes fail closed.
+        """
+        import copy
+        current = copy.deepcopy(projection)
+        program = self.programs[self.runs[subject]['program_id']]['Code']
+        pure_path = []
+        for _ in range(4096):
+            pc, data = current['PC'], current['Data']
+            require(current['Status'] == 'open' and type(pc) is int and 0 <= pc < len(program), 'continuation program counter/status')
+            instruction = program[pc]
+            op = instruction['Op']
+            if op == 'receive':
+                return dict(boundary='receive', **self.receive_match(subject, current, instruction)), pure_path
+            if op == 'end':
+                return {'boundary': 'end', 'status': instruction['Outcome']}, pure_path
+            if op == 'emit':
+                effect = instruction['Effect']
+                resolved = {field: self.operand(effect[field], data) for field in ('Target', 'Generation', 'Obligation')}
+                require(all(resolved[field]['Kind'] == kind for field, kind in (('Target', 'string'), ('Generation', 'int'), ('Obligation', 'string'))),
+                        'continuation emit operand kinds')
+                target = resolved['Target']['Text']
+                if self.actors[subject] == 'helper' and target == 'caller':
+                    target = 'weather'
+                return {'boundary': 'emit', 'Kind': effect['Kind'], 'Target': target,
+                    'Generation': resolved['Generation']['Number'], 'Obligation': resolved['Obligation']['Text'],
+                    'Payload': {k: self.operand(v, data) for k, v in effect['Payload'].items()}}, pure_path
+            pure_path.append(pc)
+            current['PC'] = pc + 1
+            cursors = current.setdefault('Cursors', {})
+            if op == 'set':
+                data[instruction['Dst']] = copy.deepcopy(self.operand(instruction['A'], data))
+            elif op == 'branch':
+                equal = self.operand(instruction['A'], data) == self.operand(instruction['B'], data)
+                current['PC'] = instruction['Target'] if equal else instruction['Otherwise']
+            elif op == 'jump':
+                current['PC'] = instruction['Target']
+            elif op == 'foreach':
+                snapshot = self.operand(instruction['A'], data)
+                require(snapshot['Kind'] == 'list', 'continuation foreach list')
+                cursors[str(pc)] = {'Snapshot': copy.deepcopy(snapshot), 'Index': 0}
+            elif op in ('next', 'loop'):
+                key = str(instruction['Target'])
+                require(key in cursors, 'continuation durable cursor')
+                cursor = cursors[key]
+                rows = cursor['Snapshot']['List']
+                require(type(cursor['Index']) is int and 0 <= cursor['Index'] <= len(rows), 'continuation cursor index')
+                if op == 'loop':
+                    current['PC'] = instruction['Target'] + 1
+                elif cursor['Index'] == len(rows):
+                    current['PC'] = program[instruction['Target']]['Otherwise']
+                    del cursors[key]
+                else:
+                    data.update({destination: copy.deepcopy(rows[cursor['Index']][field]) for field, destination in instruction['Bind'].items()})
+                    cursor['Index'] += 1
+            elif op == 'append':
+                collection = data[instruction['Dst']]
+                require(collection['Kind'] == 'list', 'continuation append list')
+                collection['List'].append({field: copy.deepcopy(self.operand(operand, data)) for field, operand in instruction['Updates'].items()})
+            else:
+                require(False, 'unsupported pure continuation opcode: ' + op)
+            current['Cursors'] = {k: v for k, v in cursors.items() if int(k) < current['PC'] < program[int(k)]['Otherwise']}
+        require(False, 'bounded pure continuation exceeded')
+
+    def expected_boundary(self, config, state, actor):
+        position = getattr(state, actor)
+        def receive(kind, provenance, source, obligation, operation=''):
+            return {'boundary': 'receive', 'Kind': kind, 'Provenance': provenance, 'Source': source, 'SourceGeneration': 1, 'Obligation': obligation, 'Operation': operation}
+        def emit(kind, target, obligation, payload):
+            return {'boundary': 'emit', 'Kind': kind, 'Target': target, 'Generation': 1, 'Obligation': obligation, 'Payload': payload}
+        def message(name):
+            if name == 'proposal':
+                return emit('message', 'weather', 'outing-proposal', {'candidates': value(self.candidates), 'proposal_id': self.proposal_id})
+            if name == 'decision':
+                outcome, selected = MODEL['policy'](self.outcomes)
+                assessments = self.response['assessments']['List']
+                return emit('message', 'weather', 'outing-decision', {'candidates': value(self.candidates), 'proposal_id': self.proposal_id,
+                    'outcome': value(outcome), 'selection': value([assessments[selected]] if selected >= 0 else [])})
+            return emit('message', 'weather' if name == 'reply' else 'outing', 'assess' if name == 'reply' else 'outing-assessment', self.response)
+        if position in ('ready_end', 'ready_fail'):
+            status = 'succeeded' if actor == 'helper' else 'failed' if position == 'ready_fail' or MODEL['policy'](self.outcomes)[0] == 'unavailable' else 'succeeded'
+            return {'boundary': 'end', 'status': status}
+        if actor == 'outing':
+            if position == 'start':
+                return message('proposal')
+            if position == 'ready_decision':
+                return message('decision')
+            if position == 'await_assessment':
+                return receive('message', 'ordinary-message', 'weather', 'outing-assessment')
+        elif actor == 'weather':
+            if position == 'await_proposal':
+                return receive('message', 'ordinary-message', 'outing', 'outing-proposal')
+            if position in ('await_decision', 'await_decision_first'):
+                return receive('message', 'ordinary-message', 'outing', 'outing-decision')
+            if position == 'await_helper':
+                return receive('invocation', 'runtime-invocation', self.templates[0]['ID'], 'assess', self.call['ID'])
+            if position == 'ready_assessment':
+                return message('assessment')
+            if position == 'work' and config.variant == 'delegated':
+                return emit('invocation', self.templates[0]['ID'], 'assess', {'allowed_weather_codes': self.weather_data['allowed_weather_codes'],
+                    'candidates': value(self.candidates), 'proposal_id': self.proposal_id, 'units': self.weather_data['units']})
+        elif position == 'await_request':
+            return receive('message', 'runtime-invocation-request', 'weather', 'assess', self.call['ID'])
+        if position == 'work':
+            pending = next((f for f in state.forecasts if f.stage < 7), None)
+            if pending is None:
+                return message('reply' if actor == 'helper' else 'assessment')
+            if pending.stage:
+                original = next(op for op, symbol in self.symbols.items() if symbol == pending.operation)
+                return receive('adapter', 'runtime-adapter', 'open-meteo-hourly', 'forecast', original)
+            candidate = self.candidates[pending.candidate]
+            return emit('adapter', 'open-meteo-hourly', 'forecast', dict({k: candidate[k] for k in ('end_hour', 'latitude', 'longitude', 'start_hour')}, units=self.weather_data['units']))
+        require(False, 'unsupported concrete/model continuation: ' + actor + ':' + position)
+
+    def final_continuations(self, config, state):
+        relation = {}
+        for subject, actor in self.actors.items():
+            projection = decoded(self.runs[subject]['projection'])
+            position = getattr(state, actor)
+            if projection['Status'] != 'open':
+                require(projection['Status'] == position, 'concrete final status/model mismatch')
+                relation[subject] = {'model_position': position, 'status': position}
+                continue
+            try:
+                actual, pure_path = self.next_boundary(subject, projection)
+                expected = self.expected_boundary(config, state, actor)
+                require(actual == expected, 'resolved boundary differs: ' + json.dumps({'actual': actual, 'expected': expected}, sort_keys=True))
+            except (InvariantError, KeyError, TypeError, IndexError) as error:
+                raise InvariantError('concrete final continuation/model boundary: ' + subject + ':' + position + ': ' + str(error)) from error
+            relation[subject] = {'model_position': position, 'retained_pc': projection['PC'], 'pure_pc_path': pure_path, 'next_boundary': actual}
+        return relation
+
+    def concrete_debts(self):
+        """Derive the protocol debt ledger from raw originals, independently of State."""
+        debt = []
+        acknowledgments = {r['intent_id'] for r in self.tables['message_acknowledgments']}
+        selected_operations = {o['Operation'] for o in self.observations.values() if o['ID'] in self.selected}
+        selected_messages = {r['id'] for r in self.tables['admissions'] if r['observation_id'] in self.selected}
+        selected_symbols = set()
+        for intent in self.intents.values():
+            if intent['Kind'] != 'message':
+                continue
+            operation, symbol = intent['ID'], self.symbols[intent['ID']]
+            admission = self.message_admissions.get(operation)
+            if operation not in self.auth:
+                debt.append(symbol + ':authorization')
+            if not admission:
+                debt.append(symbol + ':admission')
+            if operation not in acknowledgments:
+                debt.append(symbol + ':acknowledgment')
+            if symbol == 'message:helper:reply':
+                if not admission:
+                    debt.append(symbol + ':recorded_reply')
+            elif admission and admission['id'] in selected_messages:
+                selected_symbols.add(symbol)
+            else:
+                debt.append(symbol + ':selection')
+        if self.call:
+            if not self.admission:
+                debt.append(MODEL['CALL'] + ':admission')
+            if not self.tables['composition_publications']:
+                debt.append(MODEL['CALL'] + ':publication_delivery')
+            outcome = self.tables['composition_outcome_deliveries']
+            if not outcome or outcome[0]['observation_id'] not in self.selected:
+                debt.append(MODEL['CALL'] + ':selection')
+            if self.member and self.tables['composition_requests'][0]['observation_id'] not in self.selected:
+                debt.append(MODEL['CALL'] + ':request_selection')
+        dispatches = {r['intent_id'] for r in self.tables['adapter_dispatch_admissions']}
+        settlements = {r['intent_id'] for r in self.tables['settlements']}
+        for intent in self.forecasts:
+            op, symbol = intent['ID'], self.symbols[intent['ID']]
+            next_stage = ('authorize' if op not in self.auth else 'reserve' if op not in self.adapter_attempts else 'dispatch' if op not in dispatches
+                else 'result' if op not in self.adapter_results else 'settle' if op not in settlements else 'select' if op not in selected_operations else '')
+            if next_stage:
+                debt.append(symbol + ':' + next_stage)
+        if self.variant != 'confirm-first' and not (self.admission and not self.member):
+            debt += ['candidate:' + str(index) + ':forecast' for index in range(len(self.forecasts), len(self.candidates))]
+        if 'message:weather:assessment' not in selected_symbols:
+            debt.append('outing:assessment_receive')
+        if 'message:outing:decision' not in selected_symbols:
+            debt.append('weather:decision_receive')
+        for subject, actor in self.actors.items():
+            if decoded(self.runs[subject]['projection'])['Status'] == 'open':
+                debt.append(actor + ':local_end')
+        published = {r['root_id'] for r in self.tables['composition_root_publications']}
+        for actor, root in self.roots.items():
+            if root['ID'] not in published:
+                debt.append('root:' + actor + ':publication')
+        return tuple(sorted(debt))
+
     def correspondence(self):
         """Find a compatible model placement, without fabricating a total chronology."""
         from dataclasses import asdict
@@ -890,10 +1111,9 @@ class Evidence:
         require(matched is not None, 'no legal partial-order model path; witness=' + json.dumps(witness, sort_keys=True))
         self.state, path = matched
         MODEL['validate_state'](config, self.state)
-        for subject, actor in self.actors.items():
-            raw_status = decoded(self.runs[subject]['projection'])['Status']
-            symbolic = getattr(self.state, actor)
-            require(raw_status == (symbolic if symbolic in ('succeeded', 'failed') else 'open'), 'concrete final status/model mismatch')
+        continuations = self.final_continuations(config, self.state)
+        concrete_debts = self.concrete_debts()
+        require(concrete_debts == MODEL['debts'](config, self.state), 'concrete final debt/model ledger')
         for table, rows in self.tables.items():
             require(len(self.coverage[table]) == len(rows), 'unclassified raw rows: ' + table)
             for item in self.raw['inventory'][table]['rows']:
@@ -915,6 +1135,7 @@ class Evidence:
             'events': [dict(event=asdict(e['event']), fact_order=e['order'], after_fact=e['after'], before_fact=e['before']) for e in events],
             'compatible_model_placement': path, 'placement_claim': 'One legal partial-order placement, not an observed total chronology.',
             'inventory': self.raw['inventory'], 'preclose_authorization': authorization,
+            'final_continuations': continuations, 'concrete_debts': concrete_debts,
             'decision_sole_pending_at_commit': 'not established without separately captured decision-commit cut',
             'endpoint_contact': 'not established; raw dispatch gates do not prove transport contact',
             'unknown_result': 'Missing durable result is an epistemic gap. A selected no-later-result/no-retry continuation requires an explicit environment alternative.',
@@ -1131,7 +1352,7 @@ def check_store(store, configuration, fixture, manifest, report=None):
     source_paths = {'configuration': pathlib.Path(configuration), 'fixture': pathlib.Path(fixture), 'manifest': pathlib.Path(manifest)}
     inputs = {name: path.read_bytes() for name, path in source_paths.items()}
     evidence = Evidence(read_raw_store(store), inputs['configuration'], decoded(inputs['fixture']), decoded(inputs['manifest']))
-    for stage in ('static', 'histories', 'index_facts', 'bind_operations', 'fixture_outcomes', 'payloads', 'authorizations', 'request', 'messages', 'adapters', 'terminals', 'validate_facts'):
+    for stage in ('static', 'histories', 'index_facts', 'bind_operations', 'historical_receives', 'fixture_outcomes', 'payloads', 'authorizations', 'request', 'messages', 'adapters', 'terminals', 'validate_facts'):
         getattr(evidence, stage)()
     result = evidence.correspondence()
     result['inputs'] = {name: {'path': str(source_paths[name].resolve()), 'sha256': hashlib.sha256(raw).hexdigest()} for name, raw in inputs.items()}

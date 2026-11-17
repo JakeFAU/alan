@@ -63,6 +63,19 @@ class RawInventoryTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, 'must be fresh'):
                     capture_store(source, target)
 
+    def test_continuation_walk_fails_closed_without_mutating_projection(self):
+        evidence = model.Evidence.__new__(model.Evidence)
+        evidence.runs = {'weather': {'program_id': 'fixed'}}
+        projection = {'PC': 0, 'Data': {}, 'Status': 'open'}
+        for instruction, invariant in (({'Op': 'jump', 'Target': 0}, 'bounded pure continuation exceeded'),
+                ({'Op': 'unrecognized'}, 'unsupported pure continuation opcode'),
+                ({'Op': 'set', 'Dst': 'x', 'A': {'Ref': 'missing', 'Literal': None, 'Offset': None}}, 'unresolved continuation operand')):
+            evidence.programs = {'fixed': {'Code': [instruction]}}
+            before = json.dumps(projection, sort_keys=True)
+            with self.assertRaisesRegex(model.InvariantError, invariant):
+                evidence.next_boundary('weather', projection)
+            self.assertEqual(json.dumps(projection, sort_keys=True), before)
+
 
 
 @unittest.skipUnless(os.environ.get('OUTING_RAW_FIXTURE'), 'Go capture directory not supplied')
@@ -271,6 +284,96 @@ class PendingReportControls(unittest.TestCase):
                     invariant = 'report pending identity coverage'
                 with self.assertRaisesRegex(model.InvariantError, invariant):
                     check(altered)
+
+
+@unittest.skipUnless(os.environ.get('OUTING_RAW_CUTS'), 'captured cut campaign not supplied')
+class ContinuationControls(unittest.TestCase):
+    def fixture(self, pattern):
+        matches = list(pathlib.Path(os.environ['OUTING_RAW_CUTS']).glob(pattern))
+        self.assertEqual(len(matches), 1)
+        return matches[0]
+
+    def change_successor(self, db, subject, sequence, change):
+        row = db.execute('SELECT epoch,source_revision,selected_observation,successor,intents FROM history WHERE subject=? AND sequence=?', (subject, sequence)).fetchone()
+        successor = json.loads(row[3])
+        change(successor)
+        db.execute('UPDATE history SET successor=? WHERE subject=? AND sequence=?', (model.go_json(successor), subject, sequence))
+        db.execute('UPDATE runs SET projection=? WHERE subject=? AND sequence=?', (model.go_json(successor), subject, sequence))
+        history = {'Run': model.run_id(subject), 'Sequence': sequence, 'Epoch': row[0], 'Revision': row[1], 'Selected': row[2] or '', 'Successor': successor, 'Intents': json.loads(row[4])}
+        for order, raw in db.execute("SELECT decision_order,descriptor FROM composition_facts WHERE kind='execution'").fetchall():
+            fact = json.loads(raw)
+            if fact['Run']['Subject'] == subject and fact['Sequence'] == sequence:
+                fact['RecordDigest'] = model.identity('alan/history-row/v1', history)
+                db.execute('UPDATE composition_facts SET descriptor=? WHERE decision_order=?', (model.go_json(fact), order))
+
+    def test_raw_wrong_continuation_and_historical_correlation(self):
+        import hashlib
+        for name in ('wrong_wait', 'wrong_pure_position', 'wrong_correlation', 'historical_correlation'):
+            with self.subTest(name=name):
+                pattern = 'TestDelegatedRawModel-two-*' if name == 'historical_correlation' else 'TestDelegatedRawCuts-second_forecast-*' if name == 'wrong_correlation' else 'TestDelegatedRawCuts-decision-*'
+                root = self.fixture(pattern)
+                original = root / ('candidate.db' if name == 'historical_correlation' else 'cut.db')
+                digest = hashlib.sha256(original.read_bytes()).hexdigest()
+                archive = pathlib.Path(os.environ.get('OUTING_MUTATION_DIR', tempfile.gettempdir()))
+                archive.mkdir(parents=True, exist_ok=True)
+                target = pathlib.Path(tempfile.mkdtemp(prefix=name + '-', dir=str(archive))) / 'mutation.db'
+                capture_store(original, target)
+                with sqlite3.connect(str(target)) as db:
+                    subject = 'weather' if name in ('wrong_wait', 'wrong_pure_position') else db.execute("SELECT subject FROM runs WHERE subject NOT IN ('outing','weather')").fetchone()[0]
+                    sequence = db.execute('SELECT sequence FROM runs WHERE subject=?', (subject,)).fetchone()[0]
+                    if name == 'historical_correlation':
+                        sequence = db.execute("SELECT MIN(sequence)-1 FROM history WHERE subject=? AND selected_observation LIKE '%adapter%'", (subject,)).fetchone()[0]
+                    if name in ('wrong_wait', 'wrong_pure_position'):
+                        change = lambda p: p.update(PC=4 if name == 'wrong_wait' else 37)
+                    else:
+                        forecasts = [json.loads(r[0]) for r in db.execute('SELECT descriptor FROM intents') if json.loads(r[0])['Kind'] == 'adapter']
+                        forecasts.sort(key=lambda i: i['Sequence'])
+                        wrong = forecasts[1 if name == 'historical_correlation' else 0]['ID']
+                        change = lambda p: p['Data'].update(original_forecast=model.value(wrong))
+                    self.change_successor(db, subject, sequence, change)
+                    db.commit()
+                invariant = 'historical receive exact match/original correlation' if name == 'historical_correlation' else 'concrete final continuation/model boundary'
+                # No optional application report: raw state must determine rejection.
+                import subprocess
+                output = target.with_suffix('.check.json')
+                command = [sys.executable, '-I', '-B', str(SOURCE.with_name('run.py')), 'check', '--store', str(target),
+                    '--configuration', str(root / 'derived-configuration.json'), '--fixture', str(root / 'fixture.json'),
+                    '--manifest', str(root / 'deployment-manifest.json'), '--output', str(output)]
+                result = subprocess.run(command, capture_output=True, text=True)
+                self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+                checked = json.loads(output.read_bytes())
+                self.assertFalse(checked['accepted'])
+                self.assertIn(invariant, checked['invariant'])
+                self.assertEqual(hashlib.sha256(original.read_bytes()).hexdigest(), digest)
+                target.with_suffix('.mutation.json').write_text(json.dumps({'control': name, 'original_sha256': digest, 'command': command,
+                    'exit': result.returncode, 'actual': checked['invariant'], 'execution': checked['execution']}, indent=2) + '\n')
+
+    def test_pure_continuations_match_retained_next_boundaries(self):
+        positions, visited_ops = 0, set()
+        for scenario in ('empty', 'one', 'two', 'unavailable', 'refused', 'refused_one', 'refused_empty'):
+            root = self.fixture('TestDelegatedRawModel-' + scenario + '-*')
+            for role in ('baseline', 'candidate'):
+                evidence = model.Evidence(model.read_raw_store(root / (role + '.db')), (root / 'derived-configuration.json').read_bytes(),
+                    json.loads((root / 'fixture.json').read_bytes()), json.loads((root / 'deployment-manifest.json').read_bytes()))
+                for stage in ('static', 'histories', 'index_facts', 'bind_operations', 'historical_receives'):
+                    getattr(evidence, stage)()
+                for subject, run in evidence.runs.items():
+                    rows = [evidence.history[(subject, seq)] for seq in range(1, run['sequence'] + 1)]
+                    before = [json.loads(run['initial'])] + [json.loads(row['successor']) for row in rows]
+                    for index, projection in enumerate(before[:-1]):
+                        future = next((i for i in range(index, len(rows)) if rows[i]['selected_observation'] or json.loads(rows[i]['intents']) or json.loads(rows[i]['successor'])['Status'] != 'open'), None)
+                        if future is None:
+                            continue
+                        unchanged = json.dumps(projection, sort_keys=True)
+                        actual, path = evidence.next_boundary(subject, projection)
+                        expected, no_pure_steps = evidence.next_boundary(subject, before[future])
+                        self.assertEqual(no_pure_steps, [])
+                        self.assertEqual(actual, expected, (scenario, role, subject, index, path))
+                        self.assertEqual(json.dumps(projection, sort_keys=True), unchanged)
+                        visited_ops.update(evidence.programs[run['program_id']]['Code'][pc]['Op'] for pc in path)
+                        positions += 1
+        self.assertGreater(positions, 1000)
+        self.assertEqual(visited_ops, {'set', 'branch', 'jump', 'foreach', 'next', 'loop', 'append'})
 
 
 def capture_store(source_path, destination):
