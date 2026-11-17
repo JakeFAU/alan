@@ -646,15 +646,36 @@ def main(argv=None):
     commands = parser.add_subparsers(dest="command", required=True)
     enumeration = commands.add_parser("enumerate")
     enumeration.add_argument("--output", required=True)
+    for command in ("check", "compare"):
+        evidence = commands.add_parser(command)
+        if command == "check":
+            evidence.add_argument("--store", required=True)
+            evidence.add_argument("--report")
+        else:
+            evidence.add_argument("--baseline", required=True)
+            evidence.add_argument("--candidate", required=True)
+            evidence.add_argument("--replacement")
+        for name in ("configuration", "fixture", "manifest", "output"):
+            evidence.add_argument("--" + name, required=True)
     args = parser.parse_args(argv)
     if "EXECUTION_PROVENANCE" not in globals():
         parser.error("execute through run.py with isolated Python; unbound source execution is unsupported")
-    result = enumerate_models()
+    try:
+        if args.command == "enumerate":
+            result = enumerate_models()
+        elif args.command == "check":
+            result = EVIDENCE_API["check_store"](args.store, args.configuration, args.fixture, args.manifest, args.report)
+        else:
+            result = EVIDENCE_API["compare_stores"](args.baseline, args.candidate, args.configuration, args.fixture, args.manifest, args.replacement)
+    except (InvariantError, ValueError, KeyError, sqlite3.Error) as error:
+        result = {"accepted": False, "invariant": str(error)}
     result["execution"] = dict(EXECUTION_PROVENANCE, python=platform.python_version(), sqlite=sqlite3.sqlite_version)
     with open(args.output, "w", encoding="utf-8") as target:
         json.dump(result, target, indent=2, sort_keys=True)
         target.write("\n")
-    print(json.dumps(result["totals"], sort_keys=True))
+    print(json.dumps(result.get("totals", {k: result[k] for k in ("accepted", "classification", "invariant") if k in result}), sort_keys=True))
+    if result.get("accepted") is False:
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":

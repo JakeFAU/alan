@@ -244,31 +244,51 @@ class ProtocolTests(unittest.TestCase):
 
 
 class LauncherTests(unittest.TestCase):
-    def test_exact_captured_bytes_execute_after_path_changes(self):
+    def test_exact_captured_bytes_execute_after_both_paths_change(self):
         launcher = load_source(SOURCE.with_name("run.py"))
         with tempfile.TemporaryDirectory() as directory:
-            path = pathlib.Path(directory) / "subject.py"
             output = pathlib.Path(directory) / "result.json"
-            captured = ("import json\nfrom pathlib import Path\nPath(" + repr(str(output)) + ").write_text(json.dumps(EXECUTION_PROVENANCE))\n").encode()
-            path.write_text("raise RuntimeError('path was reread')\n")
-            launcher.execute_source(captured, path, b"launcher bytes", ["test-command"])
+            paths = {name: pathlib.Path(directory) / name for name in launcher.SOURCES}
+            captured = {
+                "check.py": ("import json\nfrom pathlib import Path\ndef main():\n    Path(" + repr(str(output)) + ").write_text(json.dumps(dict(EXECUTION_PROVENANCE, marker=EVIDENCE_API['marker'])))\n").encode(),
+                "evidence.py": b"marker = 'captured evidence'\n",
+            }
+            for path in paths.values():
+                path.write_text("raise RuntimeError('path was reread')\n")
+            launcher.execute_sources(captured, paths, b"launcher bytes", ["test-command"])
             import json
             result = json.loads(output.read_text())
-            self.assertEqual(result["source_sha256"], hashlib.sha256(captured).hexdigest())
+            self.assertEqual(result["marker"], "captured evidence")
+            hashes = {name: hashlib.sha256(raw).hexdigest() for name, raw in captured.items()}
+            self.assertEqual(result["source_files"], hashes)
+            self.assertEqual(result["source_sha256"], hashes["check.py"])
+            identity = b"outing-source-set/v1\x00" + json.dumps(hashes, sort_keys=True, separators=(",", ":")).encode()
+            self.assertEqual(result["source_set_sha256"], hashlib.sha256(identity).hexdigest())
             self.assertEqual(result["launcher_sha256"], hashlib.sha256(b"launcher bytes").hexdigest())
+
+    def test_missing_or_unexpected_executable_source_rejects(self):
+        launcher = load_source(SOURCE.with_name("run.py"))
+        for names in (("check.py",), ("check.py", "evidence.py", "extra.py")):
+            with self.subTest(names=names), self.assertRaisesRegex(ValueError, "exact declared executable source set"):
+                launcher.execute_sources({n: b"raise RuntimeError('must not execute')" for n in names}, {n: pathlib.Path(n) for n in names}, b"launcher", [])
 
     def test_isolated_launcher_main_uses_supported_interpreter_api(self):
         with tempfile.TemporaryDirectory() as directory:
             launcher = pathlib.Path(directory) / "run.py"
             launcher.write_bytes(SOURCE.with_name("run.py").read_bytes())
-            source = b"import json\nprint(json.dumps(EXECUTION_PROVENANCE))\n"
+            source = b"import json\ndef main():\n    print(json.dumps(EXECUTION_PROVENANCE))\n"
             launcher.with_name("check.py").write_bytes(source)
+            launcher.with_name("evidence.py").write_bytes(b"pass\n")
             result = subprocess.run([sys.executable, "-I", "-B", str(launcher)], capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stderr)
             import json
             provenance = json.loads(result.stdout)
             self.assertEqual(provenance["source_sha256"], hashlib.sha256(source).hexdigest())
+            self.assertEqual(set(provenance["source_files"]), {"check.py", "evidence.py"})
             self.assertTrue(provenance["isolated"] and provenance["bytecode_disabled"])
+            launcher.with_name("evidence.py").unlink()
+            missing = subprocess.run([sys.executable, "-I", "-B", str(launcher)], capture_output=True, text=True)
+            self.assertNotEqual(missing.returncode, 0)
 
     def test_unsupported_cli_and_nonisolated_execution_fail(self):
         launcher = str(SOURCE.with_name("run.py"))

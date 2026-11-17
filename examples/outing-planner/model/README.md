@@ -1,6 +1,6 @@
 # Independent finite Outing protocol
 
-This source-only model is authored from the [delegated Weather protocol](../../../docs/superpowers/specs/2026-11-17-delegated-weather-design.md), independently of the Go programs, compiler, reducer and evidence verifier. It establishes bounded graph results. Concrete Store reading, complete raw-row coverage, partial-order correspondence and process-cut qualification belong to subsequent work and are **not implemented here**.
+This source-only model is authored from the [delegated Weather protocol](../../../docs/superpowers/specs/2026-11-17-delegated-weather-design.md), independently of the Go programs, compiler, reducer and evidence verifier. It establishes bounded graph results. The companion evidence reader reconstructs the declared protocol from a complete schema9 Store and checks a compatible model path. Process-kill recovery and independent endpoint-contact qualification remain separate work.
 
 Run with the Python standard library:
 
@@ -9,7 +9,9 @@ python3 -I -B examples/outing-planner/model/test_model.py
 python3 -I -B examples/outing-planner/model/run.py enumerate --output /tmp/outing-model.json
 ```
 
-`run.py` reads `check.py` once, hashes that exact byte buffer, and compiles/executes that buffer in the isolated launcher process. It imports no local module or generated graph and writes no bytecode cache. Output records source/launcher SHA-256, a canonical reproduction command (interpreter path plus required flags and original script arguments), Python/SQLite versions and one versioned JSON result. The launcher hash describes its captured file bytes; launcher integrity, interpreter/standard library and filesystem capture are trusted. A unit control changes the source pathname before execution and checks that the captured bytes, rather than the replacement, execute and determine the hash. Direct CLI execution of `check.py`, nonisolated launcher execution and unknown commands reject.
+`run.py` captures `check.py` and `evidence.py` before executing either. It hashes and compiles those exact immutable byte buffers into fresh namespaces, injects the model API explicitly, and performs no filesystem import or local module-cache lookup. `source_sha256` keeps its original meaning (`check.py`); `source_files` identifies both named buffers. `source_set_sha256` hashes UTF-8 canonical sorted name-to-hash JSON prefixed by `outing-source-set/v1` and one NUL byte. Missing or unexpected executable inputs reject. Unexecuted sibling test files are not source-set members.
+
+Output also records the captured launcher hash, interpreter/SQLite versions and reproduction command. Launcher integrity, interpreter/standard library, frozen manifests and capture/source integrity are trusted. Tests replace both source paths after capture and verify the captured bytes execute; they also exercise missing/extra executable inputs. Direct execution of `check.py`, nonisolated launcher execution and unknown commands reject.
 
 ## Domain and interpretation
 
@@ -35,7 +37,7 @@ Semantic answer sets are compared only under adequate admission and known fixtur
 
 ## Stable API for raw correspondence
 
-`check.py` is the single source module to extend. Load its captured source buffer, not a local import/cache.
+`check.py` owns the finite protocol API. `evidence.py` receives that API from the captured-source launcher; it does not import the model from a filesystem/module cache.
 
 - `Config(variant, outcomes, allowance=1, domain="broad", no_result=())`: immutable validated configuration. Outcomes and no-result indices are tuples; indices are sorted unique. Unsupported variants/classes/domains/counts/allowances/masks reject.
 - `initial(config) -> State`; frozen `State`, `Message`, `Forecast`, `Invocation` dataclasses expose original identities, local control, inbox selection, source dispositions/snapshots, admissions, acknowledgments, forecast stages/results, invocation binding/member/request/freeze/publication/selection, assessment rows, decision, charges, contacts and root freezes/publications. Forecast stages are 0 absent, 1 commit, 2 authorize, 3 reserve, 4 dispatch, 5 result, 6 settle, 7 select. Absent originals are declared symbolic slots, not retained operations.
@@ -44,4 +46,56 @@ Semantic answer sets are compared only under adequate admission and known fixtur
 - `validate_state`, `validate_mark`, `debts`, `root_debts`, `state_view` expose independent checks and separately inspectable caller/transport versus root-descendant debt. `state_view` adds original charge records, candidate cursor, remaining budgets and depth. `policy` returns `(outcome, candidate_index)` with `-1` for no selection. `successful_mark` and `diagnostic_terminal` distinguish successful planning from diagnostic completion.
 - `explore(config) -> Graph`: states in BFS discovery order, edges as lists of `(Event, target_index)`, shortest predecessor links, successful marks, diagnostic terminals and reverse-reachable `completing` set. `Graph.trace(index)` returns the shortest event path; `graph_summary` returns serializable counts/verdicts/witnesses. `configurations` declares the complete finite campaign; `enumerate_models` runs it.
 
-Events represent causal boundaries, **not fabricated observed timestamps**. A raw reader must account for complete recorded events and search for a legal model path consistent with retained global fact order plus causal links. Ordinary admissions/acknowledgments and adapter settlements do not supply their own retained total chronology. An End/freeze or invocation publication/delivery can account for multiple linked rows/facts at one atomic model boundary. This API does not itself implement that reader or establish concrete correspondence.
+Events represent causal boundaries, **not fabricated observed timestamps**. A raw reader must account for complete recorded events and search for a legal model path consistent with retained global fact order plus causal links. Ordinary admissions/acknowledgments and adapter settlements do not supply their own retained total chronology. An End/freeze or invocation publication/delivery can account for multiple linked rows/facts at one atomic model boundary. The evidence reader uses this API for concrete correspondence within the declared fixture domain.
+
+
+## Complete raw Store checks
+
+```sh
+python3 -I -B examples/outing-planner/model/run.py check \
+  --store cut.db --configuration derived-configuration.json \
+  --fixture fixture.json --manifest deployment-manifest.json \
+  --report planner-report.json --output checked.json
+python3 -I -B examples/outing-planner/model/run.py compare \
+  --baseline baseline.db --candidate candidate.db \
+  --configuration derived-configuration.json --fixture fixture.json \
+  --manifest deployment-manifest.json --replacement replacement.json \
+  --output compared.json
+```
+
+`--report` and `--replacement` are optional coverage cross-checks. Raw Store records determine the verdict. A failure writes `accepted: false` and its invariant witness, then exits nonzero. The compare command independently checks both complete Stores before comparing semantic answers, candidate-aligned original forecast IDs and separate actual costs. Equal answers with pending obligations never count as successful replacement.
+
+The reader opens the source with `mode=ro`, enables query-only, and enumerates the schema and every row in **one read transaction**, including committed WAL frames. It pins physical schema9, all 42 source tables, exact schema objects/DDL/columns/primary keys/foreign keys/indexes, and rejects extra objects. Unsupported lifecycle, external-receipt, asset and closure categories must be empty. Every retained row receives an explicit structural or semantic rule; a nonempty unclassified table fails. Complete `programs` inventory is matched against the selected deployment's roots and helper prototype, including inert rows that public snapshots cannot enumerate.
+
+Inventory encodes each SQL cell as a one-byte type (`N`, `I`, `F`, `T`, `B`), an unsigned eight-byte big-endian byte length, and its payload. Integer payloads are ASCII decimal, real payloads are IEEE-754 big-endian doubles, text is UTF-8 and BLOB payloads are unchanged. Row hashes prefix this concatenation with `outing-raw-row/v1` plus NUL. This distinguishes SQL NULL, empty text, empty bytes and numeric/string values. `raw_cut_sha256` hashes the sorted table-to-ordered-row-hash map with `outing-raw-cut/v1` plus NUL. Schema objects and metadata are also included in output; these inventory hashes are separate from source protocol hashes.
+
+Reconstruction covers contiguous complete histories, original-operation bijections, observation selection, first source authorizations, all message transports and raw acknowledgments, accepted/refused invocation groups, helper bindings/requests/replies, terminal freezes, atomic outcome publication/delivery, original adapter reservations/dispatch gates/native fixture results/settlements and ordered charges. Observable operations, receives and End cannot be hidden as pure steps. Native fixture response fields and suitability are independently derived. The trusted canonical program/input manifest and frozen normalization remain explicit inputs; this is not an independent compiler, complete bytecode, calendar or arbitrary-provider proof.
+
+Global composition facts retain order. Ordinary admission, acknowledgment and adapter settlement have only causal constraints. The output supplies one **compatible model placement**, never an invented observed total chronology. First authorization's source sequence is checked at its actual source projection/global prefix, separately from the original intent sequence. Broad-domain late first decision authorization is valid incomplete evidence. Allowed-before-End/admitted-after-End remains distinct and can complete. A committed frozen helper reply blocks publication until its original admission.
+
+Outputs separate successful completion, diagnostic unavailable completion, refusal, unknown forecast, confirm-first cycle and pending cuts. They expose complete symbolic debts, original mappings and `raw_runner_message_debt`. Public Pending diagnostics treat recorded replies as acknowledged; raw runner debt still requires `message_acknowledgments`. A known invalid fixture response can retain the runtime's `unresolved` consequence classification despite a durable diagnostic result; this is distinct from missing-result uncertainty.
+
+`decision_commit_cut.verified` checks the complete captured decision-commit cut, including both open endpoints, exact matching Weather receive, no first decision authorization and the original decision as the sole remaining internal message delivery. A later final Store cannot establish that historical premise; attribution requires separately preserved capture/source integrity and prefix binding. Raw dispatch admissions prove gate passage only. No endpoint-contact or owner-kill claim is inferred here.
+
+## Capturing and testing
+
+Capture while the source cut and WAL are available:
+
+```sh
+python3 -I -B examples/outing-planner/model/test_evidence.py capture SOURCE.db FRESH-CUT.db
+```
+
+The helper opens a read-only source transaction, uses SQLite backup, switches **only the fresh destination** to DELETE journal mode, and compares every source/destination typed row and complete schema metadata. `FRESH-CUT.db.capture.json` records equality, the source inventory and destination byte hash. Existing destinations reject. The checker never repairs a source or uses `immutable` against active WAL. A lone main-file copy without its required WAL is not a complete capture.
+
+```sh
+python3 -I -B examples/outing-planner/model/test_model.py
+python3 -I -B examples/outing-planner/model/test_evidence.py
+ALAN_RAW_CAPTURE_DIR=/tmp/outing-raw-captures go test -tags integration \
+  -count=1 -run '^TestDelegatedRaw' -v ./examples/outing-planner
+OUTING_RAW_FIXTURE=COMPLETE-PAIR-DIR OUTING_MUTATION_DIR=/tmp/outing-mutations \
+  python3 -I -B examples/outing-planner/model/test_evidence.py CompleteEvidenceControls
+OUTING_RAW_PENDING_FIXTURE=UNKNOWN-PAIR-DIR \
+  python3 -I -B examples/outing-planner/model/test_evidence.py PendingReportControls
+```
+
+Without capture variables, source-only inventory/loader/model tests run and capture-dependent tests explicitly skip. The Go harness freezes configuration, fixtures and artifact manifest **before** Create, exercises real public-runtime service orders, captures complete cuts and invokes Python. It supplies no correspondence verdict. `ALAN_RAW_CAPTURE_DIR` retains uniquely named scenario directories with configuration/fixture/manifest, original Stores, complete captures, optional reports and checker JSON. Mutation controls operate only on fresh copies and retain mutation logs under `OUTING_MUTATION_DIR`. The process-kill/reopen campaign, endpoint acknowledgments and final archival qualification remain separate from these in-process fixture controls and finite graph enumeration.

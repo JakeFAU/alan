@@ -78,7 +78,7 @@
 
 **Interfaces:**
 - `python3 -I -B examples/outing-planner/model/run.py enumerate --output FILE` writes one versioned JSON result. The launcher reads check.py once into bytes, hashes those exact bytes and executes compile(buffer, path, "exec") in its isolated process. It records both source/launcher hashes and Python/SQLite versions; no local imports or generated graph input.
-- `check.py` owns independent protocol state/transition rules, reachable-state exploration, reverse completion reachability and shortest counterexamples. Task 4 extends this same script with raw-Store correspondence commands. Keep functions separated by responsibility inside this one source-only module.
+- `check.py` owns independent protocol state/transition rules, reachable-state exploration, reverse completion reachability and shortest counterexamples. Task 4 adds a separate source-bound raw reader using this model API and extends the launcher to capture both sources before execution.
 - Symbolic event alphabet, obligations and state fields follow the design, including original invocation/forecast identities, distinct commit/source-authorization/admission/acknowledgment/dispatch/result/settlement/selection stages, public messages, child/root completion and explicit costs. Enumerate both broad and pre-close-authorization scheduling domains, labeling their results separately.
 - Match the fixed Store's atomic boundaries: invocation publication, accepted result copy when applicable, outcome observation and delivery link are one retained transition; parent selection is later. Rejected publication creates no helper/member/result row. Do not add an impossible runtime crash cut between publication and delivery.
 
@@ -92,13 +92,14 @@
 ### Task 4: Check complete concrete Store correspondence independently
 
 **Files:**
-- Extend: `examples/outing-planner/model/check.py`, `model/test_model.py`, `model/README.md`.
-- Create: `examples/outing-planner/model/test_evidence.py`, `examples/outing-planner/delegated_model_test.go` and small reproducible test fixture helpers if needed.
+- Extend: `examples/outing-planner/model/check.py`, `model/run.py`, `model/test_model.py`, `model/README.md`.
+- Create: `examples/outing-planner/model/evidence.py`, `model/test_evidence.py`, `examples/outing-planner/delegated_model_test.go` and small reproducible test fixture helpers if needed.
 
 **Interfaces:**
 - `model/run.py check --store FILE --configuration FILE --fixture FILE --manifest FILE [--report FILE] --output FILE` independently checks a complete consistent cut.
 - `model/run.py compare --baseline FILE --candidate FILE --configuration FILE --fixture FILE --manifest FILE [--replacement FILE] --output FILE` reads/checks both raw Stores, then compares the bounded semantic answers, original-obligation mapping and explicit costs. No production verifier or prefiltered event export is an authority.
 - Outputs include source identities, full row inventory/coverage, reconstructed events/debts/charges, legal model path or specific witness, concrete completion classification and the claim's bounded domain. The Go harness only creates/captures fixtures and invokes the checker; it cannot supply its verdict.
+- `run.py` captures the exact `check.py`/`evidence.py` byte buffers before either executes, compiles those buffers in fresh namespaces and connects their API explicitly. Record named hashes and complete-source-set identity; preserve the existing meaning of `source_sha256`. No local imports, cache fallback or silently omitted source. Test both pathname-replacement races, absent/unexpected source-set members and metadata; recheck the model tests/enumeration under the final extended launcher. Unexecuted test files are outside the executable source set.
 
 - [ ] Add RED controls for report-only omissions and copied-Store semantic mutations before implementing their correspondence rules.
 - [ ] Read SQLite in one read-only transaction; validate the exact supported schema manifest and enumerate every table/row with primary-key and byte digests. Reject nonempty unsupported authority/reconciliation/lifecycle/receipt/asset categories. Explicitly classify all remaining structural and semantic records; never silently ignore a nonempty table.
