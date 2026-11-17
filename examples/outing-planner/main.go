@@ -19,9 +19,9 @@ import (
 	"github.com/JakeFAU/alan/runtime"
 )
 
-const usage = `outing-planner start --db FILE --config FILE [--weather assess-first|confirm-first]
+const usage = `outing-planner start --db FILE --config FILE [--weather assess-first|confirm-first|delegated] [--helper-admission 0|1]
 outing-planner {run|resume|status|inspect|replay} --db FILE
-outing-planner check-replacement --config FILE --fixture FILE [--weather assess-first|confirm-first] [--output-dir DIR]
+outing-planner check-replacement --config FILE --fixture FILE [--weather assess-first|confirm-first|delegated] [--helper-admission 0|1] [--output-dir DIR]
 Add --json for a structured outing report. Inspect and check-replacement return JSON.`
 
 var errUsage = errors.New("invalid outing-planner command or arguments (run outing-planner --help)")
@@ -39,6 +39,7 @@ func runCLI(ctx context.Context, args []string, out io.Writer) error {
 	flags.SetOutput(io.Discard)
 	var path, configPath, variant, fixturePath, outputDir string
 	var jsonOutput bool
+	var allowance int64
 	if action != "check-replacement" {
 		flags.StringVar(&path, "db", "", "persistent SQLite database")
 		flags.BoolVar(&jsonOutput, "json", false, "write the structured outing report")
@@ -47,6 +48,7 @@ func runCLI(ctx context.Context, args []string, out io.Writer) error {
 	case "start", "check-replacement":
 		flags.StringVar(&configPath, "config", "", "outing configuration")
 		flags.StringVar(&variant, "weather", assessFirst, "Weather variant")
+		flags.Int64Var(&allowance, "helper-admission", 1, "delegated helper admission allowance")
 		if action == "check-replacement" {
 			flags.StringVar(&fixturePath, "fixture", "", "versioned native forecast fixture")
 			flags.StringVar(&outputDir, "output-dir", "", "retain evidence files in this directory")
@@ -66,12 +68,31 @@ func runCLI(ctx context.Context, args []string, out io.Writer) error {
 	if flags.NArg() != 0 {
 		return errUsage
 	}
+	options := defaultDeploymentOptions(variant)
+	var optionErr error
+	flags.Visit(func(f *flag.Flag) {
+		if f.Name == "helper-admission" {
+			if variant != delegatedWeather {
+				optionErr = errors.New("helper admission requires delegated Weather")
+			}
+			options.HelperAdmission = allowance
+		}
+	})
+	if optionErr != nil {
+		return optionErr
+	}
+	if action == "start" || action == "check-replacement" {
+		if err := options.validate(); err != nil {
+			return err
+		}
+	}
 	if action == "check-replacement" {
 		if configPath == "" || fixturePath == "" {
 			return errUsage
 		}
 		return checkReplacement(ctx, replacementOptions{
 			ConfigPath: configPath, FixturePath: fixturePath, Variant: variant, OutputDir: outputDir,
+			HelperAdmission: options.HelperAdmission,
 		}, out)
 	}
 	if path == "" || action == "start" && configPath == "" {
@@ -81,9 +102,11 @@ func runCLI(ctx context.Context, args []string, out io.Writer) error {
 	var c configuration
 	var err error
 	if action == "start" {
-		cut, c, err = startPlanner(ctx, path, configPath, variant, time.Now())
+		cut, c, err = startPlannerDeployment(ctx, path, configPath, options, time.Now())
 	} else {
-		cut, c, variant, err = inspectPlanner(ctx, path)
+		var info retainedDeploymentInfo
+		cut, info, err = inspectPlannerDeployment(ctx, path)
+		c, options = info.Configuration, info.Options
 	}
 	if err != nil {
 		return err
@@ -93,7 +116,7 @@ func runCLI(ctx context.Context, args []string, out io.Writer) error {
 	switch action {
 	case "run", "resume":
 		var advanced runtime.RunProgress
-		cut, advanced, err = operatePlanner(ctx, path, cut.Namespace, c, variant)
+		cut, advanced, err = operateBoundedDeployment(ctx, path, cut.Namespace, c, options, standardBounds)
 		progress = &advanced
 	case "replay":
 		replay, err = replayPlanner(ctx, path, cut)
@@ -101,7 +124,7 @@ func runCLI(ctx context.Context, args []string, out io.Writer) error {
 	if err != nil {
 		return err
 	}
-	report, err := buildReport(cut, c, variant)
+	report, err := buildReport(cut, c, options.Weather)
 	if err != nil {
 		return err
 	}
@@ -119,21 +142,35 @@ func startPlanner(
 	path, configPath, variant string,
 	now time.Time,
 ) (*runtime.ExecutionSnapshot, configuration, error) {
+	return startPlannerDeployment(ctx, path, configPath, defaultDeploymentOptions(variant), now)
+}
+
+func startPlannerDeployment(
+	ctx context.Context,
+	path, configPath string,
+	options deploymentOptions,
+	now time.Time,
+) (*runtime.ExecutionSnapshot, configuration, error) {
+	if err := options.validate(); err != nil {
+		return nil, configuration{}, err
+	}
 	raw, err := readBoundedFile(configPath, maxConfiguration)
 	if err != nil {
 		return nil, configuration{}, err
 	}
-	cut, saved, savedVariant, err := inspectPlanner(ctx, path)
+	cut, retained, err := inspectPlannerDeployment(ctx, path)
 	if errors.Is(err, os.ErrNotExist) {
 		c, configErr := configurationAt(raw, now.UTC().Format(time.RFC3339Nano))
 		if configErr != nil {
 			return nil, c, configErr
 		}
-		if err := createPlanner(ctx, path, c, variant); err != nil && !errors.Is(err, os.ErrExist) {
+		if err := createPlannerDeployment(ctx, path, c, options); err != nil && !errors.Is(err, os.ErrExist) {
 			return nil, c, err
 		}
-		cut, saved, savedVariant, err = inspectPlanner(ctx, path)
+		cut, retained, err = inspectPlannerDeployment(ctx, path)
 	}
+	saved := retained.Configuration
+
 	if err != nil {
 		return nil, saved, err
 	}
@@ -141,7 +178,10 @@ func startPlanner(
 	if err != nil {
 		return nil, saved, err
 	}
-	if !reflect.DeepEqual(c, saved) || variant != savedVariant {
+	if !reflect.DeepEqual(c, saved) || options != retained.Options {
+		if options.Weather == delegatedWeather || retained.Options.Weather == delegatedWeather {
+			return nil, saved, errors.New("existing outing deployment differs; use its original configuration and deployment options, resume, or use a fresh Store")
+		}
 		return nil, saved, errors.New("existing outing deployment differs; use its original configuration and Weather variant or a fresh Store")
 	}
 	return cut, saved, nil
@@ -169,10 +209,18 @@ func replayPlanner(ctx context.Context, path string, cut *runtime.ExecutionSnaps
 }
 
 func createPlanner(ctx context.Context, path string, c configuration, variant string) error {
-	p, err := c.provision(variant)
+	return createPlannerDeployment(ctx, path, c, defaultDeploymentOptions(variant))
+}
+
+func createPlannerDeployment(ctx context.Context, path string, c configuration, options deploymentOptions) error {
+	p, err := c.provisionDeployment(options)
 	if err != nil {
 		return err
 	}
+	return createProvisionedPlanner(ctx, path, p)
+}
+
+func createProvisionedPlanner(ctx context.Context, path string, p runtime.Provision) error {
 	s, err := runtime.Create(ctx, path, p, runtime.DefaultLimits())
 	if err != nil {
 		return err
@@ -181,15 +229,20 @@ func createPlanner(ctx context.Context, path string, c configuration, variant st
 }
 
 func inspectPlanner(ctx context.Context, path string) (*runtime.ExecutionSnapshot, configuration, string, error) {
+	s, info, err := inspectPlannerDeployment(ctx, path)
+	return s, info.Configuration, info.Options.Weather, err
+}
+
+func inspectPlannerDeployment(ctx context.Context, path string) (*runtime.ExecutionSnapshot, retainedDeploymentInfo, error) {
 	s, err := runtime.InspectExecution(ctx, path, runtime.DefaultLimits())
 	if err != nil {
-		return nil, configuration{}, "", err
+		return nil, retainedDeploymentInfo{}, err
 	}
-	c, variant, err := retainedConfiguration(s)
+	info, err := retainedDeployment(s)
 	if err == nil {
-		err = verifyPlannerEvidence(s, c, variant)
+		err = verifyPlannerDeploymentEvidence(s, info)
 	}
-	return s, c, variant, err
+	return s, info, err
 }
 
 type plannerBounds struct {
@@ -216,20 +269,30 @@ func operateBoundedPlanner(
 	c configuration,
 	variant string,
 	bounds plannerBounds,
+) (*runtime.ExecutionSnapshot, runtime.RunProgress, error) {
+	return operateBoundedDeployment(ctx, path, namespace, c, defaultDeploymentOptions(variant), bounds)
+}
+
+func operateBoundedDeployment(
+	ctx context.Context,
+	path, namespace string,
+	c configuration,
+	options deploymentOptions,
+	bounds plannerBounds,
 ) (final *runtime.ExecutionSnapshot, progress runtime.RunProgress, err error) {
 	owner, err := runtime.Open(ctx, path, runtime.DefaultLimits())
 	if err != nil {
 		return nil, progress, err
 	}
 	defer func() { err = errors.Join(err, owner.Close()) }()
-	before, saved, savedVariant, err := inspectPlanner(ctx, path)
+	before, saved, err := inspectPlannerDeployment(ctx, path)
 	if err != nil {
 		return nil, progress, err
 	}
-	if owner.Namespace() != namespace || before.Namespace != namespace || !reflect.DeepEqual(c, saved) || variant != savedVariant {
+	if owner.Namespace() != namespace || before.Namespace != namespace || !reflect.DeepEqual(c, saved.Configuration) || options != saved.Options {
 		return nil, progress, errors.New("outing store changed while acquiring ownership")
 	}
-	adapter, err := openmeteo.NewHourly(saved.Endpoint)
+	adapter, err := openmeteo.NewHourly(saved.Configuration.Endpoint)
 	if err != nil {
 		return nil, progress, err
 	}
@@ -241,11 +304,11 @@ func operateBoundedPlanner(
 	if runErr != nil && !errors.Is(runErr, runtime.ErrLimit) {
 		return nil, progress, runErr
 	}
-	final, finalConfig, finalVariant, err := inspectPlanner(ctx, path)
+	final, finalDeployment, err := inspectPlannerDeployment(ctx, path)
 	if err != nil {
 		return nil, progress, errors.Join(runErr, err)
 	}
-	if final.Namespace != namespace || !reflect.DeepEqual(c, finalConfig) || finalVariant != variant {
+	if final.Namespace != namespace || !reflect.DeepEqual(c, finalDeployment.Configuration) || finalDeployment.Options != options {
 		return nil, progress, errors.Join(runErr, errors.New("outing store changed during execution"))
 	}
 	return final, progress, runErr

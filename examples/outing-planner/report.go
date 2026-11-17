@@ -14,6 +14,8 @@ import (
 const (
 	pendingOutcome  = "pending"
 	unknownForecast = "unknown_forecast"
+	helperRefused   = "helper_refused"
+	helperFailed    = "helper_failed"
 )
 
 type forecastChoice struct {
@@ -52,6 +54,7 @@ type plannerReport struct {
 	Pending            []runtime.PendingObligation   `json:"pending"`
 	History            []runtime.ExecutionStep       `json:"history"`
 	Progress           *runtime.RunProgress          `json:"progress,omitempty"`
+	Delegated          *delegatedReport              `json:"delegated,omitempty"`
 	Replay             *runtime.ReplayReport         `json:"replay,omitempty"`
 }
 
@@ -81,6 +84,13 @@ func buildReport(s *runtime.ExecutionSnapshot, c configuration, variant string) 
 		Permissions:  s.Permissions, Composition: s.Composition,
 		Pending: append([]runtime.PendingObligation{}, s.Pending...),
 		History: []runtime.ExecutionStep{},
+	}
+	if variant == delegatedWeather {
+		info, err := retainedDeployment(s)
+		if err != nil {
+			return plannerReport{}, err
+		}
+		r.Delegated = reportDelegation(s, info)
 	}
 	for offset := 0; ; {
 		page, err := s.History(offset, runtime.MaxHistoryPage)
@@ -124,12 +134,33 @@ func buildReport(s *runtime.ExecutionSnapshot, c configuration, variant string) 
 		}
 	}
 
+	if r.Delegated != nil && len(r.Delegated.Invocations) == 1 {
+		call := r.Delegated.Invocations[0]
+		switch {
+		case call.Admission != nil && !call.Admission.Accepted:
+			r.Outcome = helperRefused
+			r.Explanation = fmt.Sprintf("Weather helper invocation %s was refused (%s). Outing's assessment remains outstanding.",
+				call.OperationID, call.Admission.Reason)
+			return r, nil
+		case call.Outcome != nil && call.Outcome.Status != "succeeded":
+			r.Outcome = helperFailed
+			r.Explanation = fmt.Sprintf("Weather helper invocation %s published %s (%s). Outing's assessment remains outstanding.",
+				call.OperationID, call.Outcome.Status, call.Outcome.Reason)
+			return r, nil
+		}
+	}
+
 	r.DecisionSelectedAt = selectedMessage(s, r.Decision, weatherRun)
 	if r.Decision == nil || r.DecisionSelectedAt == nil ||
 		outing.Projection.Status == "open" || weather.Projection.Status == "open" {
 		if r.Decision != nil {
 			r.Explanation = "Outing committed a decision. Delivery, consumption or final completion is still pending."
 		}
+		return r, nil
+	}
+
+	if r.Delegated != nil && (len(s.Pending) != 0 || !rootsPublished(s.Roots)) {
+		r.Explanation = "Both plans terminated locally. Root publication or outstanding obligations still require completion."
 		return r, nil
 	}
 

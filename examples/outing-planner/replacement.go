@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"slices"
 	"time"
 
 	"github.com/JakeFAU/alan/runtime"
@@ -23,19 +24,21 @@ const (
 
 type replacementOptions struct {
 	ConfigPath, FixturePath, Variant, OutputDir string
+	HelperAdmission                             int64
 }
 
 type replacementReport struct {
-	Outcome          string         `json:"outcome"`
-	Explanation      string         `json:"explanation"`
-	Scenario         string         `json:"scenario"`
-	ReferenceTime    string         `json:"reference_time"`
-	SourceConfigSHA  string         `json:"source_config_sha256"`
-	DerivedConfigSHA string         `json:"derived_config_sha256"`
-	FixtureSHA       string         `json:"fixture_sha256"`
-	Bounds           plannerBounds  `json:"bounds"`
-	Baseline         replacementRun `json:"baseline"`
-	Candidate        replacementRun `json:"candidate"`
+	Outcome          string               `json:"outcome"`
+	Explanation      string               `json:"explanation"`
+	Scenario         string               `json:"scenario"`
+	ReferenceTime    string               `json:"reference_time"`
+	SourceConfigSHA  string               `json:"source_config_sha256"`
+	DerivedConfigSHA string               `json:"derived_config_sha256"`
+	FixtureSHA       string               `json:"fixture_sha256"`
+	Bounds           plannerBounds        `json:"bounds"`
+	Baseline         replacementRun       `json:"baseline"`
+	Candidate        replacementRun       `json:"candidate"`
+	Delegated        *delegatedComparison `json:"delegated_comparison,omitempty"`
 }
 
 type replacementRun struct {
@@ -45,6 +48,8 @@ type replacementRun struct {
 	FixtureRequests int              `json:"fixture_requests"`
 	Cycle           *cycleWitness    `json:"cycle,omitempty"`
 	Reopened        *reopenedWitness `json:"reopened,omitempty"`
+	BoundError      string           `json:"bound_error,omitempty"`
+	roots           []runtime.RootCompletion
 }
 
 type cycleWitness struct {
@@ -70,8 +75,9 @@ type reopenedWitness struct {
 }
 
 func checkReplacement(ctx context.Context, opts replacementOptions, out io.Writer) error {
-	if opts.Variant != assessFirst && opts.Variant != confirmFirst {
-		return fmt.Errorf("unsupported Weather variant %q", opts.Variant)
+	options := deploymentOptions{Weather: opts.Variant, HelperAdmission: opts.HelperAdmission}
+	if err := options.validate(); err != nil {
+		return err
 	}
 	fixture, fixtureRaw, err := readFixture(opts.FixturePath)
 	if err != nil {
@@ -93,11 +99,14 @@ func checkReplacement(ctx context.Context, opts replacementOptions, out io.Write
 	if err != nil {
 		return err
 	}
+	if options.Weather == delegatedWeather && countEligible(plan) > maxDelegatedCandidates {
+		return errors.New("delegated Weather supports at most two eligible candidates")
+	}
 	if err := fixture.requireCandidates(plan); err != nil {
 		return err
 	}
 
-	dir, err := replacementDirectory(opts.OutputDir)
+	dir, err := replacementDirectory(opts.OutputDir, options.Weather == delegatedWeather)
 	if err != nil {
 		return err
 	}
@@ -122,6 +131,21 @@ func checkReplacement(ctx context.Context, opts replacementOptions, out io.Write
 	if err != nil {
 		return err
 	}
+	baselineOptions := defaultDeploymentOptions(assessFirst)
+	baselineProvision, err := c.provisionDeployment(baselineOptions)
+	if err != nil {
+		return err
+	}
+	candidateProvision, err := c.provisionDeployment(options)
+	if err != nil {
+		return err
+	}
+	if options.Weather == delegatedWeather {
+		manifest := freezeDeploymentManifest(derivedRaw, plan, baselineProvision, candidateProvision, options)
+		if err := writeDeploymentManifest(dir, manifest); err != nil {
+			return err
+		}
+	}
 	for _, input := range []struct {
 		name string
 		raw  []byte
@@ -141,13 +165,16 @@ func checkReplacement(ctx context.Context, opts replacementOptions, out io.Write
 		DerivedConfigSHA: digestText(string(derivedRaw)), FixtureSHA: digestText(string(fixtureRaw)),
 		Bounds: standardBounds,
 	}
-	r.Baseline, err = runReplacementScenario(ctx, filepath.Join(dir, "baseline.db"), c, assessFirst, r.Bounds)
+	if options.Weather == delegatedWeather {
+		r.Scenario = "Fresh direct and delegated Stores using the same frozen configuration and loopback forecasts."
+	}
+	r.Baseline, err = runProvisionedReplacement(ctx, filepath.Join(dir, "baseline.db"), c, baselineOptions, baselineProvision, r.Bounds)
 	baselineRequests, fixtureErr := handler.results()
 	if err := errors.Join(err, fixtureErr); err != nil {
 		return fmt.Errorf("baseline: %w", err)
 	}
 	r.Baseline.FixtureRequests = baselineRequests
-	r.Candidate, err = runReplacementScenario(ctx, filepath.Join(dir, "candidate.db"), c, opts.Variant, r.Bounds)
+	r.Candidate, err = runProvisionedReplacement(ctx, filepath.Join(dir, "candidate.db"), c, options, candidateProvision, r.Bounds)
 	total, fixtureErr := handler.results()
 	if err := errors.Join(err, fixtureErr); err != nil {
 		return fmt.Errorf("candidate: %w", err)
@@ -156,18 +183,31 @@ func checkReplacement(ctx context.Context, opts replacementOptions, out io.Write
 	if opts.OutputDir == "" {
 		r.Baseline.Store, r.Candidate.Store = "", ""
 	}
-	if err := checkReplacementPair(r.Baseline, r.Candidate); err != nil {
-		return err
-	}
 	r.Outcome, r.Explanation = r.Candidate.Outcome, r.Candidate.Report.Explanation
-	switch {
-	case !completedPlan(r.Baseline.Outcome):
-		r.Outcome = r.Baseline.Outcome
-		r.Explanation = "Baseline did not complete the question. " + r.Baseline.Report.Explanation
-	case r.Candidate.Cycle != nil:
-		r.Explanation = r.Candidate.Cycle.Explanation
-	case completedPlan(r.Candidate.Outcome):
-		r.Explanation = "Both deployments completed this fixture case. " + r.Explanation
+	if options.Weather == delegatedWeather {
+		r.Delegated, err = compareDelegatedReplacement(r.Baseline, r.Candidate, plan)
+		if err != nil {
+			return err
+		}
+		if r.Delegated.PositiveReplacement {
+			r.Explanation = "Both deployments completed this fixture with the same ranked answer. " + r.Explanation
+		}
+		if r.Candidate.BoundError != "" {
+			r.Explanation = r.Candidate.BoundError
+		}
+	} else {
+		if err := checkReplacementPair(r.Baseline, r.Candidate); err != nil {
+			return err
+		}
+		switch {
+		case !completedPlan(r.Baseline.Outcome):
+			r.Outcome = r.Baseline.Outcome
+			r.Explanation = "Baseline did not complete the question. " + r.Baseline.Report.Explanation
+		case r.Candidate.Cycle != nil:
+			r.Explanation = r.Candidate.Cycle.Explanation
+		case completedPlan(r.Candidate.Outcome):
+			r.Explanation = "Both deployments completed this fixture case. " + r.Explanation
+		}
 	}
 	raw, err := json.MarshalIndent(r, "", "  ")
 	if err != nil {
@@ -183,7 +223,7 @@ func checkReplacement(ctx context.Context, opts replacementOptions, out io.Write
 
 func completedPlan(outcome string) bool { return outcome == recommended || outcome == noMatch }
 
-func replacementDirectory(path string) (string, error) {
+func replacementDirectory(path string, manifest bool) (string, error) {
 	if path == "" {
 		return os.MkdirTemp("", "outing-replacement-")
 	}
@@ -194,10 +234,14 @@ func replacementDirectory(path string) (string, error) {
 	if err := os.MkdirAll(abs, 0700); err != nil {
 		return "", err
 	}
-	for _, file := range []string{
+	files := []string{
 		"baseline.db", "candidate.db", "baseline.db.lock", "candidate.db.lock",
 		"source-configuration.json", "derived-configuration.json", "fixture.json", "replacement.json",
-	} {
+	}
+	if manifest {
+		files = append(files, "deployment-manifest.json")
+	}
+	for _, file := range files {
 		if _, err := os.Lstat(filepath.Join(abs, file)); !errors.Is(err, os.ErrNotExist) {
 			if err != nil {
 				return "", err
@@ -241,38 +285,58 @@ func runReplacementScenario(
 	variant string,
 	bounds plannerBounds,
 ) (replacementRun, error) {
-	if err := createPlanner(ctx, path, c, variant); err != nil {
-		return replacementRun{}, err
-	}
-	first, _, _, err := inspectPlanner(ctx, path)
+	options := defaultDeploymentOptions(variant)
+	p, err := c.provisionDeployment(options)
 	if err != nil {
 		return replacementRun{}, err
 	}
-	final, progress, runErr := operateBoundedPlanner(ctx, path, first.Namespace, c, variant, bounds)
+	return runProvisionedReplacement(ctx, path, c, options, p, bounds)
+}
+
+func runProvisionedReplacement(
+	ctx context.Context,
+	path string,
+	c configuration,
+	options deploymentOptions,
+	p runtime.Provision,
+	bounds plannerBounds,
+) (replacementRun, error) {
+	if err := createProvisionedPlanner(ctx, path, p); err != nil {
+		return replacementRun{}, err
+	}
+	first, _, err := inspectPlannerDeployment(ctx, path)
+	if err != nil {
+		return replacementRun{}, err
+	}
+	final, progress, runErr := operateBoundedDeployment(ctx, path, first.Namespace, c, options, bounds)
 	exhausted := final != nil && hitRunnerBound(bounds, progress, runErr)
 	if runErr != nil && !exhausted {
 		return replacementRun{}, runErr
 	}
-	report, err := buildReport(final, c, variant)
+	report, err := buildReport(final, c, options.Weather)
 	if err != nil {
 		return replacementRun{}, err
 	}
 	report.Progress = &progress
-	r := replacementRun{Store: path, Outcome: report.Outcome, Report: report}
+	r := replacementRun{Store: path, Outcome: report.Outcome, Report: report, roots: final.Roots}
 	if exhausted {
 		r.Outcome = boundExhausted
-		r.Report.Explanation = runErr.Error()
+		if options.Weather == delegatedWeather {
+			r.BoundError = runErr.Error()
+		} else {
+			r.Report.Explanation = runErr.Error()
+		}
 		return r, nil
 	}
 	r.Cycle = cycleAt(final, progress)
 	if r.Cycle != nil {
 		r.Outcome = circularDependency
 	}
-	reopened, next, err := operateBoundedPlanner(ctx, path, final.Namespace, c, variant, bounds)
+	reopened, next, err := operateBoundedDeployment(ctx, path, final.Namespace, c, options, bounds)
 	if err != nil {
 		return replacementRun{}, err
 	}
-	evidence, err := buildReport(reopened, c, variant)
+	evidence, err := buildReport(reopened, c, options.Weather)
 	if err != nil {
 		return replacementRun{}, err
 	}
@@ -311,7 +375,7 @@ func hitRunnerBound(bounds plannerBounds, progress runtime.RunProgress, err erro
 
 func validateReplacementReopen(before replacementRun, after plannerReport, proof *reopenedWitness) error {
 	prior := before.Report
-	if !proof.Progress.Quiescent || proof.Progress.Steps != 0 || proof.Progress.Dispatches != 0 ||
+	if len(prior.Runs) != len(after.Runs) || !reflect.DeepEqual(prior.Delegated, after.Delegated) || !proof.Progress.Quiescent || proof.Progress.Steps != 0 || proof.Progress.Dispatches != 0 ||
 		proof.Outcome != before.Outcome || !reflect.DeepEqual(before.Cycle, proof.Cycle) ||
 		!reflect.DeepEqual(prior.History, after.History) || !reflect.DeepEqual(prior.Effects, after.Effects) ||
 		!reflect.DeepEqual(prior.Observations, after.Observations) || !reflect.DeepEqual(prior.Admissions, after.Admissions) ||
@@ -392,4 +456,140 @@ func cycleAt(s *runtime.ExecutionSnapshot, progress runtime.RunProgress) *cycleW
 		Proposal: *proposalSelection,
 		Waits:    waits,
 	}
+}
+
+type replacementCost struct {
+	Invocations int64 `json:"invocations"`
+	CreatedRuns int64 `json:"created_runs"`
+	Effects     int64 `json:"effects"`
+}
+
+type forecastOperationPair struct {
+	CandidateID string `json:"candidate_id"`
+	Baseline    string `json:"baseline_operation_id,omitempty"`
+	Delegated   string `json:"candidate_operation_id,omitempty"`
+}
+
+type delegatedComparison struct {
+	PositiveReplacement bool                    `json:"positive_replacement"`
+	BaselineCost        replacementCost         `json:"baseline_cost"`
+	CandidateCost       replacementCost         `json:"candidate_cost"`
+	ForecastOperations  []forecastOperationPair `json:"forecast_operations"`
+}
+
+func countEligible(plan normalizedPlan) int {
+	n := 0
+	for _, row := range plan.Candidates {
+		if row.Eligible {
+			n++
+		}
+	}
+	return n
+}
+
+func compareDelegatedReplacement(baseline, delegated replacementRun, plan normalizedPlan) (*delegatedComparison, error) {
+	b, d := baseline.Report, delegated.Report
+	if d.Delegated == nil || b.Variant != assessFirst || b.Namespace == d.Namespace ||
+		!reflect.DeepEqual(b.Configuration, d.Configuration) || !slices.Equal(b.Candidates, d.Candidates) ||
+		(b.Proposal != nil && d.Proposal != nil && !equalPayload(b.Proposal.Payload, d.Proposal.Payload)) {
+		return nil, errors.New("delegated replacement changed the frozen planning question")
+	}
+	for _, id := range []runtime.RunID{outingRun, weatherRun} {
+		bi, di := findReportRun(b, id), findReportRun(d, id)
+		if bi == nil || di == nil || !reflect.DeepEqual(bi.Initial, di.Initial) ||
+			(bi.ProgramID == di.ProgramID) != (id == outingRun) {
+			return nil, fmt.Errorf("unexpected delegated replacement artifact or inputs for %s", id.Subject)
+		}
+	}
+	comparison := &delegatedComparison{
+		ForecastOperations: make([]forecastOperationPair, 0, countEligible(plan)),
+		BaselineCost:       totalCost(baseline.roots),
+		CandidateCost:      totalCost(delegated.roots),
+	}
+	directEffects, helperEffects := orderedForecasts(b.Effects), orderedForecasts(d.Effects)
+	for _, row := range plan.Candidates {
+		if !row.Eligible {
+			continue
+		}
+		i := len(comparison.ForecastOperations)
+		pair := forecastOperationPair{CandidateID: row.ID}
+		if i < len(directEffects) {
+			pair.Baseline = directEffects[i].OperationID
+		}
+		if i < len(helperEffects) {
+			pair.Delegated = helperEffects[i].OperationID
+		}
+		if pair.Baseline != "" && pair.Delegated != "" &&
+			(pair.Baseline == pair.Delegated || !equalFixtureEvidence(directEffects[i], helperEffects[i])) {
+			return nil, fmt.Errorf("delegated replacement changed fixture evidence for candidate %s", row.ID)
+		}
+		comparison.ForecastOperations = append(comparison.ForecastOperations, pair)
+	}
+
+	if !completedPlan(baseline.Outcome) || !completedPlan(delegated.Outcome) ||
+		!rootsPublished(baseline.roots) || !rootsPublished(delegated.roots) ||
+		len(b.Pending) != 0 || len(d.Pending) != 0 {
+		return comparison, nil
+	}
+	n := int64(len(comparison.ForecastOperations))
+	if comparison.BaselineCost != (replacementCost{Effects: n}) ||
+		comparison.CandidateCost != (replacementCost{Invocations: 1, CreatedRuns: 1, Effects: n}) ||
+		baseline.FixtureRequests != int(n) || delegated.FixtureRequests != int(n) {
+		return nil, errors.New("completed replacement has different original work or fixture contact costs")
+	}
+	if b.Decision == nil || d.Decision == nil || b.Decision.Payload[outcome].Text != d.Decision.Payload[outcome].Text ||
+		b.Outcome != d.Outcome ||
+		(b.Recommendation == nil) != (d.Recommendation == nil) ||
+		(b.Recommendation != nil && b.Recommendation.CandidateID != d.Recommendation.CandidateID) {
+		return nil, errors.New("delegated replacement changed the ranked answer")
+	}
+	comparison.PositiveReplacement = true
+	return comparison, nil
+}
+
+func findReportRun(report plannerReport, id runtime.RunID) *runtime.ExecutionRun {
+	i := slices.IndexFunc(report.Runs, func(r *runtime.ExecutionRun) bool { return r.ID == id })
+	if i < 0 {
+		return nil
+	}
+	return report.Runs[i]
+}
+
+func totalCost(roots []runtime.RootCompletion) replacementCost {
+	var cost replacementCost
+	for _, root := range roots {
+		cost.Invocations += root.Charges.Invocations
+		cost.CreatedRuns += root.Charges.CreatedRuns
+		cost.Effects += root.Charges.Effects
+	}
+	return cost
+}
+
+func orderedForecasts(effects []*runtime.ExecutionEffect) []*runtime.ExecutionEffect {
+	out := slices.Clone(effects)
+	slices.SortFunc(out, func(a, b *runtime.ExecutionEffect) int {
+		switch {
+		case a.Sequence < b.Sequence:
+			return -1
+		case a.Sequence > b.Sequence:
+			return 1
+		default:
+			return 0
+		}
+	})
+	return out
+}
+
+func equalFixtureEvidence(a, b *runtime.ExecutionEffect) bool {
+	if a.AdapterAttempt != nil && b.AdapterAttempt != nil &&
+		(a.AdapterAttempt.Allowed != b.AdapterAttempt.Allowed ||
+			!equalPayload(a.AdapterAttempt.Prepared.Request.Payload, b.AdapterAttempt.Prepared.Request.Payload)) {
+		return false
+	}
+	if a.AdapterResult == nil || b.AdapterResult == nil {
+		return true
+	}
+	left, right := a.AdapterResult.Candidate, b.AdapterResult.Candidate
+	return left.Disposition == right.Disposition && left.HTTPStatus == right.HTTPStatus &&
+		left.Response == right.Response && equalPayload(left.Payload, right.Payload)
 }

@@ -54,7 +54,7 @@
 ### Task 2: Expose delegated planning with complete causal evidence
 
 **Files:**
-- Create: `examples/outing-planner/delegated_evidence.go`, `delegated_evidence_test.go`, `delegated_cli_test.go`, `delegated_replacement_test.go`.
+- Create: `examples/outing-planner/delegated_evidence.go`, `delegated_pending.go`, `deployment_manifest.go`, `delegated_evidence_test.go`, `delegated_cli_test.go`, `delegated_replacement_test.go`.
 - Modify narrowly: `examples/outing-planner/main.go`, `evidence.go`, `report.go`, `replacement.go`; existing test helpers only where needed.
 
 **Interfaces:**
