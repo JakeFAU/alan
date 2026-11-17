@@ -28,7 +28,10 @@ The research manuscript at that main documents the correction around §2.4.
 ## Implementation and qualification
 
 Adapt the originating `program.go`, `runner.go` and their regression tests to
-the separately maintained runtime. Copying the research executor wholesale is
+the separately maintained runtime. Its separately optimized selector in
+`static_execution.go` must obey the same fault-isolation rule, retaining errored
+ranks for subsequent calls without discarding the guarded fast path.
+Copying the research executor wholesale is
 out of scope. Keep the port's tests and provenance together in
 `docs/research-ports/runner-fault-isolation.md`.
 

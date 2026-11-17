@@ -60,7 +60,8 @@ type pendingDelivery struct {
 }
 
 // Run automatically schedules finite ordinary commits and committed deliveries.
-// Quiescence means no supported eligible work now, not completion or liveness.
+// A run-local reduction fault leaves the run open and is reported after other
+// eligible work drains. Quiescence describes current work eligibility.
 func (s *Store) Run(ctx context.Context, options RunOptions) (RunReport, error) {
 	return s.run(ctx, options, true)
 }
@@ -272,9 +273,11 @@ func (s *Store) run(ctx context.Context, options RunOptions, fullReport bool) (r
 			}
 			progressed = true
 		}
-		ready, err := s.selectReady(ctx, last)
-		if err != nil {
-			return report, err
+		ready, readyErr := s.selectReady(ctx, last)
+		if readyErr != nil {
+			if _, local := readyErr.(*runReductionFaults); !local {
+				return report, readyErr
+			}
 		}
 		if ready != nil {
 			if report.Steps >= options.MaxSteps {
@@ -299,8 +302,8 @@ func (s *Store) run(ctx context.Context, options RunOptions, fullReport bool) (r
 			continue
 		}
 		if active == 0 {
-			quiescent = true
-			return report, nil
+			quiescent = readyErr == nil
+			return report, readyErr
 		}
 		if err := boundary.Reached(ctx, boundary.Event{Boundary: "runner.waiting", Phase: "in-flight"}); err != nil {
 			return report, err
@@ -381,10 +384,14 @@ func (s *Store) selectReadyBaselineLocked(ctx context.Context, last *RunID) (*re
 		observationIDs = append(observationIDs, id)
 	}
 	sort.Strings(observationIDs)
+	loadObservation := func(id string) (retainedObservation, error) {
+		return observations[id], nil
+	}
 	// Retained programs and validation context are fixed under the supported
 	// Store ownership model during this call. Keep only unbound programs here;
 	// handoff binding mutates nested program data and must retain its own load.
 	var programs map[string]Program
+	var faults []error
 	for i := 0; i < len(ids); i++ {
 		id := ids[(start+i)%len(ids)]
 		run, err := loadRun(ctx, s.conn, id)
@@ -416,28 +423,74 @@ func (s *Store) selectReadyBaselineLocked(ctx context.Context, last *RunID) (*re
 		if err != nil {
 			return nil, err
 		}
-		if p.Code[run.Projection.PC].Op != "receive" {
-			if _, err = Reduce(p, run.Projection, nil, id, run.Sequence+1, s.limits); err != nil {
-				return nil, err
-			}
-			return &readyRun{authority: run.Authority()}, nil
+		ready, fault, err := probeReadyRun(p, run, s.limits, observationIDs, loadObservation)
+		if err != nil || ready != nil {
+			return ready, err
 		}
-		for _, observationID := range observationIDs {
-			observation := observations[observationID]
-			if observation.Run != id || observation.consumed.Valid {
-				continue
-			}
-			_, err = Reduce(p, run.Projection, &observation.Observation, id, run.Sequence+1, s.limits)
-			if errors.Is(err, ErrIneligible) {
-				continue
-			}
-			if err != nil {
-				return nil, err
-			}
-			return &readyRun{authority: run.Authority(), observation: observationID}, nil
+		if fault != nil {
+			faults = append(faults, fault)
 		}
 	}
-	return nil, nil
+	return nil, joinRunReductionFaults(faults)
+}
+
+// runReductionFaults marks an exhausted ready scan with local faults. Loading,
+// retained-input validation and Store failures bypass this classification.
+type runReductionFaults struct{ error }
+
+func (e *runReductionFaults) Unwrap() error { return e.error }
+
+func joinRunReductionFaults(faults []error) error {
+	if len(faults) == 0 {
+		return nil
+	}
+	return &runReductionFaults{errors.Join(faults...)}
+}
+
+// probeReadyRun separates retained-input and loading errors from faults in the
+// next instruction. Both selectors supply observation IDs in selection order.
+func probeReadyRun(p Program, run RunState, limits Limits, observationIDs []string, loadObservation func(string) (retainedObservation, error)) (ready *readyRun, fault, err error) {
+	id, projection, seq := run.ID, run.Projection, run.Sequence+1
+	if err := validateReductionInput(p, projection, id, seq, limits); err != nil {
+		return nil, nil, err
+	}
+	var reductionErr error
+	if p.Code[projection.PC].Op != "receive" {
+		if _, reductionErr = reduceInstruction(p, projection, nil, id, seq, limits); reductionErr == nil {
+			return &readyRun{authority: run.Authority()}, nil, nil
+		}
+	} else {
+		for _, observationID := range observationIDs {
+			o, err := loadObservation(observationID)
+			if err != nil {
+				return nil, nil, err
+			}
+			if o.Run != id || o.consumed.Valid {
+				continue
+			}
+			_, err = reduceInstruction(p, projection, &o.Observation, id, seq, limits)
+			if err == nil {
+				return &readyRun{authority: run.Authority(), observation: observationID}, nil, nil
+			}
+			if errors.Is(err, ErrCorrupt) || !errors.Is(err, ErrIneligible) {
+				reductionErr = err
+				break
+			}
+			// A plain nonmatch is expected. Report the first malformed candidate
+			// if no candidate can advance this receive.
+			if err != ErrIneligible && reductionErr == nil {
+				reductionErr = fmt.Errorf("observation %q: %w", observationID, err)
+			}
+		}
+	}
+	if reductionErr == nil {
+		return nil, nil, nil
+	}
+	fault = fmt.Errorf("run %s/%d at pc %d: %w", id.Subject, id.Generation, projection.PC, reductionErr)
+	if errors.Is(reductionErr, ErrCorrupt) {
+		return nil, nil, fault
+	}
+	return nil, fault, nil
 }
 
 func hasHandoffPeerPort(p Program) bool {

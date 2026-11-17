@@ -211,8 +211,10 @@ func TestSilentChildEndProjectionLimit(t *testing.T) {
 		t.Logf("child target %s, projection cap %d: %d commits, child status %s, parent PC %d, enabled %q, Run error %v",
 			outcome, limits.MaxDataBytes, report.Steps, child.Projection.Status, parent.run.Projection.PC, parent.enabled, err)
 		if outcome == "succeeded" {
-			if !errors.Is(err, ErrLimit) || report.Quiescent || report.Steps != 5 || child.Projection.Status != "open" ||
-				child.Sequence != 2 || parent.run.Projection.PC != 3 || !slices.Equal(parent.enabled, []string{z}) {
+			// The child cannot commit End, but the parent still consumes z and reaches its terminal wait.
+			if !errors.Is(err, ErrLimit) || report.Quiescent || report.Steps != 7 || child.Projection.Status != "open" ||
+				child.Sequence != 2 || parent.run.Projection.PC != 5 || parent.inbox[z].consumed.Int64 != 4 ||
+				len(parent.enabled) != 0 {
 				t.Fatalf("oversize success End: %+v, %v, child %+v, parent %+v", report, err, child, parent)
 			}
 		} else if err != nil || !report.Quiescent || report.Steps != 8 || child.Projection.Status != "failed" ||

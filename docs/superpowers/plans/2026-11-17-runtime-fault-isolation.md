@@ -33,7 +33,7 @@
 ### Task 1: Port and qualify scheduler fault isolation
 
 **Files:**
-- Modify: `internal/executor/program.go`, `internal/executor/runner.go`.
+- Modify: `internal/executor/program.go`, `internal/executor/runner.go`, `internal/executor/static_execution.go`.
 - Create/adapt: `internal/executor/runner_fault_isolation_test.go`.
 - Modify: `internal/executor/runner_silent_child_test.go` only for the changed progress expectation.
 - Create: `docs/research-ports/runner-fault-isolation.md`.
@@ -42,7 +42,7 @@
 
 - [ ] Read the originating commit diff and matching runtime files. Record any necessary fork-specific adaptation before changing production code.
 - [ ] Port the regressions first. Reproduce healthy-peer starvation and first-invalid-observation starvation; record exact RED commands/output under the plan workspace or a named outside-checkout log directory.
-- [ ] Adapt the narrow production correction. Preserve cached/program-bound paths and original run ordering; add the concrete integrity and all-invalid controls if existing tests do not cover them.
+- [ ] Adapt the narrow production correction in both normal and optimized selectors. Preserve cached/program-bound paths and original run ordering; keep errored optimized ranks for later calls, and add optimized-path, integrity and all-invalid controls if existing tests do not cover them.
 - [ ] Run focused RED-to-GREEN regression, the silent-child control and corresponding race test. Test both repeated runner calls and replay of the selected prefix.
 - [ ] Run `go test -count=1 -timeout=60m ./internal/executor ./runtime` and `staticcheck ./internal/executor ./runtime`. Run `go test -count=1 -timeout=60m ./...` once after final source edits and `go build ./...`.
 - [ ] Record original research SHA, exact observable changes, RED/GREEN results, commands, limitations and any fork-specific changes in the port note. Inspect complete status/stat/diff and formatting, then commit this port only.
