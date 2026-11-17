@@ -162,3 +162,41 @@ and universal progress remain open. [Pinned manuscript](https://github.com/JakeF
 Follow the [authoring walkthrough](../../docs/outing-planner.md) from provisioning
 to the final decision. The [qualification notes](QUALIFICATION.md) record the
 reproducible cuts and preserved adverse findings.
+
+### Let Weather use a helper
+
+The `delegated` Weather program keeps the same Outing program and public
+proposal → assessment → decision exchange. Weather asks one retained helper to
+assess Cedar and Hemlock in order, waits for its complete original response,
+then sends the public assessment. The helper owns the original forecast GETs.
+The example supports zero, one or two eligible candidates and one helper.
+
+```sh
+examples/outing-planner/testdata/delegated-walkthrough.sh
+```
+
+The walkthrough uses the existing two-park configuration and local native
+forecast fixtures. It prints its evidence directory, compares the direct and
+delegated plans, and independently checks both complete raw Stores alongside
+the CLI's actual replacement export. A second pair refuses helper creation
+with allowance zero: that records `helper_refused`, makes no candidate GETs,
+and leaves Outing's assessment wait visible. Refusal is not `no_match`.
+
+For your own supported configuration, create and continue a retained session:
+
+```sh
+go run ./examples/outing-planner start --db /tmp/delegated-outing.db \
+  --config examples/outing-planner/testdata/configuration.json --weather delegated
+go run ./examples/outing-planner run --db /tmp/delegated-outing.db
+go run ./examples/outing-planner resume --db /tmp/delegated-outing.db
+go run ./examples/outing-planner status --db /tmp/delegated-outing.db
+```
+
+Those commands use the configuration's endpoint; the walkthrough supplies the
+local fixture automatically. `status`, `inspect` and `replay` are contact-free
+readers. If a contacted forecast has no retained result after interruption,
+resume preserves `unknown_forecast` and the original debt; it does not retry
+that GET or start the later candidate. The completed delegated plan pays for
+one invocation, one created run, one additional depth level, and the same
+number of forecast effects as direct Weather. See [QUALIFICATION.md](QUALIFICATION.md)
+for the exact finite model, actual process cuts, adverse controls and limits.

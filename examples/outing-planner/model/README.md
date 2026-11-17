@@ -103,3 +103,52 @@ OUTING_RAW_CUTS=RETAINED-CAMPAIGN-DIR OUTING_MUTATION_DIR=/tmp/outing-mutations 
 ```
 
 Without capture variables, source-only inventory/loader/model tests run and capture-dependent tests explicitly skip. The Go harness freezes configuration, fixtures and artifact manifest **before** Create, exercises real public-runtime service orders, captures complete cuts and invokes Python. It supplies no correspondence verdict. `ALAN_RAW_CAPTURE_DIR` retains uniquely named scenario directories with configuration/fixture/manifest, original Stores, complete captures, optional reports and checker JSON. Mutation controls operate only on fresh copies and retain mutation logs under `OUTING_MUTATION_DIR`. The process-kill/reopen campaign, endpoint acknowledgments and final archival qualification remain separate from these in-process fixture controls and finite graph enumeration.
+
+## Genuine process and public CLI qualification
+
+```sh
+ALAN_RAW_CAPTURE_DIR=/tmp/delegated-process go test -tags integration \
+  -count=1 -timeout=60m -run '^TestDelegated(Process|Qualification)' -v ./examples/outing-planner
+ALAN_RAW_CAPTURE_DIR=/tmp/delegated-process-race go test -v \
+  -count=1 -timeout=60m -race -tags integration ./...
+examples/outing-planner/testdata/delegated-walkthrough.sh
+```
+
+The final campaign consolidates focused process/CLI race coverage into the
+verbose full integration/race run above; its log records those named tests.
+
+The process test acknowledges an existing runtime barrier in a child owner,
+kills that exact PID with SIGKILL, checks the retained cut independently, and
+resumes with a fresh public CLI process. Helper identities come from the same
+Store, never a baseline namespace. The withheld-response test separately binds
+an endpoint-acknowledged original GET to its dispatch attempt and keeps the
+endpoint alive through two fresh resumes and all read-only readers. No extra
+contact, replacement helper, later candidate, invented receipt or hidden debt
+is accepted. The CLI qualification compares actual replacement exports with
+independently checked baseline/candidate Stores. Raw immutable-row and original
+charge/fact prefixes are compared across process recovery; legitimate later
+work may add its first charge.
+
+The compact source-bound archive and reproduction instructions live under
+`docs/qualification/delegated-weather/`. Process/contact evidence, freshly
+captured raw controls, older rechecked cuts and finite enumeration are distinct
+result categories. Capture integrity, canonical artifacts, normalization, the
+single-host runtime/SQLite, OS, interpreter and standard library remain trusted.
+
+Actual accepted/refused CLI exports are exercised separately from synthetic
+export mutations. After a captured process/CLI campaign, run both real pairs
+and all eleven adverse export variants with:
+
+```sh
+OUTING_REPLACEMENT_FIXTURES=/tmp/delegated-process \
+OUTING_MUTATION_DIR=/tmp/delegated-export-controls \
+  python3 -I -B examples/outing-planner/model/test_evidence.py OptionalReplacementControls
+```
+
+The root must contain exactly one `cli-replacement-accepted-*/pair` and one
+`cli-replacement-refused-*/pair`. Optional original-ID keys appear only when a
+real original exists; explicit empty keys, hidden/substituted originals, extra
+rows/fields, changed order and changed costs reject. Full fixture execution sets
+this variable alongside the raw complete/unknown/cut variables above. Without
+those captures, fourteen methods are discovered, five source-only methods run
+and nine capture-dependent methods explicitly skip.

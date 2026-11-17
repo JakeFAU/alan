@@ -32,6 +32,7 @@ func rawModelCommand(t *testing.T, args ...string) []byte {
 	t.Helper()
 	command := exec.CommandContext(t.Context(), "python3", append([]string{"-I", "-B"}, args...)...)
 	output, err := command.CombinedOutput()
+	recordOutingCommand(t, command.Args, output, err)
 	if err != nil {
 		t.Fatalf("independent Python command: %v\n%s", err, output)
 	}
@@ -39,6 +40,12 @@ func rawModelCommand(t *testing.T, args ...string) []byte {
 }
 
 func newRawModelFixture(t *testing.T, count int, options deploymentOptions, codes []int, unknown bool) rawModelFixture {
+	return newRawModelFixtureEndpoint(t, count, options, codes, unknown, "")
+}
+
+// A process fixture uses the independently acknowledged endpoint while freezing
+// the same native response bytes for the raw checker before creating any Store.
+func newRawModelFixtureEndpoint(t *testing.T, count int, options deploymentOptions, codes []int, unknown bool, endpoint string) rawModelFixture {
 	t.Helper()
 	dir := t.TempDir()
 	if root := os.Getenv("ALAN_RAW_CAPTURE_DIR"); root != "" {
@@ -81,6 +88,12 @@ func newRawModelFixture(t *testing.T, count int, options deploymentOptions, code
 	if err != nil {
 		t.Fatal(err)
 	}
+	if endpoint != "" {
+		fixtureBytes, err = os.ReadFile("testdata/fixture.json")
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
 	fixturePathname := filepath.Join(dir, "fixture.json")
 	if err := os.WriteFile(fixturePathname, fixtureBytes, 0600); err != nil {
 		t.Fatal(err)
@@ -108,6 +121,9 @@ func newRawModelFixture(t *testing.T, count int, options deploymentOptions, code
 	}))
 	t.Cleanup(server.Close)
 	c.Endpoint = server.URL + fixturePath
+	if endpoint != "" {
+		c.Endpoint = endpoint
+	}
 	configBytes, err := c.serialized()
 	if err != nil {
 		t.Fatal(err)
@@ -235,6 +251,22 @@ var errRawModelCut = errors.New("captured raw model cut")
 func rawModelPause(t *testing.T, f rawModelFixture, owner *runtime.Store, path string, match func(boundary.Event, *runtime.ExecutionSnapshot) bool) {
 	t.Helper()
 	observed := boundary.WithObserver(t.Context(), func(ctx context.Context, event boundary.Event) error {
+		// These are the only event shapes the declared capture predicates can
+		// match. Preserve all predicates and inspect the complete Store there.
+		// New cut kinds must extend this filter together with their predicate.
+		switch event.Boundary {
+		case "execution.committed":
+			if event.Intent == "" && event.Phase != "terminal" {
+				return nil
+			}
+		case "execution.staged":
+			if event.Subject != weatherSubject {
+				return nil
+			}
+		case "invocation.admitted", "invocation.result-recorded", "adapter.result-recorded", "adapter.settled", "intent.authorized":
+		default:
+			return nil
+		}
 		cut, err := runtime.InspectExecution(ctx, path, runtime.DefaultLimits())
 		if err != nil {
 			return err

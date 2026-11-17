@@ -89,6 +89,7 @@ func outingProcessJSON(t *testing.T, binary, action, db string, extra ...string)
 	cmd := exec.CommandContext(ctx, binary, args...)
 	cmd.Env = append(os.Environ(), "ALAN_BARRIER=", "GORACE=atexit_sleep_ms=0")
 	output, err := cmd.CombinedOutput()
+	recordOutingCommand(t, cmd.Args, output, err)
 	if err != nil {
 		t.Fatalf("fresh %s: %v\n%s", action, err, output)
 	}

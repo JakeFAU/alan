@@ -101,8 +101,14 @@ func launchOutingOwner(t *testing.T, binary, action, db string, filter *boundary
 			t.Fatalf("missing acknowledgement for %+v: %v\n%s", filter, err, raw)
 		}
 		if event.PID != cmd.Process.Pid || event.Store != db || event.Token != dir || event.Scenario != t.Name() ||
-			event.Boundary != filter.Boundary || event.Phase != filter.Phase || event.Subject != filter.Subject ||
-			event.Generation != filter.Generation || event.Epoch != filter.Epoch || event.Sequence != filter.Sequence {
+			event.Boundary != filter.Boundary || event.Phase != filter.Phase ||
+			filter.Subject != "" && event.Subject != filter.Subject ||
+			filter.Generation != 0 && event.Generation != filter.Generation ||
+			filter.Epoch != 0 && event.Epoch != filter.Epoch ||
+			filter.Sequence != 0 && event.Sequence != filter.Sequence ||
+			filter.Intent != "" && event.Intent != filter.Intent ||
+			filter.Attempt != "" && event.Attempt != filter.Attempt ||
+			filter.Root != "" && event.Root != filter.Root {
 			t.Fatalf("wrong acknowledgement: got %+v, want %+v", event, filter)
 		}
 	}
