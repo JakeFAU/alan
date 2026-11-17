@@ -26,6 +26,13 @@ pending control if it is not covered. Keep the receiving fork's indexed root
 inspection and ordering. Do not import v2's early-return/drain behavior or any
 other hunk from the originating commit.
 
+The receiving fork also computes detached snapshot pending debt in
+`inspection_pending.go`. Apply the same rejected-admission distinction there,
+while preserving its separate caller-side pending outcome/selection entries.
+Qualify both public inspection paths at the actual refused-admission stages;
+correcting only the root-report query would leave the application snapshot
+inconsistent.
+
 This corrects diagnostic correspondence with the existing v1 settlement rule.
 It is not a new liveness or substitution result. Record exact source provenance,
 RED/GREEN commands and limits in a narrow port note. Deliver a separately

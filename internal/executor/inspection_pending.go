@@ -70,7 +70,7 @@ func (b *inspectionBuilder) finishInspection() error {
 		root := roots[b.membership[v.Caller]]
 		if v.Outcome == nil {
 			v.ParentSelection = "unpublished"
-			if root != nil {
+			if root != nil && (v.Admission == nil || v.Admission.Accepted) {
 				root.PendingInvocations = append(root.PendingInvocations, id)
 			}
 			kind := "invocation_awaiting_outcome"

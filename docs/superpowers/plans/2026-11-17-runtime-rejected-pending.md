@@ -29,7 +29,7 @@
 ### Task 1: Correct and qualify root pending inspection
 
 **Files:**
-- Modify: `internal/executor/composition_inspect.go`.
+- Modify: `internal/executor/composition_inspect.go`, `internal/executor/inspection_pending.go`.
 - Create/adapt: `internal/executor/composition_pending_regression_test.go`.
 - Create: `docs/research-ports/rejected-invocation-inspection.md`.
 
@@ -37,7 +37,7 @@
 
 - [ ] Compare the originating predicate/regression and current settlement rule; record the exact receiving base.
 - [ ] Add the regression first and demonstrate the rejected/unadmitted mismatch before production edits. Retain exact RED output.
-- [ ] Port only the narrow accepted-admission predicate, preserving load errors and indexed inspection.
-- [ ] Check rejected, unadmitted and accepted-unpublished controls; retain original refusal evidence and caller wait. Check reopen and replay and cover malformed admission errors through an existing or focused test.
+- [ ] Port only the narrow accepted-admission predicate in both owning pending calculations, preserving load errors and indexed/detached inspection.
+- [ ] Check rejected, unadmitted and accepted-unpublished controls through root reports and detached public snapshots; retain original refusal evidence and caller wait before outcome delivery and after delivery/selection as applicable. Check reopen and replay and cover malformed admission errors through an existing or focused test.
 - [ ] Run focused normal/race regressions, `go test -count=1 -timeout=60m ./internal/executor ./runtime`, `staticcheck ./internal/executor ./runtime` and `go build ./...`. Final integrated full suites are controller-owned.
 - [ ] Record scope, provenance and results in the port note; inspect complete status/stat/diff, format and commit only this port. Write the detailed report to the supplied report path. Independent review follows.
