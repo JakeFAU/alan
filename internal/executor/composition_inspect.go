@@ -111,6 +111,13 @@ func readRootCompletionsWithReader(ctx context.Context, reader *reportReader) ([
 			}
 			switch i.Kind {
 			case "invocation":
+				admission, admissionErr := loadCompositionAdmission(ctx, q, operation)
+				if admissionErr != nil && !errors.Is(admissionErr, sql.ErrNoRows) {
+					return nil, admissionErr
+				}
+				if admissionErr == nil && !admission.Accepted {
+					continue
+				}
 				var n int
 				if e = q.QueryRowContext(ctx, "SELECT count(*) FROM composition_publications WHERE operation_id=?", operation).Scan(&n); e != nil {
 					return nil, e
