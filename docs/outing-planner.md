@@ -91,3 +91,44 @@ reciprocal control-order analysis and a separate same-Store fixture.
 §§6.18–6.20 address finite continuation monitors over an unchanged plant.
 The planner experiment leaves distributed ownership and general substitution
 open. [Pinned manuscript](https://github.com/JakeFAU/alan-research/blob/3dc2754a95d08cf2a688d6a6a970dfed2b2408b5/paper/alan-dissertation.md#69-reciprocal-obligations-the-phase-3b1-service-boundary) · [Process evidence](../examples/outing-planner/QUALIFICATION.md)
+
+## Delegated Weather
+
+`--weather delegated` replaces Weather's local assessment loop with one ordinary
+retained helper invocation. Outing's artifact and its public exchange remain
+unchanged. The helper receives the exact frozen candidate batch, performs the
+sequential original forecast requests, replies, and ends. Weather selects the
+published complete result before sending its public assessment; Outing still
+chooses and returns the decision. Delegation is bounded here to two eligible
+candidates, one helper and one transport identity per original message.
+
+Run `examples/outing-planner/testdata/delegated-walkthrough.sh` from the checkout.
+It uses the existing Cedar/Hemlock fixtures, saves real CLI replacement exports,
+checks complete raw Stores with the independent Python model, and shows both
+accepted and allowance-zero helper scenarios. Its printed directory contains
+configuration, fixtures, manifests, Stores, reports and checker output.
+
+Completed direct and delegated plans can agree on candidate and outcome while
+costs differ: `(invocations, created runs, effects)` are `(0,0,n)` and `(1,1,n)`.
+A known invalid native result may complete diagnostically as unavailable;
+refusal leaves the parent's outstanding wait; an acknowledged GET with no
+retained response stays unknown across fresh resumes. None is a successful
+replacement merely because an answer field matches.
+
+The independent finite protocol separates broad service orderings from the
+`preclose-authorization` domain. Broad ordering admits a public decision first
+authorized after Outing End, which permanently records `source_closed` and
+leaves Weather waiting. The constrained positive domain assumes an allowed
+first authorization before sender End. The process campaign captures the
+automatic decision-commit cut and checks its stronger local premise: open
+sender and receiver, the exact matching wait and the decision as the sole
+pending internal delivery. Finite model paths do not establish universal
+runtime refinement or eventual progress under arbitrary interruptions.
+
+Research §4.5's budget-indexed relation requires identical debit footprints;
+the added invocation/run/depth does not satisfy that requirement. §6.20 concerns
+finite synchronized continuation monitors around an unchanged plant, and does
+not prove extraction into a separately executing helper. This example adds
+bounded empirical comparison and recovery evidence; it changes no research
+source or theorem. See the example's [qualification record](../examples/outing-planner/QUALIFICATION.md)
+and [independent checker contract](../examples/outing-planner/model/README.md).

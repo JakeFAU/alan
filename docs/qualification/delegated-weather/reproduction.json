@@ -1,0 +1,76 @@
+{
+  "chronology": "Post-build companion record; not inside the already-hashed archive. Startup failure is distinct from actual replay verdict.",
+  "archive_sha256": "d56e614c9f2134d6f403216a5d7ed8053652add0084872c8a8cc0a3563c95aab",
+  "startup_failure": {
+    "argv": [
+      "python3",
+      "-I",
+      "-B",
+      "/private/tmp/alan-delegated-task5-3af5726/replay-extract/delegated-weather/reproduce.py",
+      "--output",
+      "/private/tmp/alan-delegated-task5-3af5726/reproduction-results"
+    ],
+    "exit": 2,
+    "output": "/Library/Developer/CommandLineTools/usr/bin/python3: can't open file '/private/tmp/alan-delegated-task5-3af5726/replay-extract/delegated-weather/reproduce.py': [Errno 2] No such file or directory\n",
+    "classification": "script was not opened because extraction had not yet completed; no checker executed"
+  },
+  "actual_reproduction": {
+    "argv": [
+      "python3",
+      "-I",
+      "-B",
+      "/private/tmp/alan-delegated-task5-3af5726/replay-extract/delegated-weather/reproduce.py",
+      "--output",
+      "/private/tmp/alan-delegated-task5-3af5726/reproduction-results"
+    ],
+    "exit": 0,
+    "seconds": 236.5819330215454,
+    "verified_files": 9624,
+    "jobs": 884,
+    "outcomes_by_category": {
+      "final_independent_check/rejected": 15,
+      "final_independent_check/accepted": 250,
+      "preserved_export_RED/accepted": 1,
+      "preserved_export_RED/rejected": 1,
+      "historical_source_or_recheck/rejected": 29,
+      "historical_source_or_recheck/accepted": 205,
+      "historical_wrong_acceptance_before_fix/accepted": 1,
+      "diagnostic_overlay_trial/accepted": 4,
+      "superseded_post_export_fix_timeout/accepted": 244,
+      "superseded_pre_export_fix/accepted": 126,
+      "historical_RED_acceptance_reenactment/accepted": 4,
+      "fixed_rejection_of_preserved_RED/rejected": 4
+    },
+    "model_test_exit": 0,
+    "fixture_evidence_test_exit": 0,
+    "enumeration_exit": 0,
+    "input_hashes_verified_before_and_after": true
+  },
+  "repack": {
+    "argv": [
+      "python3",
+      "-I",
+      "-B",
+      "/private/tmp/alan-delegated-task5-3af5726/replay-extract/delegated-weather/commands/repack.py",
+      "/private/tmp/alan-delegated-task5-3af5726/replay-extract/delegated-weather",
+      "/private/tmp/alan-delegated-task5-3af5726/repacked-qualification.tar.xz"
+    ],
+    "exit": 0,
+    "seconds": 63.074612855911255,
+    "repacked_archive_sha256": "d56e614c9f2134d6f403216a5d7ed8053652add0084872c8a8cc0a3563c95aab",
+    "byte_identical": true
+  },
+  "reproducer_sha256": "bdca7925d1c55642c246ffebf5e2f4f8ad3383debfc6da1e346d869f0f22edd2",
+  "guard_checks": {
+    "source_sha256": "bdca7925d1c55642c246ffebf5e2f4f8ad3383debfc6da1e346d869f0f22edd2",
+    "guards": [
+      "existing rejected",
+      "bundle rejected",
+      "inside rejected",
+      "symlink into bundle rejected",
+      "new outside directory created exclusively",
+      "default fresh outside directory"
+    ]
+  },
+  "full_summary_uncompressed_sha256": "427398e487bc62e8faaec6ddc60bd6ed3b1ce4d390770c7ca3d135a9bff643b0"
+}

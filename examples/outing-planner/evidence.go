@@ -13,6 +13,27 @@ import (
 // verifyPlannerEvidence uses the retained candidate order to bind each forecast
 // to its original operation. It checks committed protocol outputs offline.
 func verifyPlannerEvidence(s *runtime.ExecutionSnapshot, c configuration, variant string) error {
+	if variant == delegatedWeather {
+		info, err := retainedDeployment(s)
+		if err != nil {
+			return err
+		}
+		if info.Options.Weather != variant || !reflect.DeepEqual(info.Configuration, c) {
+			return fmt.Errorf("delegated evidence differs from the retained deployment")
+		}
+		return verifyDelegatedEvidence(s, info)
+	}
+	return verifyDirectEvidence(s, c, variant)
+}
+
+func verifyPlannerDeploymentEvidence(s *runtime.ExecutionSnapshot, info retainedDeploymentInfo) error {
+	if info.Options.Weather == delegatedWeather {
+		return verifyDelegatedEvidence(s, info)
+	}
+	return verifyDirectEvidence(s, info.Configuration, info.Options.Weather)
+}
+
+func verifyDirectEvidence(s *runtime.ExecutionSnapshot, c configuration, variant string) error {
 	plan, err := c.normalize()
 	if err != nil {
 		return err
@@ -78,7 +99,7 @@ func verifyPlannerEvidence(s *runtime.ExecutionSnapshot, c configuration, varian
 		if previousSelection == nil || previousSelection.Sequence >= forecast.Sequence {
 			return fmt.Errorf("forecast %s precedes its required prior selection", forecast.OperationID)
 		}
-		row, err := checkForecast(s, c, adapter, forecast, eligible[i])
+		row, err := checkForecast(s, c, adapter, forecast, eligible[i], weatherRun)
 		if err != nil {
 			return err
 		}
@@ -151,6 +172,7 @@ func checkForecast(
 	adapter *openmeteo.HourlyAdapter,
 	e *runtime.ExecutionEffect,
 	row map[string]schema.Value,
+	owner runtime.RunID,
 ) (map[string]schema.Value, error) {
 	op, exists := s.Operation(e.OperationID)
 	request := map[string]schema.Value{
@@ -158,7 +180,7 @@ func checkForecast(
 		openmeteo.StartHour: row[openmeteo.StartHour], openmeteo.EndHour: row[openmeteo.EndHour],
 		openmeteo.Units: schema.Text(c.Units),
 	}
-	if !exists || e.Kind != "adapter" || e.Source != weatherRun || e.Capability != capability || e.Name != effectName ||
+	if !exists || e.Kind != "adapter" || e.Source != owner || e.Capability != capability || e.Name != effectName ||
 		!equalPayload(op.Payload, request) || len(e.AdditionalReceipts) != 0 {
 		return nil, fmt.Errorf("forecast %s is not an original request for candidate %s", e.OperationID, row["id"].Text)
 	}
@@ -186,13 +208,13 @@ func checkForecast(
 		return nil, nil
 	}
 	o, exists := s.Observation(e.Settlement.ObservationID)
-	if !exists || o.SourceOperationID != e.OperationID || o.Run != weatherRun || o.Operation != e.OperationID {
+	if !exists || o.SourceOperationID != e.OperationID || o.Run != owner || o.Operation != e.OperationID {
 		return nil, fmt.Errorf("forecast %s lacks its original observation", e.OperationID)
 	}
 	if o.SelectedAt == nil {
 		return nil, nil
 	}
-	if o.SelectedAt.Run != weatherRun || o.SelectedAt.Sequence <= e.Sequence {
+	if o.SelectedAt.Run != owner || o.SelectedAt.Sequence <= e.Sequence {
 		return nil, fmt.Errorf("forecast %s has an invalid selection", e.OperationID)
 	}
 	status := unavailable

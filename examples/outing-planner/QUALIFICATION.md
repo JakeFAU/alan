@@ -154,3 +154,159 @@ The test-only correction for decision admission before termination passed the
 focused six-case integration run in 15.427 seconds and its race run in
 253.877 seconds. Both Staticcheck modes, formatting and the example build
 also passed. No production source changed in that correction.
+
+## Delegated Weather: final bounded campaign
+
+The final executable/test/fixture source snapshot contains 409 selected files at
+checkout head `4af37867c030cb353df3b85686ff8bdc20fe6ec6`, plus the Task5 worktree
+changes. Its sorted name/hash-map SHA-256 is
+`d10d834d86837c1ea2b31c6e3f2e8d5e51e04eac9a041bca1ee99aa5f4d2aa9a`.
+This identifies frozen source bytes, independently of the qualification archive
+commit. The [controlled archive](../../docs/qualification/delegated-weather/README.md)
+contains the source map, raw inputs, complete captures, original command/exits,
+negative controls, review history and a portable independent-check reproducer.
+The [decision record](../../docs/qualification/delegated-weather/DECISIONS.md)
+preserves the controller's scope/rework rulings and is not an evidence verdict.
+
+```sh
+ALAN_RAW_CAPTURE_DIR=/tmp/delegated-normal go test -tags integration \
+  -count=1 -timeout=60m -run '^TestDelegated(Process|Qualification|Raw)' -v ./examples/outing-planner
+examples/outing-planner/testdata/delegated-walkthrough.sh /tmp/delegated-walkthrough
+ALAN_RAW_CAPTURE_DIR=/tmp/delegated-race go test -v -count=1 -timeout=60m \
+  -race -tags integration ./...
+```
+
+The single verbose full integration/race run supplies race coverage for the named
+focused process/CLI tests. No separate final filtered race campaign is claimed.
+All required repository commands above were rerun on the final source after the
+last helper edit; the archive records their exact actual argv/exits. Earlier
+completed and interrupted campaigns remain separately labeled as superseded.
+
+Final verification passed with no race diagnostic. Normal and race campaigns each retained:
+
+| Campaign | Accepted cuts | Covered row entries summed per cut | Process SIGKILL witnesses | Actual CLI pair comparisons |
+| --- | ---: | ---: | ---: | ---: |
+| normal | 110 | 26,421 | 13 | 2 |
+| race | 110 | 26,421 | 13 | 2 |
+
+The row sum counts repeated retained prefixes per cut. Each cut covers all 42 tables.
+The two real CLI comparisons per campaign separately check four complete Stores;
+the walkthrough adds its own accepted/refused pairs. The fixture-backed Python
+campaign ran all 14 methods without skips, including the two real exports and
+11 adverse export variants. Source-only execution ran five methods and explicitly
+skipped nine capture-dependent methods. All 24 model methods passed.
+
+| Required full gate (actual argv) | Exit | Elapsed seconds |
+| --- | ---: | ---: |
+| `go mod verify` | 0 | 0.078 |
+| `go mod tidy -diff` | 0 | 0.053 |
+| `go build ./...` | 0 | 1.543 |
+| `staticcheck ./...` | 0 | 0.283 |
+| `staticcheck -tags integration ./...` | 0 | 0.340 |
+| `go test -count=1 -timeout=60m ./...` | 0 | 53.787 |
+| `go test -count=1 -timeout=60m -tags integration ./...` | 0 | 227.165 |
+| `go test -v -count=1 -timeout=60m -race -tags integration ./...` | 0 | 2982.967 |
+
+Elapsed values are diagnostic run observations, not application benchmarks.
+
+The twelve genuine SIGKILL/reopen cuts are:
+
+| Cut | Actual acknowledged coordinates | Endpoint GETs at cut → completion |
+| --- | --- | --- |
+| Proposal committed before delivery | Outing/gen 1/epoch 2/seq 18 |0→2|
+| Invocation committed before admission | Weather/gen 1/epoch 2/seq 8 |0→2|
+| Accepted helper/request before selection | Weather caller/gen 1/epoch 0/original seq 8 |0→2|
+| Native helper result before settlement | Helper/gen 1/epoch 1/original seq 5 |1→2|
+| Settled helper result before selection | Helper/gen 1/epoch 1/original seq 5 |1→2|
+| Second original forecast before authorization/dispatch | Helper/gen 1/epoch 1/seq 43 |1→2|
+| Helper reply/End/freeze before publication | Helper/gen 1/epoch 1/seq 82 |2→2|
+| Published complete outcome before parent consumption | Weather caller/gen 1/epoch 0/original seq 8 |2→2|
+| Parent assessment committed before delivery | Weather/gen 1/epoch 2/seq 38 |2→2|
+| Public decision committed before first authorization | Outing/gen 1/epoch 2/seq 56 |2→2|
+| Allowed first decision authorization before admission | Outing/gen 1/epoch 2/original seq 56 |2→2|
+| Decision admitted, matching Weather receive staged/unselected | Weather/gen 1/epoch 2/next seq 39 |2→2|
+
+“Helper” labels the actual namespace-derived admitted member; full unmodified
+subjects, invocation/outcome/effect IDs and events remain in every witness/Store.
+Invocation service hooks use caller/original-call coordinates and epoch 0;
+adapter hooks retain the original authorization epoch and omit Root. Actual
+Intent/Attempt/Root fields are verified against the same interrupted Store.
+Each owner is killed immediately after the acknowledged barrier, before later
+inspection, and its waited signal must be SIGKILL. A fresh independent public CLI
+owner resumes the same original history. Published helper response/delivery
+already form one atomic retained boundary; no publication-without-delivery cut
+is invented. Parent consumption and final decision selection each occur once.
+
+At every decision-commit capture, the independent raw checker verifies open
+sender/receiver, the exact matching Weather wait, and the original decision as
+the sole pending internal delivery. It inventories all ordinary/invocation/
+terminal routes and raw original acknowledgments; public Pending alone suppresses
+recorded-reply acknowledgment debt and cannot establish this premise. A later
+completed Store cannot retroactively establish that earlier cut.
+
+The independently acknowledged held GET is bound to its original helper effect,
+prepared key/client-request header and dispatch. After owner SIGKILL, two fresh
+resumes and all status/inspect/replay readers preserve one total endpoint contact,
+one original invocation/member/effect, missing result/settlement/observation,
+unknown debt and both outstanding ancestors. No later candidate starts. This
+observes missing retained evidence under the declared no-later-result/no-retry
+continuation; it does not prove permanent unavailability of a genuine result.
+
+Raw row comparisons preserve namespace, canonical program inventory, root
+profiles/limits, original generations/inputs, histories, original operations,
+retained admissions/results and paid charge/fact prefixes. Legitimate subsequent
+work can add its first charge. Only already-open activation epochs renew; closed
+helper epochs stay fixed. Offline readers agree with complete retained snapshots
+and remain contact-free. Known invalid native results are diagnostic evidence,
+separate from absent-result uncertainty.
+
+The fresh raw campaign also exercises Send→End→Prepare with a frozen bound reply
+still unadmitted: `reply_admission` remains pending and no empty success publishes.
+It then authorizes/records that original bound reply after End, acknowledges the
+same transport, publishes its exact complete response and selects it once.
+The separate public-decision late-first-authorization control permanently records
+`source_closed`; the allowed-before-End/admitted-after-End pair can complete.
+Those are deliberate public-API schedules, not default-runner failures.
+
+Two real integration findings remain preserved. The original refused replacement
+export described an older pre-reopen epoch and failed strict raw report coverage;
+production fix `3e873c0` now exports the final delegated cut while preserving
+legacy output. The later refused export omitted nonexistent original-ID keys as
+declared, while the reader expected empty strings; reader fix `4af3786` now
+constructs only existing original keys and keeps exact ID/order/count/cost/extra
+field checks. Both independent approvals and original failures are archived.
+Task4's earlier REJECT, altered-final-wait acceptance, four semantic RED controls
+and corrected continuation/debt rejection also remain. Old 83 captures were
+rechecked after the fixes and are not relabeled newly captured executions.
+
+A full race attempt on the superseded `33bb3b06...` source exhausted the unchanged
+60m package limit after all 110 cuts, before the actual CLI table tail. It is a
+failed gate, not a race pass; no data race or semantic assertion preceded its
+alarm. The raw pause harness had inspected the complete Store at every boundary.
+A controlled, sole-job, same-fixture/seed/race-flag diagnostic pair measured 369
+full inspections in 6m10.366209750s versus 59 in 1m13.363730833s after a categorical
+prefilter. Total hook counts were 369/365; configuration/fixture/manifest and
+complete cut/resumed row digests matched exactly. The final helper skips only
+event shapes incapable of satisfying any existing capture predicate. All 14 raw
+cut cases, public controls, snapshots/assertions, strict comparisons, replays and
+60m limit remain unchanged. Instrumentation/fixed-address/seed setup is external
+and archived as diagnostic code, with no general application speedup claim.
+
+The finite model remains 346 configurations, 31,102 states and 79,866 edges. Broad
+interleavings retain source-closure nonblocking counterexamples. Positive
+nonblocking is conditional on the named `preclose-authorization` domain,
+adequate admission and known fixture outcomes permitting successful planning;
+no fairness or inevitable arbitrary-scheduler completion is inferred. Direct and
+delegated successful costs `(invocations,created runs,effects)` are `(0,0,n)` and
+`(1,1,n)`, with an extra helper depth/reply. Unavailability, refusal and unknown
+are not successful replacement or the unchanged confirm-first cycle.
+
+These results cover physical schema 9, fixed canonical artifacts and authority,
+frozen normalized inputs, 0–2 candidates, one helper, capacity one, one transport
+per original and single-host SQLite ownership. Complete raw row coverage and a
+compatible causal placement do not supply an unrecorded total chronology or an
+independent compiler/full-bytecode proof. Capture/source integrity, normalization,
+OS, interpreter/stdlib and SQLite remain trusted. Research §4.5's equal-debit
+relation and §6.20's unchanged-plant synchronized monitors do not establish this
+helper extraction. No research edit, live-provider, performance, distributed-
+ownership, unrestricted-refinement or general congruence claim is made.
