@@ -14,11 +14,12 @@ If the scan exhausts eligible work and the fault persists, `Run` and
 `RunProgress` return the fault with run identity and program counter. The
 report shows the work already committed and has `Quiescent: false`.
 
-A matching observation can fail its receive schema, omit a required binding or
-exceed the successor projection byte limit. The selector retains that
-observation unconsumed and tries later candidates in the same order. If none
-can advance, it includes the first malformed candidate's identity and cause
-in the fault. A normal guard mismatch remains an ordinary wait. Explicit
+A matching observation can fail its receive schema, lack a valid binding for
+the program's semantic version or exceed the successor projection byte
+limit. The selector retains that observation unconsumed and tries later
+candidates in the same order. If none can advance, it includes the first
+malformed candidate's identity and cause in the fault. A normal guard
+mismatch remains an ordinary wait. Explicit
 `Reduce` and `Commit` calls identify malformed candidates with
 `ErrIneligible` and preserve their underlying errors, including `ErrLimit`.
 
@@ -74,6 +75,18 @@ staticcheck ./internal/executor ./runtime
 go test -count=1 -timeout=60m ./...
 go build ./...
 ```
+
+The first independent review found that a well-formed list could block a
+later scalar in a legacy receive. On `66ee55f`, both selectors stopped
+at the first list with zero commits and an `invalid data` diagnostic
+without the candidate's identity. Binding and projection validation now
+share the same version-aware value check. In
+`TestRunnerLegacyReceiveListBinding`, both selectors consume the later
+scalar and replay the two-commit prefix. In
+the all-list case, two calls each identify the first candidate and leave
+both candidates unconsumed. The test uses the trusted insertion primitive
+with application-defined provenance. Public legacy input and message
+admission rejects lists before retention.
 
 These are finite single-host schedules under the existing Store ownership
 model. They establish progress in the tested cuts. Budget exhaustion,

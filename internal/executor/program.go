@@ -271,6 +271,13 @@ func checkSize(v any, max int) error {
 	}
 	return nil
 }
+func validProjectionValue(semantics string, v Value) bool {
+	if semantics == CollectionSemanticVersion {
+		return v.Valid()
+	}
+	return v.Kind != "list" && validValue(v)
+}
+
 func validateProjection(s Projection, p Program, l Limits) error {
 	if s.PC < 0 || s.PC >= len(p.Code) {
 		return fmt.Errorf("invalid program counter")
@@ -284,7 +291,7 @@ func validateProjection(s Projection, p Program, l Limits) error {
 		return fmt.Errorf("missing data")
 	}
 	for k, v := range s.Data {
-		if k == "" || !validValue(v) || p.Semantics != CollectionSemanticVersion && v.Kind == "list" || p.Semantics == CollectionSemanticVersion && !v.Valid() {
+		if k == "" || !validProjectionValue(p.Semantics, v) {
 			return fmt.Errorf("invalid data")
 		}
 	}
@@ -435,7 +442,7 @@ func reduceInstruction(p Program, s Projection, o *Observation, id RunID, seq in
 				continue
 			}
 			v, ok := o.Payload[field]
-			if !ok || dst == "" || !validValue(v) {
+			if !ok || dst == "" || !validProjectionValue(p.Semantics, v) {
 				return Reduction{}, fmt.Errorf("%w: invalid receive binding %q", ErrIneligible, field)
 			}
 			next.Data[dst] = v.Clone()

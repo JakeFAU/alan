@@ -142,6 +142,74 @@ func TestRunnerReportsFirstInvalidObservation(t *testing.T) {
 	}
 }
 
+func TestRunnerLegacyReceiveListBinding(t *testing.T) {
+	const provenance = "trusted-legacy-fixture"
+	receiver := RunID{Subject: "receiver", Generation: 1}
+	code := inputProgram()
+	code[0].Match.Provenance = provenance
+	provision := Provision{}
+	addProgram(t, &provision, receiver.Subject, code, map[string]Value{})
+
+	list := recordschema.List(map[string]Value{"value": Int(1)})
+	for _, fixture := range []struct {
+		name   string
+		second Value
+		steps  []int
+	}{
+		{name: "valid scalar behind list", second: Int(42), steps: []int{2, 0}},
+		{name: "all candidates invalid", second: list, steps: []int{0, 0}},
+	} {
+		for _, static := range []bool{false, true} {
+			t.Run(fixture.name+"/"+faultIsolationProfile(static), func(t *testing.T) {
+				limits := DefaultLimits()
+				s, path := faultIsolationStore(t, provision, limits, static)
+				first := Observation{ID: "1-list", Run: receiver, Kind: "input", Provenance: provenance,
+					Source: "local", SourceGeneration: 1, Obligation: "work", Payload: map[string]Value{"number": list}}
+				second := first
+				second.ID = "2-candidate"
+				second.Payload = map[string]Value{"number": fixture.second}
+				for _, candidate := range []Observation{first, second} {
+					if err := s.recordObservation(t.Context(), candidate); err != nil {
+						t.Fatal(err)
+					}
+				}
+				if static {
+					s = reopenFaultIsolationStaticStore(t, s, path, limits)
+				}
+
+				before := current(t, s, receiver.Subject)
+				hasValid := fixture.steps[0] > 0
+				for _, wantSteps := range fixture.steps {
+					report, err := s.Run(t.Context(), RunOptions{MaxSteps: 8, MaxDispatch: 8})
+					after := current(t, s, receiver.Subject)
+					if hasValid {
+						if err != nil || !report.Quiescent || report.Steps != wantSteps || after.Sequence != 2 ||
+							after.Projection.Status != "succeeded" || after.Projection.Data["number"] != Int(42) {
+							t.Fatalf("valid candidate behind list: report %+v, error %v, run %+v", report, err, after)
+						}
+					} else if !errors.Is(err, ErrIneligible) || !strings.Contains(err.Error(), first.ID) ||
+						!strings.Contains(err.Error(), "invalid receive binding") || strings.Contains(err.Error(), second.ID) ||
+						report.Quiescent || report.Steps != 0 || !reflect.DeepEqual(after, before) {
+						t.Fatalf("all list candidates invalid: report %+v, error %v, run %+v", report, err, after)
+					}
+					if static && s.execution == nil {
+						t.Fatal("lost static execution index during legacy receive")
+					}
+				}
+				inbox, err := readObservations(t.Context(), s.conn, limits)
+				if err != nil || len(inbox) != 2 || inbox[first.ID].consumed.Valid || inbox[second.ID].consumed.Valid != hasValid ||
+					hasValid && inbox[second.ID].consumed.Int64 != 1 {
+					t.Fatalf("observations: %+v, %v", inbox, err)
+				}
+				replay, err := Replay(t.Context(), path, limits)
+				if err != nil || replay.HistoryCount != fixture.steps[0] {
+					t.Fatalf("Replay: %+v, %v", replay, err)
+				}
+			})
+		}
+	}
+}
+
 func TestRunnerSkipsMalformedReceiveCandidates(t *testing.T) {
 	empty, err := (recordschema.Record{}).Retain()
 	if err != nil {
@@ -272,8 +340,8 @@ func faultIsolationStore(t *testing.T, provision Provision, limits Limits, stati
 
 func reopenFaultIsolationStaticStore(t *testing.T, s *Store, path string, limits Limits) *Store {
 	t.Helper()
-	// Ordinary input admissions disable the index. Reopen validates the
-	// retained inputs and seeds the real index from the validated ledger.
+	// Ordinary admissions and trusted fixture insertions disable the index.
+	// Reopen validates the observations and seeds the index from the ledger.
 	if err := s.Close(); err != nil {
 		t.Fatal(err)
 	}
