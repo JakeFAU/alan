@@ -500,6 +500,21 @@ func TestCompileRejectsStaticallyInvalidSchemasAndPreservesValidVariables(t *tes
 				},
 			},
 		},
+		{
+			name: "unconstrained input cannot flow to narrower Request Send and Outputs",
+			d: author.Definition{
+				Inputs:  schema.Record{"dynamic": {Kind: "string", MaxBytes: 20}},
+				Outputs: schema.Record{"short": shortField},
+				Effects: map[string]author.Effect{"tool": {Capability: "model", Input: schema.Record{"mode": enumField}}},
+				Ports:   map[string]author.Port{"out": {Peer: "receiver", Obligation: "work", Send: schema.Record{"mode": enumField}}},
+				Steps: []author.Step{
+					author.Request("req", "tool", map[string]author.Expr{"mode": author.Var("dynamic")}, nil),
+					author.Send("out", map[string]author.Expr{"mode": author.Var("dynamic")}),
+					author.Set("short", author.Var("dynamic")),
+					author.Success(),
+				},
+			},
+		},
 	}
 
 	for _, tc := range invalidCases {
@@ -529,21 +544,6 @@ func TestCompileRejectsStaticallyInvalidSchemasAndPreservesValidVariables(t *tes
 					author.Send("out", map[string]author.Expr{"mode": author.Var("tmp_mode")}),
 					author.Set("mode", author.Var("tmp_mode")),
 					author.Set("short", author.Var("tmp_short")),
-					author.Success(),
-				},
-			},
-		},
-		{
-			name: "runtime-dependent input variable flowing to stricter Request Send and Outputs",
-			d: author.Definition{
-				Inputs:  schema.Record{"dynamic": {Kind: "string", MaxBytes: 20}},
-				Outputs: schema.Record{"short": shortField},
-				Effects: map[string]author.Effect{"tool": {Capability: "model", Input: schema.Record{"mode": enumField}}},
-				Ports:   map[string]author.Port{"out": {Peer: "receiver", Obligation: "work", Send: schema.Record{"mode": enumField}}},
-				Steps: []author.Step{
-					author.Request("req", "tool", map[string]author.Expr{"mode": author.Var("dynamic")}, nil),
-					author.Send("out", map[string]author.Expr{"mode": author.Var("dynamic")}),
-					author.Set("short", author.Var("dynamic")),
 					author.Success(),
 				},
 			},

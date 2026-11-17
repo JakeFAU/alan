@@ -2,38 +2,36 @@ package author_test
 
 import (
 	"encoding/json"
+	"os"
 	"path/filepath"
 	"testing"
 
-	"github.com/JakeFAU/alan/author"
+	"github.com/JakeFAU/alan/internal/executor"
 	"github.com/JakeFAU/alan/runtime"
-	"github.com/JakeFAU/alan/schema"
 )
 
 // Rebinding a serialized operation from a different declaration must not consume
 // an authentic but unrelated result, even when both declarations share a template.
 func TestSerializedInvocationHandleCannotRebindOutcome(t *testing.T) {
-	leafArtifact, err := author.Compile(author.Definition{Ports: map[string]author.Port{"public": {Peer: "caller", Obligation: "work"}}, Steps: []author.Step{author.Receive("public", nil), author.Send("public", nil), author.Success()}})
+	// This provision was compiled before the provenance check. Keeping its bytes
+	// exercises runtime compatibility and the historical wrong-declaration attack.
+	raw, err := os.ReadFile("testdata/prechange-wrong-invocation.json")
 	if err != nil {
 		t.Fatal(err)
 	}
-	leaf, err := author.NewTemplate(author.Application{"entry": {Artifact: leafArtifact, Inputs: map[string]schema.Value{}}}, "entry", "public")
-	if err != nil {
+	var p runtime.Provision
+	if err := json.Unmarshal(raw, &p); err != nil {
 		t.Fatal(err)
 	}
-	handles := schema.Field{Kind: "list", MaxItems: 1, MaxBytes: 8192, Element: schema.Record{"operation": {Kind: "string", MaxBytes: 4096}}}
-	root, err := author.Compile(author.Definition{Invocations: map[string]author.Template{"first": leaf, "second": leaf}, Collections: map[string]schema.Field{"handles": handles}, Steps: []author.Step{
-		author.Invoke("one", "first", nil, nil), author.Invoke("two", "second", nil, nil), author.Append("handles", map[string]author.Expr{"operation": author.Var("two")}),
-		author.ForEach(author.Var("handles"), map[string]string{"operation": "saved"}, author.AwaitInvocation("first", "saved", author.InvocationOutcomeBindings{Status: "status", Reason: "reason", ResponsePresent: "present"})), author.Success(),
-	}})
-	if err != nil {
-		t.Fatal(err)
+	var root executor.Program
+	for _, artifact := range p.Programs {
+		if artifact.ID == p.Runs[0].ProgramID {
+			if err := json.Unmarshal(artifact.Bytes, &root); err != nil {
+				t.Fatal(err)
+			}
+		}
 	}
-	p, err := (author.Application{"root": {Artifact: root}}).Provision()
-	if err != nil {
-		t.Fatal(err)
-	}
-	p.Composition.Roots = []runtime.ResourceRoot{{Run: runtime.RunID{Subject: "root", Generation: 1}, Members: []runtime.RunID{{Subject: "root", Generation: 1}}, Templates: []string{leaf.ID()}, Limits: runtime.ResourceLimits{MaxInvocations: 2, MaxCreatedRuns: 2, MaxDepth: 1, MaxEffects: 0, MaxInFlight: 1}}}
+	leafID := root.Author.Invocations["first"].TemplateID
 	path := filepath.Join(t.TempDir(), "handles.sqlite")
 	s, err := runtime.Create(t.Context(), path, p, runtime.DefaultLimits())
 	if err != nil {
@@ -64,7 +62,7 @@ func TestSerializedInvocationHandleCannotRebindOutcome(t *testing.T) {
 		if err = json.Unmarshal([]byte(row["descriptor"].(string)), &outcome); err != nil {
 			t.Fatal(err)
 		}
-		if _, ok := expectedOperations[outcome.OperationID]; !ok || outcome.Caller != state.ID || outcome.TemplateID != leaf.ID() || outcome.Status != "succeeded" || !outcome.ResponsePresent {
+		if _, ok := expectedOperations[outcome.OperationID]; !ok || outcome.Caller != state.ID || outcome.TemplateID != leafID || outcome.Status != "succeeded" || !outcome.ResponsePresent {
 			t.Fatal("unrelated or missing original outcome", outcome)
 		}
 		expectedOperations[outcome.OperationID] = true
@@ -75,7 +73,7 @@ func TestSerializedInvocationHandleCannotRebindOutcome(t *testing.T) {
 			t.Fatal("missing original operation result", operation)
 		}
 	}
-	if _, atReceive := root.Metadata().Receives[state.Projection.PC]; !atReceive {
+	if _, atReceive := root.Author.Receives[state.Projection.PC]; !atReceive {
 		t.Fatal("did not reach actual Await receive", state.Projection.PC)
 	}
 
