@@ -1390,7 +1390,10 @@ def compare_stores(baseline, candidate, configuration, fixture, manifest, replac
         operations = []
         for checked in pair:
             operations.append(next((op for op, symbol in checked['original_mapping'].items() if symbol.startswith('forecast:') and symbol.endswith(':' + str(index))), ''))
-        originals.append({'candidate_id': row['id'], 'baseline_operation_id': operations[0], 'candidate_operation_id': operations[1]})
+        mapping = {'candidate_id': row['id']}
+        # The export omits absent originals; retained identities remain exact.
+        mapping.update({name: operation for name, operation in zip(('baseline_operation_id', 'candidate_operation_id'), operations) if operation})
+        originals.append(mapping)
     equal = pair[0]['semantic_answer'] == pair[1]['semantic_answer']
     positive = equal and all(p['successful_completion'] for p in pair)
     comparison = {'positive_replacement': positive, 'baseline_cost': dict(zip(('invocations', 'created_runs', 'effects'), pair[0]['state']['charges'])),

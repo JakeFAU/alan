@@ -376,6 +376,69 @@ class ContinuationControls(unittest.TestCase):
         self.assertEqual(visited_ops, {'set', 'branch', 'jump', 'foreach', 'next', 'loop', 'append'})
 
 
+@unittest.skipUnless(os.environ.get('OUTING_REPLACEMENT_FIXTURES'), 'actual CLI replacement captures not supplied')
+class OptionalReplacementControls(unittest.TestCase):
+    def fixture(self, name):
+        roots = list(pathlib.Path(os.environ['OUTING_REPLACEMENT_FIXTURES']).glob('cli-replacement-' + name + '-*/pair'))
+        self.assertEqual(len(roots), 1)
+        return roots[0]
+
+    def compare(self, root, name, change=None):
+        import hashlib
+        import subprocess
+        inputs = [root / name for name in ('baseline-captured.db', 'candidate-captured.db', 'derived-configuration.json', 'fixture.json', 'deployment-manifest.json', 'replacement.json')]
+        before = {str(path): hashlib.sha256(path.read_bytes()).hexdigest() for path in inputs}
+        archive = pathlib.Path(os.environ.get('OUTING_MUTATION_DIR', tempfile.gettempdir()))
+        archive.mkdir(parents=True, exist_ok=True)
+        target = pathlib.Path(tempfile.mkdtemp(prefix='optional-' + name + '-', dir=str(archive)))
+        export = json.loads((root / 'replacement.json').read_bytes())
+        if change:
+            change(export['delegated_comparison'])
+        (target / 'replacement.json').write_text(json.dumps(export, indent=2) + '\n')
+        command = [sys.executable, '-I', '-B', str(SOURCE.with_name('run.py')), 'compare',
+            '--baseline', str(inputs[0]), '--candidate', str(inputs[1]), '--configuration', str(inputs[2]),
+            '--fixture', str(inputs[3]), '--manifest', str(inputs[4]), '--replacement', str(target / 'replacement.json'),
+            '--output', str(target / 'check.json')]
+        run = subprocess.run(command, capture_output=True, text=True)
+        checked = json.loads((target / 'check.json').read_bytes())
+        (target / 'command.json').write_text(json.dumps({'command': command, 'exit': run.returncode, 'stdout': run.stdout,
+            'stderr': run.stderr, 'original_input_sha256': before}, indent=2) + '\n')
+        self.assertEqual({str(path): hashlib.sha256(path.read_bytes()).hexdigest() for path in inputs}, before)
+        return run, checked
+
+    def test_actual_cli_optional_original_mapping(self):
+        for name in ('accepted', 'refused'):
+            with self.subTest(name=name):
+                run, checked = self.compare(self.fixture(name), name)
+                self.assertEqual(run.returncode, 0, run.stdout + run.stderr)
+                self.assertTrue(checked['accepted'])
+                self.assertEqual(checked['comparison']['positive_replacement'], name == 'accepted')
+                for row in checked['comparison']['forecast_operations']:
+                    self.assertIn('baseline_operation_id', row)
+                    self.assertEqual('candidate_operation_id' in row, name == 'accepted')
+
+    def test_optional_mapping_preserves_identity_order_costs_and_exact_fields(self):
+        cases = (
+            ('invented_candidate', 'refused', lambda c: c['forecast_operations'][0].update(candidate_operation_id=c['forecast_operations'][0]['baseline_operation_id'])),
+            ('empty_candidate', 'refused', lambda c: c['forecast_operations'][0].update(candidate_operation_id='')),
+            ('omitted_baseline', 'refused', lambda c: c['forecast_operations'][0].pop('baseline_operation_id')),
+            ('omitted_candidate', 'accepted', lambda c: c['forecast_operations'][0].pop('candidate_operation_id')),
+            ('wrong_baseline', 'accepted', lambda c: c['forecast_operations'][0].update(baseline_operation_id=c['forecast_operations'][1]['baseline_operation_id'])),
+            ('wrong_candidate', 'accepted', lambda c: c['forecast_operations'][0].update(candidate_operation_id=c['forecast_operations'][1]['candidate_operation_id'])),
+            ('extra_row', 'accepted', lambda c: c['forecast_operations'].append(dict(c['forecast_operations'][0]))),
+            ('reordered', 'accepted', lambda c: c['forecast_operations'].reverse()),
+            ('extra_field', 'accepted', lambda c: c['forecast_operations'][0].update(unexpected=True)),
+            ('baseline_cost', 'refused', lambda c: c['baseline_cost'].update(effects=0)),
+            ('candidate_cost', 'refused', lambda c: c['candidate_cost'].update(invocations=1)),
+        )
+        for name, fixture, change in cases:
+            with self.subTest(name=name):
+                run, checked = self.compare(self.fixture(fixture), name, change)
+                self.assertEqual(run.returncode, 1, run.stdout + run.stderr)
+                self.assertFalse(checked['accepted'])
+                self.assertEqual(checked['invariant'], 'replacement report original mapping and separate actual costs')
+
+
 def capture_store(source_path, destination):
     """Capture a consistent raw cut; only the fresh destination changes journal mode."""
     source_path, destination = pathlib.Path(source_path).resolve(), pathlib.Path(destination).resolve()
