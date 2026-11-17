@@ -3,7 +3,6 @@ package executor
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"slices"
 	"sort"
 )
@@ -359,6 +358,10 @@ func (s *Store) selectExecutionReady(ctx context.Context, last *RunID) (*readyRu
 		x.candidates = kept
 	}()
 	programs := map[string]Program{}
+	loadObservation := func(id string) (retainedObservation, error) {
+		return s.executionObservation(ctx, id)
+	}
+	var faults []error
 	for _, rank := range ordered {
 		id := x.ids[rank]
 		run, err := loadRun(ctx, s.conn, id)
@@ -383,32 +386,21 @@ func (s *Store) selectExecutionReady(ctx context.Context, last *RunID) (*readyRu
 			if err != nil {
 				return nil, err
 			}
-			if p.Code[run.Projection.PC].Op != "receive" {
-				if _, err = Reduce(p, run.Projection, nil, id, run.Sequence+1, s.limits); err != nil {
-					return nil, err
-				}
-				return &readyRun{authority: run.Authority()}, nil
+			ready, fault, err := probeReadyRun(p, run, s.limits, x.observations[id], loadObservation)
+			if err != nil || ready != nil {
+				return ready, err
 			}
-			for _, oid := range x.observations[id] {
-				o, err := s.executionObservation(ctx, oid)
-				if err != nil {
-					return nil, err
-				}
-				_, err = Reduce(p, run.Projection, &o.Observation, id, run.Sequence+1, s.limits)
-				if errors.Is(err, ErrIneligible) {
-					continue
-				}
-				if err != nil {
-					return nil, err
-				}
-				return &readyRun{authority: run.Authority(), observation: oid}, nil
+			if fault != nil {
+				// Keep the run in the frontier so later scans still see its fault.
+				faults = append(faults, fault)
+				continue
 			}
 		}
 		// This negative certificate depends only on this run and its observations in
 		// the guarded static shape. No Reduce call is moved ahead of original order.
 		blocked[rank] = true
 	}
-	return nil, nil
+	return nil, joinRunReductionFaults(faults)
 }
 func (s *Store) pendingExecutionDeliveries() []pendingDelivery {
 	out := make([]pendingDelivery, 0, len(s.execution.pending))

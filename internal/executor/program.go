@@ -271,6 +271,13 @@ func checkSize(v any, max int) error {
 	}
 	return nil
 }
+func validProjectionValue(semantics string, v Value) bool {
+	if semantics == CollectionSemanticVersion {
+		return v.Valid()
+	}
+	return v.Kind != "list" && validValue(v)
+}
+
 func validateProjection(s Projection, p Program, l Limits) error {
 	if s.PC < 0 || s.PC >= len(p.Code) {
 		return fmt.Errorf("invalid program counter")
@@ -284,7 +291,7 @@ func validateProjection(s Projection, p Program, l Limits) error {
 		return fmt.Errorf("missing data")
 	}
 	for k, v := range s.Data {
-		if k == "" || !validValue(v) || p.Semantics != CollectionSemanticVersion && v.Kind == "list" || p.Semantics == CollectionSemanticVersion && !v.Valid() {
+		if k == "" || !validProjectionValue(p.Semantics, v) {
 			return fmt.Errorf("invalid data")
 		}
 	}
@@ -297,21 +304,34 @@ func validateProjection(s Projection, p Program, l Limits) error {
 // Reduce is pure and performs exactly one finite instruction. Effects are descriptors,
 // never callbacks; all loops yield to a subsequent durable execution commit.
 func Reduce(p Program, s Projection, o *Observation, id RunID, seq int64, l Limits) (Reduction, error) {
-	if err := validateProgram(p); err != nil {
+	if err := validateReductionInput(p, s, id, seq, l); err != nil {
 		return Reduction{}, err
+	}
+	return reduceInstruction(p, s, o, id, seq, l)
+}
+
+func validateReductionInput(p Program, s Projection, id RunID, seq int64, l Limits) error {
+	if err := validateProgram(p); err != nil {
+		return err
 	}
 	if err := checkSize(p, l.MaxProgramBytes); err != nil {
-		return Reduction{}, err
+		return err
 	}
 	if err := validateProjection(s, p, l); err != nil {
-		return Reduction{}, err
+		return err
 	}
 	if s.Status != "open" {
-		return Reduction{}, ErrClosed
+		return ErrClosed
 	}
 	if id.Subject == "" || id.Generation <= 0 || seq <= 0 {
-		return Reduction{}, fmt.Errorf("invalid execution identity")
+		return fmt.Errorf("invalid execution identity")
 	}
+	return nil
+}
+
+// reduceInstruction assumes the program, current projection and identity passed
+// validateReductionInput. The selector can validate them once per receive scan.
+func reduceInstruction(p Program, s Projection, o *Observation, id RunID, seq int64, l Limits) (Reduction, error) {
 	in := p.Code[s.PC]
 	if in.Op != "receive" && o != nil {
 		return Reduction{}, ErrIneligible
@@ -371,7 +391,7 @@ func Reduce(p Program, s Projection, o *Observation, id RunID, seq int64, l Limi
 			return Reduction{}, ErrIneligible
 		}
 		if err := checkSize(o, l.MaxObservationBytes); err != nil {
-			return Reduction{}, err
+			return Reduction{}, fmt.Errorf("%w: %w", ErrIneligible, err)
 		}
 		m := in.Match
 		source, err := stringOperand(m.Source, s.Data)
@@ -405,14 +425,14 @@ func Reduce(p Program, s Projection, o *Observation, id RunID, seq int64, l Limi
 				} else if in.Match.Kind == "adapter" && in.Match.Obligation.Literal != nil {
 					effect, ok := p.Author.Effects[in.Match.Obligation.Literal.Text]
 					if !ok {
-						return Reduction{}, fmt.Errorf("unknown adapter declaration")
+						return Reduction{}, fmt.Errorf("unknown adapter declaration: %w", ErrCorrupt)
 					}
 					err = recordschema.ValidateResult(effect.Output.Record, o.Payload)
 				} else {
 					err = record.Record.Validate(o.Payload)
 				}
 				if err != nil {
-					return Reduction{}, fmt.Errorf("receive schema: %w", err)
+					return Reduction{}, fmt.Errorf("%w: receive schema: %w", ErrIneligible, err)
 				}
 			}
 		}
@@ -422,8 +442,8 @@ func Reduce(p Program, s Projection, o *Observation, id RunID, seq int64, l Limi
 				continue
 			}
 			v, ok := o.Payload[field]
-			if !ok || dst == "" || !validValue(v) {
-				return Reduction{}, fmt.Errorf("invalid receive binding %q", field)
+			if !ok || dst == "" || !validProjectionValue(p.Semantics, v) {
+				return Reduction{}, fmt.Errorf("%w: invalid receive binding %q", ErrIneligible, field)
 			}
 			next.Data[dst] = v.Clone()
 		}
@@ -492,6 +512,9 @@ func Reduce(p Program, s Projection, o *Observation, id RunID, seq int64, l Limi
 		return Reduction{}, fmt.Errorf("generated intents: %w", err)
 	}
 	if err := validateProjection(next, p, l); err != nil {
+		if in.Op == "receive" && errors.Is(err, ErrLimit) {
+			return Reduction{}, fmt.Errorf("%w: receive projection: %w", ErrIneligible, err)
+		}
 		return Reduction{}, err
 	}
 	result.Projection = next
