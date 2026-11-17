@@ -354,6 +354,12 @@ func runProvisionedReplacement(
 		proof.Runs = append(proof.Runs, run.RunState)
 	}
 	r.Reopened = proof
+	if options.Weather == delegatedWeather {
+		// Export the final retained cut, including epochs advanced by recovery,
+		// while preserving the first execution's work in the progress field.
+		evidence.Progress = report.Progress
+		r.Report, r.roots = evidence, reopened.Roots
+	}
 	return r, nil
 }
 

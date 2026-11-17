@@ -45,8 +45,15 @@ func TestDelegatedReplacementRetainsEvidence(t *testing.T) {
 				"--fixture", fixture, "--weather", delegatedWeather, "--helper-admission", strconv.Itoa(tc.allowance), "--output-dir", dir)
 			plannerOutcome(t, output, tc.want)
 
+			exported, err := os.ReadFile(filepath.Join(dir, "replacement.json"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if string(exported) != output {
+				t.Fatal("persisted replacement report differs from command output")
+			}
 			var pair replacementReport
-			if err := json.Unmarshal([]byte(output), &pair); err != nil {
+			if err := json.Unmarshal(exported, &pair); err != nil {
 				t.Fatal(err)
 			}
 			comparison := pair.Delegated
@@ -84,7 +91,71 @@ func TestDelegatedReplacementRetainsEvidence(t *testing.T) {
 				}
 			}
 			verifyFrozenManifest(t, dir, pair)
+			for _, retained := range []replacementRun{pair.Baseline, pair.Candidate} {
+				verifyReplacementFinalStore(t, retained)
+				if retained.Report.Progress == nil || retained.Report.Progress.Steps == 0 ||
+					retained.Reopened.Progress.Steps != 0 || retained.Reopened.Progress.Dispatches != 0 {
+					t.Fatal("replacement lost original execution progress or zero-work recovery witness")
+				}
+			}
 		})
+	}
+}
+
+func verifyReplacementFinalStore(t *testing.T, retained replacementRun) {
+	t.Helper()
+	before, err := os.ReadFile(retained.Store)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cut, info, err := inspectPlannerDeployment(t.Context(), retained.Store)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fresh, err := buildReport(cut, info.Configuration, info.Options.Weather)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, run := range fresh.Runs {
+		exported := findReportRun(retained.Report, run.ID)
+		if exported == nil {
+			t.Errorf("export omitted final Store run %s", run.ID.Subject)
+			continue
+		}
+		if exported.Epoch != run.Epoch {
+			t.Errorf("exported %s epoch %d differs from final Store epoch %d", run.ID.Subject, exported.Epoch, run.Epoch)
+		}
+	}
+	// Progress records the first execution, while retained state describes the
+	// final Store after the command's own recovery check.
+	fresh.Progress = retained.Report.Progress
+	want, err := json.Marshal(fresh)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := json.Marshal(retained.Report)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !slices.Equal(got, want) {
+		t.Errorf("exported report differs from read-only final Store inspection for %s", info.Options.Weather)
+	}
+	if retained.Reopened != nil {
+		if len(retained.Reopened.Runs) != len(cut.Runs) {
+			t.Fatal("recovery witness omitted final Store runs")
+		}
+		for i, run := range cut.Runs {
+			if !reflect.DeepEqual(retained.Reopened.Runs[i], run.RunState) {
+				t.Errorf("recovery witness differs from final Store run %s", run.ID.Subject)
+			}
+		}
+	}
+	after, err := os.ReadFile(retained.Store)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !slices.Equal(before, after) {
+		t.Fatal("read-only final Store comparison changed retained bytes")
 	}
 }
 
@@ -202,6 +273,10 @@ func TestDelegatedReplacementBoundRetainsUnderlyingOutcome(t *testing.T) {
 		caseReport.BoundError == "" || caseReport.Cycle != nil || caseReport.Report.Progress.Quiescent {
 		t.Fatalf("unexpected delegated bound outcome %q with retained %q: %q", caseReport.Outcome, caseReport.Report.Outcome, caseReport.BoundError)
 	}
+	if caseReport.Reopened != nil || caseReport.Report.Progress.Steps != bounds.MaxSteps {
+		t.Fatal("bound exhaustion reopened the Store or lost original execution progress")
+	}
+	verifyReplacementFinalStore(t, caseReport)
 }
 
 func TestDelegatedReplacementPreservesExactLegacyCycleWitness(t *testing.T) {
