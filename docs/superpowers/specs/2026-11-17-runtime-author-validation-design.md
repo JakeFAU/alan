@@ -46,6 +46,15 @@ artifacts and can still inspect/replay Stores created by the parent revision.
 If source-equivalent valid artifacts change or old Store inspection breaks,
 report the exact cause and correct compatibility explicitly before proceeding.
 
+The receiving self-review exposed a known-empty loop regression in the
+originating flow pass: skipping an infeasible lexical body can omit a nested
+loop's required collection annotation and reject a previously valid artifact.
+Preserve structural validation and annotations for such bodies while excluding
+their infeasible edges from reachable string/provenance proofs. Keep the
+minimal prechange/ported witness and require exact prior artifact bytes where
+the authored program is unchanged. This is an acceptance compatibility issue;
+it does not itself establish an unsound accepted program.
+
 ## Delivery
 
 Document the research source, RED/GREEN, receiving-repository checks and limits

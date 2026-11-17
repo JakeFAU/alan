@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -87,26 +88,29 @@ func TestRuntimeRejectsInvalidAuthorIngress(t *testing.T) {
 
 func TestRuntimeValidatesInitialAndFinalSchemas(t *testing.T) {
 	ctx := context.Background()
-	a, err := author.Compile(author.Definition{Inputs: schema.Record{"text": {Kind: "string", MaxBytes: 10}}, Outputs: schema.Record{"answer": {Kind: "string", MaxBytes: 2}}, Steps: []author.Step{author.Set("answer", author.Var("text")), author.Success()}})
-	if err != nil {
-		t.Fatal(err)
+	_, err := author.Compile(author.Definition{Inputs: schema.Record{"text": {Kind: "string", MaxBytes: 10}}, Outputs: schema.Record{"answer": {Kind: "string", MaxBytes: 2}}, Steps: []author.Step{author.Set("answer", author.Var("text")), author.Success()}})
+	if err == nil || !strings.Contains(err.Error(), "source string schema exceeds") {
+		t.Fatalf("expected compile rejection of wider output source, got %v", err)
 	}
-	p, err := (author.Application{"worker": {Artifact: a, Inputs: map[string]schema.Value{"text": schema.Text("long")}}}).Provision()
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := prechangeSchemaProvision(t)
+
 	s, err := runtime.Create(ctx, filepath.Join(t.TempDir(), "output.db"), p, runtime.DefaultLimits())
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer s.Close()
-	if _, err = s.Run(ctx, runtime.RunOptions{MaxSteps: 20, MaxDispatch: 20}); err == nil {
-		t.Fatal("oversized success output accepted")
+	if _, err = s.Run(ctx, runtime.RunOptions{MaxSteps: 20, MaxDispatch: 20}); err == nil ||
+		!strings.Contains(err.Error(), `output schema: field "answer": string outside bound or enum`) {
+		t.Fatalf("expected oversized success output refusal, got %v", err)
 	}
 	p.Runs[0].Projection.Data["text"] = schema.Int(2)
-	if bad, err := runtime.Create(ctx, filepath.Join(t.TempDir(), "initial.db"), p, runtime.DefaultLimits()); err == nil {
+	bad, err := runtime.Create(ctx, filepath.Join(t.TempDir(), "initial.db"), p, runtime.DefaultLimits())
+	if err == nil {
 		bad.Close()
 		t.Fatal("raw provision bypassed initial schema")
+	}
+	if !strings.Contains(err.Error(), `field "text":`) {
+		t.Fatalf("expected initial field refusal, got %v", err)
 	}
 }
 
@@ -275,7 +279,7 @@ func TestRuntimeEnforcesAuthoredSchemasBeforeCommit(t *testing.T) {
 	shortField := schema.Field{Kind: "string", MaxBytes: 4}
 
 	t.Run("rejects schema-invalid adapter request before durable commit", func(t *testing.T) {
-		worker, err := author.Compile(author.Definition{
+		_, err := author.Compile(author.Definition{
 			Values:  map[string]schema.Value{"marker": schema.Text("initial")},
 			Ports:   map[string]author.Port{"in": {Peer: "local", Local: true, Obligation: "trigger", Receive: schema.Record{"raw": {Kind: "string", MaxBytes: 30}}}},
 			Effects: map[string]author.Effect{"tool": {Capability: "model", Input: schema.Record{"mode": enumField}, Output: schema.Record{"res": shortField}}},
@@ -285,13 +289,10 @@ func TestRuntimeEnforcesAuthoredSchemasBeforeCommit(t *testing.T) {
 				author.Success(),
 			},
 		})
-		if err != nil {
-			t.Fatal(err)
+		if err == nil || !strings.Contains(err.Error(), "source string schema exceeds") {
+			t.Fatalf("expected compiler to reject wider input flowing to constrained sink, got %v", err)
 		}
-		p, err := (author.Application{"worker": {Artifact: worker}}).Provision()
-		if err != nil {
-			t.Fatal(err)
-		}
+		p := prechangeSchemaProvision(t)
 		ctx := context.Background()
 		path := filepath.Join(t.TempDir(), "invalid-adapter.db")
 		s, err := runtime.Create(ctx, path, p, runtime.DefaultLimits())
@@ -314,8 +315,8 @@ func TestRuntimeEnforcesAuthoredSchemasBeforeCommit(t *testing.T) {
 				}},
 			},
 		})
-		if runErr == nil {
-			t.Fatal("expected schema-invalid adapter request to be rejected")
+		if runErr == nil || !strings.Contains(runErr.Error(), `adapter input schema: field "mode": string outside bound or enum`) {
+			t.Fatalf("expected schema-invalid adapter request refusal, got %v", runErr)
 		}
 		snap, err := runtime.Inspect(ctx, path, runtime.DefaultLimits())
 		if err != nil {
@@ -340,7 +341,7 @@ func TestRuntimeEnforcesAuthoredSchemasBeforeCommit(t *testing.T) {
 	})
 
 	t.Run("rejects schema-invalid ordinary message before durable commit", func(t *testing.T) {
-		sender, err := author.Compile(author.Definition{
+		_, err := author.Compile(author.Definition{
 			Values: map[string]schema.Value{"marker": schema.Text("initial")},
 			Ports: map[string]author.Port{
 				"in":  {Peer: "local", Local: true, Obligation: "trigger", Receive: schema.Record{"raw": {Kind: "string", MaxBytes: 30}}},
@@ -352,23 +353,10 @@ func TestRuntimeEnforcesAuthoredSchemasBeforeCommit(t *testing.T) {
 				author.Success(),
 			},
 		})
-		if err != nil {
-			t.Fatal(err)
+		if err == nil || !strings.Contains(err.Error(), "source string schema exceeds") {
+			t.Fatalf("expected compiler to reject wider input flowing to constrained sink, got %v", err)
 		}
-		receiver, err := author.Compile(author.Definition{
-			Ports: map[string]author.Port{"in": {Peer: "sender", Obligation: "work", Receive: schema.Record{"mode": enumField}}},
-			Steps: []author.Step{author.Receive("in", map[string]string{"mode": "got"}), author.Success()},
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-		p, err := (author.Application{
-			"sender":   {Artifact: sender},
-			"receiver": {Artifact: receiver},
-		}).Provision()
-		if err != nil {
-			t.Fatal(err)
-		}
+		p := prechangeSchemaProvision(t)
 		ctx := context.Background()
 		path := filepath.Join(t.TempDir(), "invalid-message.db")
 		s, err := runtime.Create(ctx, path, p, runtime.DefaultLimits())
@@ -383,8 +371,9 @@ func TestRuntimeEnforcesAuthoredSchemasBeforeCommit(t *testing.T) {
 		if err != nil || !admitted.Accepted {
 			t.Fatalf("admit input: %+v %v", admitted, err)
 		}
-		if _, err := s.Run(ctx, runtime.RunOptions{MaxSteps: 10, MaxDispatch: 10}); err == nil {
-			t.Fatal("expected schema-invalid message send to be rejected")
+		if _, err := s.Run(ctx, runtime.RunOptions{MaxSteps: 10, MaxDispatch: 10}); err == nil ||
+			!strings.Contains(err.Error(), `message send schema: field "mode": string outside bound or enum`) {
+			t.Fatalf("expected schema-invalid message send refusal, got %v", err)
 		}
 		snap, err := runtime.Inspect(ctx, path, runtime.DefaultLimits())
 		if err != nil {
@@ -413,7 +402,7 @@ func TestRuntimeEnforcesAuthoredSchemasBeforeCommit(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		caller, err := author.Compile(author.Definition{
+		_, err = author.Compile(author.Definition{
 			Values:      map[string]schema.Value{"marker": schema.Text("initial")},
 			Invocations: map[string]author.Template{"sub": childTpl},
 			Ports:       map[string]author.Port{"in": {Peer: "local", Local: true, Obligation: "trigger", Receive: schema.Record{"raw": {Kind: "string", MaxBytes: 30}}}},
@@ -423,19 +412,10 @@ func TestRuntimeEnforcesAuthoredSchemasBeforeCommit(t *testing.T) {
 				author.Success(),
 			},
 		})
-		if err != nil {
-			t.Fatal(err)
+		if err == nil || !strings.Contains(err.Error(), "source string schema exceeds") {
+			t.Fatalf("expected compiler to reject wider input flowing to constrained sink, got %v", err)
 		}
-		p, err := (author.Application{"caller": {Artifact: caller, Inputs: map[string]schema.Value{}}}).Provision()
-		if err != nil {
-			t.Fatal(err)
-		}
-		p.Composition.Roots = []runtime.ResourceRoot{{
-			Run:       runtime.RunID{Subject: "caller", Generation: 1},
-			Members:   []runtime.RunID{{Subject: "caller", Generation: 1}},
-			Templates: []string{childTpl.ID()},
-			Limits:    runtime.ResourceLimits{MaxInvocations: 4, MaxCreatedRuns: 8, MaxDepth: 2, MaxEffects: 8, MaxInFlight: 2},
-		}}
+		p := prechangeSchemaProvision(t)
 		ctx := context.Background()
 		path := filepath.Join(t.TempDir(), "invalid-invoke.db")
 		s, err := runtime.Create(ctx, path, p, runtime.DefaultLimits())
@@ -450,8 +430,9 @@ func TestRuntimeEnforcesAuthoredSchemasBeforeCommit(t *testing.T) {
 		if err != nil || !admitted.Accepted {
 			t.Fatalf("admit input: %+v %v", admitted, err)
 		}
-		if _, err := s.Run(ctx, runtime.RunOptions{MaxSteps: 10, MaxDispatch: 10}); err == nil {
-			t.Fatal("expected schema-invalid invocation to be rejected")
+		if _, err := s.Run(ctx, runtime.RunOptions{MaxSteps: 10, MaxDispatch: 10}); err == nil ||
+			!strings.Contains(err.Error(), `invocation input schema: field "mode": string outside bound or enum`) {
+			t.Fatalf("expected schema-invalid invocation refusal, got %v", err)
 		}
 		snap, err := runtime.Inspect(ctx, path, runtime.DefaultLimits())
 		if err != nil {
@@ -472,7 +453,7 @@ func TestRuntimeEnforcesAuthoredSchemasBeforeCommit(t *testing.T) {
 		sender, err := author.Compile(author.Definition{
 			Outputs: schema.Record{"final": shortField},
 			Ports: map[string]author.Port{
-				"in":  {Peer: "local", Local: true, Obligation: "trigger", Receive: schema.Record{"raw": {Kind: "string", MaxBytes: 30}}},
+				"in":  {Peer: "local", Local: true, Obligation: "trigger", Receive: schema.Record{"raw": enumField}},
 				"out": {Peer: "receiver", Obligation: "work", Send: schema.Record{"mode": enumField}},
 			},
 			Effects: map[string]author.Effect{"tool": {Capability: "model", Input: schema.Record{"mode": enumField}, Output: schema.Record{"res": shortField}}},
@@ -550,7 +531,7 @@ func TestRuntimeEnforcesUnambiguousSendContracts(t *testing.T) {
 	t.Run("rejects strict_out vs wide_out bypass at compile and retained metadata boundaries", func(t *testing.T) {
 		_, err := author.Compile(author.Definition{
 			Name:   "sender",
-			Inputs: schema.Record{"dyn": wideField},
+			Inputs: schema.Record{"dyn": strictField},
 			Ports: map[string]author.Port{
 				"strict_out": {Peer: "receiver", Obligation: "work", Send: schema.Record{"mode": strictField}},
 				"wide_out":   {Peer: "receiver", Obligation: "work", Send: schema.Record{"mode": wideField}},
@@ -572,85 +553,72 @@ func TestRuntimeEnforcesUnambiguousSendContracts(t *testing.T) {
 			t.Fatalf("expected Compile to reject conflicting SendUsed schemas on same route, got: %v", err)
 		}
 
-		// Also verify when wide_out is declared on the same (Peer, Obligation) with SendUsed=false:
-		// 1) valid Compile succeeds;
-		// 2) tampered retained artifact bytes setting SendUsed=true on wide_out are rejected by runtime.Create;
-		// 3) untampered execution sending an invalid value on strict_out is rejected before commit (0 intents, 2 history rows).
-		senderArt, err := author.Compile(author.Definition{
-			Name:   "sender",
-			Inputs: schema.Record{"dyn": wideField},
+		// The old single-SendUsed program is now rejected statically, but its
+		// retained bytes still exercise metadata tamper detection and runtime validation.
+		_, err = author.Compile(author.Definition{
+			Name: "sender", Inputs: schema.Record{"dyn": wideField},
 			Ports: map[string]author.Port{
 				"strict_out": {Peer: "receiver", Obligation: "work", Send: schema.Record{"mode": strictField}},
 				"wide_out":   {Peer: "receiver", Obligation: "work", Send: schema.Record{"mode": wideField}},
 			},
-			Steps: []author.Step{
-				author.Send("strict_out", map[string]author.Expr{"mode": author.Var("dyn")}),
-				author.Success(),
-			},
+			Steps: []author.Step{author.Send("strict_out", map[string]author.Expr{"mode": author.Var("dyn")}), author.Success()},
 		})
-		if err != nil {
-			t.Fatalf("Compile with single SendUsed port failed: %v", err)
+		if err == nil || !strings.Contains(err.Error(), "source string schema exceeds") {
+			t.Fatalf("expected static rejection of retained wider input, got %v", err)
 		}
-		receiverArt, err := author.Compile(author.Definition{
-			Name:    "receiver",
-			Outputs: schema.Record{"got": strictField},
-			Ports: map[string]author.Port{
-				"in": {Peer: "sender", Obligation: "work", Receive: schema.Record{"mode": strictField}},
-			},
-			Steps: []author.Step{
-				author.Receive("in", map[string]string{"mode": "got"}),
-				author.Success(),
-			},
-		})
-		if err != nil {
-			t.Fatalf("Compile receiver failed: %v", err)
+		legacy := prechangeSchemaProvision(t)
+		tampered := prechangeSchemaProvision(t)
+		sender := -1
+		for i, run := range tampered.Runs {
+			if run.ID.Subject == "sender" {
+				sender = i
+				break
+			}
+		}
+		if sender < 0 {
+			t.Fatal("missing retained sender run")
+		}
+		var changed bool
+		for i, artifact := range tampered.Programs {
+			if artifact.ID != tampered.Runs[sender].ProgramID {
+				continue
+			}
+			patched := bytes.ReplaceAll(artifact.Bytes, []byte(`"SendUsed":false`), []byte(`"SendUsed":true`))
+			if bytes.Equal(patched, artifact.Bytes) {
+				t.Fatal("expected to change retained SendUsed metadata")
+			}
+			sum := sha256.Sum256(patched)
+			artifact.ID = hex.EncodeToString(sum[:])
+			artifact.Bytes = patched
+			tampered.Programs[i] = artifact
+			tampered.Runs[sender].ProgramID = artifact.ID
+			changed = true
+			break
+		}
+		if !changed {
+			t.Fatal("missing retained sender artifact")
 		}
 
-		tamperedBytes := bytes.ReplaceAll(senderArt.Bytes(), []byte(`"SendUsed":false`), []byte(`"SendUsed":true`))
-		sum := sha256.Sum256(tamperedBytes)
-		tamperedID := hex.EncodeToString(sum[:])
 		ctx := context.Background()
-		tamperedProv := runtime.Provision{
-			Programs: []runtime.Artifact{
-				{ID: tamperedID, Semantics: "alan/1e/v1", Bytes: tamperedBytes},
-				{ID: receiverArt.ID(), Semantics: "alan/1e/v1", Bytes: receiverArt.Bytes()},
-			},
-			Subjects: []runtime.Subject{
-				{ID: "sender", Generation: 1, Owner: "owner:sender", Revision: 1},
-				{ID: "receiver", Generation: 1, Owner: "owner:receiver", Revision: 1},
-			},
-			Runs: []runtime.InitialRun{
-				{
-					ID:         runtime.RunID{Subject: "sender", Generation: 1},
-					ProgramID:  tamperedID,
-					Projection: runtime.Projection{Status: "open", Data: map[string]schema.Value{"dyn": schema.Text("VIOLATES_STRICT_SCHEMA")}},
-				},
-				{
-					ID:         runtime.RunID{Subject: "receiver", Generation: 1},
-					ProgramID:  receiverArt.ID(),
-					Projection: runtime.Projection{Status: "open", Data: map[string]schema.Value{}},
-				},
-			},
-			Permissions: []runtime.Permission{
-				{Kind: "message", Source: "sender", Target: "receiver", Operation: "message", Obligation: "work", Revision: 1},
-			},
+		invalid, err := runtime.Create(ctx, filepath.Join(t.TempDir(), "tampered.sqlite"), tampered, runtime.DefaultLimits())
+		if err == nil {
+			invalid.Close()
+			t.Fatal("runtime accepted tampered SendUsed metadata")
 		}
-		if _, err := runtime.Create(ctx, filepath.Join(t.TempDir(), "tampered.sqlite"), tamperedProv, runtime.DefaultLimits()); err == nil {
-			t.Fatal("expected runtime.Create to reject tampered retained artifact with ambiguous SendUsed contract")
+		if !strings.Contains(err.Error(), "ambiguous send contract") {
+			t.Fatalf("expected ambiguous retained send contract refusal, got %v", err)
 		}
 
-		// Untampered execution: Send on strict_out must be validated against strict_out (not wide_out) and rejected before durable commit.
-		validProv := tamperedProv
-		validProv.Programs[0] = runtime.Artifact{ID: senderArt.ID(), Semantics: "alan/1e/v1", Bytes: senderArt.Bytes()}
-		validProv.Runs[0].ProgramID = senderArt.ID()
+		// The untouched fixture must still reach the narrower Send contract.
 		path := filepath.Join(t.TempDir(), "strict_enforced.sqlite")
-		s, err := runtime.Create(ctx, path, validProv, runtime.DefaultLimits())
+		s, err := runtime.Create(ctx, path, legacy, runtime.DefaultLimits())
 		if err != nil {
 			t.Fatalf("runtime.Create: %v", err)
 		}
 		defer s.Close()
-		if _, err := s.Run(ctx, runtime.RunOptions{MaxSteps: 10, MaxDispatch: 10}); err == nil {
-			t.Fatal("expected invalid message on strict_out to be rejected before commit")
+		if _, err := s.Run(ctx, runtime.RunOptions{MaxSteps: 10, MaxDispatch: 10}); err == nil ||
+			!strings.Contains(err.Error(), `message send schema: field "mode": string outside bound or enum`) {
+			t.Fatalf("expected invalid message on strict_out refusal, got %v", err)
 		}
 		snap, err := runtime.Inspect(ctx, path, runtime.DefaultLimits())
 		if err != nil {
@@ -773,7 +741,7 @@ func TestRuntimeExecutesFalseRejectionProgramsAndCatchesStaticBypassesBeforeComm
 							[]author.Step{
 								author.Request("req", "tool", map[string]author.Expr{"mode": author.Var("mode")}, nil),
 								author.Await("tool", "req", map[string]string{"valid": "ok", "res": "out"}),
-								author.Success(),
+								author.IfEqual(author.Var("ok"), author.Boolean(true), []author.Step{author.Success()}, []author.Step{author.Failure()}),
 							},
 							[]author.Step{author.Failure()},
 						),
@@ -804,6 +772,7 @@ func TestRuntimeExecutesFalseRejectionProgramsAndCatchesStaticBypassesBeforeComm
 								[]author.Step{
 									author.Request("req", "tool", map[string]author.Expr{"mode": author.Var("m")}, nil),
 									author.Await("tool", "req", map[string]string{"valid": "ok", "res": "last"}),
+									author.IfEqual(author.Var("ok"), author.Boolean(true), nil, []author.Step{author.Failure()}),
 								},
 								nil,
 							),
@@ -888,13 +857,11 @@ func TestRuntimeExecutesFalseRejectionProgramsAndCatchesStaticBypassesBeforeComm
 
 	t.Run("static bypass and runtime-dependent invalid programs are rejected before commit", func(t *testing.T) {
 		runtimeInvalidCases := []struct {
-			name   string
-			def    author.Definition
-			inputs map[string]schema.Value
+			name string
+			def  author.Definition
 		}{
 			{
-				name:   "bypass_1_IfEqual_var_to_var_comparison",
-				inputs: map[string]schema.Value{"dyn": schema.Text("NOT_IN_ENUM")},
+				name: "bypass_1_IfEqual_var_to_var_comparison",
 				def: author.Definition{
 					Inputs:  schema.Record{"dyn": {Kind: "string", MaxBytes: 20}},
 					Effects: map[string]author.Effect{"tool": {Capability: "model", Input: schema.Record{"mode": enumField}}},
@@ -911,8 +878,7 @@ func TestRuntimeExecutesFalseRejectionProgramsAndCatchesStaticBypassesBeforeComm
 				},
 			},
 			{
-				name:   "bypass_2_IfEqual_alias_not_refined",
-				inputs: map[string]schema.Value{"dyn": schema.Text("NOT_IN_ENUM")},
+				name: "bypass_2_IfEqual_alias_not_refined",
 				def: author.Definition{
 					Inputs:  schema.Record{"dyn": {Kind: "string", MaxBytes: 20}},
 					Effects: map[string]author.Effect{"tool": {Capability: "model", Input: schema.Record{"mode": enumField}}},
@@ -929,8 +895,7 @@ func TestRuntimeExecutesFalseRejectionProgramsAndCatchesStaticBypassesBeforeComm
 				},
 			},
 			{
-				name:   "branch_dependent_request_with_invalid_branch_selected",
-				inputs: map[string]schema.Value{"flag": schema.Bool(false)},
+				name: "branch_dependent_request_with_invalid_branch_selected",
 				def: author.Definition{
 					Inputs:  schema.Record{"flag": {Kind: "bool"}},
 					Effects: map[string]author.Effect{"tool": {Capability: "model", Input: schema.Record{"mode": enumField}}},
@@ -962,16 +927,11 @@ func TestRuntimeExecutesFalseRejectionProgramsAndCatchesStaticBypassesBeforeComm
 
 		for _, tc := range runtimeInvalidCases {
 			t.Run(tc.name, func(t *testing.T) {
-				art, err := author.Compile(tc.def)
-				if err != nil {
-					t.Fatalf("expected %s to compile under Design C, got: %v", tc.name, err)
+				_, err := author.Compile(tc.def)
+				if err == nil || !strings.Contains(err.Error(), "source string schema exceeds") {
+					t.Fatalf("expected compile-time schema rejection, got %v", err)
 				}
-				prov, err := (author.Application{
-					"worker": {Artifact: art, Inputs: tc.inputs},
-				}).Provision()
-				if err != nil {
-					t.Fatalf("Provision(%s): %v", tc.name, err)
-				}
+				prov := prechangeSchemaProvision(t)
 				ctx := context.Background()
 				path := filepath.Join(t.TempDir(), tc.name+".sqlite")
 				s, err := runtime.Create(ctx, path, prov, runtime.DefaultLimits())
@@ -980,8 +940,8 @@ func TestRuntimeExecutesFalseRejectionProgramsAndCatchesStaticBypassesBeforeComm
 				}
 				_, runErr := s.Run(ctx, runtime.RunOptions{MaxSteps: 10, MaxDispatch: 10})
 				_ = s.Close()
-				if runErr == nil {
-					t.Fatalf("expected runtime pre-commit rejection for %s, got nil", tc.name)
+				if runErr == nil || !strings.Contains(runErr.Error(), `adapter input schema: field "mode": string outside bound or enum`) {
+					t.Fatalf("expected runtime pre-commit adapter schema refusal for %s, got %v", tc.name, runErr)
 				}
 				snap, err := runtime.Inspect(ctx, path, runtime.DefaultLimits())
 				if err != nil {
@@ -1003,20 +963,20 @@ func TestPR15Adversarial_DifferentialSeed20261027(t *testing.T) {
 	enumField := schema.Field{Kind: "string", MaxBytes: 8, Enum: []string{"fast", "slow"}}
 	wideField := schema.Field{Kind: "string", MaxBytes: 16}
 
-	var accepted, rejected, falseRejections, runtimeCaught int
+	var accepted, rejected, historicalSucceeded, historicalRejected int
 	for i := 0; i < 100; i++ {
 		pattern := rng.Intn(4)
 		var def author.Definition
 		var initVal string
-		expectValidAtRuntime := false
+		expectValidAtRuntime := true
+		compileRefusal := ""
 
 		switch pattern {
 		case 0:
 			val := "fast"
 			if rng.Intn(2) == 1 {
 				val = "BAD_ENUM"
-			} else {
-				expectValidAtRuntime = true
+				compileRefusal = `output "out": string outside bound or enum`
 			}
 			initVal = "fast"
 			def = author.Definition{
@@ -1030,7 +990,6 @@ func TestPR15Adversarial_DifferentialSeed20261027(t *testing.T) {
 			}
 		case 1:
 			initVal = "fast"
-			expectValidAtRuntime = true
 			def = author.Definition{
 				Inputs:  schema.Record{"in": wideField},
 				Outputs: schema.Record{"out": enumField},
@@ -1046,9 +1005,11 @@ func TestPR15Adversarial_DifferentialSeed20261027(t *testing.T) {
 				},
 			}
 		case 2:
+			// Even a valid sampled input does not establish safety for the
+			// wider declared input domain; all of this pattern must be rejected.
+			compileRefusal = `payload "mode": source string schema exceeds destination bound or enum`
 			if rng.Intn(2) == 0 {
 				initVal = "slow"
-				expectValidAtRuntime = true
 			} else {
 				initVal = "INVALID_RUNTIME"
 				expectValidAtRuntime = false
@@ -1065,7 +1026,6 @@ func TestPR15Adversarial_DifferentialSeed20261027(t *testing.T) {
 			}
 		case 3:
 			initVal = "fast"
-			expectValidAtRuntime = true
 			def = author.Definition{
 				Inputs:  schema.Record{"in": wideField},
 				Outputs: schema.Record{"out": enumField},
@@ -1082,20 +1042,33 @@ func TestPR15Adversarial_DifferentialSeed20261027(t *testing.T) {
 		}
 
 		art, err := author.Compile(def)
-		if err != nil {
-			rejected++
-			if expectValidAtRuntime {
-				falseRejections++
+		if compileRefusal != "" {
+			if err == nil || !strings.Contains(err.Error(), compileRefusal) {
+				t.Fatalf("iter %d: expected compile refusal containing %q, got %v", i, compileRefusal, err)
 			}
-			continue
+			rejected++
+		} else {
+			if err != nil {
+				t.Fatalf("iter %d: Compile rejected a valid definition: %v", i, err)
+			}
+			accepted++
 		}
-		accepted++
 
-		prov, err := (author.Application{
-			"worker": {Artifact: art, Inputs: map[string]schema.Value{"in": schema.Text(initVal)}},
-		}).Provision()
-		if err != nil {
-			t.Fatalf("iter %d Provision: %v", i, err)
+		var prov runtime.Provision
+		if pattern == 2 {
+			// Reuse the previously admitted program bytes for both sampled inputs.
+			prov = prechangeSchemaProvision(t)
+			prov.Runs[0].Projection.Data["in"] = schema.Text(initVal)
+		} else {
+			if compileRefusal != "" {
+				continue
+			}
+			prov, err = (author.Application{
+				"worker": {Artifact: art, Inputs: map[string]schema.Value{"in": schema.Text(initVal)}},
+			}).Provision()
+			if err != nil {
+				t.Fatalf("iter %d Provision: %v", i, err)
+			}
 		}
 		ctx := context.Background()
 		path := filepath.Join(t.TempDir(), fmt.Sprintf("diff_%d.sqlite", i))
@@ -1113,10 +1086,10 @@ func TestPR15Adversarial_DifferentialSeed20261027(t *testing.T) {
 		})
 		_ = s.Close()
 		if !expectValidAtRuntime {
-			if runErr == nil {
-				t.Fatalf("iter %d: expected runtime rejection for invalid input %q, got nil", i, initVal)
+			if runErr == nil || !strings.Contains(runErr.Error(), `adapter input schema: field "mode": string outside bound or enum`) {
+				t.Fatalf("iter %d: expected runtime adapter input schema refusal for %q, got %v", i, initVal, runErr)
 			}
-			runtimeCaught++
+			historicalRejected++
 			snap, err := runtime.Inspect(ctx, path, runtime.DefaultLimits())
 			if err != nil {
 				t.Fatalf("iter %d Inspect: %v", i, err)
@@ -1126,23 +1099,25 @@ func TestPR15Adversarial_DifferentialSeed20261027(t *testing.T) {
 			}
 		} else if runErr != nil {
 			t.Fatalf("iter %d: expected valid run, got error: %v", i, runErr)
+		} else if pattern == 2 {
+			historicalSucceeded++
 		}
-		if _, err := runtime.Replay(ctx, path, runtime.DefaultLimits()); err != nil {
+		replayed, err := runtime.Replay(ctx, path, runtime.DefaultLimits())
+		if err != nil {
 			t.Fatalf("iter %d Replay: %v", i, err)
 		}
-		snap, err := runtime.Inspect(ctx, path, runtime.DefaultLimits())
-		if err != nil {
-			t.Fatalf("iter %d Inspect: %v", i, err)
+		wantStatus := "succeeded"
+		if !expectValidAtRuntime {
+			wantStatus = "open"
 		}
-		var proj runtime.Projection
-		if err := json.Unmarshal([]byte(snap.Tables["runs"][0]["projection"].(string)), &proj); err != nil {
-			t.Fatalf("iter %d unmarshal projection: %v", i, err)
+		if len(replayed.Runs) != 1 || replayed.Runs[0].Projection.Status != wantStatus {
+			t.Fatalf("iter %d: expected one %s run, got %+v", i, wantStatus, replayed.Runs)
 		}
 	}
-	t.Logf("Differential summary (seed=20261027, N=100): accepted=%d, rejected=%d, falseRejections=%d, runtimeCaught=%d",
-		accepted, rejected, falseRejections, runtimeCaught)
-	if falseRejections != 0 {
-		t.Fatalf("expected 0 falseRejections, got falseRejections=%d", falseRejections)
+	t.Logf("Differential summary (seed=20261027, N=100): accepted=%d, rejected=%d, historicalSucceeded=%d, historicalRejected=%d",
+		accepted, rejected, historicalSucceeded, historicalRejected)
+	if historicalSucceeded == 0 || historicalRejected == 0 {
+		t.Fatal("expected both successful and refused historical inputs")
 	}
 }
 
@@ -1302,4 +1277,21 @@ func TestHistoricalReplayAndArtifactEncodingCompatibility(t *testing.T) {
 	if art.ID() != wantBaselineID {
 		t.Fatalf("artifact ID changed for unchanged valid program: got %s, want %s", art.ID(), wantBaselineID)
 	}
+}
+
+// prechangeSchemaProvision loads previously accepted programs to exercise
+// runtime checks and replay. The seed test uses receiving commit fdac2f8.
+// The other fixtures were captured at research commit 3d1d63fa.
+func prechangeSchemaProvision(t *testing.T) runtime.Provision {
+	t.Helper()
+	name := strings.ReplaceAll(t.Name(), "/", "__") + ".json"
+	raw, err := os.ReadFile(filepath.Join("testdata", "prechange-schema", name))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var p runtime.Provision
+	if err := json.Unmarshal(raw, &p); err != nil {
+		t.Fatal(err)
+	}
+	return p
 }

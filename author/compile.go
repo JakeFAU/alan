@@ -19,6 +19,9 @@ type compiler struct {
 	await    map[int]string
 	visits   int
 	fields   map[string]schema.Field
+
+	// loopEmptiness records snapshots whose length was statically known.
+	loopEmptiness map[int]bool
 }
 
 // Compile validates and lowers a definition. Its result retains all recovery inputs.
@@ -131,6 +134,9 @@ func Compile(d Definition) (Artifact, error) {
 		c.program.Code[pc].Target = target
 	}
 	if err = c.validate(); err != nil {
+		return Artifact{}, err
+	}
+	if err = c.checkInvocationHandles(); err != nil {
 		return Artifact{}, err
 	}
 	raw, id, err := executor.EncodeProgram(c.program)
@@ -372,16 +378,27 @@ func (c *compiler) validate() error {
 	}
 	incoming := make([]map[string]string, len(c.program.Code))
 	incoming[0] = map[string]string{}
+	// A known-empty loop still needs type checking and collection annotations
+	// in its lowered body. Only executable paths contribute string constraints.
+	executable := make([]bool, len(c.program.Code))
+	executable[0] = true
 	consts := make([]map[string]schema.Value, len(c.program.Code))
 	consts[0] = map[string]schema.Value{}
-	declFields := make([]map[string]schema.Field, len(c.program.Code))
-	declFields[0] = map[string]schema.Field{}
+	declFields := make([]map[string]stringBounds, len(c.program.Code))
+	declFields[0] = map[string]stringBounds{}
+	guards := make([]map[guardKey]bool, len(c.program.Code))
+	guards[0] = map[guardKey]bool{}
+	immutableGuards := c.immutableBoolGuards()
+	rowGuards := c.singleRowBoolBindings()
+	loopSnapshots := map[int][]map[string]schema.Value{}
+	c.loopEmptiness = map[int]bool{}
+	immutableStrings := c.immutableStringInputs()
 	types := map[string]string{}
 	for name, f := range c.program.Author.Inputs.Record {
 		incoming[0][name] = c.kind(f)
 		types[name] = c.kind(f)
 		if f.Kind == "string" {
-			declFields[0][name] = f
+			declFields[0][name] = stringBounds{{}: f}
 		}
 	}
 	for pc, in := range c.program.Code {
@@ -391,6 +408,12 @@ func (c *compiler) validate() error {
 		}
 		cstate := consts[pc]
 		fstate := declFields[pc]
+		var currentGuard boolGuard
+		for key, value := range guards[pc] {
+			if currentGuard.key.name == "" || key.name < currentGuard.key.name || key.name == currentGuard.key.name && (key.literal < currentGuard.key.literal || key.literal == currentGuard.key.literal && !key.stringEquality && currentGuard.key.stringEquality) {
+				currentGuard = boolGuard{key: key, value: value}
+			}
+		}
 		next := maps.Clone(state)
 		nextConst := maps.Clone(cstate)
 		nextField := maps.Clone(fstate)
@@ -425,59 +448,33 @@ func (c *compiler) validate() error {
 			}
 			return v, true
 		}
-		checkOperand := func(mConst map[string]schema.Value, mField map[string]schema.Field, o executor.Operand, want schema.Field) error {
-			if v, ok := evalConst(mConst, o); ok {
-				if err := want.Validate(v); err != nil {
-					return err
-				}
+		checkOperand := func(mConst map[string]schema.Value, mField map[string]stringBounds, o executor.Operand, want schema.Field) error {
+			if !executable[pc] && want.Kind == "string" {
+				return nil
 			}
-			if o.Ref != "" && o.Literal == nil && o.Offset == nil && want.Kind == "string" {
-				if src, ok := mField[o.Ref]; ok && src.Kind == "string" {
-					candidates := src.Enum
-					if len(candidates) == 0 {
-						candidates = want.Enum
-					}
-					if len(candidates) > 0 {
-						compatible := false
-						var lastErr error
-						for _, candidate := range candidates {
-							val := schema.Text(candidate)
-							if err := src.Validate(val); err != nil {
-								lastErr = err
-								continue
-							}
-							if err := want.Validate(val); err == nil {
-								compatible = true
-								break
-							} else {
-								lastErr = err
-							}
-						}
-						if !compatible {
-							if lastErr != nil {
-								return lastErr
-							}
-							return fmt.Errorf("incompatible string schema")
-						}
-					}
-				}
+			if v, ok := evalConst(mConst, o); ok {
+				return want.Validate(v)
+			}
+			if o.Ref != "" && o.Offset == nil && want.Kind == "string" && !mField[o.Ref].fits(want) {
+				return fmt.Errorf("source string schema exceeds destination bound or enum")
 			}
 			return nil
 		}
 		assignMeta := func(dst string, o executor.Operand) {
+			delete(nextField, dst)
 			if v, ok := evalConst(cstate, o); ok {
 				nextConst[dst] = v
+				if v.Kind == "string" {
+					nextField[dst] = literalStringBounds(v.Text, currentGuard)
+				}
+				return
 			} else {
 				delete(nextConst, dst)
 			}
 			if o.Ref != "" && o.Literal == nil && o.Offset == nil {
 				if f, ok := fstate[o.Ref]; ok {
 					nextField[dst] = f
-				} else {
-					delete(nextField, dst)
 				}
-			} else {
-				delete(nextField, dst)
 			}
 		}
 		read := func(o executor.Operand) (string, error) {
@@ -525,9 +522,8 @@ func (c *compiler) validate() error {
 				return c.kind(f), nil
 			}
 			kind, err := read(o)
-			// Operation identities are runtime strings at typed payload/list
-			// boundaries. Serializing one loses its static declaration proof;
-			// AwaitInvocation authenticates the retained operation at runtime.
+			// Operation identities use the string wire schema. The invocation
+			// provenance check follows them separately through data flow.
 			if f.Kind == "string" && strings.HasPrefix(kind, "request:") {
 				kind = "string"
 			}
@@ -601,20 +597,36 @@ func (c *compiler) validate() error {
 			}
 			field := f
 			c.program.Code[pc].Collection = &field
+			if snapshot, ok := evalConst(cstate, in.A); ok && snapshot.Kind == "list" {
+				if rows, err := snapshot.Records(); err == nil {
+					loopSnapshots[pc] = rows
+					c.loopEmptiness[pc] = len(rows) == 0
+				}
+			}
+			invariants := c.loopStringInvariants(pc, in.Otherwise, state, fstate)
+			forgetWritten := func(name string) {
+				delete(nextConst, name)
+				if state[name] == "string" {
+					if bound, ok := invariants[name]; ok {
+						nextField[name] = bound
+					} else {
+						nextField[name] = stringBounds{{}: {Kind: "string", MaxBytes: schema.MaxStringBytes}}
+					}
+				} else {
+					delete(nextField, name)
+				}
+			}
 			for i := pc + 1; i < in.Otherwise && i < len(c.program.Code); i++ {
 				bodyIn := c.program.Code[i]
 				if bodyIn.Dst != "" {
-					delete(nextConst, bodyIn.Dst)
-					delete(nextField, bodyIn.Dst)
+					forgetWritten(bodyIn.Dst)
 				}
 				for _, dst := range bodyIn.Bind {
-					delete(nextConst, dst)
-					delete(nextField, dst)
+					forgetWritten(dst)
 				}
 				if bodyIn.Op == "emit" {
 					for dst := range bodyIn.Updates {
-						delete(nextConst, dst)
-						delete(nextField, dst)
+						forgetWritten(dst)
 					}
 				}
 			}
@@ -624,6 +636,13 @@ func (c *compiler) validate() error {
 				return c.err(pc, "missing loop schema")
 			}
 			seen := map[string]bool{}
+			var rowBoolField, rowBoolName string
+			for _, name := range keys(in.Bind) {
+				if f.Element[name].Kind == "bool" && rowGuards[in.Bind[name]] {
+					rowBoolField, rowBoolName = name, in.Bind[name]
+					break
+				}
+			}
 			for _, field := range keys(in.Bind) {
 				name := in.Bind[field]
 				bound, ok := f.Element[field]
@@ -633,7 +652,20 @@ func (c *compiler) validate() error {
 				seen[name] = true
 				delete(nextConst, name)
 				if bound.Kind == "string" {
-					nextField[name] = bound
+					nextField[name] = stringBounds{{guard: currentGuard, row: true}: bound}
+					if rows := loopSnapshots[in.Target]; len(rows) > 0 {
+						alternatives := stringBounds{}
+						for _, row := range rows {
+							guard := currentGuard
+							if rowBoolName != "" {
+								guard = boolGuard{key: guardKey{name: rowBoolName}, value: row[rowBoolField].Flag}
+							}
+							for source, field := range literalStringBounds(row[field].Text, guard) {
+								joinStringBound(alternatives, source, field)
+							}
+						}
+						nextField[name] = alternatives
+					}
 				} else {
 					delete(nextField, name)
 				}
@@ -671,7 +703,8 @@ func (c *compiler) validate() error {
 			}
 			delete(nextConst, in.Dst)
 		case "loop":
-			continue
+			// The body is analyzed with conservative loop-carried inputs. Its
+			// exit accounts for a completed iteration separately from zero iterations.
 		case "branch":
 			expected := c.fields[state[in.B.Ref]]
 			a, err := readAs(in.A, expected)
@@ -758,7 +791,18 @@ func (c *compiler) validate() error {
 				seen[name] = true
 				delete(nextConst, name)
 				if f.Kind == "string" {
-					nextField[name] = f
+					nextField[name] = stringBounds{{guard: currentGuard}: f}
+					if in.Match.Kind == "adapter" && field != schema.ResultDisposition {
+						// Invalid replies bind a typed default outside the success schema.
+						valid := in.Bind[schema.ResultValid]
+						onValid, onInvalid := currentGuard, currentGuard
+						if immutableGuards[valid] || rowGuards[valid] {
+							onValid, onInvalid = boolGuard{key: guardKey{name: valid}, value: true}, boolGuard{key: guardKey{name: valid}, value: false}
+						}
+						bound := literalStringBounds(schema.Default(f).Text, onInvalid)
+						joinStringBound(bound, stringSource{guard: onValid}, f)
+						nextField[name] = bound
+					}
 				} else {
 					delete(nextField, name)
 				}
@@ -781,8 +825,16 @@ func (c *compiler) validate() error {
 			continue
 		}
 		successors := []int{pc + 1}
+		empty, knownLength := c.loopEmptiness[pc]
 		if in.Op == "foreach" {
-			successors = append(successors, in.Otherwise)
+			// The lexical body still needs its collection annotations when
+			// its snapshot is known empty.
+			if !knownLength || empty {
+				successors = append(successors, in.Otherwise)
+			}
+		}
+		if in.Op == "loop" {
+			successors = []int{c.program.Code[in.Target].Otherwise}
 		}
 		if in.Op == "jump" {
 			successors = []int{in.Target}
@@ -790,14 +842,72 @@ func (c *compiler) validate() error {
 		if in.Op == "branch" {
 			successors = []int{in.Target, in.Otherwise}
 		}
-		for _, target := range successors {
+		for edge, target := range successors {
 			if target <= pc || target >= len(incoming) {
 				return c.err(pc, "control requires later terminal step")
 			}
-			if incoming[target] == nil {
+			edgeExecutable := executable[pc] && !(empty && target == pc+1)
+			// Structural-only paths cannot contribute values at an executable join.
+			if executable[target] && !edgeExecutable {
+				continue
+			}
+			edgeFields := maps.Clone(nextField)
+			edgeConst := nextConst
+			if in.Op == "foreach" && target == in.Otherwise {
+				// A zero-iteration path retains the incoming values.
+				edgeFields = maps.Clone(fstate)
+				edgeConst = cstate
+			}
+			edgeGuards := maps.Clone(guards[pc])
+			// A row predicate is local to its current snapshot iteration. Any
+			// control-flow edge leaving that loop drops the association.
+			forget := map[string]bool{}
+			for start, loop := range c.program.Code {
+				if loop.Op == "foreach" && pc > start && pc < loop.Otherwise && target >= loop.Otherwise {
+					for pos := start + 1; pos < loop.Otherwise; pos++ {
+						for _, name := range c.program.Code[pos].Bind {
+							forget[name] = true
+						}
+					}
+				}
+			}
+			if len(forget) > 0 {
+				for key := range edgeGuards {
+					if forget[key.name] {
+						delete(edgeGuards, key)
+					}
+				}
+				for name, bound := range edgeFields {
+					edgeFields[name] = bound.forget(forget)
+				}
+			}
+			if in.Op == "branch" {
+				if name, lit, ok := comparedLiteral(in, "bool"); ok && (immutableGuards[name] || rowGuards[name]) {
+					guard := boolGuard{key: guardKey{name: name}, value: (edge == 0) == lit.Flag}
+					edgeGuards[guard.key] = guard.value
+					for variable, bound := range edgeFields {
+						edgeFields[variable] = bound.under(guard)
+					}
+				}
+				if name, lit, ok := comparedLiteral(in, "string"); ok {
+					if immutableStrings[name] {
+						guard := boolGuard{key: guardKey{name: name, literal: lit.Text, stringEquality: true}, value: edge == 0}
+						edgeGuards[guard.key] = guard.value
+						for variable, bound := range edgeFields {
+							edgeFields[variable] = bound.under(guard)
+						}
+					}
+					if edge == 0 && edgeFields[name].mayEqual(lit) {
+						edgeFields[name] = literalStringBounds(lit.Text, currentGuard)
+					}
+				}
+			}
+			if incoming[target] == nil || edgeExecutable && !executable[target] {
+				executable[target] = edgeExecutable
 				incoming[target] = maps.Clone(next)
-				consts[target] = maps.Clone(nextConst)
-				declFields[target] = maps.Clone(nextField)
+				consts[target] = maps.Clone(edgeConst)
+				declFields[target] = edgeFields
+				guards[target] = edgeGuards
 			} else {
 				for name, kind := range incoming[target] {
 					if next[name] != kind {
@@ -805,13 +915,23 @@ func (c *compiler) validate() error {
 					}
 				}
 				for name, val := range consts[target] {
-					if nv, ok := nextConst[name]; !ok || !val.Equal(nv) {
+					if nv, ok := edgeConst[name]; !ok || !val.Equal(nv) {
 						delete(consts[target], name)
 					}
 				}
-				for name, f := range declFields[target] {
-					if nf, ok := nextField[name]; !ok || f.Kind != nf.Kind || f.MaxBytes != nf.MaxBytes || !slices.Equal(f.Enum, nf.Enum) {
-						delete(declFields[target], name)
+				for name, bound := range edgeFields {
+					joined := maps.Clone(declFields[target][name])
+					if joined == nil {
+						joined = stringBounds{}
+					}
+					for source, field := range bound {
+						joinStringBound(joined, source, field)
+					}
+					declFields[target][name] = joined
+				}
+				for name, value := range guards[target] {
+					if other, ok := edgeGuards[name]; !ok || value != other {
+						delete(guards[target], name)
 					}
 				}
 			}
