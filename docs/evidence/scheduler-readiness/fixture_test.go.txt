@@ -1,0 +1,175 @@
+package executor
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"slices"
+	"testing"
+
+	"github.com/JakeFAU/alan/internal/boundary"
+)
+
+type selectorCase struct {
+	Shape              string
+	Runs, Observations int
+}
+
+func TestMeasureSelectorWork(t *testing.T) {
+	cases := []selectorCase{
+		{"fallback-last", 1, 1}, {"fallback-last", 8, 8},
+		{"fallback-last", 8, 32}, {"fallback-last", 32, 8},
+		{"fallback-last", 32, 32}, {"fallback-last", 64, 64},
+		{"fallback-first", 32, 32},
+		{"guarded-all", 1, 1}, {"guarded-all", 8, 8},
+		{"guarded-all", 32, 32}, {"guarded-all", 64, 64},
+	}
+	for _, c := range cases {
+		t.Run(fmt.Sprintf("%s/R%d/H%d", c.Shape, c.Runs, c.Observations), func(t *testing.T) {
+			measureSelector(t, c)
+		})
+	}
+}
+
+func measureSelector(t *testing.T, c selectorCase) {
+	t.Helper()
+	guarded := c.Shape == "guarded-all"
+	// Every receiver has the same three instructions: receive work, set tag, end.
+	p := p3WaitingProvision(t, c.Runs, 1)
+	target := p.Runs[0].ID
+	if c.Shape == "fallback-last" {
+		target = p.Runs[c.Runs-1].ID
+	}
+	p.Permissions = append(p.Permissions, Permission{Kind: "input", Source: "local", Target: target.Subject, Operation: "input", Obligation: "parked"})
+	s, path := faultIsolationStore(t, p, DefaultLimits(), true)
+	admit := func(id RunID, key, obligation string) string {
+		t.Helper()
+		result, err := s.AdmitInput(t.Context(), Input{Target: id.Subject, TransportID: key, LogicalID: key,
+			Obligation: obligation, Payload: map[string]Value{"number": Text(key)}})
+		if err != nil || !result.Accepted || result.Bound == nil || *result.Bound != id || result.ObservationID == "" {
+			t.Fatalf("admit %q to %+v: %+v, %v", key, id, result, err)
+		}
+		return result.ObservationID
+	}
+	selected := make(map[RunID]string)
+	if guarded {
+		for _, run := range p.Runs {
+			selected[run.ID] = admit(run.ID, "work-"+run.ID.Subject, "work")
+		}
+	} else {
+		// Each parked observation sorts before the only accepted match.
+		for i := 1; i < c.Observations; i++ {
+			admit(target, fmt.Sprintf("parked-%03d", i), "parked")
+		}
+		selected[target] = admit(target, "work-"+target.Subject, "work")
+	}
+	if s.execution != nil || s.executionFallbacks != 1 || count(t, s, "observations") != c.Observations {
+		t.Fatalf("admission did not leave the expected retained fallback state")
+	}
+	if guarded {
+		s = reopenFaultIsolationStaticStore(t, s, path, DefaultLimits())
+	}
+
+	var commits []string
+	ctx := boundary.WithObserver(t.Context(), func(_ context.Context, e boundary.Event) error {
+		if e.Boundary == "execution.committed" {
+			commits = append(commits, fmt.Sprintf("%s/%d", e.Subject, e.Sequence))
+		}
+		return nil
+	})
+	selectorSamples = nil
+	progress, err := s.RunProgress(ctx, RunOptions{MaxSteps: 3*c.Runs + 1, MaxDispatch: 1})
+	wantProgress := RunProgress{Steps: 3 * len(selected), Quiescent: true}
+	if err != nil || progress != wantProgress || (s.execution != nil) != guarded {
+		t.Fatalf("RunProgress %+v, index armed %t, error %v; want %+v, armed %t", progress, s.execution != nil, err, wantProgress, guarded)
+	}
+	var wantCommits []string
+	for seq := 1; seq <= 3; seq++ {
+		for _, run := range p.Runs {
+			if _, ok := selected[run.ID]; ok {
+				wantCommits = append(wantCommits, fmt.Sprintf("%s/%d", run.ID.Subject, seq))
+			}
+		}
+	}
+	if !slices.Equal(commits, wantCommits) {
+		t.Fatalf("commit order %v, want %v", commits, wantCommits)
+	}
+	replay, err := Replay(t.Context(), path, DefaultLimits())
+	if err != nil || replay.HistoryCount != len(wantCommits) || replay.IntentCount != 0 || len(replay.Runs) != c.Runs {
+		t.Fatalf("unexpected replay counts: history %d, intents %d, runs %d, error %v", replay.HistoryCount, replay.IntentCount, len(replay.Runs), err)
+	}
+	for _, run := range replay.Runs {
+		id, ready := selected[run.ID]
+		if !ready {
+			if run.Sequence != 0 || run.Projection.Status != "open" {
+				t.Fatalf("unexpected progress of %+v", run)
+			}
+			continue
+		}
+		history, err := readHistory(t.Context(), s.conn, run.ID)
+		if err != nil || len(history) != 3 || !history[0].selected.Valid || history[0].selected.String != id ||
+			run.Sequence != 3 || run.Projection.Status != "succeeded" || run.Projection.Data["number"] != Text("work-"+run.ID.Subject) {
+			t.Fatalf("unexpected outcome for %+v, want selection %q, history %+v, error %v", run, id, history, err)
+		}
+	}
+	result := struct {
+		selectorCase
+		Steps, History int
+		SQLite         string
+		Window, Total  *selectorWork `json:",omitempty"`
+	}{selectorCase: c, Steps: progress.Steps, History: replay.HistoryCount, SQLite: replay.SQLiteVersion}
+	if selectorInstrumented {
+		result.Window, result.Total = checkSelectorWork(t, c, len(selected), progress.Steps)
+	}
+	raw, err := json.Marshal(result)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("SELECTOR_ROW %s", raw)
+}
+
+func checkSelectorWork(t *testing.T, c selectorCase, ready, steps int) (*selectorWork, *selectorWork) {
+	t.Helper()
+	if len(selectorSamples) != steps+1 {
+		t.Fatalf("recorded %d selector calls, want %d steps and one quiescent scan", len(selectorSamples), steps)
+	}
+	var window, total selectorWork
+	for i, got := range selectorSamples {
+		if c.Shape == "guarded-all" {
+			if got.GuardedCalls != 1 || got.FallbackCalls != 0 {
+				t.Fatalf("expected guarded selection at call %d: %+v", i+1, got)
+			}
+		} else if got.FallbackCalls != 1 || got.GuardedCalls != 0 || got.ObservationRows != c.Observations {
+			t.Fatalf("expected fallback to validate %d rows at call %d: %+v", c.Observations, i+1, got)
+		}
+		total.add(got)
+		if i >= ready {
+			continue
+		}
+		want := selectorWork{FallbackCalls: 1, ObservationRows: c.Observations, CandidateVisits: 1, ObservationChecks: c.Observations}
+		switch c.Shape {
+		case "fallback-last":
+			want.CandidateVisits = c.Runs
+			want.ObservationChecks = c.Runs * c.Observations
+		case "guarded-all":
+			want = selectorWork{GuardedCalls: 1, ObservationRows: 1, CandidateVisits: 1, ObservationChecks: 1, OrderedRanks: c.Runs}
+			if i > 0 {
+				want.ObservationRows++ // Revalidate the preceding receive's consumed observation.
+			}
+		}
+		if got != want {
+			t.Fatalf("selector call %d: got %+v, want %+v", i+1, got, want)
+		}
+		window.add(got)
+	}
+	return &window, &total
+}
+
+func (w *selectorWork) add(s selectorWork) {
+	w.FallbackCalls += s.FallbackCalls
+	w.GuardedCalls += s.GuardedCalls
+	w.ObservationRows += s.ObservationRows
+	w.CandidateVisits += s.CandidateVisits
+	w.ObservationChecks += s.ObservationChecks
+	w.OrderedRanks += s.OrderedRanks
+}

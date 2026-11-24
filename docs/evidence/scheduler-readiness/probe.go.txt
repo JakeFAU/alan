@@ -1,0 +1,22 @@
+package executor
+
+// The overlay runs one synchronous, adapter-free fixture at a time.
+type selectorWork struct {
+	FallbackCalls, GuardedCalls      int
+	ObservationRows, CandidateVisits int
+	ObservationChecks, OrderedRanks  int
+}
+
+const selectorInstrumented = false
+
+var activeSelection *selectorWork
+var selectorSamples []selectorWork
+
+func recordSelection() func() {
+	var sample selectorWork
+	activeSelection = &sample
+	return func() {
+		selectorSamples = append(selectorSamples, sample)
+		activeSelection = nil
+	}
+}
