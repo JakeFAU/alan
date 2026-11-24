@@ -3,6 +3,7 @@ package executor
 import (
 	"bytes"
 	"context"
+	"database/sql/driver"
 	"encoding/json"
 	"errors"
 	"reflect"
@@ -202,39 +203,30 @@ func TestP3ReadinessReduceNestedIsolation(t *testing.T) {
 }
 
 func TestP3ReadinessCancellationAtRunBoundary(t *testing.T) {
-	// Cancel at preparation of the second run's projection query, a remaining
-	// logical boundary. Do not compare removed load-number/wall-clock faults.
 	for _, reference := range []bool{true, false} {
 		s, _ := messageStore(t, p3WaitingProvision(t, 4, 1))
 		ctx, cancel := context.WithCancel(t.Context())
-		reached := 0
-		err := s.conn.Raw(func(driver any) error {
-			driver.(*sqlite3.SQLiteConn).RegisterAuthorizer(func(op int, table, column, db string) int {
-				if op == sqlite3.SQLITE_READ && table == "runs" && column == "projection" {
-					reached++
-					if reached == 2 {
-						cancel()
-					}
-				}
-				return sqlite3.SQLITE_OK
-			})
-			return nil
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
+		var visited []RunID
 		var r *readyRun
-		if reference {
-			r, err = s.p3BaselineSelectReady(ctx, nil)
-		} else {
-			r, err = s.selectReady(ctx, nil)
-		}
+		var err error
+		observeQueryReads(t, s, func(table, column string, args []driver.NamedValue) {
+			if table == "runs" && column == "projection" {
+				visited = append(visited, RunID{args[0].Value.(string), args[1].Value.(int64)})
+				if len(visited) == 2 {
+					cancel()
+				}
+			}
+		}, func() {
+			if reference {
+				r, err = s.p3BaselineSelectReady(ctx, nil)
+			} else {
+				r, err = s.selectReady(ctx, nil)
+			}
+		})
 		cancel()
-		if e := s.conn.Raw(func(driver any) error { driver.(*sqlite3.SQLiteConn).RegisterAuthorizer(nil); return nil }); e != nil {
-			t.Fatal(e)
-		}
-		if reached != 2 || r != nil || !errors.Is(err, context.Canceled) {
-			t.Fatalf("logical cancellation reference=%t reached=%d ready=%+v error=%v", reference, reached, r, err)
+		want := []RunID{{"r00", 1}, {"r01", 1}}
+		if !reflect.DeepEqual(visited, want) || r != nil || !errors.Is(err, context.Canceled) {
+			t.Fatalf("logical cancellation reference=%t visited=%v ready=%+v error=%v", reference, visited, r, err)
 		}
 	}
 }
@@ -518,37 +510,22 @@ func p3SameCallBindingCut(t *testing.T) (*Store, RunID, *readyRun) {
 
 type p3CompositionVisits struct{ runs, loads, bindings int }
 
-// Counts actual queries in these composition fixtures: projection reads are
-// per-run visits, programs.bytes reads are loads, and the membership join's
-// member column is read exactly once by each per-run binding lookup.
 func p3CountCompositionVisits(t *testing.T, s *Store, fn func() (*readyRun, error)) (*readyRun, p3CompositionVisits, error) {
 	t.Helper()
 	var counts p3CompositionVisits
-	if err := s.conn.Raw(func(driver any) error {
-		driver.(*sqlite3.SQLiteConn).RegisterAuthorizer(func(op int, table, column, db string) int {
-			if op == sqlite3.SQLITE_READ {
-				switch {
-				case table == "runs" && column == "projection":
-					counts.runs++
-				case table == "programs" && column == "bytes":
-					counts.loads++
-				case table == "composition_members" && column == "member":
-					counts.bindings++
-				}
-			}
-			return sqlite3.SQLITE_OK
-		})
-		return nil
-	}); err != nil {
-		t.Fatal(err)
-	}
-	defer func() {
-		if err := s.conn.Raw(func(driver any) error { driver.(*sqlite3.SQLiteConn).RegisterAuthorizer(nil); return nil }); err != nil {
-			t.Error(err)
+	var ready *readyRun
+	var err error
+	observeQueryReads(t, s, func(table, column string, _ []driver.NamedValue) {
+		switch {
+		case table == "runs" && column == "projection":
+			counts.runs++
+		case table == "programs" && column == "bytes":
+			counts.loads++
+		case table == "composition_members" && column == "member":
+			counts.bindings++
 		}
-	}()
-	r, err := fn()
-	return r, counts, err
+	}, func() { ready, err = fn() })
+	return ready, counts, err
 }
 
 func TestP3ReadinessSameCallBoundPrograms(t *testing.T) {

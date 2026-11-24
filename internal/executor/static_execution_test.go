@@ -2,6 +2,7 @@ package executor
 
 import (
 	"context"
+	"database/sql/driver"
 	"errors"
 	"fmt"
 	"github.com/mattn/go-sqlite3"
@@ -324,19 +325,13 @@ func TestStaticExecutionPreexistingTriggerDisablesOpen(t *testing.T) {
 
 func staticReadyRunLoads(t *testing.T, s *Store, fn func() (*readyRun, error)) (*readyRun, int, error) {
 	t.Helper()
-	loads := 0
-	if err := s.conn.Raw(func(d any) error {
-		d.(*sqlite3.SQLiteConn).RegisterAuthorizer(func(op int, table, col, db string) int {
-			if op == sqlite3.SQLITE_READ && table == "runs" && col == "program_id" {
-				loads++
-			}
-			return sqlite3.SQLITE_OK
-		})
-		return nil
-	}); err != nil {
-		t.Fatal(err)
-	}
-	defer s.conn.Raw(func(d any) error { d.(*sqlite3.SQLiteConn).RegisterAuthorizer(nil); return nil })
-	ready, err := fn()
+	var loads int
+	var ready *readyRun
+	var err error
+	observeQueryReads(t, s, func(table, column string, _ []driver.NamedValue) {
+		if table == "runs" && column == "program_id" {
+			loads++
+		}
+	}, func() { ready, err = fn() })
 	return ready, loads, err
 }
