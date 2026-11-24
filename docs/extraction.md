@@ -39,7 +39,9 @@ The durable tests acknowledge the targeted execution boundary before killing a c
 
 ### Compare two CLI binaries
 
-Set `frozen_checkout` to a checkout of the research commit cited above. Build both commands using the same Go and SQLite toolchain. The optional comparison uses Python 3 with its standard SQLite module and a Unix shell.
+This byte-for-byte comparison requires identical embedded SQLite versions and source IDs in both binaries. The research extraction uses go-sqlite3 v1.14.52, while the v0.1.0 public runtime uses v1.14.53. The [cross-binding procedure](https://github.com/JakeFAU/alan/blob/6e7b765b92070ddc48462dbae003a7ff7caceac3/docs/qualification/sqlite-1.14.53/README.md#reproduction) builds the pre-release public runtime and the candidate from separate checkouts. It checks both engine identities explicitly before comparing all remaining retained fields. Use its recorded baseline revision to reproduce the public-runtime comparison.
+
+For a same-engine comparison, set `frozen_checkout` to a checkout with the same binding and engine as the candidate. Build both commands using the same Go toolchain. The optional comparison uses Python 3 with its standard SQLite module and a Unix shell.
 
 ```sh
 work=$(mktemp -d)

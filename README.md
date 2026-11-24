@@ -1,12 +1,12 @@
 # ALAN
 
-ALAN (Agentic Lambda Abstraction Network) is a Go library for computations that can outlive the process running them. It retains the program, its next instruction, typed data, observations and effect requests in SQLite. An application can inspect the state, resume execution in a new process, or replay the recorded decisions.
+ALAN (Agentic Lambda Abstraction Network) is a Go library for computations that can outlive the process running them. It retains the program, its next instruction, typed data, observations and effect requests in SQLite. It is intended for bounded, single-host agents such as a ticket router that waits for a tool or a document investigator that must retain its evidence. An application can inspect the state, resume execution in a new process, or replay the recorded decisions.
 
 ## Build your own durable agent
 
 The ticket router receives a priority, asks an application-owned adapter to choose a queue, and retains the answer in SQLite. Its [complete Go source](examples/ticket-routing/main.go) uses only `author`, `schema`, `effects` and `runtime`. The application defines the record fields, routing rule and success branch. ALAN retains the request identity and the result that branch consumes.
 
-Use Go 1.27.3 or later with CGO enabled, a C compiler and a local Unix filesystem with working locks. The following commands target the v0.1.0 tag once published. For a candidate checkout, use the [packaged-module qualification](docs/releases/consumer.md).
+The minimum Go version is 1.27.3. Go 1.27.4 is recommended. Enable CGO and use a C compiler and a local Unix filesystem with working locks, SQLite WAL and durable synchronization. The example installs the v0.1.0 release. To test a candidate before publication, follow the [packaged-module qualification](docs/releases/consumer.md).
 
 <!-- consumer-commands -->
 ```sh
@@ -64,7 +64,7 @@ The [weekend outing planner](examples/outing-planner/README.md) uses two retaine
 
 ## Run a computation
 
-Use Go 1.27.4, CGO, a C compiler and a local Unix filesystem. In your application module, run `go get github.com/JakeFAU/alan/runtime`. Import `github.com/JakeFAU/alan/author` to define a program and `github.com/JakeFAU/alan/runtime` to run it. From a checkout, run the [quickstart](examples/quickstart/main.go).
+From an application module, install the version shown in the ticket-routing example. Import `github.com/JakeFAU/alan/author` to define a program and `github.com/JakeFAU/alan/runtime` to run it. From a checkout, run the [quickstart](examples/quickstart/main.go).
 
 ```sh
 work=$(mktemp -d)
@@ -109,25 +109,25 @@ The reader takes no ownership and needs no adapter registry. See the [typed insp
 
 ## Authorize and register an adapter
 
-In the quickstart, the definition declares an effect named `search`, its capability `corpus`, and its input and output schemas. Provisioning derives an adapter grant in `p.Permissions` for subject `reader`, revision 1, capability `corpus` and operation/obligation `search`. Review the grants when creating the store. To withhold this authority, omit that adapter grant before calling `runtime.Create`.
+In the quickstart, the definition declares an effect named `search`, its capability `corpus`, and its input and output schemas. Provisioning derives an adapter grant in `p.Permissions` for subject `reader`, revision 1, capability `corpus` and operation/obligation `search`. Review the grants when creating the store. To withhold this authority, omit that adapter grant before calling `runtime.Create`. Bind the documents this capability needs in `p.AssetScopes`. [Capability-scoped inputs](docs/asset-scopes.md)
 
 At execution time the host sets `Adapters: map[string]effects.Adapter{"corpus": lookup.New()}` in `runtime.RunOptions`. For an ordinary adapter, trusted `Prepare` code validates and serializes the request without I/O. The runner checks source authority and the retained grant, reserves an attempt and applies its local dispatch gate before calling `Execute`. That method performs one context-aware operation and returns the supplied request ID and key. `author.Request` saves the original operation ID and `author.Await` selects its result. A missing registry entry leaves the committed request available for the next run without spending an attempt.
 
 ## Guarantees and limits
 
-- One active executor owns a store on a single host. Recovery assumes working filesystem locks, SQLite WAL and durable synchronization. For a retained program and selected observation, local reduction is deterministic. Replay checks the committed history with that reducer. It never contacts an endpoint.
+- One active executor owns a store on a single host. With working filesystem locks, SQLite WAL and durable synchronization, a replacement process can recover committed decisions after the owner exits or is killed. Qualification exercised process interruption at specific commit boundaries. Physical power loss, storage-device failure and network filesystems are outside that fault model. For a retained program and selected observation, local reduction is deterministic. Replay checks committed decisions offline.
 - A lifecycle lookup records what existed at its decision boundary. A later invocation can legally create a worker that a controller previously found missing. Inspection, Replay and fresh-owner recovery preserve both events. [Worked example and retained witnesses](docs/lifecycle-recovery.md#worked-example)
 - Revocation closes admission for covered dispatches. An already admitted call can still reach the endpoint. `Store.AwaitDispatchQuiescence` waits for covered local work and its accounting after revocation. An earlier remote mutation can still be unresolved.
-- A missing ordinary adapter result stays unknown across recovery. The built-in external protocol can retry its idempotent profile with the original key when the endpoint honors it. An unknown non-idempotent request stays unresolved. The controlled reconciliation profile separates permission to read an original receipt from permission to adopt it. A published historical outcome stays fixed.
+- An attempt reservation records a local charge. The endpoint may already have acted even if its response was lost. A missing ordinary adapter result stays unknown across recovery. The built-in external protocol can retry its idempotent profile with the original key when the endpoint honors it. An unknown non-idempotent request stays unresolved. The controlled reconciliation profile separates permission to read an original receipt from permission to adopt it. A published historical outcome stays fixed.
 - Finite composition invokes retained templates under shared root bounds for depth, invocations, created runs and effects. The runner limits its own in-flight calls. A quiescent runner can have open runs waiting for input, a receipt or service. Distributed ownership, general dynamic spawning, PostgreSQL, history compaction and a managed provider or tool catalog remain unimplemented.
-- Supported SQLite formats are 3 (ordinary), 4 (complete composition) and 5 (reconciliation), plus 6, 7 and 8 after the corresponding store retains conflicting receipt evidence. Compositions with local dispatch evidence use 9/10. Protected continuations use 11/12. Request authority v1 uses 13/14 and exact request binding v2 uses 15/16. In each pair, the second format retains conflicting receipt evidence. Opening or replaying preserves the format. The original result and version-2 external key survive promotion. Program semantics remain `alan/1d/v1`, `alan/1e/v1` and `alan/1g/v1`. Authored scalar and collection/invocation programs retain compiler versions `alan/author/v1` and `alan/author/v2`, respectively. [Local dispatch admission](docs/dispatch-admissions.md) · [Protected continuations](docs/continuations.md) · [Request authority and exact request binding](examples/delegation/README.md)
+- The v0.1.x API contract covers documented public calls, error identities and configuration meanings. A later v0 minor release can require source changes. Before upgrading, stop the owner and back up the database and its committed WAL together. [API and store upgrade policy](docs/releases/compatibility.md)
+- Supported ALAN store formats are 3 (ordinary), 4 (complete composition) and 5 (reconciliation), plus 6, 7 and 8 after the corresponding store retains conflicting receipt evidence. Compositions with local dispatch evidence use 9/10. Protected continuations use 11/12. Request authority v1 uses 13/14 and exact request binding v2 uses 15/16. In each pair, the second format retains conflicting receipt evidence. Opening or replaying preserves the format. The original result and version-2 external key survive promotion. Program semantics remain `alan/1d/v1`, `alan/1e/v1` and `alan/1g/v1`. Authored scalar and collection/invocation programs retain compiler versions `alan/author/v1` and `alan/author/v2`, respectively. [Local dispatch admission](docs/dispatch-admissions.md) · [Protected continuations](docs/continuations.md) · [Request authority and exact request binding](examples/delegation/README.md)
 
 - New deployments can select assets per capability. Scoped formats 17–30 preserve the matching ordinary, composition, reconciliation or authority protocol and record the selected asset identities and versions. [Bind assets to capabilities](docs/asset-scopes.md) · [Store compatibility and upgrade policy](docs/releases/compatibility.md)
 
 ## Development
 
-The [performance evidence index](docs/performance.md) links the measured scaling
-results, recovery checks and the pilot that missed its threshold.
+Performance work deferred beyond v0.1.0 includes measuring the elapsed cost of fallback observation scans and guarded candidate-list copies, and measuring creation latency and peak memory for larger provisions. The existing scheduler evidence counts work on fixed workloads. [Performance evidence and measured limits](docs/performance.md)
 
 This runtime was extracted from [research commit `003dc9c4`](https://github.com/JakeFAU/alan-research/commit/003dc9c45ac9b0c1f48565632f5be80f0f05beed). The research repository keeps the monograph, historical campaigns and their source-bound qualifications. See the [extraction inventory and verification commands](docs/extraction.md).
 

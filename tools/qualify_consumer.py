@@ -15,6 +15,17 @@ MODULE = "github.com/JakeFAU/alan"
 VERSION = "v0.1.0"
 DRIVER = "github.com/mattn/go-sqlite3"
 PUBLIC = "https://proxy.golang.org"
+REQUIRED_FILES = {
+    "LICENSE", "README.md", "go.mod", "go.sum", "docs/releases/v0.1.0.md",
+    "author/compile.go", "schema/schema.go", "effects/effects.go", "runtime/store.go",
+    "examples/ticket-routing/main.go",
+}
+FIXTURE_SHA256 = {
+    "internal/storetest/testdata/legacy-effects.sqlite.gz":
+        "2dbebd50029d20b652383d1e1b80ad2ca522566c35a3da648f301bd89d695b0d",
+    "examples/weather-agent/testdata/negative-http-status.sqlite.gz":
+        "3b846b4452ea4ef4191809e439358ebfbec9373b8aaf108a239d9f612cbfa6f5",
+}
 
 
 def command(args, cwd, env=None):
@@ -99,13 +110,33 @@ def block(readme, marker, language):
     return blocks[0]
 
 
+def inspect_archive(archive):
+    prefix = MODULE + "@" + VERSION + "/"
+    files = {}
+    for entry in archive.infolist():
+        require(entry.filename.startswith(prefix), "unexpected module ZIP root: " + entry.filename)
+        name = entry.filename[len(prefix):]
+        require(not name.startswith(("docs/evidence/", "docs/qualification/")),
+                "module ZIP includes archived evidence")
+        if entry.is_dir():
+            continue
+        require(name not in files, "duplicate module ZIP entry: " + name)
+        files[name] = hashlib.sha256(archive.read(entry)).digest()
+    missing = (REQUIRED_FILES | FIXTURE_SHA256.keys()) - files.keys()
+    require(not missing, "module ZIP missing files: " + ", ".join(sorted(missing)))
+    for name, digest in FIXTURE_SHA256.items():
+        require(files[name].hex() == digest, "module ZIP fixture checksum mismatch: " + name)
+    # SHA-256 over sorted relative UTF-8 paths, each followed by NUL and its raw SHA-256.
+    inventory = hashlib.sha256()
+    for name, digest in sorted(files.items()):
+        inventory.update(name.encode("utf-8") + b"\0" + digest)
+    return {"archive_file_count": len(files), "archive_inventory_sha256": inventory.hexdigest()}
+
+
 def qualify(work, package, proxy, sumdb):
     with zipfile.ZipFile(package["Zip"]) as archive:
-        names = archive.namelist()
-        prefix = MODULE + "@" + VERSION + "/"
-        readme = archive.read(prefix + "README.md").decode()
-        require(not any(n.startswith((prefix + "docs/evidence/", prefix + "docs/qualification/"))
-                        for n in names), "module ZIP includes archived evidence")
+        result = inspect_archive(archive)
+        readme = archive.read(MODULE + "@" + VERSION + "/README.md").decode()
     env = environment(work / "consumer-cache", proxy, sumdb)
     home = work / "consumer"
     home.mkdir()
@@ -119,6 +150,16 @@ def qualify(work, package, proxy, sumdb):
     selected = json.loads(command(["go", "list", "-m", "-json", MODULE], app, env))
     require(selected["Version"] == VERSION and selected["Sum"] == package["Sum"] and
             selected["GoModSum"] == package["GoModSum"], "consumer resolved a different module")
+    driver = json.loads(command(["go", "list", "-m", "-json", DRIVER], app, env))
+    module = json.loads(command(["go", "mod", "edit", "-json", package["GoMod"]], app, env))
+    pins = [r["Version"] for r in module["Require"] if r["Path"] == DRIVER]
+    require(pins == [driver["Version"]], "consumer selected a different SQLite version")
+    sums = (Path(package["Dir"]) / "go.sum").read_text().splitlines()
+    require(f'{DRIVER} {driver["Version"]} {driver["Sum"]}' in sums and
+            f'{DRIVER} {driver["Version"]}/go.mod {driver["GoModSum"]}' in sums,
+            "consumer SQLite checksums differ from packaged go.sum")
+    result["sqlite"] = {"version": driver["Version"], "module_sum": driver["Sum"],
+                        "go_mod_sum": driver["GoModSum"]}
     imports = command(["go", "list", "-f", '{{join .Imports " "}}', "."], app, env).split()
     require({p for p in imports if p.startswith(MODULE + "/")} ==
             {MODULE + "/" + p for p in ("author", "effects", "runtime", "schema")}, "unexpected ALAN imports")
@@ -129,7 +170,7 @@ def qualify(work, package, proxy, sumdb):
     for name in docs:
         help_text = command(["go", "doc", MODULE + "/runtime", name], app, env)
         require(name.split(".")[-1] in help_text, "missing public documentation for " + name)
-    return {"output": output.splitlines(), "go_doc": docs, "module_verify": verify,
+    return {**result, "output": output.splitlines(), "go_doc": docs, "module_verify": verify,
             "go_version": command(["go", "version"], app, env),
             "target": command(["go", "env", "GOOS", "GOARCH", "CGO_ENABLED"], app, env).splitlines()}
 
@@ -150,17 +191,21 @@ def main():
             expected = json.loads(args.published.read_text())
             require(expected["mode"] == "candidate" and expected["version"] == VERSION,
                     "expected a passing candidate manifest for " + VERSION)
+            tag = "refs/tags/" + VERSION
+            refs = command(["git", "ls-remote", "https://" + MODULE, tag, tag + "^{}"], work).splitlines()
+            hashes = {ref: sha for sha, ref in (line.split() for line in refs)}
+            sha = hashes.get(tag + "^{}", hashes.get(tag))
+            require(sha and sha == expected["commit"], "published tag is absent or points at a different commit")
             proxy, sumdb = PUBLIC, "sum.golang.org"
             env = environment(work / "published", proxy, sumdb)
             package = download(MODULE + "@" + VERSION, work, env)
             require(package["Sum"] == expected["module_sum"] and package["GoModSum"] == expected["go_mod_sum"],
                     "published module differs from qualified candidate")
-            tag = "refs/tags/" + VERSION
-            refs = command(["git", "ls-remote", "https://" + MODULE, tag, tag + "^{}"], work).splitlines()
-            hashes = {ref: sha for sha, ref in (line.split() for line in refs)}
-            sha = hashes.get(tag + "^{}", hashes.get(tag))
-            require(sha == expected["commit"], "published tag points at a different commit")
         result = qualify(work, package, proxy, sumdb)
+        if args.published:
+            for field in ("archive_file_count", "archive_inventory_sha256", "sqlite"):
+                if field in expected:
+                    require(result[field] == expected[field], "published candidate mismatch: " + field)
         archive = Path(package["Zip"]).read_bytes()
         result.update({"mode": "candidate" if args.candidate else "published", "commit": sha,
                        "version": VERSION, "module_sum": package["Sum"], "go_mod_sum": package["GoModSum"],

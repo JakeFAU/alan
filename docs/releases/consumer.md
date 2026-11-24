@@ -8,7 +8,7 @@ python3 tools/qualify_consumer.py --candidate HEAD --output /tmp/alan-v0.1.0-can
 
 The producer resolves v0.1.0 inside a disposable local Git repository, verifies the resolved commit, and asks Go to build the standard distribution ZIP. It serves the module and the pinned SQLite dependency through a directory implementing the Go proxy protocol. The driver ZIP and module descriptor must match the candidate's checked-in go.sum. This local candidate uses those hashes and the local Git revision for provenance. The public checksum database first records the released version after publication.
 
-The consumer starts outside the checkout with empty, private module and build caches, workspace mode off and a new application module. It executes the install, build and four separate process invocations from the packaged README. The application checks the stored state, result and call count. The driver checks actual output, public documentation, imports, absence of replacements, selected module checksums and module verification. CI runs the candidate path for proposed changes. A manifest identifies the commit, compressed ZIP, Go module sums, tested platform and outputs.
+The consumer starts outside the checkout with empty, private module and build caches, workspace mode off and a new application module. It executes the install, build and four separate process invocations from the packaged README. The application checks the stored state, result and call count. The driver checks actual output, public documentation, imports, absence of replacements, selected module checksums and module verification. CI runs the candidate path for proposed changes. The manifest identifies the commit, Go module sums, selected SQLite binding and checksums, tested platform and application outputs. It records both the compressed ZIP digest and a content inventory covering every shipped file. The inventory is independent of ZIP compression and entry order. License, public source, release notes, the complete example and two historical fixtures are required in the package.
 
 Keep the passing candidate JSON with the release decision. After authorized publication, run the following command with that exact manifest.
 
@@ -16,7 +16,7 @@ Keep the passing candidate JSON with the release decision. After authorized publ
 python3 tools/qualify_consumer.py --published /tmp/alan-v0.1.0-candidate.json --output /tmp/alan-v0.1.0-published.json
 ```
 
-The published check resolves the tag through the public Go proxy with the public checksum database, checks the public Git tag's commit, compares both module sums with the candidate, and runs the same consumer. Tag the commit recorded in the manifest. If the intended release commit changes during integration, qualify that revision and retain its manifest before publication. Creating a public tag is a separate maintainer action.
+The published check confirms the Git tag’s commit before downloading v0.1.0 from the public Go proxy with the public checksum database. It compares the module and go.mod sums, SQLite selection and content inventory from the integrated candidate, then records results from the same clean consumer. Preserve a published tag at its original commit. A correction requires a separately qualified patch version. Tag the commit recorded in the manifest. If the intended release commit changes during integration, qualify that revision and retain its manifest before publication. Creating a public tag is a separate maintainer action.
 
 ## Evidence distribution
 
