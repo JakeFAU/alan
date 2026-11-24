@@ -376,7 +376,10 @@ func (s *Store) recordExternalReceipt(ctx context.Context, a ExternalAttempt, r 
 			return corrupt("conflicting external receipt without original grant")
 		}
 		var winner resource.Receipt
-		if len(prior) > s.limits.MaxObservationBytes || decode(prior, &winner) != nil || !sameJSON(prior, winner) || !validReceipt(a, winner) {
+		if len(prior) > s.limits.MaxObservationBytes {
+			return ErrLimit
+		}
+		if decode(prior, &winner) != nil || !sameJSON(prior, winner) || !validReceipt(a, winner) {
 			return corrupt("invalid first external receipt")
 		}
 		return s.commitReceiptConflict(ctx, tx, a.Intent.ID, prior, raw)

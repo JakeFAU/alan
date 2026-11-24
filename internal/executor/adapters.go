@@ -11,11 +11,15 @@ import (
 	"fmt"
 	"reflect"
 	"time"
+	"unicode/utf8"
 
 	"github.com/JakeFAU/alan/effects"
 	"github.com/JakeFAU/alan/internal/boundary"
 	publicschema "github.com/JakeFAU/alan/schema"
 )
+
+var ErrAdapterOutput = errors.New("invalid adapter output")
+var ErrCapabilityUnavailable = errors.New("adapter capability unavailable")
 
 type AdapterAttempt struct {
 	Authority       *EffectAuthority `json:",omitempty"`
@@ -180,7 +184,7 @@ func (s *Store) prepareAdapterWork(ctx context.Context, id string, registry map[
 	}
 	adapter := registry[intent.Target]
 	if adapter == nil {
-		return nil, fmt.Errorf("adapter capability %q unavailable", intent.Target)
+		return nil, fmt.Errorf("%w: %q", ErrCapabilityUnavailable, intent.Target)
 	}
 	if s.reconciliation {
 		if intent.Target == receiptReadCapability {
@@ -196,11 +200,11 @@ func (s *Store) prepareAdapterWork(ctx context.Context, id string, registry map[
 	// trusted to follow the documented pure/bounded contract.
 	p, e := adapter.Prepare(effects.Copy(request))
 	if e != nil {
-		return nil, fmt.Errorf("adapter configuration/preparation rejected")
+		return nil, fmt.Errorf("adapter configuration/preparation rejected for capability %q effect %q", intent.Target, intent.Obligation)
 	}
 	p = effects.Freeze(p)
 	if !reflect.DeepEqual(p.Request, request) || effects.CheckPrepared(p) != nil || p.MaxResponseBytes > s.limits.MaxObservationBytes/8 {
-		return nil, fmt.Errorf("prepared adapter request or bounds invalid")
+		return nil, fmt.Errorf("prepared adapter request or bounds invalid for capability %q effect %q (maximum response bytes %d)", intent.Target, intent.Obligation, min(effects.MaxWireBytes, s.limits.MaxObservationBytes/8))
 	}
 	auth, e := s.AuthorizeIntent(ctx, id)
 	if e != nil {
@@ -358,6 +362,29 @@ func (s *Store) accountAdapter(ctx context.Context, c adapterCompletion) error {
 	event.Phase = "pre-consumption"
 	return errors.Join(c.err, boundary.Reached(ctx, event))
 }
+
+// checkCandidateMetadata validates what a live adapter supplied. Historical
+// receipts retain the metadata rules under which they were originally recorded.
+func checkCandidateMetadata(c effects.Candidate) error {
+	if c.HTTPStatus != 0 && (c.HTTPStatus < 100 || c.HTTPStatus > 599) {
+		return fmt.Errorf("%w: invalid HTTP status", ErrAdapterOutput)
+	}
+	if !utf8.ValidString(c.Disposition) || !utf8.ValidString(c.RequestID) || !utf8.ValidString(c.ResponseID) || !utf8.ValidString(c.ReturnedModel) || !utf8.ValidString(c.Response) {
+		return fmt.Errorf("%w: invalid UTF-8 response metadata", ErrAdapterOutput)
+	}
+	if c.Usage != nil {
+		if !utf8.Valid(c.Usage.Details) {
+			return fmt.Errorf("%w: invalid UTF-8 usage details", ErrAdapterOutput)
+		}
+		for _, n := range []*int64{c.Usage.InputTokens, c.Usage.OutputTokens, c.Usage.TotalTokens} {
+			if n != nil && *n < 0 {
+				return fmt.Errorf("%w: negative usage counter", ErrAdapterOutput)
+			}
+		}
+	}
+	return nil
+}
+
 func (s *Store) recordAdapterResult(ctx context.Context, a AdapterAttempt, c effects.Candidate) (AdapterResult, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -374,8 +401,11 @@ func (s *Store) recordAdapterResult(ctx context.Context, a AdapterAttempt, c eff
 	if e != nil {
 		return r, e
 	}
-	if !reflect.DeepEqual(retained, a) || c.ID != a.Intent.ID || c.Key != a.Prepared.Request.Key {
+	if !reflect.DeepEqual(retained, a) {
 		return r, ErrConflict
+	}
+	if c.ID != a.Intent.ID || c.Key != a.Prepared.Request.Key {
+		return r, fmt.Errorf("%w: response correlation: %w", ErrAdapterOutput, ErrConflict)
 	}
 	if e = validateAdapterAttempt(ctx, tx, a, s.namespace, s.limits); e != nil {
 		return r, e
@@ -406,10 +436,23 @@ func (s *Store) recordAdapterResult(ctx context.Context, a AdapterAttempt, c eff
 	if !a.Allowed && c.Disposition != "grant_denied" && c.Disposition != "source_denied" {
 		return r, ErrConflict
 	}
+	if e = checkCandidateMetadata(c); e != nil {
+		return r, e
+	}
 	values, d := effects.Result(a.Prepared.Request.Output.Record, c)
-	r = AdapterResult{Candidate: effects.Copy(c), Values: values, Disposition: d}
+	// Build the retained copy using the same JSON representation as historical
+	// results. Invalid RawMessage or other unencodable response data must surface
+	// at the adapter boundary, before a receipt or its digest can be retained.
+	candidateBytes, e := json.Marshal(c)
+	if e != nil {
+		return r, fmt.Errorf("%w: encode candidate: %v", ErrAdapterOutput, e)
+	}
+	r = AdapterResult{Values: values, Disposition: d}
+	if e = json.Unmarshal(candidateBytes, &r.Candidate); e != nil {
+		return r, fmt.Errorf("%w: decode candidate: %v", ErrAdapterOutput, e)
+	}
 	r.Digest = adapterResultDigest(r)
-	if e = validateAdapterResult(a, r, s.limits); e != nil {
+	if e = checkAdapterResult(a, r, s.limits, ErrAdapterOutput); e != nil {
 		return r, e
 	}
 	b, e := json.Marshal(r)
@@ -543,30 +586,39 @@ func validateAdapterAttempt(ctx context.Context, q queryer, a AdapterAttempt, na
 	if e != nil {
 		return e
 	}
-	if !reflect.DeepEqual(r, a.Prepared.Request) || !reflect.DeepEqual(i.Intent, a.Intent) || a.AuthorizationID != auth.ID || a.Allowed != allowed || a.Reason != reason || a.Prepared.Digest == "" || effects.CheckPrepared(a.Prepared) != nil || a.Prepared.MaxResponseBytes > l.MaxObservationBytes/8 {
+	if !reflect.DeepEqual(r, a.Prepared.Request) || !reflect.DeepEqual(i.Intent, a.Intent) || a.AuthorizationID != auth.ID || a.Allowed != allowed || a.Reason != reason || a.Prepared.Digest == "" || effects.CheckPrepared(a.Prepared) != nil {
 		return corrupt("adapter attempt binding")
+	}
+	if a.Prepared.MaxResponseBytes > l.MaxObservationBytes/8 {
+		return ErrLimit
 	}
 	return nil
 }
 func validateAdapterResult(a AdapterAttempt, r AdapterResult, l Limits) error {
+	return checkAdapterResult(a, r, l, ErrCorrupt)
+}
+
+// class identifies whether this envelope was supplied live or read from storage.
+// Both paths apply exactly the same correlation, bounds and normalization checks.
+func checkAdapterResult(a AdapterAttempt, r AdapterResult, l Limits, class error) error {
 	if r.RefusalWitness != "" && (a.Intent.Target != receiptReadCapability || r.Read != nil || r.Reconciled != nil || (r.Disposition != "original_busy" && r.Disposition != "original_unsettled")) {
-		return corrupt("misplaced read refusal witness")
+		return fmt.Errorf("%w: misplaced read refusal witness", class)
 	}
 	if r.Digest == "" || r.Digest != adapterResultDigest(r) {
-		return corrupt("adapter result digest")
+		return fmt.Errorf("%w: adapter result digest", class)
 	}
 	if r.Reconciled != nil {
 		if r.Read != nil || !a.Allowed || !reflect.DeepEqual(r.Candidate, effects.Candidate{}) || r.Reconciled.Target != a.Intent.ID || r.Disposition != "validated" || publicschema.ValidateResult(a.Prepared.Request.Output.Record, r.Values) != nil {
-			return corrupt("reconciled result envelope")
+			return fmt.Errorf("%w: reconciled result envelope", class)
 		}
 		return checkSize(r, l.MaxObservationBytes)
 	}
 	c := r.Candidate
 	if c.ID != a.Intent.ID || c.Key != a.Prepared.Request.Key || c.Disposition == "" || c.Disposition == "unknown" {
-		return corrupt("adapter result correlation")
+		return fmt.Errorf("%w: adapter result correlation", class)
 	}
 	if len(c.Response) > a.Prepared.MaxResponseBytes || len(c.RequestID) > 512 || len(c.ResponseID) > 512 || len(c.ReturnedModel) > 512 {
-		return corrupt("adapter response bounds")
+		return fmt.Errorf("%w: adapter response bounds", class)
 	}
 	if !a.Allowed {
 		expected := "source_denied"
@@ -577,7 +629,7 @@ func validateAdapterResult(a AdapterAttempt, r AdapterResult, l Limits) error {
 		// explain this result; even an HTTP status would claim a contact.
 		want := effects.Candidate{ID: a.Intent.ID, Key: a.Prepared.Request.Key, Disposition: expected}
 		if !reflect.DeepEqual(c, want) || r.Read != nil || r.RefusalWitness != "" {
-			return corrupt("denied adapter result")
+			return fmt.Errorf("%w: denied adapter result", class)
 		}
 	}
 	values, d := effects.Result(a.Prepared.Request.Output.Record, c)
@@ -586,9 +638,15 @@ func validateAdapterResult(a AdapterAttempt, r AdapterResult, l Limits) error {
 		values["adopted"] = publicschema.Bool(r.Read.Adoption == "adopted")
 	}
 	if d != r.Disposition || !reflect.DeepEqual(values, r.Values) || publicschema.ValidateResult(a.Prepared.Request.Output.Record, r.Values) != nil {
-		return corrupt("adapter result validation")
+		return fmt.Errorf("%w: adapter result validation", class)
 	}
-	return checkSize(r, l.MaxObservationBytes)
+	if err := checkSize(r, l.MaxObservationBytes); err != nil {
+		if class == ErrAdapterOutput {
+			return fmt.Errorf("%w: result size: %w", class, err)
+		}
+		return err
+	}
+	return nil
 }
 func validateAdapters(ctx context.Context, q queryer, l Limits) error {
 	if _, e := readAssets(ctx, q); e != nil {

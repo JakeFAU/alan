@@ -20,6 +20,7 @@ type SeriesStart uint8
 const ApproveAtProvision SeriesStart = 1
 
 // SeriesOptions declares finite capacity, not approval of all positions.
+// The zero value lacks a series ID, count, and first-position approval.
 // Empty ApprovalReasons permits any reason accepted by ContinuationPort's schema.
 type SeriesOptions struct {
 	ID              string

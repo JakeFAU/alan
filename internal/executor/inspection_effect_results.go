@@ -157,7 +157,10 @@ func (c *effectCut) readAdditionalReceipts() error {
 		winner, _ := row["winner_digest"].(string)
 		offer, _ := row["offer_digest"].(string)
 		raw, ok := row["descriptor"].(string)
-		if x == nil || !ok || len(raw) > c.limits.MaxObservationBytes || winner == offer || programHash([]byte(raw)) != offer || seen[[2]string{id, offer}] {
+		if len(raw) > c.limits.MaxObservationBytes {
+			return ErrLimit
+		}
+		if x == nil || !ok || winner == offer || programHash([]byte(raw)) != offer || seen[[2]string{id, offer}] {
 			return corrupt("unbound additional receipt")
 		}
 		seen[[2]string{id, offer}] = true
@@ -174,8 +177,11 @@ func (c *effectCut) readAdditionalReceipts() error {
 			if err != nil {
 				return err
 			}
-			if candidate.Disposition != "validated" || candidate.Reconciled != nil || candidate.Read != nil || candidate.RefusalWitness != "" || validateAdapterResult(*a, candidate, c.limits) != nil {
+			if candidate.Disposition != "validated" || candidate.Reconciled != nil || candidate.Read != nil || candidate.RefusalWitness != "" {
 				return corrupt("invalid additional adapter receipt")
+			}
+			if err := validateAdapterResult(*a, candidate, c.limits); err != nil {
+				return err
 			}
 			item.Adapter = &candidate
 		case "external":

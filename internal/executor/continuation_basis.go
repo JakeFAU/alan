@@ -556,8 +556,11 @@ func (s *Store) approvedContinuationBasis(ctx context.Context, q queryer, slot C
 		return ContinuationBasis{}, err
 	}
 	if w.view == nil || decision.Order == 0 || d.TerminalSequence != 0 || !validAdmissionHeader(d) ||
-		!validAdmissionPayload(d.Payload) || checkSize(d, s.limits.MaxObservationBytes) != nil {
+		!validAdmissionPayload(d.Payload) {
 		return ContinuationBasis{}, corrupt("invalid retained continuation approval")
+	}
+	if err := checkSize(d, s.limits.MaxObservationBytes); err != nil {
+		return ContinuationBasis{}, err
 	}
 	target, err := loadRun(ctx, q, slot.Target)
 	if err != nil {

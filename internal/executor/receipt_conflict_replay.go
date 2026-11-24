@@ -81,7 +81,10 @@ func replayReceiptOffers(ctx context.Context, q queryer, id string, limits Limit
 		firstQuery = "SELECT descriptor FROM external_receipts WHERE intent_id=?"
 		check = func(raw []byte) (bool, error) {
 			var r resource.Receipt
-			if len(raw) > limits.MaxObservationBytes || decode(raw, &r) != nil || !sameJSON(raw, r) || !validReceipt(a, r) {
+			if len(raw) > limits.MaxObservationBytes {
+				return false, ErrLimit
+			}
+			if decode(raw, &r) != nil || !sameJSON(raw, r) || !validReceipt(a, r) {
 				return false, corrupt("invalid raw receipt evidence")
 			}
 			return true, nil
@@ -97,7 +100,10 @@ func replayReceiptOffers(ctx context.Context, q queryer, id string, limits Limit
 		firstQuery = "SELECT descriptor FROM adapter_results WHERE intent_id=?"
 		check = func(raw []byte) (bool, error) {
 			var r AdapterResult
-			if len(raw) > limits.MaxObservationBytes || decode(raw, &r) != nil || !sameJSON(raw, r) || r.Read != nil || r.Reconciled != nil || r.RefusalWitness != "" {
+			if len(raw) > limits.MaxObservationBytes {
+				return false, ErrLimit
+			}
+			if decode(raw, &r) != nil || !sameJSON(raw, r) || r.Read != nil || r.Reconciled != nil || r.RefusalWitness != "" {
 				return false, corrupt("invalid baseline adapter receipt evidence")
 			}
 			if err := validateAdapterResult(a, r, limits); err != nil {

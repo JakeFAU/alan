@@ -13,6 +13,7 @@ import (
 	recordschema "github.com/JakeFAU/alan/schema"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -384,6 +385,47 @@ func TestAdapterResultEvidenceMutationRejectedOffline(t *testing.T) {
 		t.Fatal("modified result activated")
 	}
 }
+
+// Earlier stores accepted optional status metadata outside the HTTP range.
+// Restore a self-consistent historical receipt and verify it still replays.
+func TestLegacyAdapterStatusRemainsReadable(t *testing.T) {
+	ctx := t.Context()
+	s, path, id := committedAdapter(t)
+	w, err := s.prepareAdapterWork(ctx, id, map[string]effects.Adapter{"model": callbackAdapter{}}, time.Second)
+	if err != nil {
+		t.Fatal(err)
+	}
+	c := transportAdapter(ctx, *w)
+	r, err := s.recordAdapterResult(ctx, w.attempt, c.candidate)
+	if err != nil {
+		t.Fatal(err)
+	}
+	r.Candidate.HTTPStatus = -1
+	r.Digest = adapterResultDigest(r)
+	raw, err := json.Marshal(r)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = s.conn.ExecContext(ctx, "UPDATE adapter_results SET descriptor=? WHERE intent_id=?", raw, id); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := Replay(ctx, path, DefaultLimits()); err != nil {
+		t.Fatal(err)
+	}
+	owner, err := Open(ctx, path, DefaultLimits())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer owner.Close()
+	received, err := loadAdapterResult(ctx, owner.conn, id)
+	if err != nil || !reflect.DeepEqual(received, r) {
+		t.Fatalf("historical result changed: %+v, %v", received, err)
+	}
+}
+
 func TestAdapterPrepareCannotChangeCommittedRequest(t *testing.T) {
 	s, _, id := committedAdapter(t)
 	a := callbackAdapter{prepare: func(r effects.Request) (effects.Prepared, error) {

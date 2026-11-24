@@ -212,9 +212,11 @@ func (c *effectCut) readReservations() error {
 			return err
 		}
 		x := c.effects[a.Intent.ID]
-		if x == nil || x.Kind != "adapter" || r["intent_id"] != a.Intent.ID || a.Intent.Generation != 1 || a.Prepared.Digest == "" || effects.CheckPrepared(a.Prepared) != nil ||
-			a.Prepared.MaxResponseBytes > c.limits.MaxObservationBytes/8 {
+		if x == nil || x.Kind != "adapter" || r["intent_id"] != a.Intent.ID || a.Intent.Generation != 1 || a.Prepared.Digest == "" || effects.CheckPrepared(a.Prepared) != nil {
 			return corrupt("invalid adapter preparation")
+		}
+		if a.Prepared.MaxResponseBytes > c.limits.MaxObservationBytes/8 {
+			return ErrLimit
 		}
 		program := c.programs[c.runs[x.Source].ProgramID]
 		if program.Author == nil {

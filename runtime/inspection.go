@@ -9,11 +9,87 @@ import (
 // InspectExecution reads one coherent cut of the retained computation without
 // taking ownership, executing the reducer or contacting external services.
 func InspectExecution(ctx context.Context, path string, limits Limits) (*ExecutionSnapshot, error) {
-	return executor.InspectExecution(ctx, path, limits)
+	cut, err := executor.InspectExecution(ctx, path, executor.Limits(limits))
+	return (*ExecutionSnapshot)(cut), err
 }
 
 // ExecutionSnapshot contains detached facts and indexed accessors for one retained cut.
-type ExecutionSnapshot = executor.ExecutionSnapshot
+// Runs, Effects, Invocations, Continuations and Pending enumerate current evidence.
+// Namespace and StorageVersion identify the store and its format. Obtain a cut
+// from InspectExecution. Treat it as immutable when sharing it between readers.
+type ExecutionSnapshot executor.ExecutionSnapshot
+
+// Run looks up a logical generation, its current projection and receive wait.
+func (s *ExecutionSnapshot) Run(id RunID) (*ExecutionRun, bool) {
+	return (*executor.ExecutionSnapshot)(s).Run(id)
+}
+
+// Invocation looks up a child invocation by the original handle returned to the caller.
+func (s *ExecutionSnapshot) Invocation(operationID string) (*InvocationView, bool) {
+	return (*executor.ExecutionSnapshot)(s).Invocation(operationID)
+}
+
+// InvocationByID looks up a child by its namespace-bound admission identity.
+func (s *ExecutionSnapshot) InvocationByID(id string) (*InvocationView, bool) {
+	return (*executor.ExecutionSnapshot)(s).InvocationByID(id)
+}
+
+// Effect looks up the authority, reservation, original result and settlement of an effect.
+func (s *ExecutionSnapshot) Effect(operationID string) (*ExecutionEffect, bool) {
+	return (*executor.ExecutionSnapshot)(s).Effect(operationID)
+}
+
+// Observation looks up an admitted logical observation and its selection, if any.
+func (s *ExecutionSnapshot) Observation(id string) (*ObservationView, bool) {
+	return (*executor.ExecutionSnapshot)(s).Observation(id)
+}
+
+// Asset returns a retained document with its content-bound version.
+func (s *ExecutionSnapshot) Asset(id string) (*Asset, bool) {
+	return (*executor.ExecutionSnapshot)(s).Asset(id)
+}
+
+// Operation looks up an original operation emitted by a committed reduction.
+func (s *ExecutionSnapshot) Operation(id string) (*Intent, bool) {
+	return (*executor.ExecutionSnapshot)(s).Operation(id)
+}
+
+// Reduction looks up a committed step by logical generation and sequence.
+func (s *ExecutionSnapshot) Reduction(ref ReductionRef) (*ExecutionStep, bool) {
+	return (*executor.ExecutionSnapshot)(s).Reduction(ref)
+}
+
+// Admission looks up a single delivery attempt by its admission identity.
+func (s *ExecutionSnapshot) Admission(id string) (*AdmissionView, bool) {
+	return (*executor.ExecutionSnapshot)(s).Admission(id)
+}
+
+// Root looks up the structured publication and resource accounting of a composition root.
+func (s *ExecutionSnapshot) Root(id string) (*RootCompletion, bool) {
+	return (*executor.ExecutionSnapshot)(s).Root(id)
+}
+
+// LifecycleDecision returns the original lifecycle decision at its recorded boundary.
+func (s *ExecutionSnapshot) LifecycleDecision(operationID string) (LifecycleResult, bool) {
+	return (*executor.ExecutionSnapshot)(s).LifecycleDecision(operationID)
+}
+
+// Continuation finds a committed approval for the target generation.
+func (s *ExecutionSnapshot) Continuation(target RunID) (*ContinuationView, bool) {
+	return (*executor.ExecutionSnapshot)(s).Continuation(target)
+}
+
+// ContinuationBasis returns the predecessor's paid evidence at this cut, or the historical
+// basis of an existing approval. ErrIneligible means there is no eligible basis.
+func (s *ExecutionSnapshot) ContinuationBasis(target RunID) (ContinuationBasis, error) {
+	return (*executor.ExecutionSnapshot)(s).ContinuationBasis(target)
+}
+
+// History returns up to limit committed steps in append order. Start at offset zero
+// and advance by HistoryPage.Next while More is true. Limit must be between one and MaxHistoryPage inclusive.
+func (s *ExecutionSnapshot) History(offset, limit int) (HistoryPage, error) {
+	return (*executor.ExecutionSnapshot)(s).History(offset, limit)
+}
 
 // InspectionFeatures identifies the optional protocols present in this format.
 type InspectionFeatures = executor.InspectionFeatures

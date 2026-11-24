@@ -2,9 +2,12 @@ package main
 
 import (
 	"bytes"
+	"compress/gzip"
 	"context"
 	"errors"
+	"io"
 	"net/http"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -45,13 +48,32 @@ func TestWeatherReadersRejectImpossibleResponses(t *testing.T) {
 		openmeteo.Humidity:        schema.Text("80"),
 		openmeteo.HumidityUnit:    schema.Text("%"),
 	}
+	// Baseline 64a692b retained a known rejection with HTTP status -17.
+	// Its original test produced this stopped database using the offline
+	// substituted adapter. Current writers reject that status before settlement.
+	t.Run("negative_HTTP_status", func(t *testing.T) {
+		compressed, err := os.ReadFile("testdata/negative-http-status.sqlite.gz")
+		if err != nil {
+			t.Fatal(err)
+		}
+		reader, err := gzip.NewReader(bytes.NewReader(compressed))
+		if err != nil {
+			t.Fatal(err)
+		}
+		raw, err := io.ReadAll(reader)
+		if err := errors.Join(err, reader.Close()); err != nil {
+			t.Fatal(err)
+		}
+		db := filepath.Join(t.TempDir(), "historical.sqlite")
+		if err := os.WriteFile(db, raw, 0600); err != nil {
+			t.Fatal(err)
+		}
+		requireWeatherReadersReject(t, db, -17)
+	})
 	for _, tc := range []struct {
 		name      string
 		candidate effects.Candidate
 	}{
-		{"negative_HTTP_status", effects.Candidate{
-			Disposition: "http_rejected", HTTPStatus: -17, Response: "no network call",
-		}},
 		{"HTTP_success_described_as_rejected", effects.Candidate{
 			Disposition: "http_rejected", HTTPStatus: http.StatusOK, Response: morningWeather,
 		}},
@@ -83,21 +105,29 @@ func TestWeatherReadersRejectImpossibleResponses(t *testing.T) {
 			if err := errors.Join(err, owner.Close()); err != nil {
 				t.Fatal(err)
 			}
-			s := weatherSnapshot(t, db)
-			e := weatherEffect(t, s, "weather-1")
-			if e.DispatchAdmission == nil || e.AdapterResult == nil || selectedWeather(t, s, e) == nil {
-				t.Fatal("generic runtime did not retain and select the substituted response")
-			}
-			if _, err := runtime.Replay(t.Context(), db, runtime.DefaultLimits()); err != nil {
-				t.Fatal(err)
-			}
-			for _, action := range []string{"inspect", "status", "replay"} {
-				var out bytes.Buffer
-				err := run(t.Context(), []string{action, "--db", db, "--json"}, &out)
-				if err == nil || out.Len() != 0 {
-					t.Errorf("%s accepted impossible weather evidence or emitted a partial report (err=%v, bytes=%d)", action, err, out.Len())
-				}
-			}
+			requireWeatherReadersReject(t, db, tc.candidate.HTTPStatus)
 		})
+	}
+}
+
+func requireWeatherReadersReject(t *testing.T, db string, status int) {
+	t.Helper()
+	s := weatherSnapshot(t, db)
+	e := weatherEffect(t, s, "weather-1")
+	if e.DispatchAdmission == nil || e.AdapterResult == nil || selectedWeather(t, s, e) == nil {
+		t.Fatal("generic runtime did not retain and select the substituted response")
+	}
+	if e.AdapterResult.Candidate.HTTPStatus != status {
+		t.Fatalf("fixture HTTP status %d, want %d", e.AdapterResult.Candidate.HTTPStatus, status)
+	}
+	if _, err := runtime.Replay(t.Context(), db, runtime.DefaultLimits()); err != nil {
+		t.Fatal(err)
+	}
+	for _, action := range []string{"inspect", "status", "replay"} {
+		var out bytes.Buffer
+		err := run(t.Context(), []string{action, "--db", db, "--json"}, &out)
+		if err == nil || out.Len() != 0 {
+			t.Errorf("%s accepted impossible weather evidence or emitted a partial report (err=%v, bytes=%d)", action, err, out.Len())
+		}
 	}
 }

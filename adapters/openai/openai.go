@@ -18,6 +18,9 @@ import (
 	"unicode/utf8"
 )
 
+// Config selects the provider and bounded call. New requires APIKey, Model,
+// positive MaxOutputTokens and positive MaxResponseBytes. An empty Endpoint
+// selects the official Responses URL. The zero configuration is invalid.
 type Config struct {
 	APIKey, Model, Endpoint           string
 	MaxOutputTokens, MaxResponseBytes int

@@ -87,13 +87,24 @@ type Prepared struct {
 	MaxOutputTokens, MaxResponseBytes int
 	Wire                              string
 }
+
+// Usage contains optional provider-reported, nonnegative token counts. A nil
+// counter means unreported. Details may be nil or a complete JSON value.
 type Usage struct {
 	InputTokens, OutputTokens, TotalTokens *int64
 	Details                                json.RawMessage
 }
+
+// Candidate is a response to exactly one Prepared request. Return the supplied
+// ID and Key. Use "validated" for a successful payload and another explicit
+// disposition for a known rejection. The result then has valid=false and
+// typed default payload fields. Empty and "unknown" leave the paid operation
+// unresolved across restart. A missing or malformed response cannot establish
+// whether the external action happened.
 type Candidate struct {
-	ID, Key, Disposition                           string
-	Payload                                        map[string]schema.Value
+	ID, Key, Disposition string
+	Payload              map[string]schema.Value
+	// HTTPStatus is zero when absent, or an HTTP status from 100 through 599.
 	HTTPStatus                                     int
 	RequestID, ResponseID, ReturnedModel, Response string
 	Usage                                          *Usage
@@ -109,7 +120,9 @@ type Adapter interface {
 	Execute(context.Context, Prepared) Candidate
 }
 
-// Copy gives exclusive ownership of nested schema, payload and asset containers.
+// Copy gives exclusive ownership of nested containers for JSON-round-trippable
+// values. It is intended for already-validated ALAN data. For arbitrary input,
+// use encoding/json directly and check its marshal and unmarshal errors.
 func Copy[T any](v T) T { b, _ := json.Marshal(v); var out T; _ = json.Unmarshal(b, &out); return out }
 func Freeze(p Prepared) Prepared {
 	p.Digest = ""
