@@ -1,0 +1,44 @@
+package runtime_test
+
+import (
+	"bytes"
+	"fmt"
+	"path/filepath"
+	"testing"
+
+	"github.com/JakeFAU/alan/author"
+	"github.com/JakeFAU/alan/effects"
+	"github.com/JakeFAU/alan/runtime"
+)
+
+func BenchmarkReleaseCreation(b *testing.B) {
+	artifact, err := author.Compile(author.Definition{Name: "finish", Steps: []author.Step{author.Success()}})
+	if err != nil {
+		b.Fatal(err)
+	}
+	for _, size := range []int{0, 128 << 10} {
+		b.Run(fmt.Sprintf("asset-bytes-%d", size), func(b *testing.B) {
+			p, err := (author.Application{"worker": {Artifact: artifact}}).Provision()
+			if err != nil {
+				b.Fatal(err)
+			}
+			if size > 0 {
+				asset, err := effects.NewAsset("guide", "measured", bytes.Repeat([]byte("a"), size))
+				if err != nil {
+					b.Fatal(err)
+				}
+				p.Assets = []effects.Asset{asset}
+			}
+			root := b.TempDir()
+			for i := 0; b.Loop(); i++ {
+				s, err := runtime.Create(b.Context(), filepath.Join(root, fmt.Sprint(i)), p, runtime.DefaultLimits())
+				if err != nil {
+					b.Fatal(err)
+				}
+				if err = s.Close(); err != nil {
+					b.Fatal(err)
+				}
+			}
+		})
+	}
+}
