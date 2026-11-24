@@ -112,6 +112,14 @@ The typed reader authenticates recorded causal joins and compares correlated ope
 
 A lifecycle controller can address an invocation member before admission creates it. In that case `LifecycleDecision` returns the original `target_missing` with no target witness. The same snapshot can contain the later member. Inspection, Replay and owner reopen check those facts against the retained order of the lookup and creation. For example, an earlier admission already bound to the member can contradict a claimed absence. Neither elapsed wall time nor the final activation counters establish the order on their own. See the [worked recovery example and its limits](lifecycle-recovery.md#worked-example).
 
+## Creating and recovering a store
+
+`runtime.Create` validates the initial provision in a private in-memory SQLite database. This includes the typed program schemas, permissions, foreign keys and replay checks for the requested format. Memory use during creation includes the initial SQLite image. A rejected provision leaves the destination available for a corrected call. This validation applies to creating a store and adds no work to normal execution or reopen.
+
+After validation, the owner takes the destination lock, reserves a new file exclusively and copies the validated SQLite pages in one WAL transaction. It synchronizes the containing directory before returning success. Creation refuses occupied SQLite journals and conflicting database names. Keep the database, journals and owner-lock names in a directory controlled by the application.
+
+If the process dies before file reservation, the same path can be used for creation. Once reserved, a failure or lost acknowledgment can leave a complete store or an incomplete file. Preserve the database and any WAL and attempt `runtime.Open` to validate the committed ledger and resume. A failed open of an incomplete file requires choosing a fresh path or operator investigation. `Create` preserves the occupied path. The owner lock file persists after close so later owners continue to lock the same inode.
+
 ## Qualification
 
 | History or negative control | Reproducible check |
