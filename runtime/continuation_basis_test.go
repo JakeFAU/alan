@@ -57,8 +57,8 @@ func TestOwnerContinuationBasisAtRetainedCuts(t *testing.T) {
 		}
 		t.Run(name, func(t *testing.T) {
 			f := newMeterFixture(t, "north")
-			if _, err := compareContinuationBasis(t, f, meterNext); err == nil {
-				t.Fatal("unspent predecessor yielded a basis")
+			if _, err := compareContinuationBasis(t, f, meterNext); !errors.Is(err, runtime.ErrIneligible) {
+				t.Fatalf("unspent predecessor: %v", err)
 			}
 			if _, err := compareContinuationBasis(t, f, runtime.RunID{Subject: meterNext.Subject, Generation: 2}); err == nil {
 				t.Fatal("unknown target generation yielded a basis")

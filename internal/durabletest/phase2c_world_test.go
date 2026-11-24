@@ -28,7 +28,7 @@ func (h *history2c) seedRaw(profile string) {
 	p := runtime.Provision{}
 	value := func(v string) x.Operand { return x.Lit(x.Text(v)) }
 	one := x.Lit(x.Int(1))
-	addProgram(t, &p, "source", []x.Instruction{
+	addProgram(t, (*x.Provision)(&p), "source", []x.Instruction{
 		{Op: "emit", Dst: "original", Effect: &x.Effect{Kind: "external", Target: value(h.apply), Generation: one, Obligation: value("mutation"), Payload: map[string]x.Operand{"delta": one, "profile": value(profile)}}},
 		{Op: "emit", Effect: &x.Effect{Kind: "message", Target: value("resolver"), Generation: one, Obligation: value("target"), Payload: map[string]x.Operand{"target": x.Ref("original")}}},
 		{Op: "end", Outcome: "succeeded"},

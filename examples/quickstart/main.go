@@ -44,6 +44,7 @@ func create(ctx context.Context, path string, limits runtime.Limits) (*runtime.S
 		return nil, err
 	}
 	p.Assets = []effects.Asset{asset}
+	p.AssetScopes = map[string][]string{"corpus": {asset.ID}}
 	return runtime.Create(ctx, path, p, limits)
 }
 

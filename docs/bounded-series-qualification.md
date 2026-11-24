@@ -139,15 +139,15 @@ The additional Series.Inspect view performs no SQL. Provisioned-view medians at
 1/8/32/256 are 1.65/20.45/93.89/732.45 microseconds, allocating
 1,304/26,834/138,401/1,101,467 bytes. The completed-eight view median is
 26.46 microseconds and 30,288 bytes. See the [full report, allocation tables,
-controls and raw logs](evidence/bounded-series/performance/REPORT.md).
+controls and raw logs](https://github.com/JakeFAU/alan/blob/64a692b6f82ae10353f50c8741377166bc6cf854/docs/evidence/bounded-series/performance/REPORT.md).
 
 
 ## Independent review and corrections
 
 Separate reviewers inspected public usability, causal composition, authority and
 accounting, process recovery, and inspection/Replay/compatibility/performance.
-Their [verbatim reports](evidence/bounded-series/reviews/) retain source identities
-and dispositions; the performance review is [with its experiments](evidence/bounded-series/performance/REVIEW.md).
+Their [verbatim reports](https://github.com/JakeFAU/alan/tree/64a692b6f82ae10353f50c8741377166bc6cf854/docs/evidence/bounded-series/reviews) retain source identities
+and dispositions; the performance review is [with its experiments](https://github.com/JakeFAU/alan/blob/64a692b6f82ae10353f50c8741377166bc6cf854/docs/evidence/bounded-series/performance/REVIEW.md).
 Final whole-delivery review and the final exact tree are recorded in the PR;
 producer/task approvals are not relabeled as that final review.
 
@@ -158,7 +158,7 @@ producer/task approvals are not relabeled as that final review.
 | Guide attributed operator authentication to the Store. | Assign authentication and spending policy to the application; the Store enforces retained scoped authority. Independent guide re-review APPROVE. |
 | Guide reused a pre-run snapshot for post-run inspection. | Capture a new snapshot. Independent experiment distinguishes stale `Completed: 1` from fresh `Completed: 2`; guide re-review APPROVE. |
 
-[RED outputs and correction patches](evidence/bounded-series/red/) preserve the
+[RED outputs and correction patches](https://github.com/JakeFAU/alan/tree/64a692b6f82ae10353f50c8741377166bc6cf854/docs/evidence/bounded-series/red) preserve the
 rejected rules. Two new process-test expectations were also corrected against
 actual cuts: a reservation without a gate is spent but not externally unknown;
 a terminal reduction before root publication is selected but not yet locally
@@ -184,4 +184,4 @@ go test -count=1 -tags integration -run '^TestWeatherSeriesProcess$' -v ./exampl
 
 Set `ALAN_SERIES_EVIDENCE_DIR` to a new private directory to retain its ordinary
 writer DB/WAL pairs. Benchmark reproduction uses the independent public-package
-driver in [the performance evidence](evidence/bounded-series/performance/README.md).
+driver in [the performance evidence](https://github.com/JakeFAU/alan/blob/64a692b6f82ae10353f50c8741377166bc6cf854/docs/evidence/bounded-series/performance/README.md).

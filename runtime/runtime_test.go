@@ -8,7 +8,9 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io/fs"
 	"math/rand"
 	"os"
 	"path/filepath"
@@ -51,6 +53,9 @@ func TestRuntimeRejectsInvalidAuthorIngress(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer s.Close()
+	if _, err := s.AdmitInput(ctx, runtime.Input{}); !errors.Is(err, fs.ErrInvalid) {
+		t.Fatalf("empty input envelope: %v", err)
+	}
 	for _, tt := range []struct {
 		name    string
 		payload map[string]schema.Value

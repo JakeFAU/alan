@@ -2,7 +2,41 @@
 
 ALAN (Agentic Lambda Abstraction Network) is a Go library for computations that can outlive the process running them. It retains the program, its next instruction, typed data, observations and effect requests in SQLite. An application can inspect the state, resume execution in a new process, or replay the recorded decisions.
 
-## Hello World: A Durable Weather Agent
+## Build your own durable agent
+
+The ticket router receives a priority, asks an application-owned adapter to choose a queue, and retains the answer in SQLite. Its [complete Go source](examples/ticket-routing/main.go) uses only `author`, `schema`, `effects` and `runtime`. The application defines the record fields, routing rule and success branch. ALAN retains the request identity and the result that branch consumes.
+
+Use Go 1.27.3 or later with CGO enabled, a C compiler and a local Unix filesystem with working locks. The following commands target the v0.1.0 tag once published. For a candidate checkout, use the [packaged-module qualification](docs/releases/consumer.md).
+
+<!-- consumer-commands -->
+```sh
+mkdir ticket-routing
+cd ticket-routing
+export GOWORK=off
+go mod init example.org/ticket-routing
+go get github.com/JakeFAU/alan/runtime@v0.1.0
+alan_dir=$(go list -m -f '{{.Dir}}' github.com/JakeFAU/alan)
+cp "$alan_dir/examples/ticket-routing/main.go" main.go
+go build -mod=readonly -o triage .
+./triage start tickets.sqlite
+./triage resume tickets.sqlite
+./triage inspect tickets.sqlite
+./triage replay tickets.sqlite
+```
+
+Each invocation starts a new process. `start` admits one ticket, checks the missing-capability error and exits with the request retained and unspent. `resume` opens the store and registers the routing desk. The adapter returns the original ID and key with the selected queue. Inspection and replay run offline. Expected application output follows.
+
+<!-- consumer-output -->
+```text
+ticket accepted; routing request retained; attempts=0
+routing calls=1; open runs=0
+triager succeeded; queue=expedited
+replay verified 5 commits, 1 intent; queue=expedited
+```
+
+Edit the local `main.go` to change the agent. `program` defines its checked input, effect and output contracts. `routingDesk.Prepare` validates the request, and `routingDesk.Execute` implements the tool. The authored branch checks the runtime's `valid` field before publishing a queue. [API and store compatibility](docs/releases/compatibility.md)
+
+## A durable weather agent
 
 The [weather agent](examples/weather-agent/README.md) asks Open-Meteo for modeled
 current temperature and humidity. Start with one authorized reading. The
@@ -87,6 +121,8 @@ At execution time the host sets `Adapters: map[string]effects.Adapter{"corpus": 
 - A missing ordinary adapter result stays unknown across recovery. The built-in external protocol can retry its idempotent profile with the original key when the endpoint honors it. An unknown non-idempotent request stays unresolved. The controlled reconciliation profile separates permission to read an original receipt from permission to adopt it. A published historical outcome stays fixed.
 - Finite composition invokes retained templates under shared root bounds for depth, invocations, created runs and effects. The runner limits its own in-flight calls. A quiescent runner can have open runs waiting for input, a receipt or service. Distributed ownership, general dynamic spawning, PostgreSQL, history compaction and a managed provider or tool catalog remain unimplemented.
 - Supported SQLite formats are 3 (ordinary), 4 (complete composition) and 5 (reconciliation), plus 6, 7 and 8 after the corresponding store retains conflicting receipt evidence. Compositions with local dispatch evidence use 9/10. Protected continuations use 11/12. Request authority v1 uses 13/14 and exact request binding v2 uses 15/16. In each pair, the second format retains conflicting receipt evidence. Opening or replaying preserves the format. The original result and version-2 external key survive promotion. Program semantics remain `alan/1d/v1`, `alan/1e/v1` and `alan/1g/v1`. Authored scalar and collection/invocation programs retain compiler versions `alan/author/v1` and `alan/author/v2`, respectively. [Local dispatch admission](docs/dispatch-admissions.md) · [Protected continuations](docs/continuations.md) · [Request authority and exact request binding](examples/delegation/README.md)
+
+- New deployments can select assets per capability. Scoped formats 17–30 preserve the matching ordinary, composition, reconciliation or authority protocol and record the selected asset identities and versions. [Bind assets to capabilities](docs/asset-scopes.md) · [Store compatibility and upgrade policy](docs/releases/compatibility.md)
 
 ## Development
 

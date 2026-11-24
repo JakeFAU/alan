@@ -42,6 +42,10 @@ func initialize(ctx context.Context, path, specification string, out io.Writer) 
 		return err
 	}
 	p.Assets = assets
+	p.AssetScopes = map[string][]string{}
+	for _, asset := range assets {
+		p.AssetScopes["corpus"] = append(p.AssetScopes["corpus"], asset.ID)
+	}
 	store, err := runtime.Create(ctx, path, p, runtime.DefaultLimits())
 	if err != nil {
 		return err

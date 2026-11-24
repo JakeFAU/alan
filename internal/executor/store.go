@@ -50,11 +50,13 @@ type Permission struct {
 type Provision struct {
 	Reconciliation *ReconciliationProfile `json:",omitempty"`
 	Composition    *CompositionProvision  `json:",omitempty"`
-	Assets         []effects.Asset
-	Programs       []Artifact
-	Subjects       []Subject
-	Runs           []InitialRun
-	Permissions    []Permission
+	// AssetScopes binds each capability to retained asset IDs. An omitted capability receives no assets.
+	AssetScopes map[string][]string `json:",omitempty"`
+	Assets      []effects.Asset
+	Programs    []Artifact
+	Subjects    []Subject
+	Runs        []InitialRun
+	Permissions []Permission
 }
 type Authority struct {
 	Run                       RunID
@@ -305,6 +307,29 @@ func createStore(ctx context.Context, path string, p Provision, limits Limits, c
 	if err != nil {
 		return nil, err
 	}
+	// Build the exact initial ledger in a private SQLite database first. Its
+	// constraints and replay checks are the same ones used by the durable
+	// executor, including checks that depend on joins across the provision.
+	memory, err := sql.Open("sqlite3", ":memory:?_foreign_keys=on")
+	if err != nil {
+		return nil, err
+	}
+	defer memory.Close()
+	src, err := memory.Conn(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer src.Close()
+	s, err := initialStoreImage(ctx, src, p, limits, composition)
+	if err != nil {
+		return nil, err
+	}
+	if err = boundary.Reached(ctx, boundary.Event{Boundary: "store.create", Phase: "validated"}); err != nil {
+		return nil, err
+	}
+	if err = ctx.Err(); err != nil {
+		return nil, err
+	}
 	lock, err := acquire(real)
 	if err != nil {
 		return nil, err
@@ -314,35 +339,128 @@ func createStore(ctx context.Context, path string, p Provision, limits Limits, c
 			err = errors.Join(err, lock.Close())
 		}
 	}()
-	file, err := os.OpenFile(real, os.O_CREATE|os.O_EXCL|os.O_RDWR, 0600)
+	// From exclusive reservation onward even a failed or interrupted copy
+	// leaves the path in place. Never infer ownership from a missing schema.
+	file, err := reserveStoreFile(real, lock)
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf("initial store path %q reserved; recover with Open if committed: %w", real, err)
+		}
+	}()
 	if err = file.Close(); err != nil {
 		return nil, err
 	}
-	s, err := connect(ctx, real, false)
+	destination, err := connect(ctx, real, false)
 	if err != nil {
 		return nil, err
 	}
 	defer func() {
 		if store == nil {
-			err = errors.Join(err, s.Close())
+			err = errors.Join(err, destination.Close())
 		}
 	}()
-	s.limits = limits
+	if err = persistStoreImage(ctx, destination.conn, src); err != nil {
+		return nil, err
+	}
+	// A successful return covers the new directory entry as well as the
+	// SQLite transaction. Failure here can occur after a successful commit.
+	dir, err := os.Open(filepath.Dir(real))
+	if err != nil {
+		return nil, err
+	}
+	if err = errors.Join(dir.Sync(), dir.Close()); err != nil {
+		return nil, err
+	}
+	if err = boundary.Reached(ctx, boundary.Event{Boundary: "store.create", Phase: "committed"}); err != nil {
+		return nil, err
+	}
+	s.db, s.conn, s.lock = destination.db, destination.conn, lock
+	s.initializeExecution(ctx)
+	return s, nil
+}
+
+// reserveStoreFile runs under the new store's owner lock. SQLite may truncate
+// or unlink a journal during initialization. Refuse an occupied journal name,
+// including one occupied by an independently named store. Serialize reciprocal
+// create attempts ("a" and "a-wal") on the same owner lock until O_EXCL wins.
+func reserveStoreFile(path string, owner *os.File) (*os.File, error) {
+	dir, name := filepath.Split(path)
+	dash := strings.LastIndexByte(name, '-')
+	for _, suffix := range []string{"-wal", "-shm", "-journal"} {
+		if err := requireVacant(path + suffix); err != nil {
+			return nil, err
+		}
+		if dash <= 0 {
+			continue
+		}
+		base := filepath.Join(dir, name[:dash])
+		// Our lock already exists. Ask the filesystem whether its name also
+		// denotes the lock for this possible base's SQLite sidecar. Its case
+		// and Unicode comparison rules may differ even between mounted volumes.
+		possible, err := os.Lstat(base + suffix + ".lock")
+		if errors.Is(err, os.ErrNotExist) {
+			continue
+		}
+		if err != nil {
+			return nil, err
+		}
+		held, err := owner.Stat()
+		if err != nil {
+			return nil, err
+		}
+		if os.SameFile(held, possible) {
+			lock, err := acquire(base)
+			if err != nil {
+				return nil, err
+			}
+			defer lock.Close()
+			if err := requireVacant(base); err != nil {
+				return nil, err
+			}
+		}
+	}
+	return os.OpenFile(path, os.O_CREATE|os.O_EXCL|os.O_RDWR, 0600)
+}
+
+func requireVacant(path string) error {
+	_, err := os.Lstat(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	if err == nil {
+		return &os.PathError{Op: "reserve SQLite path", Path: path, Err: os.ErrExist}
+	}
+	return err
+}
+
+func initialStoreImage(ctx context.Context, conn *sql.Conn, p Provision, limits Limits, composition *compositionProvision) (*Store, error) {
+	s := &Store{limits: limits}
 	var namespaceBytes [32]byte
-	if _, err = rand.Read(namespaceBytes[:]); err != nil {
+	if _, err := rand.Read(namespaceBytes[:]); err != nil {
 		return nil, err
 	}
 	s.namespace = hex.EncodeToString(namespaceBytes[:])
-	tx, err := s.conn.BeginTx(ctx, nil)
+	tx, err := conn.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
+	if err := provisionInitialLedger(ctx, tx, s, p, limits, composition); err != nil {
+		return nil, creationInputError(err)
+	}
+	if err := tx.Commit(); err != nil {
+		return nil, creationInputError(err)
+	}
+	return s, nil
+}
+
+func provisionInitialLedger(ctx context.Context, tx *sql.Tx, s *Store, p Provision, limits Limits, composition *compositionProvision) error {
+	var err error
 	if _, err = tx.ExecContext(ctx, schema); err != nil {
-		return nil, err
+		return err
 	}
 	version := SchemaVersion
 	if composition != nil {
@@ -350,20 +468,20 @@ func createStore(ctx context.Context, path string, p Provision, limits Limits, c
 		ddl := compositionSchema
 		if composition.RequestAuthority != "" {
 			if !supportedRequestAuthority(composition.RequestAuthority) || composition.Version != compositionProtocolVersion || composition.RecordDispatchAdmissions || len(composition.Continuations) != 0 || len(composition.Templates) != 0 || p.Reconciliation != nil || len(p.Subjects) != 2 || len(p.Runs) != 2 {
-				return nil, ErrVersion
+				return ErrVersion
 			}
 			version = requestAuthoritySchema
 			if composition.RequestAuthority == RequestAuthorityBindingVersion {
 				version = requestAuthorityBindingSchema
 				if _, err = tx.ExecContext(ctx, "CREATE INDEX admissions_observation_id ON admissions(observation_id)"); err != nil {
-					return nil, err
+					return err
 				}
 			}
 			ddl = compositionSchemaBeforeRead + ",'authority_admission'" + compositionSchemaAfterRead
 		}
 		if len(composition.Continuations) > 0 {
 			if !composition.RecordDispatchAdmissions || composition.Version != compositionProtocolVersion {
-				return nil, ErrVersion
+				return ErrVersion
 			}
 			ddl = compositionContinuationSchema
 		}
@@ -371,12 +489,12 @@ func createStore(ctx context.Context, path string, p Provision, limits Limits, c
 			ddl = compositionReconciliationSchema
 		}
 		if _, err = tx.ExecContext(ctx, ddl); err != nil {
-			return nil, err
+			return err
 		}
 	}
 	if composition != nil && composition.Version == compositionProtocolVersion {
 		if _, err = tx.ExecContext(ctx, invocationSchema); err != nil {
-			return nil, err
+			return err
 		}
 		if composition.RecordDispatchAdmissions {
 			version = dispatchAdmissionSchema
@@ -384,7 +502,7 @@ func createStore(ctx context.Context, path string, p Provision, limits Limits, c
 				version = continuationSchema
 			}
 			if _, err = tx.ExecContext(ctx, dispatchAdmissionDDL); err != nil {
-				return nil, err
+				return err
 			}
 			s.dispatchAdmissions = true
 		}
@@ -393,140 +511,140 @@ func createStore(ctx context.Context, path string, p Provision, limits Limits, c
 		version = reconciliationSchemaVersion
 		s.reconciliation = true
 		if err = createReconciliationProfile(ctx, tx, *p.Reconciliation); err != nil {
-			return nil, err
+			return err
 		}
 	}
+	if len(p.Assets) > 0 || p.AssetScopes != nil {
+		version += assetScopeFormatOffset
+	}
 	if _, err = tx.ExecContext(ctx, "INSERT INTO metadata VALUES(1,?,?,?,?)", version, SemanticVersion, ExternalKeyVersion, s.namespace); err != nil {
-		return nil, err
+		return err
+	}
+	if hasAssetScopeFormat(version) {
+		if err = writeAssetScopes(ctx, tx, p); err != nil {
+			return err
+		}
 	}
 	if _, err = tx.ExecContext(ctx, fmt.Sprintf("PRAGMA user_version=%d", version)); err != nil {
-		return nil, err
+		return err
 	}
 	if err = effects.CheckAssets(p.Assets); err != nil {
-		return nil, err
+		return err
 	}
 	for _, asset := range p.Assets {
 		raw, e := json.Marshal(asset)
 		if e != nil {
-			return nil, e
+			return e
 		}
 		if _, err = tx.ExecContext(ctx, "INSERT INTO corpus_assets VALUES(?,?)", asset.ID, raw); err != nil {
-			return nil, err
+			return err
 		}
 	}
 	for _, a := range p.Programs {
 		if composition == nil {
 			var program Program
 			if err = decode(a.Bytes, &program); err != nil {
-				return nil, err
+				return err
 			}
 			if programHasInvocations(program) {
-				return nil, ErrVersion
+				return ErrVersion
 			}
 		}
 		if err = insertArtifact(ctx, tx, a, limits); err != nil {
-			return nil, err
+			return err
 		}
 	}
 	for _, v := range p.Subjects {
 		if v.ID == "" || v.Owner == "" || v.Generation <= 0 || v.Revision <= 0 || v.Retired {
-			return nil, fmt.Errorf("invalid initial subject")
+			return fmt.Errorf("invalid initial subject")
 		}
 		if _, err = tx.ExecContext(ctx, "INSERT INTO subjects VALUES(?,?,?,?,?,?)", v.ID, v.Generation, v.Owner, v.Revision, v.Retired, v.RetryCancelled); err != nil {
-			return nil, err
+			return err
 		}
 	}
 	for _, v := range p.Permissions {
 		if v.Kind != "lifecycle" && v.Kind != "observation" && v.Kind != "message" && v.Kind != "input" && v.Kind != "external" && v.Kind != "adapter" {
-			return nil, fmt.Errorf("invalid permission kind")
+			return fmt.Errorf("invalid permission kind")
 		}
 		if v.Kind == "input" {
 			if v.Source != "local" || v.Operation != "input" || v.Revision != 0 {
-				return nil, fmt.Errorf("invalid local input permission")
+				return fmt.Errorf("invalid local input permission")
 			}
 		} else {
 			var exists int
 			if err = tx.QueryRowContext(ctx, "SELECT count(*) FROM subjects WHERE id=?", v.Source).Scan(&exists); err != nil {
-				return nil, err
+				return err
 			}
 			if exists != 1 || v.Revision <= 0 {
-				return nil, fmt.Errorf("invalid permission source")
+				return fmt.Errorf("invalid permission source")
 			}
 		}
 		if _, err = tx.ExecContext(ctx, "INSERT INTO permissions VALUES(?,?,?,?,?,?)", v.Kind, v.Source, v.Target, v.Operation, v.Revision, v.Obligation); err != nil {
-			return nil, err
+			return err
 		}
 	}
 	for _, v := range p.Runs {
 		program, e := loadProgram(ctx, tx, v.ProgramID, limits)
 		if e != nil {
-			return nil, e
+			return e
 		}
 		if err = validateAuthorInitial(program, v.Projection); err != nil {
-			return nil, err
+			return err
 		}
 		if err = validateProjection(v.Projection, program, limits); err != nil {
-			return nil, err
+			return err
 		}
 		if v.Projection.Status != "open" {
-			return nil, fmt.Errorf("initial run must be open")
+			return fmt.Errorf("initial run must be open")
 		}
 		b, e := json.Marshal(v.Projection)
 		if e != nil {
-			return nil, e
+			return e
 		}
 		if _, err = tx.ExecContext(ctx, "INSERT INTO runs VALUES(?,?,?,?,1,0,?)", v.ID.Subject, v.ID.Generation, v.ProgramID, b, b); err != nil {
-			return nil, err
+			return err
 		}
 		subject, e := loadSubject(ctx, tx, v.ID.Subject)
 		if e != nil {
-			return nil, e
+			return e
 		}
 		if subject.Generation != v.ID.Generation {
-			return nil, fmt.Errorf("static run must match initial subject generation")
+			return fmt.Errorf("static run must match initial subject generation")
 		}
 		origin, e := json.Marshal(rootOrigin{Subject: subject, ProgramID: v.ProgramID, Initial: v.Projection})
 		if e != nil {
-			return nil, e
+			return e
 		}
 		if _, err = tx.ExecContext(ctx, "INSERT INTO run_origins VALUES(?,?,'root',NULL,NULL,?)", v.ID.Subject, v.ID.Generation, origin); err != nil {
-			return nil, err
+			return err
 		}
 	}
 	if composition != nil && composition.Version == compositionProtocolVersion {
 		deployment, e := json.Marshal(compositionDeployment{Subjects: p.Subjects, Runs: p.Runs})
 		if e != nil {
-			return nil, e
+			return e
 		}
 		if _, e = tx.ExecContext(ctx, "INSERT INTO composition_deployment VALUES(1,?)", deployment); e != nil {
-			return nil, e
+			return e
 		}
 		raw, e := json.Marshal(p.Permissions)
 		if e != nil {
-			return nil, e
+			return e
 		}
 		if _, e = tx.ExecContext(ctx, "INSERT INTO composition_permissions VALUES(1,?)", raw); e != nil {
-			return nil, e
+			return e
 		}
 	}
 	if composition != nil {
 		s.composition, err = provisionComposition(ctx, tx, s.namespace, *composition, limits)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		_, err = validateCompositionStore(ctx, tx, limits)
 	} else {
 		_, err = validateLedger(ctx, tx, limits)
 	}
-	if err != nil {
-		return nil, err
-	}
-	if err = tx.Commit(); err != nil {
-		return nil, err
-	}
-	s.lock = lock
-	s.initializeExecution(ctx)
-	return s, nil
+	return err
 }
 
 func insertArtifact(ctx context.Context, tx *sql.Tx, a Artifact, l Limits) error {
@@ -534,7 +652,7 @@ func insertArtifact(ctx context.Context, tx *sql.Tx, a Artifact, l Limits) error
 		return ErrVersion
 	}
 	if a.ID != programHash(a.Bytes) {
-		return fmt.Errorf("artifact hash: %w", ErrCorrupt)
+		return fmt.Errorf("program ID does not match initial artifact bytes")
 	}
 	if len(a.Bytes) > l.MaxProgramBytes || l.MaxProgramBytes <= 0 {
 		return ErrLimit

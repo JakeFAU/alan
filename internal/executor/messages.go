@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/JakeFAU/alan/internal/boundary"
+	"io/fs"
 	"reflect"
 	"unicode/utf8"
 )
@@ -420,13 +421,16 @@ func admit(ctx context.Context, tx *sql.Tx, d AdmissionDescriptor, limits Limits
 	}
 	key := admissionKey(d.Kind, d.TransportID)
 	if !validAdmissionHeader(d) {
-		return result, fmt.Errorf("invalid admission descriptor")
+		return result, fmt.Errorf("%w: invalid admission descriptor", fs.ErrInvalid)
 	}
 	if err := checkSize(d, limits.MaxObservationBytes); err != nil {
+		if !errors.Is(err, ErrLimit) {
+			return result, fmt.Errorf("%w: admission encoding: %w", fs.ErrInvalid, err)
+		}
 		return result, err
 	}
 	if !validAdmissionPayload(d.Payload) {
-		return result, fmt.Errorf("invalid admission payload")
+		return result, fmt.Errorf("%w: invalid admission payload", fs.ErrInvalid)
 	}
 	encoded, err := json.Marshal(d)
 	if err != nil {

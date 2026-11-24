@@ -44,8 +44,16 @@ func TestContinuationMaskedBeforeFirstApproval(t *testing.T) {
 
 // Upgrade an actual protected Store by submitting a conflicting result to an
 // existing paid operation. Both reads and their original decision must survive.
-func TestContinuationConflictPromotion(t *testing.T) {
+func TestContinuationConflictPromotion(t *testing.T)       { continuationConflictPromotion(t, false) }
+func TestScopedContinuationConflictPromotion(t *testing.T) { continuationConflictPromotion(t, true) }
+
+func continuationConflictPromotion(t *testing.T, scoped bool) {
 	p := Provision{}
+	promoted := continuationConflictSchema
+	if scoped {
+		fixtureAssetScopes(t, &p, "model")
+		promoted += assetScopeFormatOffset
+	}
 	addAdapterProgram(t, &p, "first", true)
 	addAdapterProgram(t, &p, "second", true)
 	var program Program
@@ -94,6 +102,9 @@ func TestContinuationConflictPromotion(t *testing.T) {
 	if _, err = s.Run(ctx, options); err != nil {
 		t.Fatal(err)
 	}
+	if scoped {
+		checkScopedHistory(t, path, continuationSchema+assetScopeFormatOffset)
+	}
 	attempt, err := loadAdapterAttempt(ctx, s.conn, basis.PredecessorID)
 	if err != nil {
 		t.Fatal(err)
@@ -101,6 +112,9 @@ func TestContinuationConflictPromotion(t *testing.T) {
 	loser := effects.Candidate{ID: basis.PredecessorID, Key: attempt.Prepared.Request.Key, Disposition: "validated", Payload: map[string]Value{"answer": Text("other")}}
 	if _, err = s.recordAdapterResult(ctx, attempt, loser); !errors.Is(err, ErrConflict) {
 		t.Fatal(err)
+	}
+	if scoped {
+		checkScopedHistory(t, path, promoted)
 	}
 	if err = s.Close(); err != nil {
 		t.Fatal(err)
@@ -111,7 +125,7 @@ func TestContinuationConflictPromotion(t *testing.T) {
 	}
 	old, found := cut.Effect(basis.PredecessorID)
 	v, ok := cut.Continuation(slot.Target)
-	if cut.StorageVersion != 12 || !cut.Features.ConflictJournal || !found || len(old.AdditionalReceipts) != 1 || old.AdapterResult.Digest != basis.ResultDigest || !ok || v.Approval.ContinuationBasis != basis || v.SelectedAt == nil || v.SuccessorOperationID == "" {
+	if cut.StorageVersion != promoted || !cut.Features.ConflictJournal || !found || len(old.AdditionalReceipts) != 1 || old.AdapterResult.Digest != basis.ResultDigest || !ok || v.Approval.ContinuationBasis != basis || v.SelectedAt == nil || v.SuccessorOperationID == "" {
 		t.Fatalf("lost approval or original result during promotion: %+v", v)
 	}
 	if _, err := Inspect(ctx, path, l); err != nil {

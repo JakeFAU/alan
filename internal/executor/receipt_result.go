@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"reflect"
 
 	"github.com/JakeFAU/alan/adapters/receiptquery"
@@ -131,9 +132,12 @@ func (s *Store) recordReadResult(ctx context.Context, a AdapterAttempt, ordinal 
 	if err = validateOrdinalBinding(ctx, tx, s.namespace, a, o); err != nil {
 		return r, err
 	}
+	if err := checkCandidateMetadata(c); err != nil {
+		return r, err
+	}
 	snapshot, err := readSnapshot(o, c)
 	if err != nil {
-		return r, err
+		return r, fmt.Errorf("%w: invalid controlled receipt-query response", ErrAdapterOutput)
 	}
 	existing, err := loadAdapterResult(ctx, tx, a.Intent.ID)
 	if err == nil {

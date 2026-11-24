@@ -91,9 +91,12 @@ func TestMissingAdapterDoesNotSpendAttempt(t *testing.T) {
 		t.Fatal(e)
 	}
 	defer s.Close()
+	if _, e = s.Run(ctx, runtime.RunOptions{}); !errors.Is(e, runtime.ErrLimit) {
+		t.Fatalf("zero run budgets: %v", e)
+	}
 	_, e = s.Run(ctx, runtime.RunOptions{MaxSteps: 20, MaxDispatch: 20})
-	if e == nil {
-		t.Fatal("missing registry not reported")
+	if !errors.Is(e, runtime.ErrCapabilityUnavailable) {
+		t.Fatalf("missing registry: %v", e)
 	}
 	i, e := runtime.Inspect(ctx, path, runtime.DefaultLimits())
 	if e != nil {
@@ -194,7 +197,7 @@ func TestInspectRejectsAdapterSettlementCorruption(t *testing.T) {
 		t.Fatal(e)
 	}
 	db.Close()
-	if _, e = runtime.Inspect(ctx, path, runtime.DefaultLimits()); e == nil {
-		t.Fatal("corrupt adapter settlement inspected as valid")
+	if _, e = runtime.Inspect(ctx, path, runtime.DefaultLimits()); !errors.Is(e, runtime.ErrCorrupt) {
+		t.Fatalf("corrupt adapter settlement: %v", e)
 	}
 }

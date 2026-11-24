@@ -13,6 +13,7 @@ import (
 // Options bounds each accepted list and its retained results. MaxBytes is the
 // total canonical byte ceiling for each list, including nested response records.
 // Leaf inputs reserve item_id for the explicit application identity.
+// All three bounds must be positive. Use DefaultOptions for a ready-to-use profile.
 type Options struct{ MaxItems, MaxBytes, MaxIDBytes int }
 
 func DefaultOptions() Options { return Options{MaxItems: 8, MaxBytes: 262144, MaxIDBytes: 128} }

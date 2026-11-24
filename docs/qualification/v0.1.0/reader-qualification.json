@@ -1,0 +1,229 @@
+{
+  "disposition": "PASS",
+  "platform": "darwin/arm64",
+  "go": "go1.27.4",
+  "sqlite_driver": "github.com/mattn/go-sqlite3 v1.14.52",
+  "CGO_ENABLED": 1,
+  "environment": {
+    "GOFLAGS": "",
+    "GOWORK": "off",
+    "GOTOOLCHAIN": "local",
+    "GOPROXY": "off",
+    "GOCACHE": "task-local",
+    "GOMODCACHE": "task-local verified dependency",
+    "TMPDIR": "$WORK/processes"
+  },
+  "paths": {
+    "$WORK": "fresh scratch directory with processes/, public-base/ and frozen/ subdirectories",
+    "$RUNTIME": "clean runtime checkout at candidate commit",
+    "$RESEARCH": "repository containing extraction_source commit"
+  },
+  "sources": {
+    "candidate": {
+      "commit": "bea0acc86d9a7302ccc3511327455922503c4a57",
+      "tree": "418ed0ff9f1aa8f6cdf7a1d03a4671ef85982c04",
+      "repository": "JakeFAU/alan",
+      "binary_sha256": "9920ad3424e9b62fa1c1e3da1f2a82e4d7d899bc94284719b69d6f3351120bd5",
+      "go_build_vcs_modified": false
+    },
+    "extraction_source": {
+      "commit": "003dc9c45ac9b0c1f48565632f5be80f0f05beed",
+      "tree": "3e5b0d0797317cdb4fdc450f05210a477e7016ce",
+      "repository": "JakeFAU/alan-research",
+      "binary_sha256": "d5bb9c7ecff6d0c0b9a34d1a4b81cf49527e338827d4ffb1045689794b7a67a8"
+    },
+    "pre_release": {
+      "commit": "64a692b6f82ae10353f50c8741377166bc6cf854",
+      "tree": "873a20aced3b4ba710dbd3e766db4b3c3b7a08d3",
+      "repository": "JakeFAU/alan",
+      "binary_sha256": "3de6f5fc8ffcce0647f6e94bf66d7ae4c9bea02b9c701b9ff9877d5430437cea"
+    },
+    "pre_authority": {
+      "commit": "af6943a5805a9a6c0e8fe77f804264f4765d07ec",
+      "tree": "5d1f64029c7fd764ddd1941bc77b831beb3bdcb3",
+      "binary_sha256": "47460b55d876be9e3af3549a68b8cf6f0388f85b785933bc6cf7b7ada4036aa1",
+      "repository": "JakeFAU/alan"
+    }
+  },
+  "tools_sha256": {
+    "docs/qualification/phase3b3/qualify-old-reader.py": "cefb58e333c4a066a565624c37eabafbf7dce2bb459cb80e15be7c2ce64aca2d",
+    "tools/compare_stores.py": "7470247d504adc9f43914e348de29e92073885e146f0071a8d88bb991ca43d6f"
+  },
+  "commands": [
+    {
+      "step": "archive-source",
+      "cwd": "$RESEARCH",
+      "argv": [
+        "git",
+        "archive",
+        "--format=tar",
+        "-o",
+        "$WORK/frozen.tar",
+        "003dc9c45ac9b0c1f48565632f5be80f0f05beed",
+        "go.mod",
+        "go.sum",
+        "cmd/alan",
+        "adapters",
+        "author",
+        "compose",
+        "effects",
+        "runtime",
+        "schema",
+        "internal/executor",
+        "internal/boundary",
+        "internal/fixture"
+      ],
+      "exit": 0
+    },
+    {
+      "step": "extract-source",
+      "cwd": "$WORK/frozen",
+      "argv": [
+        "tar",
+        "-xf",
+        "$WORK/frozen.tar"
+      ],
+      "exit": 0
+    },
+    {
+      "step": "frozen-build",
+      "cwd": "$WORK/frozen",
+      "argv": [
+        "go",
+        "build",
+        "-buildvcs=false",
+        "-mod=readonly",
+        "-o",
+        "$WORK/frozen-alan",
+        "./cmd/alan"
+      ],
+      "exit": 0
+    },
+    {
+      "step": "archive-base",
+      "cwd": "$RUNTIME",
+      "argv": [
+        "git",
+        "archive",
+        "--format=tar",
+        "-o",
+        "$WORK/public-base.tar",
+        "64a692b6f82ae10353f50c8741377166bc6cf854",
+        "go.mod",
+        "go.sum",
+        "cmd/alan",
+        "adapters",
+        "author",
+        "compose",
+        "effects",
+        "runtime",
+        "schema",
+        "internal/executor",
+        "internal/boundary",
+        "internal/fixture"
+      ],
+      "exit": 0
+    },
+    {
+      "step": "extract-base",
+      "cwd": "$WORK/public-base",
+      "argv": [
+        "tar",
+        "-xf",
+        "$WORK/public-base.tar"
+      ],
+      "exit": 0
+    },
+    {
+      "step": "base-build",
+      "cwd": "$WORK/public-base",
+      "argv": [
+        "go",
+        "build",
+        "-buildvcs=false",
+        "-mod=readonly",
+        "-o",
+        "$WORK/public-base-alan",
+        "./cmd/alan"
+      ],
+      "exit": 0
+    },
+    {
+      "step": "committed-build",
+      "cwd": "$RUNTIME",
+      "argv": [
+        "go",
+        "build",
+        "-mod=readonly",
+        "-trimpath",
+        "-o",
+        "$WORK/committed-alan",
+        "./cmd/alan"
+      ],
+      "exit": 0
+    },
+    {
+      "step": "committed-correspondence",
+      "cwd": "$RUNTIME",
+      "argv": [
+        "python3",
+        "-B",
+        "tools/compare_stores.py",
+        "$WORK/frozen-alan",
+        "$WORK/committed-alan"
+      ],
+      "exit": 0
+    },
+    {
+      "step": "public-correspondence",
+      "cwd": "$RUNTIME",
+      "argv": [
+        "python3",
+        "-B",
+        "tools/compare_stores.py",
+        "$WORK/public-base-alan",
+        "$WORK/committed-alan"
+      ],
+      "exit": 0
+    },
+    {
+      "step": "official-old-reader",
+      "cwd": "$RUNTIME",
+      "argv": [
+        "python3",
+        "-B",
+        "docs/qualification/phase3b3/qualify-old-reader.py",
+        "$WORK/official"
+      ],
+      "exit": 0
+    }
+  ],
+  "official_old_reader": {
+    "own_format": 3,
+    "own_format_inspect_exit": 0,
+    "own_format_replay_exit": 0,
+    "required_rejections_passed": [
+      "TestRequestAuthorityFormatsConflictPromotionAndOldReader/13/frozen_old_reader/inspect",
+      "TestRequestAuthorityFormatsConflictPromotionAndOldReader/13/frozen_old_reader/replay",
+      "TestRequestAuthorityFormatsConflictPromotionAndOldReader/14/frozen_old_reader/inspect",
+      "TestRequestAuthorityFormatsConflictPromotionAndOldReader/14/frozen_old_reader/replay"
+    ]
+  },
+  "differential": {
+    "controls": "Nested computation, independently acknowledged pre- and post-commit SIGKILL, cross-binary original/copy recovery, byte-identical inspect/replay/recovered report, durable database and WAL byte preservation during reads, and corruption refusal.",
+    "cases": {
+      "committed-correspondence": [
+        "frozen-alan -> committed-alan execution.staged: 26 commits, 4 intents, corrupt replay rejected",
+        "frozen-alan -> committed-alan execution.committed: 26 commits, 4 intents, corrupt replay rejected",
+        "committed-alan -> frozen-alan execution.staged: 26 commits, 4 intents, corrupt replay rejected",
+        "committed-alan -> frozen-alan execution.committed: 26 commits, 4 intents, corrupt replay rejected"
+      ],
+      "public-correspondence": [
+        "public-base-alan -> committed-alan execution.staged: 26 commits, 4 intents, corrupt replay rejected",
+        "public-base-alan -> committed-alan execution.committed: 26 commits, 4 intents, corrupt replay rejected",
+        "committed-alan -> public-base-alan execution.staged: 26 commits, 4 intents, corrupt replay rejected",
+        "committed-alan -> public-base-alan execution.committed: 26 commits, 4 intents, corrupt replay rejected"
+      ]
+    }
+  }
+}

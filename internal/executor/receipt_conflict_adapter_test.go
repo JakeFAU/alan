@@ -7,11 +7,49 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/JakeFAU/alan/effects"
 )
+
+func TestReadBudgetForAdditionalAdapterReceipt(t *testing.T) {
+	ctx := t.Context()
+	s, path, id := committedAdapter(t)
+	work, err := s.prepareAdapterWork(ctx, id, map[string]effects.Adapter{"model": callbackAdapter{}}, time.Second)
+	if err != nil {
+		t.Fatal(err)
+	}
+	candidate := transportAdapter(ctx, *work).candidate
+	if _, err := s.recordAdapterResult(ctx, work.attempt, candidate); err != nil {
+		t.Fatal(err)
+	}
+	// Only the losing receipt exceeds the smaller inspection budget.
+	details, err := json.Marshal(strings.Repeat("x", 40000))
+	if err != nil {
+		t.Fatal(err)
+	}
+	candidate.Usage = &effects.Usage{Details: details}
+	if _, err := s.recordAdapterResult(ctx, work.attempt, candidate); !errors.Is(err, ErrConflict) {
+		t.Fatal(err)
+	}
+	if err := s.Close(); err != nil {
+		t.Fatal(err)
+	}
+	limits := DefaultLimits()
+	if _, err := Replay(ctx, path, limits); err != nil {
+		t.Fatal(err)
+	}
+	limits.MaxObservationBytes = 34000
+	_, replayErr := Replay(ctx, path, limits)
+	_, inspectErr := InspectExecution(ctx, path, limits)
+	for _, err := range []error{replayErr, inspectErr} {
+		if !errors.Is(err, ErrLimit) || errors.Is(err, ErrCorrupt) {
+			t.Fatalf("receipt read budget returned %v", err)
+		}
+	}
+}
 
 func TestAdapterReceiptEvidenceRejectsRehashedInvalidOffer(t *testing.T) {
 	for _, damage := range []string{"foreign key", "unsuccessful", "fabricated values", "read proof"} {
