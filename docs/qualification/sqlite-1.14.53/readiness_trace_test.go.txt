@@ -1,0 +1,71 @@
+package executor
+
+import (
+	"reflect"
+	"strings"
+	"testing"
+
+	"github.com/mattn/go-sqlite3"
+)
+
+// Compare native VM starts with column authorizations on the original owner.
+// This overlay runs on either binding and does not use the Go query-count probe.
+func TestSQLiteReadinessStatementCounts(t *testing.T) {
+	s, last, want := p3SameCallBindingCut(t)
+	engine, _, _ := sqlite3.Version()
+	for _, reference := range []bool{true, false} {
+		var statements, authorizations p3CompositionVisits
+		var ready *readyRun
+		err := s.conn.Raw(func(raw any) error {
+			drv := raw.(*sqlite3.SQLiteConn)
+			drv.RegisterAuthorizer(func(op int, table, column, _ string) int {
+				if op == sqlite3.SQLITE_READ {
+					switch {
+					case table == "runs" && column == "projection":
+						authorizations.runs++
+					case table == "programs" && column == "bytes":
+						authorizations.loads++
+					case table == "composition_members" && column == "member":
+						authorizations.bindings++
+					}
+				}
+				return sqlite3.SQLITE_OK
+			})
+			return drv.SetTrace(&sqlite3.TraceConfig{EventMask: sqlite3.TraceStmt, Callback: func(info sqlite3.TraceInfo) int {
+				switch query := info.StmtOrTrigger; {
+				case strings.HasPrefix(query, "SELECT r.program_id,r.epoch,r.sequence,s.revision,r.projection FROM runs"):
+					statements.runs++
+				case strings.HasPrefix(query, "SELECT semantics,bytes FROM programs"):
+					statements.loads++
+				case strings.HasPrefix(query, "SELECT b.descriptor,m.member FROM composition_members"):
+					statements.bindings++
+				}
+				return 0
+			}})
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if reference {
+			ready, err = s.p3BaselineSelectReady(t.Context(), &last)
+		} else {
+			ready, err = s.selectReady(t.Context(), &last)
+		}
+		reset := s.conn.Raw(func(raw any) error {
+			drv := raw.(*sqlite3.SQLiteConn)
+			drv.RegisterAuthorizer(nil)
+			return drv.SetTrace(nil)
+		})
+		if err != nil || reset != nil || !reflect.DeepEqual(ready, want) {
+			t.Fatal(ready, want, err, reset)
+		}
+		expected := p3CompositionVisits{runs: 2, loads: 1, bindings: 2}
+		if reference {
+			expected.loads = 2
+		}
+		if statements != expected {
+			t.Fatalf("engine %s reference=%t VM starts %+v, want %+v", engine, reference, statements, expected)
+		}
+		t.Logf("engine %s reference=%t VM starts %+v authorizations %+v", engine, reference, statements, authorizations)
+	}
+}

@@ -5,6 +5,7 @@ package executor
 import (
 	"context"
 	"database/sql"
+	"database/sql/driver"
 	"errors"
 	"fmt"
 	"reflect"
@@ -74,29 +75,26 @@ func assertFrozenReportResult(t *testing.T, got RunReport, err error, want RunRe
 	}
 }
 
-// SQLite's authorizer sees each statement's projected columns at prepare time.
-// Each target query references its column once, including the final open-runs pass.
 func TestFinishRunReportDescriptorQueryCount(t *testing.T) {
 	for _, size := range []int{1, 4, 8} {
 		t.Run(fmt.Sprint(size), func(t *testing.T) {
 			s := reportScaleStore(t, size)
-			counts := [2]int{}
-			reportAuthorizer(t, s, func(op int, table, column, _ string) int {
-				if op == sqlite3.SQLITE_READ {
-					switch {
-					case table == "composition_roots" && column == "descriptor":
-						counts[0]++
-					case table == "runs" && column == "projection":
-						counts[1]++
-					}
+			var counts, candidateCounts [2]int
+			var got, want RunReport
+			var err, wantErr error
+			observeQueryReads(t, s, func(table, column string, _ []driver.NamedValue) {
+				switch {
+				case table == "composition_roots" && column == "descriptor":
+					counts[0]++
+				case table == "runs" && column == "projection":
+					counts[1]++
 				}
-				return sqlite3.SQLITE_OK
+			}, func() {
+				got, err = s.finishRun(t.Context(), RunReport{}, false, nil)
+				candidateCounts = counts
+				counts = [2]int{}
+				want, wantErr = s.finishRunFrozenReport(t.Context(), RunReport{}, false, nil)
 			})
-			got, err := s.finishRun(t.Context(), RunReport{}, false, nil)
-			candidateCounts := counts
-			counts = [2]int{}
-			want, wantErr := s.finishRunFrozenReport(t.Context(), RunReport{}, false, nil)
-			reportAuthorizer(t, s, nil)
 			assertFrozenReportResult(t, got, err, want, wantErr, nil)
 			if err != nil || len(got.Roots) != size || len(got.OpenRuns) != size || len(got.UnresolvedIntents) != size {
 				t.Fatalf("fixture did not produce %d roots, runs and intents: %#v, %v", size, got, err)

@@ -77,27 +77,27 @@ def durable_files(db):
             for path in (db, wal) if path.exists()}
 
 
-def inspect_and_replay(binaries, db):
+def inspect_and_replay(binaries, db, read=cli):
     # A read-only SQLite connection can create an empty WAL and a shared-memory
     # index. Supply the empty sidecar when needed, then verify every durable byte.
     wal = Path(str(db) + "-wal")
     if not wal.exists():
         wal.touch(exist_ok=False)
     before = durable_files(db)
-    first = (cli(binaries[0], "inspect", db), cli(binaries[0], "replay", db))
-    second = (cli(binaries[1], "inspect", db), cli(binaries[1], "replay", db))
-    if first != second or first[0] != cli(binaries[0], "inspect", db):
+    first = (read(binaries[0], "inspect", db), read(binaries[0], "replay", db))
+    second = (read(binaries[1], "inspect", db), read(binaries[1], "replay", db))
+    if first != second or first[0] != read(binaries[0], "inspect", db):
         raise ValueError("cross-binary inspection or replay differs")
     if before != durable_files(db):
         raise ValueError("read-only operations changed the database or its WAL")
     return first
 
 
-def compare(binaries, directory, boundary, phase):
+def compare(binaries, directory, boundary, phase, read=cli):
     db = directory / "crashed.sqlite"
     cli(binaries[0], "init", db, "--demo", "nested")
     crash(binaries[0], db, boundary, phase)
-    inspection, _ = inspect_and_replay(binaries, db)
+    inspection, _ = inspect_and_replay(binaries, db, read)
     intents = json.loads(inspection)["Tables"]["intents"] or []
     lifecycle = [row for row in intents if json.loads(row["descriptor"])["Kind"] == "lifecycle"]
     if len(lifecycle) != int(phase == "post-commit"):
@@ -109,10 +109,10 @@ def compare(binaries, directory, boundary, phase):
     clone_stopped_store(db, stable)
     recovered = cli(binaries[1], "run", db)
     control = cli(binaries[0], "run", stable)
-    if recovered != control or inspect_and_replay(binaries, db) != inspect_and_replay(binaries, stable):
+    if recovered != control or inspect_and_replay(binaries, db, read) != inspect_and_replay(binaries, stable, read):
         raise ValueError("recovery changed retained history or the outcome")
     report = json.loads(recovered)
-    replay = json.loads(cli(binaries[1], "replay", db))
+    replay = json.loads(read(binaries[1], "replay", db))
     if not report["Quiescent"] or report["OpenRuns"] or len(replay["Runs"]) != 4:
         raise ValueError("nested computation failed to complete")
 

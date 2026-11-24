@@ -10,7 +10,7 @@ From the repository root, start the fixture in one terminal. It serves two fixed
 python3 examples/investigator/testdata/responses.py
 ```
 
-In a second terminal, build the example with Go 1.27.3 and CGO. Each command starts a separate process.
+In a second terminal, build the example with Go 1.27.4 and CGO. Each command starts a separate process.
 
 ```sh
 work=$(mktemp -d)
@@ -85,7 +85,7 @@ Opening an investigation checks the original parent program, template, budget an
 
 ## Reproduce the qualification
 
-Use a local filesystem with SQLite locking, Go 1.27.3 with CGO, a C compiler and loopback HTTP. No API key is needed. The process tests use a child running the normal command handler with a test-only boundary observer. They kill that process only after a matching acknowledgment, then use a separately built investigator binary to reopen the database.
+Use a local filesystem with SQLite locking, Go 1.27.4 with CGO, a C compiler and loopback HTTP. No API key is needed. The process tests use a child running the normal command handler with a test-only boundary observer. They kill that process only after a matching acknowledgment, then use a separately built investigator binary to reopen the database.
 
 ```sh
 go test -count=1 -v -run 'TestPublicConstructionGate|TestInvestigatorDecisions' ./examples/investigator
