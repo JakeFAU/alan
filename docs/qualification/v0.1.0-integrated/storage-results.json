@@ -1,0 +1,648 @@
+{
+  "disposition": "PASS",
+  "integrated": {
+    "commit": "57c230f8d1ac1a0bac4cc3b36f7b8e6b46775530",
+    "tree": "0f0d2ba44db71461701afbc819743bcc15bbeb72"
+  },
+  "platform": {
+    "Go": "go version go1.27.4 darwin/arm64",
+    "OS": "Darwin 27.3.0",
+    "architecture": "arm64",
+    "CGO_ENABLED": "1",
+    "python_sqlite": "3.54.1",
+    "python": "3.15.2",
+    "filesystem": "local Darwin WAL; bounded process-kill cuts"
+  },
+  "original_PR_31": {
+    "head": "6e7b765b92070ddc48462dbae003a7ff7caceac3",
+    "independent_disposition": "APPROVE",
+    "focused_tests_passed": [
+      "TestFinishRunReportDescriptorQueryCount",
+      "TestFinishRunReportDescriptorQueryCount/1",
+      "TestFinishRunReportDescriptorQueryCount/4",
+      "TestFinishRunReportDescriptorQueryCount/8",
+      "TestP3ReadinessSameCallBoundPrograms",
+      "TestP3ReadinessSameCallSecondBindingCorruption",
+      "TestQueryReadProbeDistinguishesRepeatedLookups",
+      "TestQueryReadProbeRejectsUnmeasuredWork",
+      "TestQueryReadProbeRejectsUnmeasuredWork/batch",
+      "TestQueryReadProbeRejectsUnmeasuredWork/exec",
+      "TestQueryReadProbeRejectsUnmeasuredWork/prepared",
+      "TestStaticExecutionHotWritesAndAffectedRoot"
+    ]
+  },
+  "sources": {
+    "v1.14.52": {
+      "commit": "64a692b6f82ae10353f50c8741377166bc6cf854",
+      "tree": "873a20aced3b4ba710dbd3e766db4b3c3b7a08d3",
+      "cli_sha256": "a5d38e87884520143a8f449d2bd4692a07050dc965ca1d8a76a18e8120996600"
+    },
+    "v1.14.53": {
+      "commit": "57c230f8d1ac1a0bac4cc3b36f7b8e6b46775530",
+      "tree": "0f0d2ba44db71461701afbc819743bcc15bbeb72",
+      "cli_sha256": "8240e5749740ada912464d29862771f99e010c046fc7805d26940c19ddf764f6"
+    },
+    "research_extraction": {
+      "commit": "003dc9c45ac9b0c1f48565632f5be80f0f05beed",
+      "tree": "3e5b0d0797317cdb4fdc450f05210a477e7016ce",
+      "driver": "v1.14.52",
+      "cli_sha256": "5879aa596e0606ca26eb13a44aea49de1267c1ab7de5c45414a86f6ed20230bd"
+    },
+    "pre_integration_RC": {
+      "commit": "bea0acc86d9a7302ccc3511327455922503c4a57",
+      "driver": "v1.14.52",
+      "cli_sha256": "fd53039a4ccafdfa46ca7407a62552dfcd25c15fc6714d80b63b88efbb13092c"
+    },
+    "pre_authority": {
+      "commit": "af6943a5805a9a6c0e8fe77f804264f4765d07ec",
+      "tree": "5d1f64029c7fd764ddd1941bc77b831beb3bdcb3",
+      "binary_sha256": "8795a3d34e5e8d4d2e29fbe3d63bc9060ab100ab06eb342d96ea1955d3a18aed"
+    },
+    "pre_binding_owner": {
+      "commit": "d59eaf2976849e450635d252c7bca62eeccbef2e",
+      "tree": "dc082ea07e4c24d8f36e56d756771f7c1154b0ec",
+      "archive_sha256": "a1c1b2facfed2aa36ab1bede3376978173174ab9a2a7807cbd61d42f802d6ae2",
+      "binary_sha256": "10791d19fd5a887db09da15c1c7499226020c53892d89006f5ff86890dbb264c"
+    }
+  },
+  "official_cross_binding_log": [
+    "v1.14.52 -> v1.14.53 pre-commit: 26 commits, 4 intents; corrupt replay rejected",
+    "v1.14.52 -> v1.14.53 post-commit: 26 commits, 4 intents; corrupt replay rejected",
+    "v1.14.53 -> v1.14.52 pre-commit: 26 commits, 4 intents; corrupt replay rejected",
+    "v1.14.53 -> v1.14.52 post-commit: 26 commits, 4 intents; corrupt replay rejected",
+    "Formats 3\u201312: 80 reader/API cases, 60 matching export pairs, 10 typed Open deltas limited to open-run epochs",
+    "Formats 13\u201316: four v1.14.52 parents/promotions read and replayed by both binaries",
+    "Formats 13\u201316: four v1.14.53 parents/promotions read and replayed by both binaries",
+    "Pre-binding owner preserved the v1.14.53 format-13 K01 cut",
+    "18 fixture copies passed integrity_check and foreign_key_check with Python SQLite 3.54.1"
+  ],
+  "official_old_reader": {
+    "supported_control_format": 3,
+    "exact_rejection_passes": [
+      "TestRequestAuthorityFormatsConflictPromotionAndOldReader/13/frozen_old_reader/inspect",
+      "TestRequestAuthorityFormatsConflictPromotionAndOldReader/13/frozen_old_reader/replay",
+      "TestRequestAuthorityFormatsConflictPromotionAndOldReader/14/frozen_old_reader/inspect",
+      "TestRequestAuthorityFormatsConflictPromotionAndOldReader/14/frozen_old_reader/replay"
+    ]
+  },
+  "exact_historical_database_sha256": {
+    "v03.sqlite": "92421f4e1e6a162635ae81faa343a9e0195332c03c079cb4525e01f865246f7a",
+    "v04.sqlite": "424af8fd713bcc54ddf96f9f57e76b0550c5c83755cdd52265c822266f4b8935",
+    "v05.sqlite": "23c9f9c9d11e72185a962de5f71aa4e18d49ac609a0d6ea17b8b78b1267cc048",
+    "v06.sqlite": "7471bb6eecaf20ce11e3cc0b667b65f8cddfd15f35c700857ac317916bfe42a4",
+    "v07.sqlite": "6e17f32bb3d19a97cba6a2dd5141ce4e4d226844cd897827ebc14a83ce69e698",
+    "v08.sqlite": "69a3c551d15167eb7936f1aec6df47c526b34a66472a7cb8825d730924bc17cb",
+    "v09.sqlite": "9c02f571c2d15d704b6c6eb0b5bb98d6759cb346495427a084d06d8efd829fb0",
+    "v10.sqlite": "c498a6ce99e0d7bd14c924ca541d04415fb3e279f2a4123a0b78e60caeea8965",
+    "v11.sqlite": "1521c0ef9eb2671334b52d01e243c024c5cda831ea704e1179b8571fb766be5b",
+    "v12.sqlite": "93b1c33e211b7784eec2127391c707edbfb4be831d1a4f6f7407737b72504099",
+    "v13.sqlite": "86cdc0955459da596a36ac2a1e57f212fd4de24a6a8f19d2eb051ba73d4d9464",
+    "v14.sqlite": "dd627df26f0c7b06b8ae5a0a4dae12944b9a713ed6f8e1d71748238019a80a10",
+    "v15.sqlite": "b71c91c4df04c7d71fc41795183c44d90e4baa3840b7fd1cd2dc93066ba259bc",
+    "v16.sqlite": "759aaac2fc14443f86a820911cc54094dbb9644525d60ef985c21636649b16d7"
+  },
+  "focused_tests_passed": [
+    "TestPhase3B4PromotedPublicParents",
+    "TestPhase3B4PromotedPublicParents/K01",
+    "TestPhase3B4PromotedPublicParents/K02",
+    "TestReleaseHistoricalStores",
+    "TestReleaseHistoricalStores/v03",
+    "TestReleaseHistoricalStores/v04",
+    "TestReleaseHistoricalStores/v05",
+    "TestReleaseHistoricalStores/v06",
+    "TestReleaseHistoricalStores/v07",
+    "TestReleaseHistoricalStores/v08",
+    "TestReleaseHistoricalStores/v09",
+    "TestReleaseHistoricalStores/v10",
+    "TestReleaseHistoricalStores/v11",
+    "TestReleaseHistoricalStores/v12",
+    "TestReleaseHistoricalStores/v13",
+    "TestReleaseHistoricalStores/v14",
+    "TestReleaseHistoricalStores/v15",
+    "TestReleaseHistoricalStores/v16",
+    "TestRequestAuthorityFormatsConflictPromotionAndOldReader",
+    "TestRequestAuthorityFormatsConflictPromotionAndOldReader/13",
+    "TestRequestAuthorityFormatsConflictPromotionAndOldReader/13/frozen_old_reader",
+    "TestRequestAuthorityFormatsConflictPromotionAndOldReader/13/frozen_old_reader/inspect",
+    "TestRequestAuthorityFormatsConflictPromotionAndOldReader/13/frozen_old_reader/replay",
+    "TestRequestAuthorityFormatsConflictPromotionAndOldReader/14",
+    "TestRequestAuthorityFormatsConflictPromotionAndOldReader/14/frozen_old_reader",
+    "TestRequestAuthorityFormatsConflictPromotionAndOldReader/14/frozen_old_reader/inspect",
+    "TestRequestAuthorityFormatsConflictPromotionAndOldReader/14/frozen_old_reader/replay",
+    "TestRequestBindingConflictAndOldReader",
+    "TestRequestBindingConflictAndOldReader/false",
+    "TestRequestBindingConflictAndOldReader/false/frozen_reader",
+    "TestRequestBindingConflictAndOldReader/true",
+    "TestRequestBindingConflictAndOldReader/true/frozen_reader",
+    "TestScopedAssetBindings",
+    "TestScopedAssetBindings/disjoint",
+    "TestScopedAssetBindings/none",
+    "TestScopedAssetBindings/overlap",
+    "TestScopedAssetClosedCompositionWithholdsPreparation",
+    "TestScopedAssetDeniedReceiptProtocols",
+    "TestScopedAssetDeniedReceiptProtocols/phase2c.counter",
+    "TestScopedAssetDeniedReceiptProtocols/phase2c.receipt-read",
+    "TestScopedAssetHistoryFormats",
+    "TestScopedAssetHistoryFormats/17",
+    "TestScopedAssetHistoryFormats/18",
+    "TestScopedAssetHistoryFormats/19",
+    "TestScopedAssetHistoryFormats/23",
+    "TestScopedAssetHistoryFormats/27",
+    "TestScopedAssetHistoryFormats/29",
+    "TestScopedAssetNoninterference",
+    "TestScopedAssetRestartAfterPaidReservation",
+    "TestScopedAssetRevokedDelegation",
+    "TestScopedAssetSelectionIsHostAuthority",
+    "TestScopedAssetTamper",
+    "TestScopedAssetTamper/drop_and_mask",
+    "TestScopedAssetTamper/historical_selection",
+    "TestScopedAssetTamper/manifest",
+    "TestScopedAssetTamper/mask_format",
+    "TestScopedAssetTamper/version",
+    "TestScopedContinuationConflictPromotion",
+    "TestScopedContinuationConflictPromotion/canceled_inside_read"
+  ],
+  "focused_skip_or_failures": [],
+  "native_statement_trace": {
+    "v1.14.52": [
+      "engine 3.53.4 reference=true VM starts {runs:2 loads:2 bindings:2} authorizations {runs:2 loads:2 bindings:2}",
+      "engine 3.53.4 reference=false VM starts {runs:2 loads:1 bindings:2} authorizations {runs:2 loads:1 bindings:2}"
+    ],
+    "v1.14.53": [
+      "engine 3.54.1 reference=true VM starts {runs:2 loads:2 bindings:2} authorizations {runs:4 loads:2 bindings:4}",
+      "engine 3.54.1 reference=false VM starts {runs:2 loads:1 bindings:2} authorizations {runs:4 loads:1 bindings:4}"
+    ]
+  },
+  "additional_crash_cases": [
+    {
+      "writer": "frozen",
+      "reader": "integrated",
+      "boundary": "execution.staged",
+      "history": 26,
+      "intents": 4
+    },
+    {
+      "writer": "frozen",
+      "reader": "integrated",
+      "boundary": "execution.committed",
+      "history": 26,
+      "intents": 4
+    },
+    {
+      "writer": "integrated",
+      "reader": "frozen",
+      "boundary": "execution.staged",
+      "history": 26,
+      "intents": 4
+    },
+    {
+      "writer": "integrated",
+      "reader": "frozen",
+      "boundary": "execution.committed",
+      "history": 26,
+      "intents": 4
+    },
+    {
+      "writer": "rc",
+      "reader": "integrated",
+      "boundary": "execution.staged",
+      "history": 26,
+      "intents": 4
+    },
+    {
+      "writer": "rc",
+      "reader": "integrated",
+      "boundary": "execution.committed",
+      "history": 26,
+      "intents": 4
+    },
+    {
+      "writer": "integrated",
+      "reader": "rc",
+      "boundary": "execution.staged",
+      "history": 26,
+      "intents": 4
+    },
+    {
+      "writer": "integrated",
+      "reader": "rc",
+      "boundary": "execution.committed",
+      "history": 26,
+      "intents": 4
+    }
+  ],
+  "crash_case_contract": "Cross-reader and same-writer resumed stores match; durable database/WAL unchanged by reads; both replayers reject deliberate corruption.",
+  "scoped_read_contract": "Inspect and Replay cover both engines after checking their exact two live engine identifiers; preserved DB and WAL bytes. A pre-scope reader must reject inspect and replay on all 28 writer/format cases.",
+  "scoped_writer_fixtures": [
+    {
+      "writer": "rc",
+      "format": 17,
+      "database_sha256": "2e5cb8f02782a022f661e05fee9e96848e12ac4f6d5c4175c52c23b84240818c",
+      "wal_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "replay_commits": 1,
+      "replay_intents": 1,
+      "reader_pair": [
+        "rc",
+        "integrated"
+      ]
+    },
+    {
+      "writer": "rc",
+      "format": 18,
+      "database_sha256": "db4f94ab61fe692a28e3c166567a080250c435bc0eba757e3105a15b71c414dc",
+      "wal_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "replay_commits": 1,
+      "replay_intents": 1,
+      "reader_pair": [
+        "rc",
+        "integrated"
+      ]
+    },
+    {
+      "writer": "rc",
+      "format": 19,
+      "database_sha256": "174ca77af104380f44ef23ba8d753864e1249b2cc3f1ea45ad42d782325482f2",
+      "wal_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "replay_commits": 1,
+      "replay_intents": 1,
+      "reader_pair": [
+        "rc",
+        "integrated"
+      ]
+    },
+    {
+      "writer": "rc",
+      "format": 20,
+      "database_sha256": "40b1856dcda9cf126a45222dabccd5d6ddc397c9aaf423b57695ae77aa666ba0",
+      "wal_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "replay_commits": 1,
+      "replay_intents": 1,
+      "reader_pair": [
+        "rc",
+        "integrated"
+      ]
+    },
+    {
+      "writer": "rc",
+      "format": 21,
+      "database_sha256": "7fe3d3149b338143725e44c57a336cb28ed4067b8913d31303fbef83a4023824",
+      "wal_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "replay_commits": 1,
+      "replay_intents": 1,
+      "reader_pair": [
+        "rc",
+        "integrated"
+      ]
+    },
+    {
+      "writer": "rc",
+      "format": 22,
+      "database_sha256": "d8c85ee02b154cbab66fd7bb1938cdfade655babdf13c991399822cda3c1736f",
+      "wal_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "replay_commits": 1,
+      "replay_intents": 1,
+      "reader_pair": [
+        "rc",
+        "integrated"
+      ]
+    },
+    {
+      "writer": "rc",
+      "format": 23,
+      "database_sha256": "0788ad5b2d6a11c3b965583ede6d05e7a4479d75b8f4f491b20bb10d9f0aeab4",
+      "wal_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "replay_commits": 1,
+      "replay_intents": 1,
+      "reader_pair": [
+        "rc",
+        "integrated"
+      ]
+    },
+    {
+      "writer": "rc",
+      "format": 24,
+      "database_sha256": "48808441313eb4fb7741d44e7be10d89e20cfe90f236a925703fb7cbf3645ae8",
+      "wal_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "replay_commits": 1,
+      "replay_intents": 1,
+      "reader_pair": [
+        "rc",
+        "integrated"
+      ]
+    },
+    {
+      "writer": "rc",
+      "format": 25,
+      "database_sha256": "b9ab2a3adc5ffc0ed8fe000e2173f0f4db280c3b70436bb0bd819f76f718c427",
+      "wal_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "replay_commits": 7,
+      "replay_intents": 2,
+      "reader_pair": [
+        "rc",
+        "integrated"
+      ]
+    },
+    {
+      "writer": "rc",
+      "format": 26,
+      "database_sha256": "7efac4ec2bcb4f2f1ee58a7c4809735a7467b858273f326910e06f1d6ee3cc3c",
+      "wal_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "replay_commits": 7,
+      "replay_intents": 2,
+      "reader_pair": [
+        "rc",
+        "integrated"
+      ]
+    },
+    {
+      "writer": "rc",
+      "format": 27,
+      "database_sha256": "30d88f12d5b388e570518dc88f93ae5d16f2bd14356b814bdfd8f0bc8a9f50b9",
+      "wal_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "replay_commits": 4,
+      "replay_intents": 3,
+      "reader_pair": [
+        "rc",
+        "integrated"
+      ]
+    },
+    {
+      "writer": "rc",
+      "format": 28,
+      "database_sha256": "278828a9f96d543fac3a9592afe33640c64c356d5c1c9f91f2c9f5bca8abef3d",
+      "wal_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "replay_commits": 4,
+      "replay_intents": 3,
+      "reader_pair": [
+        "rc",
+        "integrated"
+      ]
+    },
+    {
+      "writer": "rc",
+      "format": 29,
+      "database_sha256": "65b2ddabdc4242d939a69931d01e29980485f4036a7570294d9200e7d22ea0ec",
+      "wal_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "replay_commits": 4,
+      "replay_intents": 3,
+      "reader_pair": [
+        "rc",
+        "integrated"
+      ]
+    },
+    {
+      "writer": "rc",
+      "format": 30,
+      "database_sha256": "8611dbdaaba8550757c16e6e4e2e1c846f6e61d38c9897f8ff9338061fd838b7",
+      "wal_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "replay_commits": 4,
+      "replay_intents": 3,
+      "reader_pair": [
+        "rc",
+        "integrated"
+      ]
+    },
+    {
+      "writer": "integrated",
+      "format": 17,
+      "database_sha256": "27786651540e8d1cb8ef20f31590e3bb0693b120ce431cd2a16797dbb017028e",
+      "wal_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "replay_commits": 1,
+      "replay_intents": 1,
+      "reader_pair": [
+        "rc",
+        "integrated"
+      ]
+    },
+    {
+      "writer": "integrated",
+      "format": 18,
+      "database_sha256": "c76fc6a0f784056fbaed8895e9062ea7948cece40f3e72adf032d032ad497c3f",
+      "wal_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "replay_commits": 1,
+      "replay_intents": 1,
+      "reader_pair": [
+        "rc",
+        "integrated"
+      ]
+    },
+    {
+      "writer": "integrated",
+      "format": 19,
+      "database_sha256": "a612b1320f61c8cf0fb8620954a52d411b89ef49b91833c2d7d0d7eb96128859",
+      "wal_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "replay_commits": 1,
+      "replay_intents": 1,
+      "reader_pair": [
+        "rc",
+        "integrated"
+      ]
+    },
+    {
+      "writer": "integrated",
+      "format": 20,
+      "database_sha256": "656e893b190e4206dcbb2b05ecd0b6976b61c4b665d8ef08735648ed9eef363b",
+      "wal_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "replay_commits": 1,
+      "replay_intents": 1,
+      "reader_pair": [
+        "rc",
+        "integrated"
+      ]
+    },
+    {
+      "writer": "integrated",
+      "format": 21,
+      "database_sha256": "7f71028ed3f4750e9ce6d69a450ba3608330087a376f665744a544c8f1d071a1",
+      "wal_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "replay_commits": 1,
+      "replay_intents": 1,
+      "reader_pair": [
+        "rc",
+        "integrated"
+      ]
+    },
+    {
+      "writer": "integrated",
+      "format": 22,
+      "database_sha256": "2aae02306fbc6a449e997154a2a25b0ee089ea12ace7e6d7024fb7db8725948c",
+      "wal_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "replay_commits": 1,
+      "replay_intents": 1,
+      "reader_pair": [
+        "rc",
+        "integrated"
+      ]
+    },
+    {
+      "writer": "integrated",
+      "format": 23,
+      "database_sha256": "4a87c332a0aad08652dc7a832fd9f5db0e8c9ac30bc3e87b162d1802a2a122f7",
+      "wal_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "replay_commits": 1,
+      "replay_intents": 1,
+      "reader_pair": [
+        "rc",
+        "integrated"
+      ]
+    },
+    {
+      "writer": "integrated",
+      "format": 24,
+      "database_sha256": "6b281628f6db7cd19d6c286ca5ba147972dd9a154d3cd7746a08515bd2f5acf3",
+      "wal_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "replay_commits": 1,
+      "replay_intents": 1,
+      "reader_pair": [
+        "rc",
+        "integrated"
+      ]
+    },
+    {
+      "writer": "integrated",
+      "format": 25,
+      "database_sha256": "60716dc4630699b063717af083dff925953afb8669a34503794b2796ce85be98",
+      "wal_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "replay_commits": 7,
+      "replay_intents": 2,
+      "reader_pair": [
+        "rc",
+        "integrated"
+      ]
+    },
+    {
+      "writer": "integrated",
+      "format": 26,
+      "database_sha256": "67cf6cb93b80a8019140cb939807e787a9dd54431f3166589df479c0365d5378",
+      "wal_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "replay_commits": 7,
+      "replay_intents": 2,
+      "reader_pair": [
+        "rc",
+        "integrated"
+      ]
+    },
+    {
+      "writer": "integrated",
+      "format": 27,
+      "database_sha256": "2b09737e6691bec8e6b05ae22832550cf268a75a30445cc7155a08e113c73794",
+      "wal_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "replay_commits": 4,
+      "replay_intents": 3,
+      "reader_pair": [
+        "rc",
+        "integrated"
+      ]
+    },
+    {
+      "writer": "integrated",
+      "format": 28,
+      "database_sha256": "bb3ef6eb575f49db5c00645dac40b62522cc173d3425efdd137a887060bb9c4b",
+      "wal_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "replay_commits": 4,
+      "replay_intents": 3,
+      "reader_pair": [
+        "rc",
+        "integrated"
+      ]
+    },
+    {
+      "writer": "integrated",
+      "format": 29,
+      "database_sha256": "0cd9a1e58976bd088751c5eeea7024e4278a58825712781f54604b886076894d",
+      "wal_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "replay_commits": 4,
+      "replay_intents": 3,
+      "reader_pair": [
+        "rc",
+        "integrated"
+      ]
+    },
+    {
+      "writer": "integrated",
+      "format": 30,
+      "database_sha256": "ffdf0e7bcbcd5dd8d7bd36c675df458611befb49fc5e79151c12c16f934d2c87",
+      "wal_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "replay_commits": 4,
+      "replay_intents": 3,
+      "reader_pair": [
+        "rc",
+        "integrated"
+      ]
+    }
+  ],
+  "cross_binding_quickstarts": [
+    {
+      "writer": "base",
+      "reader": "integrated",
+      "format": 3,
+      "attempts": 1,
+      "results": 1,
+      "replay": [
+        "reader succeeded line=\"SQLite retains its state.\"",
+        "verified commits=6 intents=1"
+      ]
+    },
+    {
+      "writer": "rc",
+      "reader": "integrated",
+      "format": 17,
+      "attempts": 1,
+      "results": 1,
+      "replay": [
+        "reader succeeded line=\"SQLite retains its state.\"",
+        "verified commits=6 intents=1"
+      ]
+    },
+    {
+      "writer": "integrated",
+      "reader": "rc",
+      "format": 17,
+      "attempts": 1,
+      "results": 1,
+      "replay": [
+        "reader succeeded line=\"SQLite retains its state.\"",
+        "verified commits=6 intents=1"
+      ]
+    }
+  ],
+  "verification_script_sha256": "1c85ce971ef3fa2527bfad1ff8cd773f17332c8de7e5c1a9df543b5c44956893",
+  "harnesses": {
+    "tools/compare_stores.py": "ea803d0f77cd49ea4fc562712545a706cc5414fb9f5de8302f0efed4322cade0",
+    "docs/qualification/sqlite-1.14.53/compare.py": "2b3cc6077a4fbef15b336c039f1b852f2c02cc83ff7917c0c4dcc86b82d19492",
+    "docs/qualification/phase3b3/qualify-old-reader.py": "cefb58e333c4a066a565624c37eabafbf7dce2bb459cb80e15be7c2ce64aca2d",
+    "tools/prepare_release_stores.py": "839aceae732ea2d269f88ebd0ef49adb7d6f728b82649f6b11b11682bfe85b12"
+  },
+  "separate_research": {
+    "repository": "JakeFAU/alan-research",
+    "main_at_review": "19b6d2f575ded6f24a5f846089a94a850cf86e42",
+    "independent_PR_64": "86c26b1b258fb32a743904fa7d08f18d206e76b0",
+    "active_module_paths_unchanged_at_v1_14_52": [
+      "examples/adaptive/consumer/go.mod",
+      "examples/callablejoin/consumer/go.mod",
+      "examples/communication/consumer/go.mod",
+      "examples/consumingpolicy/consumer/go.mod",
+      "examples/effectboundary/consumer/go.mod",
+      "examples/effectfulcomposition/consumer/go.mod",
+      "examples/invocationjoin/consumer/go.mod",
+      "examples/join/consumer/go.mod",
+      "examples/owningtree/consumer/go.mod",
+      "examples/reconciliation/consumer/go.mod",
+      "examples/revocation/consumer/go.mod",
+      "examples/substitution/consumer/go.mod",
+      "examples/worktree/consumer/go.mod",
+      "go.mod"
+    ],
+    "PR_64_changed_paths": [
+      "README.md",
+      "docs/sqlite-binding-1.14.53.md",
+      "internal/executor/receipt_conflict_crash_test.go"
+    ],
+    "public_runtime_integration_changes_to_research": 0
+  },
+  "limits": [
+    "Cross-engine comparisons verify both exact SQLite identity fields and compare every remaining byte.",
+    "Scope-format hashes identify individual recorded fixtures; fresh writers assign new namespaces.",
+    "The integrated storage qualification covers the listed single-host data histories and process-crash boundaries. Independent research performance and frozen export claims retain their original sources."
+  ]
+}
