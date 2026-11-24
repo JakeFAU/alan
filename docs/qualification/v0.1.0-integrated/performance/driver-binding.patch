@@ -1,0 +1,15 @@
+--- a/compare_bounded_series.py
++++ b/compare_bounded_series.py
+@@ -75,6 +75,12 @@
+             measure.make_driver(d,mode)
+             cmd("gofmt","-w",*(str(f) for f in sorted(d.glob("*.go"))),cwd=d)
+             cmd("go","mod","edit","-replace=github.com/JakeFAU/alan="+str(snap),cwd=d)
++            # The measured ALAN revision owns its binding pin. Only change the
++            # disposable benchmark module, leaving the archived Go driver intact.
++            binding = "github.com/mattn/go-sqlite3"
++            selected, = [r["Version"] for r in json.loads(cmd("go","mod","edit","-json",cwd=snap))["Require"] if r["Path"] == binding]
++            cmd("go","mod","edit","-require="+binding+"@"+selected,cwd=d)
++            shutil.copyfile(snap/"go.sum",d/"go.sum")
+             binary = d/"driver"
+             cmd("go","build","-buildvcs=false","-mod=readonly","-o",binary,".",cwd=d)
+             binaries[arm] = {"sha256":sha(binary.read_bytes()),

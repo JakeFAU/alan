@@ -1,0 +1,226 @@
+{
+  "source": "57c230f8d1ac1a0bac4cc3b36f7b8e6b46775530",
+  "tree": "0f0d2ba44db71461701afbc819743bcc15bbeb72",
+  "platform": "Go 1.27.4, Darwin 27.3.0 arm64, CGO enabled, Apple clang 21.0.0",
+  "suites": [
+    {
+      "commit": "57c230f8d1ac1a0bac4cc3b36f7b8e6b46775530",
+      "mode": "ordinary",
+      "command": [
+        "go",
+        "test",
+        "-json",
+        "-count=1",
+        "-timeout=60m",
+        "./..."
+      ],
+      "seconds": 136.45,
+      "exit": 0,
+      "valid": true,
+      "packages": {
+        "github.com/JakeFAU/alan/adapters/lookup": "pass",
+        "github.com/JakeFAU/alan/adapters/openai": "pass",
+        "github.com/JakeFAU/alan/adapters/receiptquery": "pass",
+        "github.com/JakeFAU/alan/adapters/openmeteo": "pass",
+        "github.com/JakeFAU/alan/examples/inspect-execution": "skip",
+        "github.com/JakeFAU/alan/effects": "pass",
+        "github.com/JakeFAU/alan/examples/quickstart": "skip",
+        "github.com/JakeFAU/alan/examples/ticket-routing": "skip",
+        "github.com/JakeFAU/alan/internal/boundary": "pass",
+        "github.com/JakeFAU/alan/cmd/alan": "pass",
+        "github.com/JakeFAU/alan/compose": "pass",
+        "github.com/JakeFAU/alan/internal/storetest": "skip",
+        "github.com/JakeFAU/alan/internal/fixture": "pass",
+        "github.com/JakeFAU/alan/internal/testcmd/alan-resource": "pass",
+        "github.com/JakeFAU/alan/schema": "pass",
+        "github.com/JakeFAU/alan/author": "pass",
+        "github.com/JakeFAU/alan/examples/delegation": "pass",
+        "github.com/JakeFAU/alan/runtime": "pass",
+        "github.com/JakeFAU/alan/internal/durabletest": "pass",
+        "github.com/JakeFAU/alan/internal/executor": "pass",
+        "github.com/JakeFAU/alan/examples/investigator": "pass",
+        "github.com/JakeFAU/alan/examples/weather-agent": "pass",
+        "github.com/JakeFAU/alan/examples/outing-planner": "pass"
+      },
+      "tests": {
+        "pass": 1764
+      },
+      "skips": {},
+      "fail": [],
+      "race_diagnostic": false,
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "CGO_ENABLED": "1"
+      },
+      "jsonl_sha256": "dc027891219faf11c0b8b6580146870f8c3a31e4b10d1262bb0ca98310cc9253",
+      "case_log_sha256": "9f0befbce4ef79ea22a84c556739994f487919d63d0074641bada3f83220a51d",
+      "non_json_lines": [],
+      "new_checks_vs_rc001": [
+        "TestQueryReadProbeDistinguishesRepeatedLookups",
+        "TestQueryReadProbeRejectsUnmeasuredWork",
+        "TestQueryReadProbeRejectsUnmeasuredWork/batch",
+        "TestQueryReadProbeRejectsUnmeasuredWork/exec",
+        "TestQueryReadProbeRejectsUnmeasuredWork/prepared"
+      ],
+      "removed_checks_vs_rc001": []
+    },
+    {
+      "commit": "57c230f8d1ac1a0bac4cc3b36f7b8e6b46775530",
+      "mode": "integration",
+      "command": [
+        "go",
+        "test",
+        "-json",
+        "-count=1",
+        "-timeout=60m",
+        "-tags",
+        "integration",
+        "./..."
+      ],
+      "seconds": 315.15,
+      "exit": 0,
+      "valid": true,
+      "packages": {
+        "github.com/JakeFAU/alan/adapters/lookup": "pass",
+        "github.com/JakeFAU/alan/adapters/receiptquery": "pass",
+        "github.com/JakeFAU/alan/adapters/openai": "pass",
+        "github.com/JakeFAU/alan/adapters/openmeteo": "pass",
+        "github.com/JakeFAU/alan/effects": "pass",
+        "github.com/JakeFAU/alan/examples/inspect-execution": "skip",
+        "github.com/JakeFAU/alan/examples/quickstart": "skip",
+        "github.com/JakeFAU/alan/examples/ticket-routing": "skip",
+        "github.com/JakeFAU/alan/cmd/alan": "pass",
+        "github.com/JakeFAU/alan/internal/boundary": "pass",
+        "github.com/JakeFAU/alan/internal/storetest": "skip",
+        "github.com/JakeFAU/alan/internal/fixture": "pass",
+        "github.com/JakeFAU/alan/internal/testcmd/alan-resource": "pass",
+        "github.com/JakeFAU/alan/compose": "pass",
+        "github.com/JakeFAU/alan/schema": "pass",
+        "github.com/JakeFAU/alan/examples/delegation": "pass",
+        "github.com/JakeFAU/alan/author": "pass",
+        "github.com/JakeFAU/alan/runtime": "pass",
+        "github.com/JakeFAU/alan/examples/investigator": "pass",
+        "github.com/JakeFAU/alan/examples/weather-agent": "pass",
+        "github.com/JakeFAU/alan/internal/executor": "pass",
+        "github.com/JakeFAU/alan/internal/durabletest": "pass",
+        "github.com/JakeFAU/alan/examples/outing-planner": "pass"
+      },
+      "tests": {
+        "pass": 3147,
+        "skip": 1
+      },
+      "skips": {
+        "TestPhase3B3BaselineS2CompletionExpectedFailure": "phase3b3_baseline_test.go:385: opt-in historical S2 completion falsifier"
+      },
+      "fail": [],
+      "race_diagnostic": false,
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "CGO_ENABLED": "1"
+      },
+      "jsonl_sha256": "33c7d6b812f61aac14c07d02539adfcd312d36afa6a10f0428536364df3b4331",
+      "case_log_sha256": "2d62ca3da02499df7b7dcbe16ae427b7fa588f423645e5b2d67440111a48392e",
+      "non_json_lines": [],
+      "new_checks_vs_rc001": [
+        "TestQueryReadProbeDistinguishesRepeatedLookups",
+        "TestQueryReadProbeRejectsUnmeasuredWork",
+        "TestQueryReadProbeRejectsUnmeasuredWork/batch",
+        "TestQueryReadProbeRejectsUnmeasuredWork/exec",
+        "TestQueryReadProbeRejectsUnmeasuredWork/prepared"
+      ],
+      "removed_checks_vs_rc001": []
+    },
+    {
+      "commit": "57c230f8d1ac1a0bac4cc3b36f7b8e6b46775530",
+      "mode": "race",
+      "command": [
+        "go",
+        "test",
+        "-json",
+        "-count=1",
+        "-timeout=60m",
+        "-race",
+        "-tags",
+        "integration",
+        "./..."
+      ],
+      "seconds": 3039.07,
+      "exit": 0,
+      "valid": true,
+      "packages": {
+        "github.com/JakeFAU/alan/adapters/lookup": "pass",
+        "github.com/JakeFAU/alan/adapters/openai": "pass",
+        "github.com/JakeFAU/alan/adapters/receiptquery": "pass",
+        "github.com/JakeFAU/alan/adapters/openmeteo": "pass",
+        "github.com/JakeFAU/alan/cmd/alan": "pass",
+        "github.com/JakeFAU/alan/compose": "pass",
+        "github.com/JakeFAU/alan/effects": "pass",
+        "github.com/JakeFAU/alan/author": "pass",
+        "github.com/JakeFAU/alan/examples/inspect-execution": "skip",
+        "github.com/JakeFAU/alan/examples/delegation": "pass",
+        "github.com/JakeFAU/alan/examples/investigator": "pass",
+        "github.com/JakeFAU/alan/examples/quickstart": "skip",
+        "github.com/JakeFAU/alan/examples/ticket-routing": "skip",
+        "github.com/JakeFAU/alan/examples/weather-agent": "pass",
+        "github.com/JakeFAU/alan/internal/boundary": "pass",
+        "github.com/JakeFAU/alan/internal/durabletest": "pass",
+        "github.com/JakeFAU/alan/internal/executor": "pass",
+        "github.com/JakeFAU/alan/internal/fixture": "pass",
+        "github.com/JakeFAU/alan/internal/storetest": "skip",
+        "github.com/JakeFAU/alan/internal/testcmd/alan-resource": "pass",
+        "github.com/JakeFAU/alan/runtime": "pass",
+        "github.com/JakeFAU/alan/schema": "pass",
+        "github.com/JakeFAU/alan/examples/outing-planner": "pass"
+      },
+      "tests": {
+        "pass": 3147,
+        "skip": 1
+      },
+      "skips": {
+        "TestPhase3B3BaselineS2CompletionExpectedFailure": "phase3b3_baseline_test.go:385: opt-in historical S2 completion falsifier"
+      },
+      "fail": [],
+      "race_diagnostic": false,
+      "environment": {
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "CGO_ENABLED": "1",
+        "GOMAXPROCS": "4",
+        "GOGC": "200",
+        "GORACE": "atexit_sleep_ms=0",
+        "GOFLAGS": "-p=2"
+      },
+      "jsonl_sha256": "6b731d2ffac8374c9aa0b518b695bdac9e01d4cb7e7c17dffb4210788d233621",
+      "case_log_sha256": "2d62ca3da02499df7b7dcbe16ae427b7fa588f423645e5b2d67440111a48392e",
+      "non_json_lines": [],
+      "new_checks_vs_rc001": [
+        "TestQueryReadProbeDistinguishesRepeatedLookups",
+        "TestQueryReadProbeRejectsUnmeasuredWork",
+        "TestQueryReadProbeRejectsUnmeasuredWork/batch",
+        "TestQueryReadProbeRejectsUnmeasuredWork/exec",
+        "TestQueryReadProbeRejectsUnmeasuredWork/prepared"
+      ],
+      "removed_checks_vs_rc001": []
+    }
+  ],
+  "static_analysis": {
+    "commands": [
+      "go mod verify",
+      "go mod tidy -diff",
+      "gofmt -l adapters author cmd compose effects examples internal runtime schema",
+      "go build ./...",
+      "go vet ./...",
+      "go vet -tags integration ./...",
+      "staticcheck ./...",
+      "staticcheck -tags integration ./..."
+    ],
+    "combined_exit": 0,
+    "output": [
+      "all modules verified",
+      "staticcheck 2026.2.2 (0.8.2)"
+    ]
+  },
+  "frozen_input_manifest": "../v0.1.0/historical-inputs.json"
+}

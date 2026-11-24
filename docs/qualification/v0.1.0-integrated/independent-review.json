@@ -1,0 +1,85 @@
+{
+  "additional_importable_example": "examples/delegation",
+  "api_document_byte_comparisons": 10,
+  "api_document_sha256": {
+    "github.com/JakeFAU/alan/adapters/lookup": "dc8f03174e33fbf06fc69aecb380acae96e190334b067c15760a42e1ba748ad2",
+    "github.com/JakeFAU/alan/adapters/openai": "702fd8cf998aa1627a237b3fcc5a86f7fc4187a7223c10f7012d74b7089089de",
+    "github.com/JakeFAU/alan/adapters/openmeteo": "d2f16bad64bdf70eff8a3d76e8d484296b2adf00d27c5129ef4c838759237fa0",
+    "github.com/JakeFAU/alan/adapters/receiptquery": "9cc42e7a1d55ffd614556003b292a1d4349e81f07f0b6becdb90c5e4e27a5fe6",
+    "github.com/JakeFAU/alan/author": "705e2d9316f445aa1f0e9dec70e38e90bef96bdec130af0d99faa1e8de9f7c3b",
+    "github.com/JakeFAU/alan/compose": "ebcd73b66897877796a378851d862ea7e34210f5aad34a68d251f410a8563848",
+    "github.com/JakeFAU/alan/effects": "3b2a9c9b2ffb03f28b71478910e94f3aa129fa682ef69bdc9b1d36948ec30b92",
+    "github.com/JakeFAU/alan/examples/delegation": "25d594a2fd4c62edff76ce62d4ced57799a3116ac4b14402cde97446d4203708",
+    "github.com/JakeFAU/alan/runtime": "05c2302d14df62350e03fff93b3fc2f040aba590f54e3c3c671490d4780f1e69",
+    "github.com/JakeFAU/alan/schema": "6a4c83cfa758ec12debafa6a3566cd219025bf04345552270aa24e76a06824da"
+  },
+  "commands": [
+    "go list -f '{{.ImportPath}} {{.Name}}' ./...",
+    "go doc -all <each non-main non-internal package>",
+    "python3 -B docs/evidence/scheduler-readiness/measure.py"
+  ],
+  "corrected_findings": [
+    {
+      "at": "2943fc3c916cf6d23ae4a5582cb89a939d6f105e",
+      "finding": "Six duplicate performance table rows and seven source-only links in package documentation.",
+      "resolution": "Reviewed removal of duplicates and checked newly pinned scheduler evidence on final commit.",
+      "severity": "medium"
+    },
+    {
+      "at": "2943fc3c916cf6d23ae4a5582cb89a939d6f105e",
+      "finding": "Extraction procedure originally applied a same-engine byte comparer to two different SQLite versions.",
+      "resolution": "Verified the revised same-engine precondition and pinned dual-engine procedure link; the two version/source-identity fields are checked on each side before remaining bytes are compared.",
+      "severity": "medium"
+    }
+  ],
+  "docs": {
+    "commit": "57c230f8d1ac1a0bac4cc3b36f7b8e6b46775530",
+    "package_markdown": "All relative file references resolve against paths delivered by the root module. Tested reference paths, not arbitrary external web pages.",
+    "pinned_runtime_blob_links_in_release_docs": 9,
+    "relative_links": 225,
+    "shipped_markdown_files": 41
+  },
+  "go": "go version go1.27.4 darwin/arm64",
+  "packaging_review": {
+    "archive_negative_controls": [
+      "missing LICENSE",
+      "changed frozen SQLite fixture",
+      "archive unexpectedly contains docs/evidence/"
+    ],
+    "archive_sha256": "fcac84222582f6b3a1de11fb4b870699c35a08bd112e8843c14c9b6a524ab232",
+    "archived_source_entries_checked": 487,
+    "creation_recovery_controls": "invalid provision, existing/concurrent creator, actual create SIGKILL, and SQLite sidecar identity controls passed",
+    "final_harness": "Reads module pin, maintains empty consumer caches, validates checksums, tests four README processes, and compares canonical archive inventory. Published mode verifies tag and checksum database separately.",
+    "focused_scope_and_adapter_test_pass_events": 21,
+    "four_independent_processes": true,
+    "go_doc_symbols": 16,
+    "quickstart_rc_head": "41400512d993d2e1470c5779867a1787a75dd83e"
+  },
+  "production_go_diff": [],
+  "public_packages": 9,
+  "rc001_review_head": "41400512d993d2e1470c5779867a1787a75dd83e",
+  "research_archive": {
+    "archived_qualification_tree_identical_to_rc001": true,
+    "missing_or_modified_entries": 0,
+    "original_runtime_archive_entries": 490,
+    "scheduler_pr_evidence_identical": true,
+    "sqlite_pr_evidence_identical": true
+  },
+  "reviewer_disposition": "APPROVE",
+  "revision": "57c230f8d1ac1a0bac4cc3b36f7b8e6b46775530",
+  "scheduler": {
+    "baseline_rows_sha256": "e13c73be2e2d99d4cd63d97693967342b44ecd6924d793930b9471f8f0733321",
+    "baseline_runtime": "64a692b6f82ae10353f50c8741377166bc6cf854",
+    "comparison": "Stock and counted checks passed. Every ordered record matched after independently checking SQLite 3.53.4 on the archived rows and 3.54.1 on all integrated rows.",
+    "covered": "Fallback scans and guarded selection on 11 bounded fixtures. Wall time and production frequency remain unmeasured.",
+    "harness_commit": "e1f4dfc209befc8bd13d20ab03d9450d2a483f32",
+    "integrated_rows_sha256": "86818c2c8cc119a7bf472ede822dc5db3652dade3b7ef3836a65e4590e1605bc",
+    "matched_workload_rows": 11
+  },
+  "scope": "Independent review of RC-001 (#32), scheduler work measurements (#30), and their final integration. Public interfaces and shipped documentation checked on the named commit. Public-tag delivery awaits authorization.",
+  "tree": "0f0d2ba44db71461701afbc819743bcc15bbeb72",
+  "unresolved_critical": 0,
+  "unresolved_high": 0,
+  "unresolved_low": 0,
+  "unresolved_medium": 0
+}
