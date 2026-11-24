@@ -162,10 +162,10 @@ checkout head `4af37867c030cb353df3b85686ff8bdc20fe6ec6`, plus the Task5 worktre
 changes. Its sorted name/hash-map SHA-256 is
 `d10d834d86837c1ea2b31c6e3f2e8d5e51e04eac9a041bca1ee99aa5f4d2aa9a`.
 This identifies frozen source bytes, independently of the qualification archive
-commit. The [controlled archive](../../docs/qualification/delegated-weather/README.md)
+commit. The [controlled archive](https://github.com/JakeFAU/alan/blob/64a692b6f82ae10353f50c8741377166bc6cf854/docs/qualification/delegated-weather/README.md)
 contains the source map, raw inputs, complete captures, original command/exits,
 negative controls, review history and a portable independent-check reproducer.
-The [decision record](../../docs/qualification/delegated-weather/DECISIONS.md)
+The [decision record](https://github.com/JakeFAU/alan/blob/64a692b6f82ae10353f50c8741377166bc6cf854/docs/qualification/delegated-weather/DECISIONS.md)
 preserves the controller's scope/rework rulings and is not an evidence verdict.
 
 ```sh

@@ -31,8 +31,8 @@ approval, revision, reservation, settlement and final dispatch checks are intact
 
 The production change is four insertions and six deletions in two private files.
 There is no new dependency, table, migration, public API, persistent cache or
-ownership mechanism. The [contract](evidence/series-scaling/contract.md) and
-[invariant analysis](evidence/series-scaling/invariants.md) were frozen before
+ownership mechanism. The [contract](https://github.com/JakeFAU/alan/blob/64a692b6f82ae10353f50c8741377166bc6cf854/docs/evidence/series-scaling/contract.md) and
+[invariant analysis](https://github.com/JakeFAU/alan/blob/64a692b6f82ae10353f50c8741377166bc6cf854/docs/evidence/series-scaling/invariants.md) were frozen before
 the production change.
 
 ## Controlled paired result
@@ -71,9 +71,9 @@ directory. No independent-machine replication is claimed.
 At 256, the measured SQL count remains 11,770,629 and root/intent reporting
 pairs remain 8,421,376. Descriptor decodes fall from 399,868 to 1,535. This
 explains a specific reduction in repeated work without claiming a global
-validation cache or less required computation. [Full results](evidence/series-scaling/performance.md)
+validation cache or less required computation. [Full results](https://github.com/JakeFAU/alan/blob/64a692b6f82ae10353f50c8741377166bc6cf854/docs/evidence/series-scaling/performance.md)
 include all ranges, allocations, CPU/RSS, phase costs, separate recovery samples,
-growth fits and limitations. [Attribution](evidence/series-scaling/attribution.md)
+growth fits and limitations. [Attribution](https://github.com/JakeFAU/alan/blob/64a692b6f82ae10353f50c8741377166bc6cf854/docs/evidence/series-scaling/attribution.md)
 records the profiles, probe coverage and instrumentation overhead.
 
 ## Semantic and recovery evidence
@@ -92,8 +92,8 @@ Genuine conflict promotion preserves formats 11→12 and immutable originals.
 The existing external eight-operation consumer and historical-format suites
 pass. Independent reviews cover semantics, chronology, recovery, compatibility,
 scope, attribution and measurement; rejected tooling findings and corrections
-are preserved. [Qualification](evidence/series-scaling/qualification.md) and
-[review history](evidence/series-scaling/reviews.md) identify the tested cuts,
+are preserved. [Qualification](https://github.com/JakeFAU/alan/blob/64a692b6f82ae10353f50c8741377166bc6cf854/docs/evidence/series-scaling/qualification.md) and
+[review history](https://github.com/JakeFAU/alan/blob/64a692b6f82ae10353f50c8741377166bc6cf854/docs/evidence/series-scaling/reviews.md) identify the tested cuts,
 negative cases, exact command families and limits.
 
 ## Source identities, evidence and remaining work
@@ -112,7 +112,7 @@ negative cases, exact command families and limits.
 Raw runs, profiles, traces, schedules, commands, source/build hashes, actual
 crash stores and full review reports are retained separately from library
 source. The draft PR's delivery record binds its exact head and post-commit
-qualification. [Reproduction instructions](evidence/series-scaling/reproduce.md)
+qualification. [Reproduction instructions](https://github.com/JakeFAU/alan/blob/64a692b6f82ae10353f50c8741377166bc6cf854/docs/evidence/series-scaling/reproduce.md)
 explain both external modules and the measurement-only probes.
 
 The measured candidate still takes about 105.5s at 256 positions. Root reporting
