@@ -20,7 +20,7 @@ The research repository keeps the monograph, independent bounded models, histori
 
 ## Verification
 
-Run from a checkout with Go 1.27.3, CGO, a C compiler, local loopback, subprocesses and a filesystem with SQLite locking.
+Run from a checkout with Go 1.27.4, CGO, a C compiler, local loopback, subprocesses and a filesystem with SQLite locking.
 
 ```sh
 export GOTOOLCHAIN=local GOWORK=off

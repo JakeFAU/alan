@@ -7,7 +7,7 @@ Both programs run as static subjects in a single local Store.
 
 ## Run the offline walkthrough
 
-Run the script from the repository root with Go 1.27.3 or later, CGO, a C
+Run the script from the repository root with Go 1.27.4 or later, CGO, a C
 compiler, and Python 3.
 
 ```sh

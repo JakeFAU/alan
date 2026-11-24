@@ -8,7 +8,7 @@ from the requested coordinates. Weather data by Open-Meteo under CC BY 4.0.
 
 ## Run one reading
 
-Use Go 1.27.3 or later, CGO, a C compiler and a local Unix filesystem. Run these
+Use Go 1.27.4 or later, CGO, a C compiler and a local Unix filesystem. Run these
 commands from the repository root. The `run` command below can contact
 Open-Meteo. To use a saved reading, go straight to
 [offline reproduction](#reproduce-the-archived-reading-offline).
