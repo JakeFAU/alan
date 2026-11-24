@@ -58,7 +58,7 @@ func TestAuthorUnknownVersionsRejectedOnRecovery(t *testing.T) {
 				t.Fatal(err)
 			}
 			path := filepath.Join(t.TempDir(), "version.db")
-			store, err := executor.Create(ctx, path, provision, executor.DefaultLimits())
+			store, err := executor.Create(ctx, path, executor.Provision(provision), executor.DefaultLimits())
 			if err != nil {
 				t.Fatal(err)
 			}

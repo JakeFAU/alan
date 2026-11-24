@@ -50,11 +50,13 @@ type Permission struct {
 type Provision struct {
 	Reconciliation *ReconciliationProfile `json:",omitempty"`
 	Composition    *CompositionProvision  `json:",omitempty"`
-	Assets         []effects.Asset
-	Programs       []Artifact
-	Subjects       []Subject
-	Runs           []InitialRun
-	Permissions    []Permission
+	// AssetScopes binds each capability to retained asset IDs. An omitted capability receives no assets.
+	AssetScopes map[string][]string `json:",omitempty"`
+	Assets      []effects.Asset
+	Programs    []Artifact
+	Subjects    []Subject
+	Runs        []InitialRun
+	Permissions []Permission
 }
 type Authority struct {
 	Run                       RunID
@@ -512,8 +514,16 @@ func provisionInitialLedger(ctx context.Context, tx *sql.Tx, s *Store, p Provisi
 			return err
 		}
 	}
+	if len(p.Assets) > 0 || p.AssetScopes != nil {
+		version += assetScopeFormatOffset
+	}
 	if _, err = tx.ExecContext(ctx, "INSERT INTO metadata VALUES(1,?,?,?,?)", version, SemanticVersion, ExternalKeyVersion, s.namespace); err != nil {
 		return err
+	}
+	if hasAssetScopeFormat(version) {
+		if err = writeAssetScopes(ctx, tx, p); err != nil {
+			return err
+		}
 	}
 	if _, err = tx.ExecContext(ctx, fmt.Sprintf("PRAGMA user_version=%d", version)); err != nil {
 		return err

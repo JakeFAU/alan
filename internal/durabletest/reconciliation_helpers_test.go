@@ -122,9 +122,9 @@ func phaseAddress(t *testing.T, endpoint string) string {
 	return u.Host
 }
 
-func phaseCreate(t *testing.T, p x.Provision, path string) {
+func phaseCreate(t *testing.T, p rt.Provision, path string) {
 	t.Helper()
-	s, err := x.Create(t.Context(), path, p, x.DefaultLimits())
+	s, err := rt.Create(t.Context(), path, p, rt.DefaultLimits())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -204,7 +204,7 @@ func addOperator(t *testing.T, p *rt.Provision, name, operation, target string) 
 			"operation": x.Lit(x.Text(operation)), "revision": x.Lit(x.Int(1)),
 		},
 	}
-	addProgram(t, p, name, []x.Instruction{
+	addProgram(t, (*x.Provision)(p), name, []x.Instruction{
 		gateInstruction(), {Op: "emit", Dst: "control_op", Effect: &lifecycle},
 		{Op: "end", Outcome: "succeeded"},
 	}, map[string]x.Value{})

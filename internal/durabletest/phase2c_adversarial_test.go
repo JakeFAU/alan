@@ -30,7 +30,7 @@ func hostileSeed(t *testing.T, h *history2c, twin bool) {
 	grant := rt.ReceiptGrant{Resolver: resolver2c, Invocation: `["parent",1,1,0]`, Member: "source", Sequence: 2, Endpoint: h.apply, Adopt: true}
 	p.Reconciliation = &rt.ReconciliationProfile{Grants: []rt.ReceiptGrant{grant}}
 	addOperator(t, &p, "operator", "CancelRun", "resolver")
-	addProgram(t, &p, "ordinary", []x.Instruction{gateInstruction(), {Op: "end", Outcome: "succeeded"}}, map[string]x.Value{})
+	addProgram(t, (*x.Provision)(&p), "ordinary", []x.Instruction{gateInstruction(), {Op: "end", Outcome: "succeeded"}}, map[string]x.Value{})
 	p.Permissions = append(p.Permissions, rt.Permission{Kind: "input", Source: "local", Target: "ordinary", Operation: "input", Obligation: "control"})
 	if twin {
 		twinID := rt.RunID{Subject: "twin", Generation: 1}

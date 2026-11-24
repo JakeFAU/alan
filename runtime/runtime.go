@@ -27,9 +27,22 @@ type Artifact = executor.Artifact
 
 // Provision holds the original programs, subjects, runs, permissions and retained
 // assets. Obtain it from author.Application.Provision and review its permissions
-// before Create. Omitted permissions grant no authority. Nil Composition and
-// Reconciliation select ordinary execution.
-type Provision = executor.Provision
+// before Create. The zero value creates an empty store with no runnable agents.
+// Omitted permissions grant no authority. Nil Composition and Reconciliation
+// select ordinary execution.
+type Provision struct {
+	Reconciliation *ReconciliationProfile `json:",omitempty"`
+	Composition    *CompositionProvision  `json:",omitempty"`
+	// AssetScopes maps capability names to the exact IDs in Assets that their
+	// adapters can receive. Omitted capabilities receive no assets in new stores.
+	AssetScopes map[string][]string `json:",omitempty"`
+	Assets      []Asset
+	Programs    []Artifact
+	Subjects    []Subject
+	Runs        []InitialRun
+	Permissions []Permission
+}
+
 type Subject = executor.Subject
 type InitialRun = executor.InitialRun
 type Permission = executor.Permission
@@ -157,7 +170,7 @@ func DefaultLimits() Limits { return Limits(executor.DefaultLimits()) }
 // can leave a database at path. Preserve its files and use Open to recover a
 // committed ledger. Always close a successful Store.
 func Create(ctx context.Context, path string, p Provision, l Limits) (*Store, error) {
-	owner, err := executor.Create(ctx, path, p, executor.Limits(l))
+	owner, err := executor.Create(ctx, path, executor.Provision(p), executor.Limits(l))
 	if err != nil {
 		return nil, err
 	}

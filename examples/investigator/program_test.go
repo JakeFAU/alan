@@ -130,6 +130,7 @@ func TestInvestigatorDecisions(t *testing.T) {
 				t.Fatal(err)
 			}
 			p.Assets = []effects.Asset{asset}
+			p.AssetScopes = map[string][]string{"corpus": {asset.ID}}
 			path := filepath.Join(t.TempDir(), "investigation.sqlite")
 			store, err := runtime.Create(t.Context(), path, p, runtime.DefaultLimits())
 			if err != nil {

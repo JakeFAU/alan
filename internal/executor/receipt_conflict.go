@@ -18,14 +18,17 @@ const continuationSchema = 11
 const continuationConflictSchema = 12
 
 func hasContinuationSchema(version int) bool {
+	version = unscopedFormat(version)
 	return version == continuationSchema || version == continuationConflictSchema
 }
 
 func hasDispatchAdmissionSchema(version int) bool {
+	version = unscopedFormat(version)
 	return hasContinuationSchema(version) || version == dispatchAdmissionSchema || version == dispatchAdmissionConflictSchema
 }
 
 func hasReceiptConflictSchema(version int) bool {
+	version = unscopedFormat(version)
 	switch version {
 	case SchemaVersion + receiptConflictSchemaOffset,
 		compositionSchemaVersion + receiptConflictSchemaOffset,
@@ -37,6 +40,7 @@ func hasReceiptConflictSchema(version int) bool {
 }
 
 func protocolSchemaNumber(version int) int {
+	version = unscopedFormat(version)
 	if hasRequestAuthoritySchema(version) {
 		return compositionSchemaVersion
 	}
@@ -64,7 +68,7 @@ func ensureReceiptConflictSchema(ctx context.Context, tx *sql.Tx) error {
 	if hasReceiptConflictSchema(version) {
 		return nil
 	}
-	if version != SchemaVersion && !isCompositionSchema(protocolSchemaNumber(version)) {
+	if unscopedFormat(version) != SchemaVersion && !isCompositionSchema(protocolSchemaNumber(version)) {
 		return ErrVersion
 	}
 	if _, err = tx.ExecContext(ctx, `CREATE TABLE receipt_conflicts(
@@ -75,6 +79,8 @@ func ensureReceiptConflictSchema(ctx context.Context, tx *sql.Tx) error {
 		PRIMARY KEY(intent_id,offer_digest))`); err != nil {
 		return err
 	}
+	offset := version - unscopedFormat(version)
+	version = unscopedFormat(version)
 	switch version {
 	case requestAuthorityBindingSchema:
 		version = requestAuthorityBindingConflictSchema
@@ -87,6 +93,7 @@ func ensureReceiptConflictSchema(ctx context.Context, tx *sql.Tx) error {
 	default:
 		version += receiptConflictSchemaOffset
 	}
+	version += offset
 	if _, err = tx.ExecContext(ctx, "UPDATE metadata SET schema_version=? WHERE singleton=1", version); err != nil {
 		return err
 	}

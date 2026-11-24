@@ -225,8 +225,15 @@ func (c *effectCut) readReservations() error {
 		decl, ok := program.Author.Effects[x.Name]
 		w := effects.Request{ID: x.OperationID, Key: ExternalKey(c.snap.Namespace, x.OperationID), Capability: x.Capability, Effect: x.Name,
 			Input: decl.Input, Output: decl.Output, Payload: a.Intent.Payload, Assets: a.Prepared.Request.Assets}
+		expectedAssets := c.snap.Assets
+		if c.snap.AssetScopes != nil {
+			expectedAssets = nil
+			for _, id := range c.snap.AssetScopes[x.Capability] {
+				expectedAssets = append(expectedAssets, *c.snap.assetIndex[id])
+			}
+		}
 		if !ok || decl.Capability != x.Capability || decl.Input.Record.Validate(a.Intent.Payload) != nil ||
-			!reflect.DeepEqual(w, a.Prepared.Request) || !slices.Equal(w.Assets, c.snap.Assets) {
+			!reflect.DeepEqual(w, a.Prepared.Request) || !slices.Equal(w.Assets, expectedAssets) {
 			return corrupt("adapter request differs from original program, inputs or assets")
 		}
 		x.AdapterAttempt = &a

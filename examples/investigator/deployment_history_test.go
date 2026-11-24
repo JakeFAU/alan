@@ -178,6 +178,7 @@ func priorDeployment(t *testing.T, endpoint string, queries [2]string) (runtime.
 		t.Fatal(err)
 	}
 	p.Assets = []effects.Asset{doc}
+	p.AssetScopes = map[string][]string{"corpus": {doc.ID}}
 	return p, d
 }
 
@@ -347,7 +348,7 @@ func TestAlternateParentCannotPublishAnInvestigatorAnswer(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	other.Assets, other.Composition.Roots = p.Assets, p.Composition.Roots
+	other.Assets, other.AssetScopes, other.Composition.Roots = p.Assets, p.AssetScopes, p.Composition.Roots
 	path := filepath.Join(t.TempDir(), "false-answer.sqlite")
 	store, err := runtime.Create(t.Context(), path, other, runtime.DefaultLimits())
 	if err != nil {

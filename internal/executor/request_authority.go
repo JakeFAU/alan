@@ -61,7 +61,7 @@ func hasRequestAuthoritySchema(v int) bool {
 	return requestAuthorityVersionForSchema(v) != ""
 }
 func requestAuthorityVersionForSchema(v int) string {
-	switch v {
+	switch unscopedFormat(v) {
 	case requestAuthoritySchema, requestAuthorityConflictSchema:
 		return RequestAuthorityVersion
 	case requestAuthorityBindingSchema, requestAuthorityBindingConflictSchema:

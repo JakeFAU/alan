@@ -55,6 +55,20 @@ type adapterCompletion struct {
 	err       error
 }
 
+func readAsset(ctx context.Context, q queryer, id string) (effects.Asset, error) {
+	var b []byte
+	if err := q.QueryRowContext(ctx, "SELECT descriptor FROM corpus_assets WHERE id=?", id).Scan(&b); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return effects.Asset{}, corrupt("missing corpus asset")
+		}
+		return effects.Asset{}, err
+	}
+	var a effects.Asset
+	if decode(b, &a) != nil || !sameJSON(b, a) || a.ID != id || a.Check() != nil {
+		return effects.Asset{}, corrupt("corpus asset")
+	}
+	return a, nil
+}
 func readAssets(ctx context.Context, q queryer) ([]effects.Asset, error) {
 	ids, e := stringList(ctx, q, "SELECT id FROM corpus_assets ORDER BY id")
 	if e != nil {
@@ -62,13 +76,9 @@ func readAssets(ctx context.Context, q queryer) ([]effects.Asset, error) {
 	}
 	assets := []effects.Asset{}
 	for _, id := range ids {
-		var b []byte
-		if e = q.QueryRowContext(ctx, "SELECT descriptor FROM corpus_assets WHERE id=?", id).Scan(&b); e != nil {
-			return nil, e
-		}
-		var a effects.Asset
-		if decode(b, &a) != nil || !sameJSON(b, a) || a.ID != id || a.Check() != nil {
-			return nil, corrupt("corpus asset")
+		a, err := readAsset(ctx, q, id)
+		if err != nil {
+			return nil, err
 		}
 		assets = append(assets, a)
 	}
@@ -103,7 +113,7 @@ func adapterRequest(ctx context.Context, q queryer, id, namespace string, l Limi
 	if e = effect.Input.Record.Validate(i.Payload); e != nil {
 		return effects.Request{}, i, fmt.Errorf("adapter input schema: %w", e)
 	}
-	assets, e := readAssets(ctx, q)
+	assets, e := scopedAssets(ctx, q, i.Target)
 	return effects.Request{ID: id, Key: ExternalKey(namespace, id), Capability: i.Target, Effect: i.Obligation, Input: effect.Input, Output: effect.Output, Payload: i.Payload, Assets: assets}, i, e
 }
 func loadAdapterAttempt(ctx context.Context, q queryer, id string) (AdapterAttempt, error) {
@@ -178,6 +188,10 @@ func (s *Store) prepareAdapterWork(ctx context.Context, id string, registry map[
 		return nil, e
 	}
 	request, intent, e := adapterRequest(ctx, s.conn, id, s.namespace, s.limits)
+	var withheld *effects.Prepared
+	if e == nil {
+		withheld, e = s.withheldAssetPreparation(ctx, intent, request)
+	}
 	s.mu.Unlock()
 	if e != nil {
 		return nil, e
@@ -198,7 +212,20 @@ func (s *Store) prepareAdapterWork(ctx context.Context, id string, registry map[
 	}
 	// No locks, I/O or durable authority are exposed to Prepare. Implementations are
 	// trusted to follow the documented pure/bounded contract.
-	p, e := adapter.Prepare(effects.Copy(request))
+	var p effects.Prepared
+	if withheld == nil {
+		p, e = adapter.Prepare(effects.Copy(request))
+	} else if s.reconciliation && (intent.Target == receiptReadCapability || intent.Target == receiptCounterCapability) {
+		// Controlled receipt protocols require their canonical endpoint and wire
+		// even on refusal. Both concrete serializers were checked above and
+		// their protocol fields are independent of the retained assets.
+		bare := request
+		bare.Assets = nil
+		p, e = adapter.Prepare(effects.Copy(bare))
+		p.Request.Assets = request.Assets
+	} else {
+		p = *withheld
+	}
 	if e != nil {
 		return nil, fmt.Errorf("adapter configuration/preparation rejected for capability %q effect %q", intent.Target, intent.Obligation)
 	}
@@ -266,6 +293,19 @@ func (s *Store) prepareAdapterWork(ctx context.Context, id string, registry map[
 	if e != nil {
 		s.mu.Unlock()
 		return nil, e
+	}
+	if withheld != nil && a.Allowed {
+		// A previously authorized source can close before preparation. Its
+		// original reservation remains subject to the final source gate. If
+		// the earlier denial has instead cleared, retry real preparation.
+		reason, err := s.dispatchSourceReason(ctx, intent.Run, intent.revision)
+		if err != nil || reason == "" {
+			s.mu.Unlock()
+			if err != nil {
+				return nil, err
+			}
+			return nil, ErrStale
+		}
 	}
 	b, e := json.Marshal(a)
 	if e == nil {
@@ -649,8 +689,22 @@ func checkAdapterResult(a AdapterAttempt, r AdapterResult, l Limits, class error
 	return nil
 }
 func validateAdapters(ctx context.Context, q queryer, l Limits) error {
-	if _, e := readAssets(ctx, q); e != nil {
+	assets, e := readAssets(ctx, q)
+	if e != nil {
 		return e
+	}
+	v, e := storedSchemaNumber(ctx, q)
+	if e != nil {
+		return e
+	}
+	if hasAssetScopeFormat(v) {
+		m, e := readAssetScopes(ctx, q)
+		if e != nil {
+			return e
+		}
+		if e = m.verify(assets); e != nil {
+			return e
+		}
 	}
 	namespace, e := readNamespace(ctx, q)
 	if e != nil {

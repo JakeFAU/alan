@@ -161,6 +161,7 @@ func TestLookupSnapshotSurvivesMissingSource(t *testing.T) {
 		t.Fatal(e)
 	}
 	p.Assets = []effects.Asset{asset}
+	p.AssetScopes = map[string][]string{"corpus": {asset.ID}}
 	path := filepath.Join(dir, "store.db")
 	s, e := runtime.Create(ctx, path, p, runtime.DefaultLimits())
 	if e != nil {
@@ -222,6 +223,7 @@ func TestLookupFieldsReachModelWithoutStringOpcode(t *testing.T) {
 		t.Fatal(e)
 	}
 	p.Assets = []effects.Asset{asset}
+	p.AssetScopes = map[string][]string{"corpus": {asset.ID}}
 	path := filepath.Join(t.TempDir(), "store.db")
 	s, e := runtime.Create(ctx, path, p, runtime.DefaultLimits())
 	if e != nil {

@@ -64,6 +64,7 @@ func TestPublicConstructionGate(t *testing.T) {
 		t.Fatal(err)
 	}
 	p.Assets = []effects.Asset{asset}
+	p.AssetScopes = map[string][]string{"corpus": {asset.ID}}
 	root := runtime.RunID{Subject: "parent", Generation: 1}
 	p.Composition.Roots = []runtime.ResourceRoot{{Run: root, Members: []runtime.RunID{root}, Templates: []string{template.ID()}, Capabilities: []string{"corpus"},
 		Limits: runtime.ResourceLimits{MaxInvocations: 2, MaxCreatedRuns: 2, MaxDepth: 1, MaxEffects: 2, MaxInFlight: 2}}}

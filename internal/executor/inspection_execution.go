@@ -103,24 +103,26 @@ type ExecutionSnapshot struct {
 	LifecycleDecisions []LifecycleResult
 	Operations         []Intent
 	Roots              []RootCompletion
-	Assets             []effects.Asset
-	Composition        *CompositionProvision
-	Deployment         *ExecutionDeployment
-	Permissions        []Permission
-	Reconciliation     *ReconciliationProfile
-	Pending            []PendingObligation
-	byInvocationID     map[string]*InvocationView
-	operationIndex     map[string]*Intent
-	admissionIndex     map[string]*AdmissionView
-	reductionIndex     map[ReductionRef]*ExecutionStep
-	rootIndex          map[string]*RootCompletion
-	lifecycleIndex     map[string]LifecycleResult
-	runIndex           map[RunID]*ExecutionRun
-	invocationIndex    map[string]*InvocationView
-	effectIndex        map[string]*ExecutionEffect
-	observationIndex   map[string]*ObservationView
-	assetIndex         map[string]*effects.Asset
-	history            []ExecutionStep
+	// AssetScopes lists sorted retained asset IDs by capability. Nil identifies legacy whole-corpus semantics.
+	AssetScopes      map[string][]string `json:",omitempty"`
+	Assets           []effects.Asset
+	Composition      *CompositionProvision
+	Deployment       *ExecutionDeployment
+	Permissions      []Permission
+	Reconciliation   *ReconciliationProfile
+	Pending          []PendingObligation
+	byInvocationID   map[string]*InvocationView
+	operationIndex   map[string]*Intent
+	admissionIndex   map[string]*AdmissionView
+	reductionIndex   map[ReductionRef]*ExecutionStep
+	rootIndex        map[string]*RootCompletion
+	lifecycleIndex   map[string]LifecycleResult
+	runIndex         map[RunID]*ExecutionRun
+	invocationIndex  map[string]*InvocationView
+	effectIndex      map[string]*ExecutionEffect
+	observationIndex map[string]*ObservationView
+	assetIndex       map[string]*effects.Asset
+	history          []ExecutionStep
 }
 
 // Run looks up one original logical generation.
@@ -430,6 +432,31 @@ func (b *inspectionBuilder) buildRuns() error {
 		return corrupt("invalid retained assets: %v", err)
 	}
 	slices.SortFunc(b.snap.Assets, func(a, c effects.Asset) int { return strings.Compare(a.ID, c.ID) })
+	if hasAssetScopeFormat(b.snap.StorageVersion) {
+		rows := b.tables["capability_asset_scopes"]
+		if len(rows) != 1 || inspectInt(rows[0], "singleton") != 1 {
+			return corrupt("asset scope manifest row")
+		}
+		metadata := b.tables["metadata"]
+		if len(metadata) != 1 {
+			return corrupt("asset scope metadata")
+		}
+		m, err := decodeAssetScopes([]byte(inspectText(rows[0], "descriptor")), inspectText(metadata[0], "asset_scope_digest"))
+		if err != nil {
+			return err
+		}
+		if err = m.verify(b.snap.Assets); err != nil {
+			return err
+		}
+		b.snap.AssetScopes = map[string][]string{}
+		for cap, refs := range m {
+			ids := make([]string, 0, len(refs))
+			for _, r := range refs {
+				ids = append(ids, r.ID)
+			}
+			b.snap.AssetScopes[cap] = ids
+		}
+	}
 	b.snap.assetIndex = map[string]*effects.Asset{}
 	for i := range b.snap.Assets {
 		a := &b.snap.Assets[i]
@@ -453,6 +480,9 @@ func protocolTables(stored int) []string {
 	if hasDispatchAdmissionSchema(stored) {
 		tables = append(tables, "adapter_dispatch_admissions")
 	}
+	if hasAssetScopeFormat(stored) {
+		tables = append(tables, "capability_asset_scopes")
+	}
 	return tables
 }
 
@@ -465,13 +495,13 @@ func checkProtocolTables(ctx context.Context, q queryer, version int) error {
 	// Formats 9 and 11 have the same tables. The journal CHECK independently
 	// distinguishes the continuation contract even before its first approval.
 	rows, err := q.QueryContext(ctx, `SELECT lower(name), type,
-		CASE WHEN lower(name)='composition_facts' THEN instr(lower(sql),?)>0 ELSE 0 END
+		CASE lower(name) WHEN 'composition_facts' THEN instr(lower(sql),?)>0 WHEN 'metadata' THEN instr(lower(sql),'asset_scope_digest')>0 ELSE 0 END
 		FROM sqlite_schema WHERE type IN ('table','view')`, "'continuation'")
 	if err != nil {
 		return err
 	}
 	have := map[string]bool{}
-	var continuationJournal bool
+	var continuationJournal, assetScopeColumn bool
 	for rows.Next() {
 		var name, kind string
 		var permits bool
@@ -480,12 +510,17 @@ func checkProtocolTables(ctx context.Context, q queryer, version int) error {
 			return err
 		}
 		have[name] = kind == "table"
-		continuationJournal = continuationJournal || permits
+		switch name {
+		case "composition_facts":
+			continuationJournal = permits
+		case "metadata":
+			assetScopeColumn = permits
+		}
 	}
 	if err := errors.Join(rows.Err(), rows.Close()); err != nil {
 		return err
 	}
-	if continuationJournal != hasContinuationSchema(version) {
+	if continuationJournal != hasContinuationSchema(version) || assetScopeColumn != hasAssetScopeFormat(version) {
 		return ErrVersion
 	}
 	var authorityJournal bool
@@ -504,7 +539,7 @@ func checkProtocolTables(ctx context.Context, q queryer, version int) error {
 			return ErrVersion
 		}
 	}
-	for _, group := range [][]string{compositionInspectionTables, {"reconciliation_profile", "receipt_read_ordinals", "receipt_conflicts", "adapter_dispatch_admissions"}} {
+	for _, group := range [][]string{compositionInspectionTables, {"reconciliation_profile", "receipt_read_ordinals", "receipt_conflicts", "adapter_dispatch_admissions", "capability_asset_scopes"}} {
 		for _, name := range group {
 			if _, exists := have[name]; exists && !required[name] {
 				return ErrVersion
