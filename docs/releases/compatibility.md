@@ -6,7 +6,9 @@ Applications define closed records with `schema`, compile `author.Definition` pr
 
 For v0.1.x, existing documented calls, error identities and configuration meanings are the compatibility contract. Use keyed struct literals and `errors.Is`. Patch releases may add compatible behavior or correct a violation of a documented invariant. A later v0 minor release may change the API. Its notes must identify affected callers and the required source changes. Pin a release in your application. Raw SQLite tables, executor implementation types, internal instruction layouts, human-readable error text and example command output outside the documented quickstart are implementation details.
 
-`runtime.DefaultLimits()` returns per-store bounds. `RunOptions` requires positive step and dispatch budgets on every call. Zero in-flight and timeout fields select the documented defaults. An empty registry can run local steps and reports an unavailable capability when a request needs a tool. Check the returned error and durable state after interruption or budget exhaustion. [Execution progress](../execution-progress.md)
+`runtime.DefaultLimits()` returns bounds for one `Create`, `Open`, `Inspect` or `Replay` call. They are never retained, so a store may be reopened under different bounds. `RunOptions` requires positive step and dispatch budgets on every call. Zero in-flight and timeout fields select the documented defaults. The default effect timeout is chosen for a local adapter; a model provider needs its own. An empty registry can run local steps and reports an unavailable capability when a request needs a tool. Check the returned error and durable state after interruption or budget exhaustion. [Execution progress](../execution-progress.md)
+
+Only a `runtime.Store` obtained from `Create` or `Open` owns a database. Calling any other method on a zero or nil `Store` is unsupported and returns an error matching `sql.ErrConnDone` rather than faulting. `Namespace` reports an empty namespace and `Close` succeeds.
 
 ## SQLite and history
 
