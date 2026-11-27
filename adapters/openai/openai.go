@@ -99,9 +99,11 @@ func (a *Adapter) Prepare(r effects.Request) (effects.Prepared, error) {
 		required = append(required, k)
 	}
 	sort.Strings(required)
-	body := map[string]any{"model": p.Model, "instructions": instructions.Text, "input": []map[string]string{{"role": "user", "content": inputText}}, "max_output_tokens": p.MaxOutputTokens, "store": false, "truncation": "disabled", "text": map[string]any{"format": map[string]any{"type": "json_schema", "name": "alan_" + r.Output.ID, "strict": true, "schema": map[string]any{"type": "object", "properties": props, "required": required, "additionalProperties": false}}}}
-	// Provider schema name is at most 64 characters; full schema identity is retained in Request.
-	body["text"].(map[string]any)["format"].(map[string]any)["name"] = "alan_" + r.Output.ID[:59]
+	// Provider schema name is at most 64 characters, so the retained hex schema
+	// identity is truncated here. Output.Check above has already recomputed it,
+	// which fixes its length at 64. Request retains the full identity.
+	name := "alan_" + r.Output.ID[:59]
+	body := map[string]any{"model": p.Model, "instructions": instructions.Text, "input": []map[string]string{{"role": "user", "content": inputText}}, "max_output_tokens": p.MaxOutputTokens, "store": false, "truncation": "disabled", "text": map[string]any{"format": map[string]any{"type": "json_schema", "name": name, "strict": true, "schema": map[string]any{"type": "object", "properties": props, "required": required, "additionalProperties": false}}}}
 	raw, e := json.Marshal(body)
 	if e != nil {
 		return p, errors.New("request encoding failed")

@@ -21,7 +21,11 @@ type Store struct{ owner *executor.Store }
 
 // Limits bounds encoded program, projection, observation, and reduction output
 // sizes in bytes. Use DefaultLimits for ordinary stores. Zero does not select
-// defaults. A nonpositive bound cannot accommodate a value of that kind.
+// defaults. A nonpositive bound cannot accommodate a value of that kind, so
+// Create and Open accept one without complaint and the refusal arrives at the
+// first value it cannot admit. Limits belong to the Create, Open, Inspect or
+// Replay call and are never retained, so reopening with different bounds is
+// supported and a store is never permanently narrowed by them.
 type Limits struct{ MaxProgramBytes, MaxDataBytes, MaxObservationBytes, MaxOutputBytes int }
 type Artifact = executor.Artifact
 
@@ -80,7 +84,11 @@ type RunOptions struct {
 	// MaxInFlight bounds concurrent calls per runner. Zero selects two.
 	MaxInFlight int
 	// ExternalTimeout bounds each external call. Zero selects two seconds.
-	// A negative timeout or concurrency bound returns ErrLimit.
+	// A negative timeout or concurrency bound returns ErrLimit. Two seconds
+	// suits a local adapter, not a model provider: a call cancelled by this
+	// bound yields disposition "unknown", which leaves a possibly-charged
+	// operation unresolved across restart. Set it from the capability's own
+	// latency. The bundled model and forecast examples use 30 to 60 seconds.
 	ExternalTimeout time.Duration
 }
 
