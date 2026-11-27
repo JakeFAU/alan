@@ -237,87 +237,7 @@ func (s *Store) prepareAdapterWork(ctx context.Context, id string, registry map[
 	if e != nil {
 		return nil, e
 	}
-	s.mu.Lock()
-	if s.closed {
-		s.mu.Unlock()
-		return nil, sql.ErrConnDone
-	}
-	tx, e := s.beginOwnedTx(ctx)
-	if e != nil {
-		s.mu.Unlock()
-		return nil, e
-	}
-	defer tx.Rollback()
-	current, _, e := adapterRequest(ctx, tx, id, s.namespace, s.limits)
-	if e != nil {
-		s.mu.Unlock()
-		return nil, e
-	}
-	if !reflect.DeepEqual(current, request) {
-		s.mu.Unlock()
-		return nil, ErrConflict
-	}
-	if slot, guarded := s.continuationSlot(intent.Run); guarded {
-		if e = checkContinuationPreparation(ctx, tx, slot, intent, p); e != nil {
-			s.mu.Unlock()
-			return nil, e
-		}
-	}
-	grant, e := adapterGrant(ctx, tx, intent)
-	if e != nil {
-		s.mu.Unlock()
-		return nil, e
-	}
-	a := AdapterAttempt{Intent: intent.Intent, AuthorizationID: auth.ID, Prepared: p, Allowed: auth.Allowed && grant, Reason: auth.Reason}
-	if auth.Allowed && !grant {
-		a.Reason = "grant_denied"
-	}
-	enabled, e := requestAuthorityEnabled(ctx, tx)
-	if e != nil {
-		s.mu.Unlock()
-		return nil, e
-	}
-	if enabled {
-		a.Authority, e = evaluateEffectAuthority(ctx, tx, intent, authorityCurrentPrefix)
-		if e != nil {
-			s.mu.Unlock()
-			return nil, e
-		}
-		a.Allowed = auth.Allowed && a.Authority.Allowed
-		a.Reason = auth.Reason
-		if auth.Allowed && !a.Authority.Allowed {
-			a.Reason = a.Authority.Reason
-		}
-	}
-	a.Allowed, a.Reason, e = compositionReservationDecision(ctx, tx, intent.Intent, a.Allowed, a.Reason)
-	if e != nil {
-		s.mu.Unlock()
-		return nil, e
-	}
-	if withheld != nil && a.Allowed {
-		// A previously authorized source can close before preparation. Its
-		// original reservation remains subject to the final source gate. If
-		// the earlier denial has instead cleared, retry real preparation.
-		reason, err := s.dispatchSourceReason(ctx, intent.Run, intent.revision)
-		if err != nil || reason == "" {
-			s.mu.Unlock()
-			if err != nil {
-				return nil, err
-			}
-			return nil, ErrStale
-		}
-	}
-	b, e := json.Marshal(a)
-	if e == nil {
-		_, e = tx.ExecContext(ctx, "INSERT INTO adapter_attempts VALUES(?,?)", id, b)
-	}
-	if e == nil {
-		e = recordCompositionReservation(ctx, tx, intent.Intent, a.Allowed, a.Reason, a)
-	}
-	if e == nil {
-		e = s.commitOwnedTx(ctx, tx, executionDelta{run: intent.Run})
-	}
-	s.mu.Unlock()
+	a, e := s.reserveAdapterAttempt(ctx, id, intent, request, p, withheld, auth)
 	if e != nil {
 		return nil, e
 	}
@@ -336,6 +256,89 @@ func (s *Store) prepareAdapterWork(ctx context.Context, id string, registry map[
 	}
 	return &adapterWork{attempt: effects.Copy(a), adapter: adapter, timeout: timeout, event: event}, nil
 }
+
+// reserveAdapterAttempt records the single durable attempt for one adapter
+// intent. It owns mu for the whole transaction, including rollback: the pinned
+// connection rejects a second BEGIN, so releasing mu before the deferred
+// rollback would fail a concurrent caller's transaction.
+func (s *Store) reserveAdapterAttempt(ctx context.Context, id string, intent retainedIntent, request effects.Request, p effects.Prepared, withheld *effects.Prepared, auth Authorization) (AdapterAttempt, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.closed {
+		return AdapterAttempt{}, sql.ErrConnDone
+	}
+	tx, e := s.beginOwnedTx(ctx)
+	if e != nil {
+		return AdapterAttempt{}, e
+	}
+	defer tx.Rollback()
+	current, _, e := adapterRequest(ctx, tx, id, s.namespace, s.limits)
+	if e != nil {
+		return AdapterAttempt{}, e
+	}
+	if !reflect.DeepEqual(current, request) {
+		return AdapterAttempt{}, ErrConflict
+	}
+	if slot, guarded := s.continuationSlot(intent.Run); guarded {
+		if e = checkContinuationPreparation(ctx, tx, slot, intent, p); e != nil {
+			return AdapterAttempt{}, e
+		}
+	}
+	grant, e := adapterGrant(ctx, tx, intent)
+	if e != nil {
+		return AdapterAttempt{}, e
+	}
+	a := AdapterAttempt{Intent: intent.Intent, AuthorizationID: auth.ID, Prepared: p, Allowed: auth.Allowed && grant, Reason: auth.Reason}
+	if auth.Allowed && !grant {
+		a.Reason = "grant_denied"
+	}
+	enabled, e := requestAuthorityEnabled(ctx, tx)
+	if e != nil {
+		return AdapterAttempt{}, e
+	}
+	if enabled {
+		a.Authority, e = evaluateEffectAuthority(ctx, tx, intent, authorityCurrentPrefix)
+		if e != nil {
+			return AdapterAttempt{}, e
+		}
+		a.Allowed = auth.Allowed && a.Authority.Allowed
+		a.Reason = auth.Reason
+		if auth.Allowed && !a.Authority.Allowed {
+			a.Reason = a.Authority.Reason
+		}
+	}
+	a.Allowed, a.Reason, e = compositionReservationDecision(ctx, tx, intent.Intent, a.Allowed, a.Reason)
+	if e != nil {
+		return AdapterAttempt{}, e
+	}
+	if withheld != nil && a.Allowed {
+		// A previously authorized source can close before preparation. Its
+		// original reservation remains subject to the final source gate. If
+		// the earlier denial has instead cleared, retry real preparation.
+		reason, err := s.dispatchSourceReason(ctx, intent.Run, intent.revision)
+		if err != nil {
+			return AdapterAttempt{}, err
+		}
+		if reason == "" {
+			return AdapterAttempt{}, ErrStale
+		}
+	}
+	b, e := json.Marshal(a)
+	if e == nil {
+		_, e = tx.ExecContext(ctx, "INSERT INTO adapter_attempts VALUES(?,?)", id, b)
+	}
+	if e == nil {
+		e = recordCompositionReservation(ctx, tx, intent.Intent, a.Allowed, a.Reason, a)
+	}
+	if e == nil {
+		e = s.commitOwnedTx(ctx, tx, executionDelta{run: intent.Run})
+	}
+	if e != nil {
+		return AdapterAttempt{}, e
+	}
+	return a, nil
+}
+
 func transportAdapter(ctx context.Context, w adapterWork) adapterCompletion {
 	r := adapterCompletion{attempt: w.attempt, event: w.event, read: w.read}
 	if w.refusal != "" {
@@ -583,12 +586,23 @@ func (s *Store) settleAdapterLocked(ctx context.Context, a AdapterAttempt, r Ada
 		return e
 	}
 	result := AdmissionResult{TransportID: d.TransportID, Accepted: true, Reason: "settled", Bound: &bound, ObservationID: o.ID}
-	raw, _ := json.Marshal(d)
-	rr, _ := json.Marshal(result)
+	// An unencodable descriptor, admission or result must surface here. Writing
+	// a nil blob would instead fail the NOT NULL column with an opaque error.
+	raw, e := json.Marshal(d)
+	if e != nil {
+		return e
+	}
+	rr, e := json.Marshal(result)
+	if e != nil {
+		return e
+	}
 	if _, e = tx.ExecContext(ctx, "INSERT INTO admissions VALUES(?,?,?,?,?,?)", admissionKey("adapter", d.TransportID), "adapter", d.TransportID, raw, rr, o.ID); e != nil {
 		return e
 	}
-	raw, _ = json.Marshal(r)
+	raw, e = json.Marshal(r)
+	if e != nil {
+		return e
+	}
 	if _, e = tx.ExecContext(ctx, "INSERT INTO settlements VALUES(?,?,?,?)", identity("adapter-outcome", a.Intent.ID), a.Intent.ID, raw, o.ID); e != nil {
 		return e
 	}

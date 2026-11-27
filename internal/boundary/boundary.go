@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"slices"
 	"sync"
 	"syscall"
 	"time"
@@ -84,6 +85,9 @@ func FromEnvironment(ctx context.Context, store string) (context.Context, error)
 		for _, attempt := range active {
 			event.InFlight = append(event.InFlight, attempt)
 		}
+		// Map iteration order is unspecified. Reported evidence must not vary
+		// between runs that reached the same boundary with the same work.
+		slices.Sort(event.InFlight)
 		index := -1
 		for i, filter := range filters {
 			if !used[i] && matches(filter, event) {
