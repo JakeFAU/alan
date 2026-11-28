@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"slices"
 
@@ -14,8 +15,21 @@ import (
 // Each scoped format preserves its underlying protocol, including conflict promotion.
 const assetScopeFormatOffset = 14
 
+// maxUnscopedProtocolSchema is the highest protocol schema number that carries
+// no asset-scope offset. Every new protocol version must raise it.
+const maxUnscopedProtocolSchema = requestAuthorityBindingConflictSchema
+
+// The scoped band is [SchemaVersion+offset, maxUnscopedProtocolSchema+offset]
+// and currently begins one past the highest unscoped number, so it has no
+// headroom. An unscoped version inside the band would be read as the scoped
+// encoding of an older protocol, and unscopedFormat would silently return that
+// older number: a store would be misread, including its asset-scope authority.
+// Raise assetScopeFormatOffset along with maxUnscopedProtocolSchema. This
+// assertion stops compiling as soon as the two bands would overlap.
+const _ = uint(SchemaVersion + assetScopeFormatOffset - maxUnscopedProtocolSchema - 1)
+
 func hasAssetScopeFormat(v int) bool {
-	return v >= SchemaVersion+assetScopeFormatOffset && v <= requestAuthorityBindingConflictSchema+assetScopeFormatOffset
+	return v >= SchemaVersion+assetScopeFormatOffset && v <= maxUnscopedProtocolSchema+assetScopeFormatOffset
 }
 
 func unscopedFormat(v int) int {
@@ -101,7 +115,7 @@ func readAssetScopes(ctx context.Context, q queryer) (assetManifest, error) {
 	var raw []byte
 	var digest string
 	err := q.QueryRowContext(ctx, "SELECT s.descriptor,m.asset_scope_digest FROM capability_asset_scopes s JOIN metadata m USING(singleton) WHERE s.singleton=1").Scan(&raw, &digest)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return nil, corrupt("missing asset scope manifest")
 	}
 	if err != nil {

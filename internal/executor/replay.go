@@ -5,6 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 )
 
@@ -378,7 +379,7 @@ func validateTerminal(ctx context.Context, q queryer, r RunState) error {
 	var outcome, destinations, status []byte
 	err := q.QueryRowContext(ctx, "SELECT sequence,outcome,destinations,delivery_status FROM terminal_obligations WHERE subject=? AND generation=?", r.ID.Subject, r.ID.Generation).Scan(&seq, &outcome, &destinations, &status)
 	if r.Projection.Status == "open" {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil
 		}
 		if err != nil {

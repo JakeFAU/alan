@@ -1,0 +1,86 @@
+name: Go
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+env:
+  CGO_ENABLED: "1"
+jobs:
+  build:
+    name: Build, vet and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+        with:
+          go-version-file: go.mod
+      - name: Check formatting
+        run: |
+          unformatted=$(gofmt -l $(git ls-files '*.go'))
+          if [ -n "$unformatted" ]; then
+            echo "gofmt needed:"; echo "$unformatted"; exit 1
+          fi
+      - run: go build ./...
+      - run: go vet ./...
+      - run: go test -count=1 ./...
+  race:
+    # The durable example suites re-marshal every retained row to prove the
+    # stored form is canonical, so -race makes them minutes long: measured on
+    # this revision, outing-planner takes 14m and weather-agent 8m on an
+    # M-series Mac. A slower runner multiplies that, so those suites get their
+    # own shard and timeout instead of sharing one budget with everything else.
+    # SLOW is the single source of truth: the slow shard runs it, and the rest
+    # shard runs its complement, so a newly added package is covered by default.
+    name: Race detector (${{ matrix.shard }})
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ matrix.minutes }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - shard: rest
+            minutes: 45
+            timeout: 25m
+          - shard: slow-examples
+            minutes: 90
+            timeout: 70m
+    env:
+      # One package per line. Whole-line matched, so no regex quoting.
+      SLOW: |
+        github.com/JakeFAU/alan/examples/outing-planner
+        github.com/JakeFAU/alan/examples/weather-agent
+        github.com/JakeFAU/alan/examples/investigator
+      SHARD: ${{ matrix.shard }}
+      GO_TEST_TIMEOUT: ${{ matrix.timeout }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+        with:
+          go-version-file: go.mod
+      - name: Select packages
+        run: |
+          set -eu
+          printf '%s\n' "$SLOW" | sed '/^[[:space:]]*$/d' > slow.txt
+          go list ./... > all.txt
+          # A stale entry would silently drop its suite from both shards.
+          missing=$(grep -Fxv -f all.txt slow.txt || true)
+          if [ -n "$missing" ]; then
+            echo "SLOW names packages that no longer exist:"; echo "$missing"; exit 1
+          fi
+          if [ "$SHARD" = "slow-examples" ]; then
+            cp slow.txt packages.txt
+          else
+            grep -Fxv -f slow.txt all.txt > packages.txt
+          fi
+          echo "Shard $SHARD covers $(wc -l < packages.txt) of $(wc -l < all.txt) packages:"
+          cat packages.txt
+      - name: Race test
+        run: xargs go test -race -count=1 -timeout "$GO_TEST_TIMEOUT" < packages.txt
